@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Appointment{% endblock %}
+
+{% block content %}
+    <h1>Delete Appointment</h1>
+
+    <div class="info-box">
+        <p>Are you sure you want to delete this appointment?</p>
+        <p><strong>{{ appointment.appointment_date }}</strong> - {{ appointment.reason }}</p>
+    </div>
+
+    <form method="POST">
+        <button type="submit">Yes, Delete</button>
+    </form>
+
+    <br>
+    <a class="button" href="/patients/{{ appointment.patient_id }}">Cancel</a>
+{% endblock %}

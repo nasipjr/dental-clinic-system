@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="fw-bold">Dental Clinic Dashboard</h1>
+<p>Welcome back, Doctor. Here is a quick overview of your clinic.</p>
+
+
+<div class="container text-center shadow-sm py-3 mb-4">
+
+  <div class="row align-items-start">
+
+    <div class="col">
+      <div class="card" style="width: 18rem;">
+        <div class="card-body">
+          <h3 class="card-title text-center text-primary ">Total Patients</h3>
+          <p class="card-text text-center fs-3 ">{{ total_patients }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card" style="width: 18rem;">
+        <div class="card-body">
+          <h3 class="card-title text-center text-primary ">Total Appointments</h3>
+          <p class="card-text text-center fs-3 ">{{ total_appointments }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card" style="width: 18rem;">
+        <div class="card-body">
+          <h4 class="card-title text-center text-primary ">Done Appointments</h4>
+          <p class="card-text text-center fs-3 ">{{ done_appointments }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card" style="width: 18rem;">
+        <div class="card-body">
+          <h3 class="card-title text-center text-primary ">Total Visits</h3>
+          <p class="card-text text-center fs-3 ">{{ total_visits }}</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="container text-center bg-primary shadow-sm py-3 mb-4">
+  <div class="row align-items-start">
+    <div class="col">
+      <h3>Total Revenue</h3>
+      <p>{{ total_revenue }}</p>
+    </div>
+    <div class="col">
+      <h3>Total Paid</h3>
+      <p>{{ total_paid }}</p>
+    </div>
+    <div class="col">
+      <h3>Total Remaining</h3>
+      <p>{{ total_remaining }}</p>
+    </div>
+  </div>
+</div>
+
+<div class="dashboard-sections">
+  <div class="dashboard-box">
+    <h2>Latest Patients</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for patient in latest_patients %}
+        <tr>
+          <td>{{ patient.full_name }}</td>
+          <td>{{ patient.phone }}</td>
+          <td>
+            <a class="button button-secondary" href="/patients/{{ patient.id }}">View</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="3">No patients found</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="dashboard-box">
+    <h2>Latest Appointments</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Patient</th>
+          <th>Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for appointment in latest_appointments %}
+        <tr>
+          <td>{{ appointment.patient.full_name }}</td>
+          <td>{{ appointment.appointment_date }}</td>
+          <td>{{ appointment.status }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="3">No appointments found</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

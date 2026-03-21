@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Patient{% endblock %}
+
+{% block content %}
+    <h1>Delete Patient</h1>
+
+    <div class="info-box">
+        <p>Are you sure you want to delete this patient?</p>
+        <p><strong>{{ patient.full_name }}</strong></p>
+    </div>
+
+    <form method="POST">
+        <button type="submit">Yes, Delete</button>
+    </form>
+
+    <br>
+    <a class="button" href="/patients/{{ patient.id }}">Cancel</a>
+{% endblock %}

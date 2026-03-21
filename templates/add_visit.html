@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Add Visit{% endblock %}
+
+{% block content %}
+    <h1>Add Visit for {{ patient.full_name }}</h1>
+
+    <form method="POST">
+        <div class="form-group">
+            <label for="visit_date">Visit Date:</label>
+            <input type="text" id="visit_date" name="visit_date" placeholder="2026-03-10" required>
+        </div>
+
+        <div class="form-group">
+            <label for="procedure_type">Procedure Type:</label>
+            <input type="text" id="procedure_type" name="procedure_type" placeholder="Cleaning">
+        </div>
+
+        <div class="form-group">
+            <label for="tooth_number">Tooth Number:</label>
+            <input type="text" id="tooth_number" name="tooth_number" placeholder="Upper Left 6">
+        </div>
+
+        <div class="form-group">
+            <label for="notes">Notes:</label>
+            <textarea id="notes" name="notes"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="total_cost">Total Cost:</label>
+            <input type="number" step="0.01" id="total_cost" name="total_cost">
+        </div>
+
+        <div class="form-group">
+            <label for="paid_amount">Paid Amount:</label>
+            <input type="number" step="0.01" id="paid_amount" name="paid_amount">
+        </div>
+
+        <button type="submit">Save Visit</button>
+    </form>
+{% endblock %}

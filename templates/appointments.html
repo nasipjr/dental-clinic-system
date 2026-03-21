@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Appointments{% endblock %}
+
+{% block content %}
+<h1>All Appointments</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Patient</th>
+            <th>Date</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for appointment in appointments %}
+        <tr>
+            <td>{{ appointment.patient.full_name }}</td>
+            <td>{{ appointment.appointment_date }}</td>
+            <td>{{ appointment.reason }}</td>
+            <td>{{ appointment.status }}</td>
+            <td>
+                <a class="button" href="/appointments/{{ appointment.id }}/edit">Edit</a>
+                <a class="button" href="/appointments/{{ appointment.id }}/done">✓</a>
+                <a class="button" href="/appointments/{{ appointment.id }}/cancel">✗</a>
+                <a class="button" href="/appointments/{{ appointment.id }}/delete">Delete</a>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="5">No appointments found</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

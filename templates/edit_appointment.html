@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Appointment{% endblock %}
+
+{% block content %}
+    <h1>Edit Appointment</h1>
+
+    <form method="POST">
+        <div class="form-group">
+            <label for="appointment_date">Appointment Date:</label>
+            <input
+                type="text"
+                id="appointment_date"
+                name="appointment_date"
+                value="{{ appointment.appointment_date }}"
+                required
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="reason">Reason:</label>
+            <input
+                type="text"
+                id="reason"
+                name="reason"
+                value="{{ appointment.reason }}"
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="status">Status:</label>
+            <select id="status" name="status">
+                <option value="Scheduled" {% if appointment.status == "Scheduled" %}selected{% endif %}>Scheduled</option>
+                <option value="Done" {% if appointment.status == "Done" %}selected{% endif %}>Done</option>
+                <option value="Cancelled" {% if appointment.status == "Cancelled" %}selected{% endif %}>Cancelled</option>
+            </select>
+        </div>
+
+        <button type="submit">Update Appointment</button>
+    </form>
+{% endblock %}
