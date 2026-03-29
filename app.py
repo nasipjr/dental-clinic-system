@@ -73,14 +73,14 @@ app.logger.info('Application started successfully')
 @app.errorhandler(404)
 def not_found_error(error):
     app.logger.warning(f'404 Not Found | path={request.path}')
-    return 'الصفحة غير موجودة', 404
+    return 'page not found', 404
 
 
 @app.errorhandler(500)
 def internal_error(error):
     db.session.rollback()
     app.logger.exception('500 Internal Server Error')
-    return 'حدث خطأ داخلي في السيرفر', 500
+    return 'internal server error', 500
 
 
 @app.route('/')
