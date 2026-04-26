@@ -9,7 +9,6 @@ from pathlib import Path
 app = Flask(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / 'instance' / 'clinic.db'
 CONFIG_FILE = BASE_DIR / 'config' / 'clinic_config.json'
 LOG_FILE_NAME = 'clinic.log'
 
@@ -129,7 +128,8 @@ def patients():
     try:
         if search_query:
             all_patients = Patient.query.filter(
-                Patient.full_name.ilike(f'%{search_query}%')
+                (Patient.first_name.ilike(f'%{search_query}%')) |
+                (Patient.last_name.ilike(f'%{search_query}%'))
             ).all()
         else:
             all_patients = Patient.query.all()
@@ -147,9 +147,6 @@ def add_patient():
         first_name = request.form.get('first_name', '').strip()
         last_name = request.form.get('last_name', '').strip()
 
-        full_name = request.form.get('full_name', '').strip()
-        if not full_name:
-            full_name = f'{first_name} {last_name}'.strip()
 
         date_of_birth_raw = request.form.get('date_of_birth')
         date_of_birth = None
@@ -165,7 +162,6 @@ def add_patient():
             date_of_birth=date_of_birth,
             gender=request.form.get('gender'),
 
-            full_name=full_name,
 
             phone=request.form.get('phone'),
             email=request.form.get('email'),
@@ -301,7 +297,8 @@ def appointments():
 
     if search_query:
         appointments = Appointment.query.join(Patient).filter(
-            Patient.full_name.ilike(f"%{search_query}%")
+            (Patient.first_name.ilike(f'%{search_query}%')) |
+            (Patient.last_name.ilike(f'%{search_query}%'))
         ).all()
     else:
         appointments = Appointment.query.all()
@@ -324,9 +321,6 @@ def edit_patient(patient_id):
             first_name = request.form.get('first_name', '').strip()
             last_name = request.form.get('last_name', '').strip()
 
-            full_name = request.form.get('full_name', '').strip()
-            if not full_name:
-                full_name = f'{first_name} {last_name}'.strip()
 
             date_of_birth_raw = request.form.get('date_of_birth')
             date_of_birth = None
@@ -339,7 +333,6 @@ def edit_patient(patient_id):
             patient.preferred_first_name = request.form.get('preferred_first_name')
             patient.date_of_birth = date_of_birth
             patient.gender = request.form.get('gender')
-            patient.full_name = full_name
 
             patient.phone = request.form.get('phone')
             patient.email = request.form.get('email')

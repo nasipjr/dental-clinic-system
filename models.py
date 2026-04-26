@@ -9,11 +9,11 @@ class Patient(db.Model):
     title = db.Column(db.String(20))
     first_name = db.Column(db.String(100), nullable=False)
     last_name = db.Column(db.String(100), nullable=False)
+    
     preferred_first_name = db.Column(db.String(100))
     date_of_birth = db.Column(db.Date)
     gender = db.Column(db.String(20))
 
-    full_name = db.Column(db.String(200), nullable=False)
 
     phone = db.Column(db.String(20))
     email = db.Column(db.String(120))
@@ -50,7 +50,7 @@ class Patient(db.Model):
 class Appointment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey("patient.id"), nullable=False)
-    appointment_date = db.Column(db.String(50), nullable=False)
+    appointment_date = db.Column(db.DateTime, nullable=False)
     reason = db.Column(db.String(255))
     status = db.Column(db.String(50), default="Scheduled")
 
@@ -58,7 +58,7 @@ class Appointment(db.Model):
 class Treatment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey("patient.id"), nullable=False)
-    treatment_date = db.Column(db.String(50), nullable=False)
+    treatment_date = db.Column(db.DateTime, nullable=False)
     procedure_type = db.Column(db.String(200))
     tooth_number = db.Column(db.String(50))
     notes = db.Column(db.Text)

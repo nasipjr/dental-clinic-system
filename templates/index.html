@@ -137,7 +137,7 @@
               <div class="status-indicator available"></div>
             </div>
             <div class="doctor-details">
-              <h4>{{ patient.full_name }}</h4>
+              <h4>{{ patient.first_name }} {{ patient.last_name }}</h4>
               <span class="specialty-tag">{{ patient.phone }}</span>
             </div>
           </div>
@@ -190,7 +190,7 @@
               <div class="status-indicator available"></div>
             </div>
             <div class="doctor-details">
-              <h4>{{ appointment.patient.full_name }}</h4>
+              <h4>{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</h4>
               <h4>{{ appointment.appointment_date }}</h4>
               <span class="specialty-tag">{{ appointment.patient.phone }}</span>
               <span class="specialty-tag">{{ appointment.status }}</span>
