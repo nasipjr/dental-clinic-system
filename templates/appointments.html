@@ -3,39 +3,127 @@
 {% block title %}Appointments{% endblock %}
 
 {% block content %}
-<h1>All Appointments</h1>
+</br></br></br></br></br></br></br></br></br></br></br></br></br>
 
-<table>
-    <thead>
-        <tr>
-            <th>Patient</th>
-            <th>Date</th>
-            <th>Reason</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
 
-    <tbody>
+<!-- Section Title -->
+<div class="container section-title" data-aos="fade-up">
+    <h2>ِAppointments</h2>
+    <p>Here's a list of your latest appointments</p></br>
+
+    <section id="appointmnet" class="appointmnet section">
+        <div class="container" data-aos="fade-up" data-aos-delay="100">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="booking-wrapper">
+                        <div class="booking-header text-center" data-aos="fade-up" data-aos-delay="200">
+                            <h2>Search Appointments Database</h2>
+                        </div>
+
+                        <div class="booking-steps" data-aos="fade-up" data-aos-delay="300">
+                            <div class="step">
+                                <div class="step-icon">
+                                    <i class="bi bi-calendar-date"></i>
+                                </div>
+                                <div class="step-content">
+                                    <h4>Search For Your Appointment</h4>
+                                    <p>Find your appointment record to view details</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="appointment-form" data-aos="fade-up" data-aos-delay="400">
+                            <form id="patient-search-form" method="GET" action="/appointments">
+                                <div class="row gy-4 justify-content-center">
+                                    <div class="col-md-6">
+                                        <input
+                                            type="text"
+                                            name="search"
+                                            class="form-control"
+                                            placeholder="Patient's Name"
+                                            value="{{ search_query }}"
+                                            required
+                                        >
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="submit" class="btn-book">Search Appointments</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<!-- End Section Title -->
+
+<!-- latest patients Section -->
+<section id="appointments-cards" class="find-a-doctor section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        {% if appointments %}
+    
+    <div class="doctors-grid">
         {% for appointment in appointments %}
-        <tr>
-            <td>{{ appointment.patient.full_name }}</td>
-            <td>{{ appointment.appointment_date }}</td>
-            <td>{{ appointment.reason }}</td>
-            <td>{{ appointment.status }}</td>
-            <td>
-                <a class="button" href="/appointments/{{ appointment.id }}/edit">Edit</a>
-                <a class="button" href="/appointments/{{ appointment.id }}/done">✓</a>
-                <a class="button" href="/appointments/{{ appointment.id }}/cancel">✗</a>
-                <a class="button" href="/appointments/{{ appointment.id }}/delete">Delete</a>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="5">No appointments found</td>
-        </tr>
+        <div class="doctor-profile appointment-card">
+
+            <div class="profile-header">
+                <div class="doctor-avatar">
+                    <i class="bi bi-calendar-check" style="font-size: 30px;"></i>
+                </div>
+
+                <div class="doctor-details">
+                    <h4>{{ appointment.patient.full_name }}</h4>
+                    <span class="specialty-tag">{{ appointment.appointment_date }}</span>
+                </div>
+            </div>
+
+            <div class="appointment-meta mt-3">
+                <p><strong>Reason:</strong> {{ appointment.reason or 'No reason provided' }}</p>
+
+                <p>
+                    <strong>Status:</strong>
+                    <span class="
+                        {% if appointment.status == 'Done' %}status-done
+                        {% elif appointment.status == 'Cancelled' %}status-cancelled
+                        {% else %}status-scheduled{% endif %}
+                    ">
+                        {{ appointment.status }}
+                    </span>
+                </p>
+            </div>
+
+            <div class="action-buttons mt-3 d-flex flex-wrap gap-2">
+                <a href="/appointments/{{ appointment.id }}/edit" class="btn btn-primary">Edit</a>
+                <a href="/appointments/{{ appointment.id }}/done" class="btn btn-success">Done</a>
+                <a href="/appointments/{{ appointment.id }}/cancel" class="btn btn-warning">Cancel</a>
+                <a href="/appointments/{{ appointment.id }}/delete" class="btn btn-danger">Delete</a>
+            </div>
+
+        </div>
         {% endfor %}
-    </tbody>
-</table>
+    </div>
+
+{% else %}
+
+    {% if search_query %}
+        <div id="patient-search-empty" data-aos="fade-up" data-aos-delay="300">
+            <div class="empty-box">
+                <div class="empty-icon">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <h4>No appointments found</h4>
+                <p>We could not find any appointments matching "<strong>{{ search_query }}</strong>".</p>
+            </div>
+        </div>
+        {% endif %}
+
+{% endif %}
+
+    </div>
+</section>
+<!-- /latest patients -->
 
 {% endblock %}

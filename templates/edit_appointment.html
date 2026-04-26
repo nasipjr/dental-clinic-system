@@ -3,39 +3,76 @@
 {% block title %}Edit Appointment{% endblock %}
 
 {% block content %}
-    <h1>Edit Appointment</h1>
+<br><br><br><br><br><br>
 
-    <form method="POST">
-        <div class="form-group">
-            <label for="appointment_date">Appointment Date:</label>
-            <input
-                type="text"
-                id="appointment_date"
-                name="appointment_date"
-                value="{{ appointment.appointment_date }}"
-                required
-            >
+<section id="add-patient-page" class="section">
+    <div class="container" data-aos="fade-up">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="add-patient-wrapper">
+
+                    <div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
+                        <h2>Edit Appointment</h2>
+                        <p>Update the appointment information.</p>
+                    </div>
+
+                    <div class="add-patient-icon" data-aos="zoom-in" data-aos-delay="200">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+
+                    <form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300">
+                        <div class="row gy-4">
+
+                            <div class="col-md-12">
+                                <label for="appointment_date" class="form-label">Appointment Date & Time</label>
+                                <input
+                                    type="datetime-local"
+                                    id="appointment_date"
+                                    name="appointment_date"
+                                    class="form-control"
+                                    value="{{ appointment.appointment_date.replace(' ', 'T') if appointment.appointment_date else '' }}"
+                                    required
+                                >
+                            </div>
+
+                            <div class="col-12">
+                                <label for="reason" class="form-label">Reason</label>
+                                <textarea
+                                    id="reason"
+                                    name="reason"
+                                    class="form-control"
+                                    rows="5"
+                                    placeholder="Add the reason for the appointment"
+                                >{{ appointment.reason or '' }}</textarea>
+                            </div>
+
+                            <div class="col-md-12">
+                                <label for="status" class="form-label">Status</label>
+                                <select id="status" name="status" class="form-select" required>
+                                    <option value="">Select a Status</option>
+                                    <option value="Scheduled" {% if appointment.status == 'Scheduled' %}selected{% endif %}>Scheduled</option>
+                                    <option value="Done" {% if appointment.status == 'Done' %}selected{% endif %}>Done</option>
+                                    <option value="Cancelled" {% if appointment.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 text-center pt-2">
+                                <button type="submit" class="save-patient-btn">
+                                    Update Appointment
+                                </button>
+
+                                <a href="{{ url_for('patient_detail', patient_id=appointment.patient_id) }}"
+                                   class="btn-outline-main ms-2">
+                                    Cancel
+                                </a>
+                            </div>
+
+                        </div>
+                    </form>
+
+                </div>
+            </div>
         </div>
-
-        <div class="form-group">
-            <label for="reason">Reason:</label>
-            <input
-                type="text"
-                id="reason"
-                name="reason"
-                value="{{ appointment.reason }}"
-            >
-        </div>
-
-        <div class="form-group">
-            <label for="status">Status:</label>
-            <select id="status" name="status">
-                <option value="Scheduled" {% if appointment.status == "Scheduled" %}selected{% endif %}>Scheduled</option>
-                <option value="Done" {% if appointment.status == "Done" %}selected{% endif %}>Done</option>
-                <option value="Cancelled" {% if appointment.status == "Cancelled" %}selected{% endif %}>Cancelled</option>
-            </select>
-        </div>
-
-        <button type="submit">Update Appointment</button>
-    </form>
+    </div>
+</section>
 {% endblock %}

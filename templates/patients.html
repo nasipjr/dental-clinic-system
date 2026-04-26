@@ -3,44 +3,117 @@
 {% block title %}Patients{% endblock %}
 
 {% block content %}
-<h1>Patients</h1>
+</br></br></br></br></br></br></br></br>
 
-<a class="button" href="/patients/add">Add New Patient</a>
+<!-- Section Title -->
+<div class="container section-title" data-aos="fade-up">
+    <h2>Patients</h2>
+    <p>Here's a list of your latest patients</p></br>
+    <section id="find-a-doctor" class="find-a-doctor section">
+        <div class="container" data-aos="fade-up" data-aos-delay="100">
+            <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="700">
+                <a href="/patients/add" class="btn-view-all">
+                    Add New Patient
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
 
-<form method="GET" action="/patients" style="margin-bottom: 20px;">
-    <div class="form-group">
-        <label for="search">Search by name:</label>
-        <input type="text" id="search" name="search" value="{{ search_query }}">
+    <section id="appointmnet" class="appointmnet section">
+        <div class="container" data-aos="fade-up" data-aos-delay="100">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="booking-wrapper">
+                        <div class="booking-header text-center" data-aos="fade-up" data-aos-delay="200">
+                            <h2>Search Patients Database</h2>
+                        </div>
+
+                        <div class="booking-steps" data-aos="fade-up" data-aos-delay="300">
+                            <div class="step">
+                                <div class="step-icon">
+                                    <i class="bi bi-person-check"></i>
+                                </div>
+                                <div class="step-content">
+                                    <h4>Search For Your Patient</h4>
+                                    <p>Find your patient record to view details</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="appointment-form" data-aos="fade-up" data-aos-delay="400">
+                            <form id="patient-search-form" method="GET" action="/patients">
+                                <div class="row gy-4 justify-content-center">
+                                    <div class="col-md-6">
+                                        <input type="text" name="search" class="form-control"
+                                            placeholder="Patient's Name" value="{{ search_query }}" required>
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="submit" class="btn-book">Search Patients</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<!-- End Section Title -->
+
+<!-- latest patients Section -->
+<section id="find-a-doctor" class="find-a-doctor section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        {% if patients %}
+        <div class="doctors-grid" data-aos="fade-up" data-aos-delay="300">
+            {% for patient in patients %}
+            <div class="doctor-profile" data-aos="zoom-in" data-aos-delay="100">
+                <div class="profile-header">
+                    <div class="doctor-avatar">
+                        <img src="{{ url_for('static', filename='assets/my imgs/person.png') }}" alt="Patient"
+                            class="img-fluid">
+                        <div class="status-indicator available"></div>
+                    </div>
+                    <div class="doctor-details">
+                        <h4>{{ patient.full_name }}</h4>
+                        <span class="specialty-tag">{{ patient.phone }}</span>
+                    </div>
+                    <div class="experience-info">
+                        <i class="bi bi-calendar-event">&nbsp;</i>
+                        <span>{{ patient.date_of_birth }}</span>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <a href="/patients/{{ patient.id }}" class="btn-primary">View</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% elif search_query %}
+        <div id="patient-search-empty" data-aos="fade-up" data-aos-delay="300">
+            <div class="empty-box">
+                <div class="empty-icon">
+                    <i class="bi bi-person-x"></i>
+                </div>
+                <h4>No patient found</h4>
+                <p>We couldn’t find any patient matching "<strong>{{ search_query }}</strong>".</p>
+                <a href="/patients/add" class="empty-btn">Add New Patient</a>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="700">
+            <a href="/patients/add" class="btn-view-all">
+                Add New Patient
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
     </div>
-    <button type="submit">Search</button>
-</form>
-
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Phone</th>
-            <th>Address</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-
-    <tbody>
-        {% for patient in patients %}
-        <tr>
-            <td>{{ patient.full_name }}</td>
-            <td>{{ patient.phone }}</td>
-            <td>{{ patient.address }}</td>
-            <td>
-                <a class="button" href="/patients/{{ patient.id }}">View</a>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="4">No patients found</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+</section>
+<!-- /latest patients -->
 
 {% endblock %}

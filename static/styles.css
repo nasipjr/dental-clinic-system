@@ -1,0 +1,594 @@
+/***** Section *****/  /***** End Section *****/
+
+.custom-btn-position {
+  margin-left: 100px;
+}
+
+.appointment-card .appointment-meta {
+  margin-top: 18px;
+}
+
+.appointment-card .appointment-meta p {
+  margin-bottom: 10px;
+  color: color-mix(in srgb, var(--default-color), transparent 15%);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.appointment-status {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+.status-scheduled {
+  background: color-mix(in srgb, var(--accent-color), transparent 85%);
+  color: #7fd3ff;
+}
+
+.status-done {
+  background: rgba(25, 135, 84, 0.18);
+  color: #57d38c;
+}
+
+.status-cancelled {
+  background: rgba(220, 53, 69, 0.18);
+  color: #ff7b88;
+}
+
+.btn-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 90px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.done-btn {
+  background: rgba(25, 135, 84, 0.15);
+  color: #57d38c;
+  border-color: rgba(25, 135, 84, 0.35);
+}
+
+.done-btn:hover {
+  background: rgba(25, 135, 84, 0.25);
+  color: #7ff0ae;
+}
+
+.cancel-btn {
+  background: rgba(255, 193, 7, 0.12);
+  color: #ffd666;
+  border-color: rgba(255, 193, 7, 0.25);
+}
+
+.cancel-btn:hover {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffe28a;
+}
+
+.delete-btn {
+  background: rgba(220, 53, 69, 0.15);
+  color: #ff7b88;
+  border-color: rgba(220, 53, 69, 0.35);
+}
+
+.delete-btn:hover {
+  background: rgba(220, 53, 69, 0.25);
+  color: #ff9aa5;
+}
+.action-buttons .btn {
+  font-family: var(--default-font);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 12px;
+  min-width: 90px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.patient-detail-card {
+  padding: 2.25rem;
+}
+
+.patient-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.patient-info-box {
+  background: color-mix(in srgb, var(--surface-color), transparent 8%);
+  border: 1px solid color-mix(in srgb, var(--default-color), transparent 92%);
+  border-radius: 18px;
+  padding: 1rem 1.1rem;
+}
+
+.patient-info-box .info-label {
+  display: inline-block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-color);
+}
+
+.patient-info-box p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: color-mix(in srgb, var(--default-color), transparent 15%);
+}
+
+.patient-main-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.btn-outline-main,
+.btn-delete-soft {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px;
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-main {
+  border: 1px solid color-mix(in srgb, var(--accent-color), transparent 45%);
+  color: var(--accent-color);
+  background: transparent;
+}
+
+.btn-outline-main:hover {
+  background: color-mix(in srgb, var(--accent-color), transparent 88%);
+  color: #7fd3ff;
+}
+
+.btn-delete-soft {
+  border: 1px solid rgba(220, 53, 69, 0.35);
+  color: #ff7b88;
+  background: rgba(220, 53, 69, 0.12);
+}
+
+.btn-delete-soft:hover {
+  background: rgba(220, 53, 69, 0.2);
+  color: #ff9aa5;
+}
+
+.small-section-title {
+  padding-bottom: 30px;
+}
+
+.small-section-title h2 {
+  font-size: 28px;
+  margin-bottom: 12px;
+  padding-bottom: 14px;
+}
+
+.appointment-card .appointment-meta,
+.treatment-card .treatment-meta {
+  margin-top: 18px;
+}
+
+.appointment-card .appointment-meta p,
+.treatment-card .treatment-meta p {
+  margin-bottom: 10px;
+  color: color-mix(in srgb, var(--default-color), transparent 15%);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.appointment-status {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+.status-scheduled {
+  background: color-mix(in srgb, var(--accent-color), transparent 85%);
+  color: #7fd3ff;
+}
+
+.status-done {
+  background: rgba(25, 135, 84, 0.18);
+  color: #57d38c;
+}
+
+.status-cancelled {
+  background: rgba(220, 53, 69, 0.18);
+  color: #ff7b88;
+}
+
+.btn-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 90px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.action-btn {
+  font-family: var(--default-font);
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 90px;
+  text-align: center;
+}
+
+.done-btn {
+  background: rgba(25, 135, 84, 0.15);
+  color: #57d38c;
+  border-color: rgba(25, 135, 84, 0.35);
+}
+
+.done-btn:hover {
+  background: rgba(25, 135, 84, 0.25);
+  color: #7ff0ae;
+}
+
+.cancel-btn {
+  background: rgba(255, 193, 7, 0.12);
+  color: #ffd666;
+  border-color: rgba(255, 193, 7, 0.25);
+}
+
+.cancel-btn:hover {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffe28a;
+}
+
+.delete-btn {
+  background: rgba(220, 53, 69, 0.15);
+  color: #ff7b88;
+  border-color: rgba(220, 53, 69, 0.35);
+}
+
+.delete-btn:hover {
+  background: rgba(220, 53, 69, 0.25);
+  color: #ff9aa5;
+}
+
+.treatment-icon-box {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--accent-color), transparent 88%);
+  color: var(--accent-color);
+  font-size: 28px;
+}
+
+.financial-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.financial-card {
+  background: var(--surface-color);
+  border-radius: 22px;
+  padding: 2rem 1.5rem;
+  border: 1px solid color-mix(in srgb, var(--default-color), transparent 92%);
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--default-color), transparent 94%);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.financial-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px color-mix(in srgb, var(--default-color), transparent 88%);
+}
+
+.financial-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent-color), transparent 88%);
+  color: var(--accent-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+
+.financial-card h4 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.financial-card p {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--accent-color);
+}
+
+.status-indicator.pending {
+  background-color: #ffc107;
+}
+
+@media (max-width: 991px) {
+  .patient-info-grid,
+  .financial-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .patient-main-actions {
+    flex-direction: column;
+  }
+
+  .btn-outline-main,
+  .btn-delete-soft,
+  .patient-main-actions .btn-primary {
+    width: 100%;
+  }
+}
+
+
+/* 🔽 Empty state تحسين */
+.empty-box h4 {
+  font-size: 20px; /* كان كبير */
+  font-weight: 600;
+  margin-top: 10px;
+  margin-bottom: 8px;
+}
+
+.empty-box p {
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 18px;
+}
+
+/* 🔥 زر Add احترافي */
+.empty-btn {
+  display: inline-block;
+  padding: 10px 22px;
+  border-radius: 25px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+
+  background: transparent;
+  border: 1px solid var(--accent-color);
+  color: var(--accent-color);
+
+  transition: all 0.3s ease;
+}
+
+/* hover */
+.empty-btn:hover {
+  background: var(--accent-color);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 123, 255, 0.25);
+}
+
+/* 🔥 Custom select style */
+.form-select {
+  background-color: transparent;
+  border: 1px solid #2c3e50;
+  color: #fff;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+
+  /* remove default arrow */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  /* custom arrow */
+  background-image: url("data:image/svg+xml,%3Csvg fill='%23ffffff' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+
+  transition: all 0.3s ease;
+}
+
+/* focus */
+.form-select:focus {
+  border-color: #4da3ff;
+  box-shadow: 0 0 0 2px rgba(77, 163, 255, 0.2);
+  outline: none;
+}
+
+/* option fix (dark) */
+.form-select option {
+  background: #1e1e1e;
+  color: #fff;
+}
+
+/*  Empty state for home page */
+
+.home-empty-state {
+  grid-column: 1 / -1;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 38px 28px;
+  text-align: center;
+
+  background: color-mix(in srgb, var(--surface-color), transparent 92%);
+  border: 1px dashed color-mix(in srgb, var(--accent-color), transparent 35%);
+  border-radius: 22px;
+
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+}
+
+.home-empty-icon {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent-color), transparent 86%);
+  border: 1px solid color-mix(in srgb, var(--accent-color), transparent 50%);
+  color: var(--accent-color);
+}
+
+.home-empty-icon i {
+  font-size: 34px;
+  line-height: 1;
+}
+
+.home-empty-state h4 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--heading-color);
+}
+
+.home-empty-state p {
+  margin: 0;
+  font-size: 15px;
+  color: color-mix(in srgb, var(--default-color), transparent 35%);
+}
+
+/* 🔽 تحسينات عامة *
+/* Patient Detail Tabs */
+.patient-detail-tabs {
+  gap: 28px;
+  margin-bottom: 28px;
+}
+
+.patient-detail-tabs .nav-item {
+  flex: 1;
+  max-width: 360px;
+}
+
+.patient-detail-tabs .nav-link {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 18px;
+  transition: all 0.25s ease;
+}
+
+.patient-detail-tabs .nav-link .section-title {
+  margin-bottom: 0;
+  padding: 18px 14px;
+  border-radius: 18px;
+  transition: all 0.25s ease;
+}
+
+.patient-detail-tabs .nav-link h2 {
+  color: var(--heading-color);
+  transition: all 0.25s ease;
+}
+
+.patient-detail-tabs .nav-link p {
+  color: var(--default-color) !important;
+  opacity: 0.8;
+  transition: all 0.25s ease;
+}
+
+/* Hover */
+.patient-detail-tabs .nav-link:hover .section-title {
+  background: color-mix(in srgb, var(--accent-color), transparent 92%);
+}
+
+/* Active tab */
+.patient-detail-tabs .nav-link.active .section-title {
+  background: color-mix(in srgb, var(--accent-color), transparent 86%);
+  border: 1px solid color-mix(in srgb, var(--accent-color), transparent 55%);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.patient-detail-tabs .nav-link.active h2 {
+  color: var(--accent-color);
+}
+
+.patient-detail-tabs .nav-link.active p {
+  color: var(--default-color) !important;
+  opacity: 0.9;
+}
+
+/* remove default bootstrap active bg */
+.patient-detail-tabs .nav-link.active,
+.patient-detail-tabs .show > .nav-link {
+  background: transparent !important;
+}
+
+/* Delete Patient Page */
+.delete-patient-card {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 42px 34px;
+  border-radius: 28px;
+}
+
+.delete-warning-icon {
+  width: 82px;
+  height: 82px;
+  margin: 0 auto 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+  background: rgba(220, 53, 69, 0.12);
+  border: 1px solid rgba(220, 53, 69, 0.28);
+  color: #ff6b7a;
+}
+
+.delete-warning-icon i {
+  font-size: 34px;
+}
+
+.delete-patient-box {
+  padding: 24px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--surface-color), transparent 8%);
+  border: 1px solid color-mix(in srgb, var(--default-color), transparent 88%);
+}
+
+.delete-patient-box p {
+  margin-bottom: 10px;
+  color: color-mix(in srgb, var(--default-color), transparent 28%);
+  font-size: 15px;
+}
+
+.delete-patient-box h4 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--heading-color);
+}
+
+

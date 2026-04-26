@@ -5,13 +5,46 @@ db = SQLAlchemy()
 
 class Patient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    full_name = db.Column(db.String(200), nullable=False)
-    phone = db.Column(db.String(20))
-    address = db.Column(db.String(255))
-    notes = db.Column(db.Text)
 
-    appointments = db.relationship("Appointment", backref="patient", lazy=False, cascade="all, delete-orphan")
-    visits = db.relationship("Visit", backref="patient", lazy=True, cascade="all, delete-orphan")
+    title = db.Column(db.String(20))
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    preferred_first_name = db.Column(db.String(100))
+    date_of_birth = db.Column(db.Date)
+    gender = db.Column(db.String(20))
+
+    full_name = db.Column(db.String(200), nullable=False)
+
+    phone = db.Column(db.String(20))
+    email = db.Column(db.String(120))
+
+    address = db.Column(db.String(255))
+    city = db.Column(db.String(100))
+    state = db.Column(db.String(100))
+    post_code = db.Column(db.String(20))
+    country = db.Column(db.String(100))
+
+    notes = db.Column(db.Text)
+    medical_information = db.Column(db.Text)
+    appointment_notes = db.Column(db.Text)
+
+    occupation = db.Column(db.String(150))
+    emergency_contact = db.Column(db.String(150))
+    medicare_number = db.Column(db.String(100))
+
+    appointments = db.relationship(
+        "Appointment",
+        backref="patient",
+        lazy=False,
+        cascade="all, delete-orphan"
+    )
+
+    treatments = db.relationship(
+        "Treatment",
+        backref="patient",
+        lazy=True,
+        cascade="all, delete-orphan"
+    )
 
 
 class Appointment(db.Model):
@@ -22,10 +55,10 @@ class Appointment(db.Model):
     status = db.Column(db.String(50), default="Scheduled")
 
 
-class Visit(db.Model):
+class Treatment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.Integer, db.ForeignKey("patient.id"), nullable=False)
-    visit_date = db.Column(db.String(50), nullable=False)
+    treatment_date = db.Column(db.String(50), nullable=False)
     procedure_type = db.Column(db.String(200))
     tooth_number = db.Column(db.String(50))
     notes = db.Column(db.Text)

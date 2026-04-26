@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
-from models import db, Patient, Appointment, Visit
+from models import db, Patient, Appointment, Treatment
+from datetime import datetime
 
 import json
 import logging
@@ -12,6 +13,7 @@ DB_PATH = BASE_DIR / 'instance' / 'clinic.db'
 CONFIG_FILE = BASE_DIR / 'config' / 'clinic_config.json'
 LOG_FILE_NAME = 'clinic.log'
 
+##
 app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://root:1234@127.0.0.1:3308/dental_clinic'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -91,11 +93,11 @@ def home():
         total_patients = Patient.query.count()
         total_appointments = Appointment.query.count()
         done_appointments = Appointment.query.filter_by(status='Done').count()
-        total_visits = Visit.query.count()
+        total_treatments = Treatment.query.count()
 
-        all_visits = Visit.query.all()
-        total_revenue = sum(visit.total_cost for visit in all_visits)
-        total_paid = sum(visit.paid_amount for visit in all_visits)
+        all_treatments = Treatment.query.all()
+        total_revenue = sum(treatment.total_cost for treatment in all_treatments)
+        total_paid = sum(treatment.paid_amount for treatment in all_treatments)
         total_remaining = total_revenue - total_paid
 
         latest_patients = Patient.query.order_by(Patient.id.desc()).limit(5).all()
@@ -106,7 +108,7 @@ def home():
             total_patients=total_patients,
             total_appointments=total_appointments,
             done_appointments=done_appointments,
-            total_visits=total_visits,
+            total_treatments=total_treatments,
             total_revenue=total_revenue,
             total_paid=total_paid,
             total_remaining=total_remaining,
@@ -142,33 +144,52 @@ def patients():
 @app.route('/patients/add', methods=['GET', 'POST'])
 def add_patient():
     if request.method == 'POST':
-        app.logger.info('Add patient request received')
+        first_name = request.form.get('first_name', '').strip()
+        last_name = request.form.get('last_name', '').strip()
 
-        try:
-            full_name = request.form['full_name']
-            phone = request.form['phone']
-            address = request.form['address']
-            notes = request.form['notes']
+        full_name = request.form.get('full_name', '').strip()
+        if not full_name:
+            full_name = f'{first_name} {last_name}'.strip()
 
-            new_patient = Patient(
-                full_name=full_name,
-                phone=phone,
-                address=address,
-                notes=notes
-            )
+        date_of_birth_raw = request.form.get('date_of_birth')
+        date_of_birth = None
 
-            db.session.add(new_patient)
-            db.session.commit()
+        if date_of_birth_raw:
+            date_of_birth = datetime.strptime(date_of_birth_raw, '%Y-%m-%d').date()
 
-            app.logger.info(f'Patient added successfully | id={new_patient.id}')
-            return redirect(url_for('patients'))
+        new_patient = Patient(
+            title=request.form.get('title'),
+            first_name=first_name,
+            last_name=last_name,
+            preferred_first_name=request.form.get('preferred_first_name'),
+            date_of_birth=date_of_birth,
+            gender=request.form.get('gender'),
 
-        except Exception:
-            db.session.rollback()
-            app.logger.exception('Failed to add patient')
-            return 'Error Loading PatientsPage', 500
+            full_name=full_name,
 
-    app.logger.info('Add patient page opened')
+            phone=request.form.get('phone'),
+            email=request.form.get('email'),
+
+            address=request.form.get('address'),
+            city=request.form.get('city'),
+            state=request.form.get('state'),
+            post_code=request.form.get('post_code'),
+            country=request.form.get('country'),
+
+            notes=request.form.get('notes'),
+            medical_information=request.form.get('medical_information'),
+            appointment_notes=request.form.get('appointment_notes'),
+
+            occupation=request.form.get('occupation'),
+            emergency_contact=request.form.get('emergency_contact'),
+            medicare_number=request.form.get('medicare_number')
+        )
+
+        db.session.add(new_patient)
+        db.session.commit()
+
+        return redirect(url_for('patients'))
+
     return render_template('add_patient.html')
 
 
@@ -179,9 +200,9 @@ def patient_detail(patient_id):
     try:
         patient = Patient.query.get_or_404(patient_id)
 
-        total_cost_sum = sum(visit.total_cost for visit in patient.visits)
-        total_paid_sum = sum(visit.paid_amount for visit in patient.visits)
-        total_remaining_sum = sum(visit.remaining_amount for visit in patient.visits)
+        total_cost_sum = sum(treatment.total_cost for treatment in patient.treatments)
+        total_paid_sum = sum(treatment.paid_amount for treatment in patient.treatments)
+        total_remaining_sum = sum(treatment.remaining_amount for treatment in patient.treatments)
 
         return render_template(
             'patient_detail.html',
@@ -204,7 +225,7 @@ def add_appointment(patient_id):
         patient = Patient.query.get_or_404(patient_id)
 
         if request.method == 'POST':
-            appointment_date = request.form['appointment_date']
+            appointment_date = request.form['appointment_date'].replace('T', ' ')
             reason = request.form['reason']
             status = request.form['status']
 
@@ -232,24 +253,24 @@ def add_appointment(patient_id):
         return 'Error Loading AppointmentInfo', 500
 
 
-@app.route('/patients/<int:patient_id>/visits/add', methods=['GET', 'POST'])
-def add_visit(patient_id):
-    app.logger.info(f'Add visit page/request | patient_id={patient_id}')
+@app.route('/patients/<int:patient_id>/treatments/add', methods=['GET', 'POST'])
+def add_treatment(patient_id):
+    app.logger.info(f'Add treatment page/request | patient_id={patient_id}')
 
     try:
         patient = Patient.query.get_or_404(patient_id)
 
         if request.method == 'POST':
-            visit_date = request.form['visit_date']
+            treatment_date = request.form['treatment_date'].replace('T', ' ')
             procedure_type = request.form['procedure_type']
             tooth_number = request.form['tooth_number']
             notes = request.form['notes']
             total_cost = request.form['total_cost']
             paid_amount = request.form['paid_amount']
 
-            new_visit = Visit(
+            new_treatment = Treatment(
                 patient_id=patient.id,
-                visit_date=visit_date,
+                treatment_date=treatment_date,
                 procedure_type=procedure_type,
                 tooth_number=tooth_number,
                 notes=notes,
@@ -257,34 +278,39 @@ def add_visit(patient_id):
                 paid_amount=float(paid_amount) if paid_amount else 0
             )
 
-            db.session.add(new_visit)
+            db.session.add(new_treatment)
             db.session.commit()
 
             app.logger.info(
-                f'Visit added successfully | visit_id={new_visit.id}, patient_id={patient.id}'
+                f'Treatment added successfully | treatment_id={new_treatment.id}, patient_id={patient.id}'
             )
 
             return redirect(url_for('patient_detail', patient_id=patient.id))
 
-        return render_template('add_visit.html', patient=patient)
+        return render_template('add_treatment.html', patient=patient)
 
     except Exception:
         db.session.rollback()
-        app.logger.exception(f'Failed to add visit | patient_id={patient_id}')
-        return 'Error Adding Visit', 500
+        app.logger.exception(f'Failed to add treatment | patient_id={patient_id}')
+        return 'Error Adding Treatment', 500
 
 
 @app.route('/appointments')
 def appointments():
-    app.logger.info('Appointments page opened')
+    search_query = request.args.get('search', '')
 
-    try:
-        all_appointments = Appointment.query.all()
-        return render_template('appointments.html', appointments=all_appointments)
+    if search_query:
+        appointments = Appointment.query.join(Patient).filter(
+            Patient.full_name.ilike(f"%{search_query}%")
+        ).all()
+    else:
+        appointments = Appointment.query.all()
 
-    except Exception:
-        app.logger.exception('Error while loading appointments page')
-        return 'Error while loading appointments page', 500
+    return render_template(
+        'appointments.html',
+        appointments=appointments,
+        search_query=search_query
+    )
 
 
 @app.route('/patients/<int:patient_id>/edit', methods=['GET', 'POST'])
@@ -295,10 +321,42 @@ def edit_patient(patient_id):
         patient = Patient.query.get_or_404(patient_id)
 
         if request.method == 'POST':
-            patient.full_name = request.form['full_name']
-            patient.phone = request.form['phone']
-            patient.address = request.form['address']
-            patient.notes = request.form['notes']
+            first_name = request.form.get('first_name', '').strip()
+            last_name = request.form.get('last_name', '').strip()
+
+            full_name = request.form.get('full_name', '').strip()
+            if not full_name:
+                full_name = f'{first_name} {last_name}'.strip()
+
+            date_of_birth_raw = request.form.get('date_of_birth')
+            date_of_birth = None
+            if date_of_birth_raw:
+                date_of_birth = datetime.strptime(date_of_birth_raw, '%Y-%m-%d').date()
+
+            patient.title = request.form.get('title')
+            patient.first_name = first_name
+            patient.last_name = last_name
+            patient.preferred_first_name = request.form.get('preferred_first_name')
+            patient.date_of_birth = date_of_birth
+            patient.gender = request.form.get('gender')
+            patient.full_name = full_name
+
+            patient.phone = request.form.get('phone')
+            patient.email = request.form.get('email')
+
+            patient.address = request.form.get('address')
+            patient.city = request.form.get('city')
+            patient.state = request.form.get('state')
+            patient.post_code = request.form.get('post_code')
+            patient.country = request.form.get('country')
+
+            patient.notes = request.form.get('notes')
+            patient.medical_information = request.form.get('medical_information')
+            patient.appointment_notes = request.form.get('appointment_notes')
+
+            patient.occupation = request.form.get('occupation')
+            patient.emergency_contact = request.form.get('emergency_contact')
+            patient.medicare_number = request.form.get('medicare_number')
 
             db.session.commit()
 
@@ -311,6 +369,29 @@ def edit_patient(patient_id):
         db.session.rollback()
         app.logger.exception(f'Failed to edit patient | patient_id={patient_id}')
         return 'Failed to edit patient', 500
+    
+    
+@app.route('/appointments/<int:appointment_id>/delete', methods=['GET', 'POST'])
+def delete_appointment(appointment_id):
+    app.logger.warning(f'Delete appointment page/request | appointment_id={appointment_id}')
+
+    try:
+        appointment = Appointment.query.get_or_404(appointment_id)
+
+        if request.method == 'POST':
+            patient_id = appointment.patient_id
+            db.session.delete(appointment)
+            db.session.commit()
+
+            app.logger.info(f'Appointment deleted successfully | appointment_id={appointment_id}')
+            return redirect(url_for('patient_detail', patient_id=patient_id))
+
+        return render_template('delete_appointment.html', appointment=appointment)
+
+    except Exception:
+        db.session.rollback()
+        app.logger.exception(f'Failed to delete appointment | appointment_id={appointment_id}')
+        return 'Failed to delete appointment', 500
 
 
 @app.route('/appointments/<int:appointment_id>/done')
@@ -323,7 +404,7 @@ def mark_appointment_done(appointment_id):
         db.session.commit()
 
         app.logger.info(f'Appointment marked as done | appointment_id={appointment.id}')
-        return redirect(url_for('patient_detail', patient_id=appointment.patient_id))
+        return redirect(url_for('appointments'))
 
     except Exception:
         db.session.rollback()
@@ -341,7 +422,7 @@ def mark_appointment_cancelled(appointment_id):
         db.session.commit()
 
         app.logger.info(f'Appointment marked as cancelled | appointment_id={appointment.id}')
-        return redirect(url_for('patient_detail', patient_id=appointment.patient_id))
+        return redirect(url_for('appointments'))
 
     except Exception:
         db.session.rollback()
@@ -357,7 +438,7 @@ def edit_appointment(appointment_id):
         appointment = Appointment.query.get_or_404(appointment_id)
 
         if request.method == 'POST':
-            appointment.appointment_date = request.form['appointment_date']
+            appointment.appointment_date = request.form['appointment_date'].replace('T', ' ')
             appointment.reason = request.form['reason']
             appointment.status = request.form['status']
 
@@ -374,32 +455,32 @@ def edit_appointment(appointment_id):
         return 'Failed to edit appointment', 500
 
 
-@app.route('/visits/<int:visit_id>/edit', methods=['GET', 'POST'])
-def edit_visit(visit_id):
-    app.logger.info(f'Edit visit page/request | visit_id={visit_id}')
+@app.route('/treatments/<int:treatment_id>/edit', methods=['GET', 'POST'])
+def edit_treatment(treatment_id):
+    app.logger.info(f'Edit treatment page/request | treatment_id={treatment_id}')
 
     try:
-        visit = Visit.query.get_or_404(visit_id)
+        treatment = Treatment.query.get_or_404(treatment_id)
 
         if request.method == 'POST':
-            visit.visit_date = request.form['visit_date']
-            visit.procedure_type = request.form['procedure_type']
-            visit.tooth_number = request.form['tooth_number']
-            visit.notes = request.form['notes']
-            visit.total_cost = float(request.form['total_cost']) if request.form['total_cost'] else 0
-            visit.paid_amount = float(request.form['paid_amount']) if request.form['paid_amount'] else 0
+            treatment.treatment_date = request.form['treatment_date'].replace('T', ' ')
+            treatment.procedure_type = request.form['procedure_type']
+            treatment.tooth_number = request.form['tooth_number']
+            treatment.notes = request.form['notes']
+            treatment.total_cost = float(request.form['total_cost']) if request.form['total_cost'] else 0
+            treatment.paid_amount = float(request.form['paid_amount']) if request.form['paid_amount'] else 0
 
             db.session.commit()
 
-            app.logger.info(f'Visit updated successfully | visit_id={visit.id}')
-            return redirect(url_for('patient_detail', patient_id=visit.patient_id))
+            app.logger.info(f'Treatment updated successfully | treatment_id={treatment.id}')
+            return redirect(url_for('patient_detail', patient_id=treatment.patient_id))
 
-        return render_template('edit_visit.html', visit=visit)
+        return render_template('edit_treatment.html', treatment=treatment)
 
     except Exception:
         db.session.rollback()
-        app.logger.exception(f'Failed to edit visit | visit_id={visit_id}')
-        return 'Failed to edit visit', 500
+        app.logger.exception(f'Failed to edit treatment | treatment_id={treatment_id}')
+        return 'Failed to edit treatment', 500
 
 
 @app.route('/patients/<int:patient_id>/delete', methods=['GET', 'POST'])
@@ -424,50 +505,27 @@ def delete_patient(patient_id):
         return 'Failed to delete patient', 500
 
 
-@app.route('/appointments/<int:appointment_id>/delete', methods=['GET', 'POST'])
-def delete_appointment(appointment_id):
-    app.logger.warning(f'Delete appointment page/request | appointment_id={appointment_id}')
+@app.route('/treatments/<int:treatment_id>/delete', methods=['GET', 'POST'])
+def delete_treatment(treatment_id):
+    app.logger.warning(f'Delete treatment page/request | treatment_id={treatment_id}')
 
     try:
-        appointment = Appointment.query.get_or_404(appointment_id)
+        treatment = Treatment.query.get_or_404(treatment_id)
 
         if request.method == 'POST':
-            patient_id = appointment.patient_id
-            db.session.delete(appointment)
+            patient_id = treatment.patient_id
+            db.session.delete(treatment)
             db.session.commit()
 
-            app.logger.info(f'Appointment deleted successfully | appointment_id={appointment_id}')
+            app.logger.info(f'Treatment deleted successfully | treatment_id={treatment_id}')
             return redirect(url_for('patient_detail', patient_id=patient_id))
 
-        return render_template('delete_appointment.html', appointment=appointment)
+        return render_template('delete_treatment.html', treatment=treatment)
 
     except Exception:
         db.session.rollback()
-        app.logger.exception(f'Failed to delete appointment | appointment_id={appointment_id}')
-        return 'Failed to delete appointment', 500
-
-
-@app.route('/visits/<int:visit_id>/delete', methods=['GET', 'POST'])
-def delete_visit(visit_id):
-    app.logger.warning(f'Delete visit page/request | visit_id={visit_id}')
-
-    try:
-        visit = Visit.query.get_or_404(visit_id)
-
-        if request.method == 'POST':
-            patient_id = visit.patient_id
-            db.session.delete(visit)
-            db.session.commit()
-
-            app.logger.info(f'Visit deleted successfully | visit_id={visit_id}')
-            return redirect(url_for('patient_detail', patient_id=patient_id))
-
-        return render_template('delete_visit.html', visit=visit)
-
-    except Exception:
-        db.session.rollback()
-        app.logger.exception(f'Failed to delete visit | visit_id={visit_id}')
-        return 'Failed to delete visit', 500
+        app.logger.exception(f'Failed to delete treatment | treatment_id={treatment_id}')
+        return 'Failed to delete treatment', 500
 
 
 if __name__ == '__main__':

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Add Treatment{% endblock %}
+
+{% block content %}
+<br><br><br><br><br><br>
+
+
+<section id="add-patient-page" class="section">
+    <div class="container" data-aos="fade-up">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="add-patient-wrapper">
+
+                    <div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
+                        <h2>Add New Treatment</h2>
+                        <p>Fill in the treatment information to create a new record.</p>
+                    </div>
+
+                    <div class="add-patient-icon" data-aos="zoom-in" data-aos-delay="200">
+                        <i class="bi bi-person-plus"></i>
+                    </div>
+
+                    <form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300">
+                        <div class="row gy-4">
+                            <div class="col-md-12">
+                                <label for="treatment_date" class="form-label">Date Of Treatment</label>
+                                <input type="date" id="treatment_date" name="treatment_date" class="form-control"
+                                    required="">
+                            </div>
+
+                            <div class="col-md-12">
+                                <label for="procedure_type" class="form-label">Procedure Type</label>
+                                <input type="text" id="procedure_type" name="procedure_type" class="form-control"
+                                    placeholder="Enter procedure type">
+                            </div>
+                            <div class="col-md-12">
+                                <label for="tooth_number" class="form-label">Tooth Number</label>
+                                <input type="text" id="tooth_number" name="tooth_number" class="form-control"
+                                    placeholder="Enter tooth number">
+                            </div>
+                            <div class="col-12">
+                                <label for="notes" class="form-label">Notes</label>
+                                <textarea id="notes" name="notes" class="form-control"
+                                    rows="5" placeholder="Add any notes about the treatment"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="total_cost" class="form-label">Total Cost</label>
+                                <input type="number" id="total_cost" name="total_cost" class="form-control"
+                                    placeholder="Enter total cost" step="0.01">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="paid_amount" class="form-label">Paid Amount</label>
+                                <input type="number" id="paid_amount" name="paid_amount" class="form-control"
+                                    placeholder="Enter paid amount" step="0.01">
+                            </div><br>
+
+                            <div class="col-12 text-center pt-2">
+                                <button type="submit" class="save-patient-btn">Save Treatment</button>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
