@@ -30,7 +30,7 @@
                                     id="treatment_date"
                                     name="treatment_date"
                                     class="form-control"
-                                    value="{{ treatment.treatment_date.replace(' ', 'T') if treatment.treatment_date else '' }}"
+                                    value="{{ treatment.treatment_date.strftime('%Y-%m-%dT%H:%M') if treatment.treatment_date else '' }}"
                                     required
                                 >
                             </div>
