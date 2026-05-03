@@ -145,3 +145,66 @@
   });
 
 })();
+
+document.addEventListener("DOMContentLoaded", function () {
+  async function loadDashboardPartial(url, targetId) {
+    const target = document.getElementById(targetId);
+
+    if (!target) {
+      return;
+    }
+
+    try {
+      target.classList.add("dashboard-loading");
+
+      const response = await fetch(url, {
+        headers: {
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to load dashboard partial");
+      }
+
+      const html = await response.text();
+      target.innerHTML = html;
+    } catch (error) {
+      console.error(error);
+    } finally {
+      target.classList.remove("dashboard-loading");
+    }
+  }
+
+  document.addEventListener("submit", function (event) {
+    const form = event.target.closest(".dashboard-ajax-form");
+
+    if (!form) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const targetId = form.dataset.target;
+    const formData = new FormData(form);
+    const params = new URLSearchParams(formData);
+    const url = `${form.action}?${params.toString()}`;
+
+    loadDashboardPartial(url, targetId);
+  });
+
+  document.addEventListener("click", function (event) {
+    const link = event.target.closest(".dashboard-ajax-link");
+
+    if (!link) {
+      return;
+    }
+
+    event.preventDefault();
+
+    const targetId = link.dataset.target;
+    const url = link.href;
+
+    loadDashboardPartial(url, targetId);
+  });
+});

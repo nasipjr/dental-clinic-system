@@ -12,58 +12,86 @@
                 <div class="add-patient-wrapper">
 
                     <div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
-                        <h2>Edit Appointment</h2>
-                        <p>Update the appointment information.</p>
+                        <h2>{{ 'View Appointment' if mode == 'view' else 'Edit Appointment' }}</h2>
+                        <p>
+                            {{ 'View appointment information without editing.' if mode == 'view' else 'Update the
+                            appointment information.' }}
+                        </p>
                     </div>
 
                     <div class="add-patient-icon" data-aos="zoom-in" data-aos-delay="200">
                         <i class="bi bi-calendar-check"></i>
                     </div>
 
-                    <form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300">
+                    <form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300"
+                        class="{% if mode == 'view' %}readonly-form{% endif %}">
                         <div class="row gy-4">
 
                             <div class="col-md-12">
                                 <label for="appointment_date" class="form-label">Appointment Date & Time</label>
-                                <input
-                                    type="datetime-local"
-                                    id="appointment_date"
-                                    name="appointment_date"
+                                <input type="datetime-local" id="appointment_date" name="appointment_date"
                                     class="form-control"
                                     value="{{ appointment.appointment_date.strftime('%Y-%m-%dT%H:%M') if appointment.appointment_date else '' }}"
-                                    required
-                                >
+                                    required {% if mode=='view' %}disabled{% endif %} />
                             </div>
 
                             <div class="col-12">
                                 <label for="reason" class="form-label">Reason</label>
-                                <textarea
-                                    id="reason"
-                                    name="reason"
-                                    class="form-control"
-                                    rows="5"
-                                    placeholder="Add the reason for the appointment"
-                                >{{ appointment.reason or '' }}</textarea>
+                                <select id="reason" name="reason" class="form-select" required {% if
+                                    mode|default('edit')=='view' %}disabled{% endif %}>
+                                    <option value="">Select a Reason</option>
+                                    <option value="Check-up" {% if appointment.reason=='Check-up' %}selected{% endif %}>
+                                        Check-up</option>
+                                    <option value="Cleaning" {% if appointment.reason=='Cleaning' %}selected{% endif %}>
+                                        Cleaning</option>
+                                    <option value="Filling" {% if appointment.reason=='Filling' %}selected{% endif %}>
+                                        Filling</option>
+                                    <option value="Root Canal" {% if appointment.reason=='Root Canal' %}selected{% endif
+                                        %}>Root Canal</option>
+                                    <option value="Extraction" {% if appointment.reason=='Extraction' %}selected{% endif
+                                        %}>Extraction</option>
+                                    <option value="Crown / Bridge" {% if appointment.reason=='Crown / Bridge'
+                                        %}selected{% endif %}>Crown / Bridge</option>
+                                    <option value="Braces / Orthodontics" {% if
+                                        appointment.reason=='Braces / Orthodontics' %}selected{% endif %}>Braces /
+                                        Orthodontics</option>
+                                    <option value="Whitening" {% if appointment.reason=='Whitening' %}selected{% endif
+                                        %}>Whitening</option>
+                                    <option value="Emergency Pain" {% if appointment.reason=='Emergency Pain'
+                                        %}selected{% endif %}>Emergency Pain</option>
+                                    <option value="Follow-up" {% if appointment.reason=='Follow-up' %}selected{% endif
+                                        %}>Follow-up</option>
+                                </select>
                             </div>
 
                             <div class="col-md-12">
                                 <label for="status" class="form-label">Status</label>
-                                <select id="status" name="status" class="form-select" required>
+                                <select id="status" name="status" class="form-select" required {% if mode=='view'
+                                    %}disabled{% endif %}>
                                     <option value="">Select a Status</option>
-                                    <option value="Scheduled" {% if appointment.status == 'Scheduled' %}selected{% endif %}>Scheduled</option>
-                                    <option value="Done" {% if appointment.status == 'Done' %}selected{% endif %}>Done</option>
-                                    <option value="Cancelled" {% if appointment.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                                    <option value="Scheduled" {% if appointment.status=='Scheduled' %}selected{% endif
+                                        %}>Scheduled</option>
+                                    <option value="Done" {% if appointment.status=='Done' %}selected{% endif %}>Done
+                                    </option>
+                                    <option value="Cancelled" {% if appointment.status=='Cancelled' %}selected{% endif
+                                        %}>Cancelled</option>
                                 </select>
                             </div>
 
                             <div class="col-12 text-center pt-2">
-                                <button type="submit" class="save-patient-btn">
-                                    Update Appointment
-                                </button>
+                                {% if mode == 'edit' %}
+                                <button type="submit" class="save-patient-btn">Save Changes</button>
+                                {% endif %}
 
-                                <a href="{{ url_for('patient_detail', patient_id=appointment.patient_id) }}"
-                                   class="btn-outline-main ms-2">
-                                    Cancel
+                                {% if mode == 'view' %}
+                                <a href="{{ url_for('edit_appointment', appointment_id=appointment.id) }}"
+                                    class="btn-outline-main px-4">
+                                    Edit Appointment
+                                </a>
+                                {% endif %}
+
+                                <a href="{{ url_for('appointments') }}" class="btn-outline-main px-4">
+                                    Back
                                 </a>
                             </div>
 

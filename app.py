@@ -69,6 +69,18 @@ def setup_logging(log_directory: str) -> None:
 log_directory = load_config()
 setup_logging(log_directory)
 app.logger.info('Application started successfully')
+APPOINTMENT_REASONS = {
+    'Check-up',
+    'Cleaning',
+    'Filling',
+    'Root Canal',
+    'Extraction',
+    'Crown / Bridge',
+    'Braces / Orthodontics',
+    'Whitening',
+    'Emergency Pain',
+    'Follow-up'
+}
 
 
 @app.errorhandler(404)
@@ -99,8 +111,71 @@ def home():
         total_paid = sum(treatment.paid_amount for treatment in all_treatments)
         total_remaining = total_revenue - total_paid
 
-        latest_patients = Patient.query.order_by(Patient.id.desc()).limit(5).all()
-        latest_appointments = Appointment.query.order_by(Appointment.id.desc()).limit(5).all()
+        patient_search = request.args.get('patient_search', '')
+        patient_sort = request.args.get('patient_sort', 'id')
+        patient_order = request.args.get('patient_order', 'desc')
+
+        appointment_search = request.args.get('appointment_search', '')
+        appointment_sort = request.args.get('appointment_sort', 'date')
+        appointment_order = request.args.get('appointment_order', 'desc')
+
+        patients_query = Patient.query
+
+        if patient_search:
+            patients_query = patients_query.filter(
+                (Patient.first_name.ilike(f'%{patient_search}%')) |
+                (Patient.last_name.ilike(f'%{patient_search}%')) |
+                (Patient.phone.ilike(f'%{patient_search}%')) |
+                (Patient.email.ilike(f'%{patient_search}%')) |
+                (Patient.city.ilike(f'%{patient_search}%'))
+            )
+
+        patient_sort_columns = {
+            'id': Patient.id,
+            'first_name': Patient.first_name,
+            'last_name': Patient.last_name,
+            'phone': Patient.phone,
+            'email': Patient.email,
+            'city': Patient.city
+        }
+
+        patient_sort_column = patient_sort_columns.get(patient_sort, Patient.id)
+
+        if patient_order == 'asc':
+            patients_query = patients_query.order_by(patient_sort_column.asc())
+        else:
+            patients_query = patients_query.order_by(patient_sort_column.desc())
+
+        latest_patients = patients_query.limit(5).all()
+
+        appointments_query = Appointment.query.join(Patient)
+
+        if appointment_search:
+            appointments_query = appointments_query.filter(
+                (Patient.first_name.ilike(f'%{appointment_search}%')) |
+                (Patient.last_name.ilike(f'%{appointment_search}%')) |
+                (Appointment.reason.ilike(f'%{appointment_search}%'))
+            )
+
+        appointment_sort_columns = {
+            'id': Appointment.id,
+            'patient': Patient.first_name,
+            'date': Appointment.appointment_date,
+            'reason': Appointment.reason,
+            'status': Appointment.status
+        }
+
+        appointment_sort_column = appointment_sort_columns.get(
+            appointment_sort,
+            Appointment.appointment_date
+        )
+
+        if appointment_order == 'asc':
+            appointments_query = appointments_query.order_by(appointment_sort_column.asc())
+        else:
+            appointments_query = appointments_query.order_by(appointment_sort_column.desc())
+
+        latest_appointments = appointments_query.limit(5).all()
 
         return render_template(
             'index.html',
@@ -112,7 +187,13 @@ def home():
             total_paid=total_paid,
             total_remaining=total_remaining,
             latest_patients=latest_patients,
-            latest_appointments=latest_appointments
+            latest_appointments=latest_appointments,
+            patient_search=patient_search,
+            patient_sort=patient_sort,
+            patient_order=patient_order,
+            appointment_search=appointment_search,
+            appointment_sort=appointment_sort,
+            appointment_order=appointment_order
         )
 
     except Exception:
@@ -120,21 +201,147 @@ def home():
         return 'Error Loading MainPage', 500
 
 
+@app.route('/dashboard/patients-table')
+def dashboard_patients_table():
+    patient_search = request.args.get('patient_search', '')
+    patient_sort = request.args.get('patient_sort', 'id')
+    patient_order = request.args.get('patient_order', 'desc')
+
+    patients_query = Patient.query
+
+    if patient_search:
+        patients_query = patients_query.filter(
+            (Patient.first_name.ilike(f'%{patient_search}%')) |
+            (Patient.last_name.ilike(f'%{patient_search}%')) |
+            (Patient.phone.ilike(f'%{patient_search}%')) |
+            (Patient.email.ilike(f'%{patient_search}%')) |
+            (Patient.city.ilike(f'%{patient_search}%'))
+        )
+
+    patient_sort_columns = {
+        'id': Patient.id,
+        'first_name': Patient.first_name,
+        'last_name': Patient.last_name,
+        'phone': Patient.phone,
+        'email': Patient.email,
+        'city': Patient.city
+    }
+
+    patient_sort_column = patient_sort_columns.get(patient_sort, Patient.id)
+
+    if patient_order == 'asc':
+        patients_query = patients_query.order_by(patient_sort_column.asc())
+    else:
+        patients_query = patients_query.order_by(patient_sort_column.desc())
+
+    latest_patients = patients_query.limit(5).all()
+
+    return render_template(
+        'partials/_latest_patients_table.html',
+        latest_patients=latest_patients,
+        patient_search=patient_search,
+        patient_sort=patient_sort,
+        patient_order=patient_order
+    )
+    
+@app.route('/dashboard/appointments-table')
+def dashboard_appointments_table():
+    appointment_search = request.args.get('appointment_search', '')
+    appointment_sort = request.args.get('appointment_sort', 'date')
+    appointment_order = request.args.get('appointment_order', 'desc')
+
+    appointments_query = Appointment.query.join(Patient)
+
+    if appointment_search:
+        appointments_query = appointments_query.filter(
+            (Patient.first_name.ilike(f'%{appointment_search}%')) |
+            (Patient.last_name.ilike(f'%{appointment_search}%')) |
+            (Appointment.reason.ilike(f'%{appointment_search}%')) |
+            (Appointment.status.ilike(f'%{appointment_search}%'))
+        )
+
+    appointment_sort_columns = {
+        'id': Appointment.id,
+        'patient': Patient.first_name,
+        'date': Appointment.appointment_date,
+        'reason': Appointment.reason,
+        'status': Appointment.status
+    }
+
+    appointment_sort_column = appointment_sort_columns.get(
+        appointment_sort,
+        Appointment.appointment_date
+    )
+
+    if appointment_order == 'asc':
+        appointments_query = appointments_query.order_by(appointment_sort_column.asc())
+    else:
+        appointments_query = appointments_query.order_by(appointment_sort_column.desc())
+
+    latest_appointments = appointments_query.limit(5).all()
+
+    return render_template(
+        'partials/_latest_appointments_table.html',
+        latest_appointments=latest_appointments,
+        appointment_search=appointment_search,
+        appointment_sort=appointment_sort,
+        appointment_order=appointment_order
+    )
+
+
 @app.route('/patients')
 def patients():
     search_query = request.args.get('search', '')
+    sort_by = request.args.get('sort', 'id')
+    order = request.args.get('order', 'desc')
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
     app.logger.info('Patients page opened')
 
     try:
-        if search_query:
-            all_patients = Patient.query.filter(
-                (Patient.first_name.ilike(f'%{search_query}%')) |
-                (Patient.last_name.ilike(f'%{search_query}%'))
-            ).all()
-        else:
-            all_patients = Patient.query.all()
+        query = Patient.query
 
-        return render_template('patients.html', patients=all_patients, search_query=search_query)
+        if search_query:
+            query = query.filter(
+                (Patient.first_name.ilike(f'%{search_query}%')) |
+                (Patient.last_name.ilike(f'%{search_query}%')) |
+                (Patient.phone.ilike(f'%{search_query}%')) |
+                (Patient.email.ilike(f'%{search_query}%')) |
+                (Patient.city.ilike(f'%{search_query}%'))
+            )
+
+        sort_columns = {
+            'id': Patient.id,
+            'first_name': Patient.first_name,
+            'last_name': Patient.last_name,
+            'phone': Patient.phone,
+            'email': Patient.email,
+            'city': Patient.city,
+            'date_of_birth': Patient.date_of_birth
+        }
+
+        sort_column = sort_columns.get(sort_by, Patient.id)
+
+        if order == 'asc':
+            query = query.order_by(sort_column.asc())
+        else:
+            query = query.order_by(sort_column.desc())
+
+        pagination = query.paginate(
+            page=page,
+            per_page=per_page,
+            error_out=False
+        )
+
+        return render_template(
+            'patients.html',
+            patients=pagination.items,
+            pagination=pagination,
+            search_query=search_query,
+            sort_by=sort_by,
+            order=order
+        )
 
     except Exception:
         app.logger.exception('Error while loading patients page')
@@ -196,21 +403,149 @@ def patient_detail(patient_id):
     try:
         patient = Patient.query.get_or_404(patient_id)
 
-        total_cost_sum = sum(treatment.total_cost for treatment in patient.treatments)
-        total_paid_sum = sum(treatment.paid_amount for treatment in patient.treatments)
-        total_remaining_sum = sum(treatment.remaining_amount for treatment in patient.treatments)
+        appointment_sort = request.args.get('appointment_sort', 'date')
+        appointment_order = request.args.get('appointment_order', 'desc')
+
+        treatment_sort = request.args.get('treatment_sort', 'date')
+        treatment_order = request.args.get('treatment_order', 'desc')
+
+        active_tab = request.args.get('tab', 'appointments')
+
+        appointment_sort_columns = {
+            'id': Appointment.id,
+            'date': Appointment.appointment_date,
+            'reason': Appointment.reason,
+            'status': Appointment.status
+        }
+
+        appointment_sort_column = appointment_sort_columns.get(
+            appointment_sort,
+            Appointment.appointment_date
+        )
+
+        appointments_query = Appointment.query.filter_by(patient_id=patient.id)
+
+        if appointment_order == 'asc':
+            appointments_query = appointments_query.order_by(appointment_sort_column.asc())
+        else:
+            appointments_query = appointments_query.order_by(appointment_sort_column.desc())
+
+        patient_appointments = appointments_query.all()
+
+        treatment_sort_columns = {
+            'id': Treatment.id,
+            'date': Treatment.treatment_date,
+            'procedure_type': Treatment.procedure_type,
+            'tooth_number': Treatment.tooth_number,
+            'total_cost': Treatment.total_cost,
+            'paid_amount': Treatment.paid_amount
+        }
+
+        treatment_sort_column = treatment_sort_columns.get(
+            treatment_sort,
+            Treatment.treatment_date
+        )
+
+        treatments_query = Treatment.query.filter_by(patient_id=patient.id)
+
+        if treatment_order == 'asc':
+            treatments_query = treatments_query.order_by(treatment_sort_column.asc())
+        else:
+            treatments_query = treatments_query.order_by(treatment_sort_column.desc())
+
+        patient_treatments = treatments_query.all()
+
+        total_cost_sum = sum(treatment.total_cost for treatment in patient_treatments)
+        total_paid_sum = sum(treatment.paid_amount for treatment in patient_treatments)
+        total_remaining_sum = sum(treatment.remaining_amount for treatment in patient_treatments)
 
         return render_template(
             'patient_detail.html',
             patient=patient,
+            patient_appointments=patient_appointments,
+            patient_treatments=patient_treatments,
             total_cost_sum=total_cost_sum,
             total_paid_sum=total_paid_sum,
-            total_remaining_sum=total_remaining_sum
+            total_remaining_sum=total_remaining_sum,
+            appointment_sort=appointment_sort,
+            appointment_order=appointment_order,
+            treatment_sort=treatment_sort,
+            treatment_order=treatment_order,
+            active_tab=active_tab
         )
 
     except Exception:
         app.logger.exception(f'Error while loading patient detail | patient_id={patient_id}')
         return 'Error Loading PatientsInfo', 500
+    
+    
+@app.route('/patients/<int:patient_id>/appointments-table')
+def patient_appointments_table(patient_id):
+    patient = Patient.query.get_or_404(patient_id)
+
+    appointment_sort = request.args.get('appointment_sort', 'date')
+    appointment_order = request.args.get('appointment_order', 'desc')
+
+    sort_columns = {
+        'id': Appointment.id,
+        'date': Appointment.appointment_date,
+        'reason': Appointment.reason,
+        'status': Appointment.status
+    }
+
+    sort_column = sort_columns.get(appointment_sort, Appointment.appointment_date)
+
+    query = Appointment.query.filter_by(patient_id=patient.id)
+
+    if appointment_order == 'asc':
+        query = query.order_by(sort_column.asc())
+    else:
+        query = query.order_by(sort_column.desc())
+
+    patient_appointments = query.all()
+
+    return render_template(
+        'partials/_patient_appointments_table.html',
+        patient=patient,
+        patient_appointments=patient_appointments,
+        appointment_sort=appointment_sort,
+        appointment_order=appointment_order
+    )
+    
+@app.route('/patients/<int:patient_id>/treatments-table')
+def patient_treatments_table(patient_id):
+    patient = Patient.query.get_or_404(patient_id)
+
+    treatment_sort = request.args.get('treatment_sort', 'date')
+    treatment_order = request.args.get('treatment_order', 'desc')
+
+    sort_columns = {
+        'id': Treatment.id,
+        'date': Treatment.treatment_date,
+        'procedure_type': Treatment.procedure_type,
+        'tooth_number': Treatment.tooth_number,
+        'total_cost': Treatment.total_cost,
+        'paid_amount': Treatment.paid_amount
+    }
+
+    sort_column = sort_columns.get(treatment_sort, Treatment.treatment_date)
+
+    query = Treatment.query.filter_by(patient_id=patient.id)
+
+    if treatment_order == 'asc':
+        query = query.order_by(sort_column.asc())
+    else:
+        query = query.order_by(sort_column.desc())
+
+    patient_treatments = query.all()
+
+    return render_template(
+        'partials/_patient_treatments_table.html',
+        patient=patient,
+        patient_treatments=patient_treatments,
+        treatment_sort=treatment_sort,
+        treatment_order=treatment_order
+    )
 
 
 @app.route('/patients/<int:patient_id>/appointments/add', methods=['GET', 'POST'])
@@ -222,8 +557,12 @@ def add_appointment(patient_id):
 
         if request.method == 'POST':
             appointment_date = request.form['appointment_date'].replace('T', ' ')
-            reason = request.form['reason']
-            status = request.form['status']
+            reason = request.form.get('reason', '').strip()
+
+            if reason not in APPOINTMENT_REASONS:
+                return 'Invalid appointment reason', 400
+
+            status = 'Scheduled'
 
             new_appointment = Appointment(
                 patient_id=patient.id,
@@ -294,19 +633,52 @@ def add_treatment(patient_id):
 @app.route('/appointments')
 def appointments():
     search_query = request.args.get('search', '')
+    status_filter = request.args.get('status', '')
+    sort_by = request.args.get('sort', 'date')
+    order = request.args.get('order', 'desc')
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+
+    query = Appointment.query.join(Patient)
 
     if search_query:
-        appointments = Appointment.query.join(Patient).filter(
+        query = query.filter(
             (Patient.first_name.ilike(f'%{search_query}%')) |
             (Patient.last_name.ilike(f'%{search_query}%'))
-        ).all()
+        )
+
+    if status_filter:
+        query = query.filter(Appointment.status == status_filter)
+
+    sort_columns = {
+        'id': Appointment.id,
+        'patient': Patient.first_name,
+        'date': Appointment.appointment_date,
+        'status': Appointment.status,
+        'reason': Appointment.reason
+    }
+
+    sort_column = sort_columns.get(sort_by, Appointment.appointment_date)
+
+    if order == 'asc':
+        query = query.order_by(sort_column.asc())
     else:
-        appointments = Appointment.query.all()
+        query = query.order_by(sort_column.desc())
+
+    pagination = query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
 
     return render_template(
         'appointments.html',
-        appointments=appointments,
-        search_query=search_query
+        appointments=pagination.items,
+        pagination=pagination,
+        search_query=search_query,
+        status_filter=status_filter,
+        sort_by=sort_by,
+        order=order
     )
 
 
@@ -356,12 +728,30 @@ def edit_patient(patient_id):
             app.logger.info(f'Patient updated successfully | patient_id={patient.id}')
             return redirect(url_for('patient_detail', patient_id=patient.id))
 
-        return render_template('edit_patient.html', patient=patient)
+        return render_template('edit_patient.html',patient=patient,mode='edit')
 
     except Exception:
         db.session.rollback()
         app.logger.exception(f'Failed to edit patient | patient_id={patient_id}')
         return 'Failed to edit patient', 500
+    
+    
+@app.route('/patients/<int:patient_id>/view')
+def view_patient(patient_id):
+    app.logger.info(f'View patient page opened | patient_id={patient_id}')
+
+    try:
+        patient = Patient.query.get_or_404(patient_id)
+
+        return render_template(
+            'edit_patient.html',
+            patient=patient,
+            mode='view'
+        )
+
+    except Exception:
+        app.logger.exception(f'Failed to view patient | patient_id={patient_id}')
+        return 'Failed to view patient', 500
     
     
 @app.route('/appointments/<int:appointment_id>/delete', methods=['GET', 'POST'])
@@ -387,40 +777,7 @@ def delete_appointment(appointment_id):
         return 'Failed to delete appointment', 500
 
 
-@app.route('/appointments/<int:appointment_id>/done')
-def mark_appointment_done(appointment_id):
-    app.logger.info(f'Mark appointment as done request | appointment_id={appointment_id}')
 
-    try:
-        appointment = Appointment.query.get_or_404(appointment_id)
-        appointment.status = 'Done'
-        db.session.commit()
-
-        app.logger.info(f'Appointment marked as done | appointment_id={appointment.id}')
-        return redirect(url_for('appointments'))
-
-    except Exception:
-        db.session.rollback()
-        app.logger.exception(f'Failed to mark appointment as done | appointment_id={appointment_id}')
-        return 'Failed to mark appointment as done', 500
-
-
-@app.route('/appointments/<int:appointment_id>/cancel')
-def mark_appointment_cancelled(appointment_id):
-    app.logger.info(f'Mark appointment as cancelled request | appointment_id={appointment_id}')
-
-    try:
-        appointment = Appointment.query.get_or_404(appointment_id)
-        appointment.status = 'Cancelled'
-        db.session.commit()
-
-        app.logger.info(f'Appointment marked as cancelled | appointment_id={appointment.id}')
-        return redirect(url_for('appointments'))
-
-    except Exception:
-        db.session.rollback()
-        app.logger.exception(f'Failed to mark appointment as cancelled | appointment_id={appointment_id}')
-        return 'Failed to mark appointment as cancelled', 500
 
 
 @app.route('/appointments/<int:appointment_id>/edit', methods=['GET', 'POST'])
@@ -432,7 +789,12 @@ def edit_appointment(appointment_id):
 
         if request.method == 'POST':
             appointment.appointment_date = request.form['appointment_date'].replace('T', ' ')
-            appointment.reason = request.form['reason']
+            reason = request.form.get('reason', '').strip()
+
+            if reason not in APPOINTMENT_REASONS:
+                return 'Invalid appointment reason', 400
+
+            appointment.reason = reason
             appointment.status = request.form['status']
 
             db.session.commit()
@@ -440,12 +802,29 @@ def edit_appointment(appointment_id):
             app.logger.info(f'Appointment updated successfully | appointment_id={appointment.id}')
             return redirect(url_for('patient_detail', patient_id=appointment.patient_id))
 
-        return render_template('edit_appointment.html', appointment=appointment)
+        return render_template('edit_appointment.html',appointment=appointment,mode='edit')
 
     except Exception:
         db.session.rollback()
         app.logger.exception(f'Failed to edit appointment | appointment_id={appointment_id}')
         return 'Failed to edit appointment', 500
+    
+@app.route('/appointments/<int:appointment_id>/view')
+def view_appointment(appointment_id):
+    app.logger.info(f'View appointment page opened | appointment_id={appointment_id}')
+
+    try:
+        appointment = Appointment.query.get_or_404(appointment_id)
+
+        return render_template(
+            'edit_appointment.html',
+            appointment=appointment,
+            mode='view'
+        )
+
+    except Exception:
+        app.logger.exception(f'Failed to view appointment | appointment_id={appointment_id}')
+        return 'Failed to view appointment', 500
 
 
 @app.route('/treatments/<int:treatment_id>/edit', methods=['GET', 'POST'])
@@ -468,12 +847,31 @@ def edit_treatment(treatment_id):
             app.logger.info(f'Treatment updated successfully | treatment_id={treatment.id}')
             return redirect(url_for('patient_detail', patient_id=treatment.patient_id))
 
-        return render_template('edit_treatment.html', treatment=treatment)
+        return render_template('edit_treatment.html',treatment=treatment,mode='edit')
 
     except Exception:
         db.session.rollback()
         app.logger.exception(f'Failed to edit treatment | treatment_id={treatment_id}')
         return 'Failed to edit treatment', 500
+
+
+@app.route('/treatments/<int:treatment_id>/view')
+def view_treatment(treatment_id):
+    app.logger.info(f'View treatment page opened | treatment_id={treatment_id}')
+
+    try:
+        treatment = Treatment.query.get_or_404(treatment_id)
+
+        return render_template(
+            'edit_treatment.html',
+            treatment=treatment,
+            mode='view'
+        )
+
+    except Exception:
+        app.logger.exception(f'Failed to view treatment | treatment_id={treatment_id}')
+        return 'Failed to view treatment', 500
+
 
 
 @app.route('/patients/<int:patient_id>/delete', methods=['GET', 'POST'])

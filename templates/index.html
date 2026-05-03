@@ -40,11 +40,13 @@
                     data-purecounter-duration="2" class="purecounter"></span></h3>
                 <p>Total Patients</p>
               </div>
+
               <div class="stat-item">
                 <h3><span data-purecounter-start="0" data-purecounter-end="{{ done_appointments }}"
                     data-purecounter-duration="2" class="purecounter"></span></h3>
                 <p>Done Appointments</p>
               </div>
+
               <div class="stat-item">
                 <h3><span data-purecounter-start="0" data-purecounter-end="{{ total_treatments }}"
                     data-purecounter-duration="2" class="purecounter"></span></h3>
@@ -52,20 +54,19 @@
               </div>
             </div>
 
-
             <div class="hero-stats mb-4" data-aos="fade-right" data-aos-delay="500">
               <div class="stat-item">
                 <h3><span data-purecounter-start="0" data-purecounter-end="{{ total_revenue }}"
                     data-purecounter-duration="2" class="purecounter"></span></h3>
                 <p>Total Revenue</p>
               </div>
+
               <div class="stat-item">
                 <h3><span data-purecounter-start="0" data-purecounter-end="{{ total_paid }}"
                     data-purecounter-duration="2" class="purecounter"></span></h3>
-                <p>Total
-                  Paid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                </p>
+                <p>Total Paid</p>
               </div>
+
               <div class="stat-item">
                 <h3><span data-purecounter-start="0" data-purecounter-end="{{ total_remaining }}"
                     data-purecounter-duration="2" class="purecounter"></span></h3>
@@ -94,7 +95,10 @@
         <div class="col-lg-6">
           <div class="hero-visual" data-aos="fade-left" data-aos-delay="400">
             <div class="main-image">
-              <img src="static/assets/img/health/staff-10.webp" alt="Modern Healthcare Facility" class="img-fluid">
+              <img src="{{ url_for('static', filename='assets/img/health/staff-10.webp') }}"
+                   alt="Modern Healthcare Facility"
+                   class="img-fluid">
+
               <div class="floating-card appointment-card" style="opacity: 0.5;">
                 <div class="card-content">
                   <h6>Total Appointments</h6>
@@ -102,6 +106,7 @@
                 </div>
               </div>
             </div>
+
             <div class="background-elements">
               <div class="element element-1"></div>
               <div class="element element-2"></div>
@@ -113,115 +118,51 @@
 
     </div>
 
-  </section><!-- /Hero Section -->
+  </section>
+  <!-- /Hero Section -->
 
-  <!-- Section Title -->
+
+  <!-- Latest Patients Title -->
   <div class="container section-title" style="margin-top: 80px;" data-aos="fade-up">
     <h2>Latest Patients</h2>
-    <p>Here's a list of your latest patients
-    </p>
-  </div><!-- End Section Title -->
+    <p>Search and sort the latest patient records.</p>
+  </div>
+  <!-- /Latest Patients Title -->
 
 
-  <!-- latest patients Section -->
-  <section id="find-a-doctor" class="find-a-doctor section">
+<!-- Latest Patients Table Section -->
+<section id="latest-patients-table-section" class="find-a-doctor section">
+  <div class="container" data-aos="fade-up" data-aos-delay="100">
 
-    <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-      <div class="doctors-grid" data-aos="fade-up" data-aos-delay="300">
-        {% for patient in latest_patients %}
-        <div class="doctor-profile" data-aos="zoom-in" data-aos-delay="100">
-          <div class="profile-header">
-            <div class="doctor-avatar">
-              <img src="static\assets\my imgs\person.png" alt="Dr. Amanda Foster" class="img-fluid">
-              <div class="status-indicator available"></div>
-            </div>
-            <div class="doctor-details">
-              <h4>{{ patient.first_name }} {{ patient.last_name }}</h4>
-              <span class="specialty-tag">{{ patient.phone }}</span>
-            </div>
-          </div>
-          <div class="action-buttons">
-            <a href="/patients/{{ patient.id }}" class="btn-primary">View</a>
-          </div>
-        </div>
-        {% else %}
-        <div class="home-empty-state">
-          <div class="home-empty-icon">
-            <i class="bi bi-person-x"></i>
-          </div>
-          <h4>No patients found.</h4>
-          <p>You have not added any patients yet.</p>
-        </div>
-        {% endfor %}
-
-      </div>
-
-      <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="700">
-        <a href="/patients" class="btn-view-all">
-          View All Patients
-          <i class="bi bi-arrow-right"></i>
-        </a>
-      </div>
-
+    <div id="latest-patients-container">
+      {% include "partials/_latest_patients_table.html" %}
     </div>
 
-  </section><!-- /latest patients -->
+  </div>
+</section>
+<!-- /Latest Patients Table Section -->
 
-  <!-- Section Title -->
+
+  <!-- Latest Appointments Title -->
   <div class="container section-title" style="margin-top: 80px;" data-aos="fade-up">
     <h2>Latest Appointments</h2>
-    <p>Here's a list of your latest appointments
-    </p>
-  </div><!-- End Section Title -->
-
-  <!-- latest appointments Section -->
-
-  <section id="find-a-doctor" class="find-a-doctor section">
-
-    <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-      <div class="doctors-grid" data-aos="fade-up" data-aos-delay="300">
-        {% for appointment in latest_appointments %}
-        <div class="doctor-profile" data-aos="zoom-in" data-aos-delay="100">
-          <div class="profile-header">
-            <div class="doctor-avatar">
-              <img src="static\assets\my imgs\date.webp" alt="Dr. Amanda Foster" class="img-fluid">
-              <div class="status-indicator available"></div>
-            </div>
-            <div class="doctor-details">
-              <h4>{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</h4>
-              <h4>{{ appointment.appointment_date }}</h4>
-              <span class="specialty-tag">{{ appointment.patient.phone }}</span>
-              <span class="specialty-tag">{{ appointment.status }}</span>
-            </div>
-          </div>
-          <div class="action-buttons">
-            <a href="/appointments/{{ appointment.id }}" class="btn-primary">View</a>
-          </div>
-        </div>
-{% else %}
-  <div class="home-empty-state">
-    <div class="home-empty-icon">
-      <i class="bi bi-calendar-x"></i>
-    </div>
-    <h4>No appointments found.</h4>
-    <p>You have not scheduled any appointments yet.</p>
+    <p>Search and sort the latest appointment records.</p>
   </div>
-{% endfor %}
-      </div>
+  <!-- /Latest Appointments Title -->
 
-      <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="700">
-        <a href="/appointments" class="btn-view-all">
-          View All Appointments
-          <i class="bi bi-arrow-right"></i>
-        </a>
-      </div>
 
+<!-- Latest Appointments Table Section -->
+<section id="latest-appointments-table-section" class="find-a-doctor section">
+  <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+    <div id="latest-appointments-container">
+      {% include "partials/_latest_appointments_table.html" %}
     </div>
 
-  </section><!-- /latest appointments section end -->
-
-
   </div>
-  {% endblock %}
+</section>
+<!-- /Latest Appointments Table Section -->
+
+</main>
+
+{% endblock %}

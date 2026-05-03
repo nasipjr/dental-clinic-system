@@ -28,20 +28,28 @@
                                 class="form-control" required>
                         </div><br>
 
-                        <div class="col-12">
+                        <div class="col-md-12">
                             <label for="reason" class="form-label">Reason</label>
-                            <textarea id="reason" name="reason" class="form-control" rows="5"
-                                placeholder="Add the reason for the appointment"></textarea>
+                            <select id="reason" name="reason" class="form-select" required>
+                                <option value="">Select a Reason</option>
+                                <option value="Check-up">Check-up</option>
+                                <option value="Cleaning">Cleaning</option>
+                                <option value="Filling">Filling</option>
+                                <option value="Root Canal">Root Canal</option>
+                                <option value="Extraction">Extraction</option>
+                                <option value="Crown / Bridge">Crown / Bridge</option>
+                                <option value="Braces / Orthodontics">Braces / Orthodontics</option>
+                                <option value="Whitening">Whitening</option>
+                                <option value="Emergency Pain">Emergency Pain</option>
+                                <option value="Follow-up">Follow-up</option>
+                            </select>
                         </div><br>
 
                         <div class="col-md-12">
-                            <label for="status" class="form-label">Status</label>
-                            <select name="status" class="form-select" required="">
-                                <option value="">Select a Status</option>
-                                <option value="Scheduled">Scheduled</option>
-                                <option value="Done">Done</option>
-                                <option value="Cancelled">Cancelled</option>
-                            </select>
+                            <label class="form-label">Status</label>
+                            <div class="form-control readonly-status-field">
+                                Scheduled
+                            </div>
                         </div><br>
 
 

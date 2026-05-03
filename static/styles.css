@@ -592,3 +592,198 @@
 }
 
 
+/* Appointments Table */
+.appointments-table-wrapper {
+  background: var(--surface-color);
+  border: 1px solid color-mix(in srgb, var(--default-color), transparent 88%);
+  border-radius: 22px;
+  padding: 18px;
+  box-shadow: 0 18px 45px color-mix(in srgb, var(--default-color), transparent 92%);
+}
+
+.appointments-table {
+  margin-bottom: 0;
+  color: var(--default-color);
+}
+
+.appointments-table thead th {
+  border-bottom: 1px solid color-mix(in srgb, var(--default-color), transparent 82%);
+  color: var(--heading-color);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 16px 14px;
+}
+
+.appointments-table tbody td {
+  padding: 18px 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--default-color), transparent 92%);
+  vertical-align: middle;
+}
+
+.appointments-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.appointments-table tbody tr:hover {
+  background: color-mix(in srgb, var(--accent-color), transparent 94%);
+}
+
+.appointments-table small {
+  color: color-mix(in srgb, var(--default-color), transparent 35%);
+}
+
+.appointments-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-action-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  border: 1px solid transparent;
+}
+
+.view-btn {
+  color: #7fd3ff;
+  background: rgba(13, 110, 253, 0.12);
+  border-color: rgba(13, 110, 253, 0.25);
+}
+
+.edit-btn {
+  color: #ffd666;
+  background: rgba(255, 193, 7, 0.12);
+  border-color: rgba(255, 193, 7, 0.25);
+}
+
+.delete-table-btn {
+  color: #ff7b88;
+  background: rgba(220, 53, 69, 0.12);
+  border-color: rgba(220, 53, 69, 0.25);
+}
+
+.table-action-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Edit Appointment Page */
+.readonly-form .form-control,
+.readonly-form .form-select {
+  background: color-mix(in srgb, var(--surface-color), white 6%);
+  opacity: 0.85;
+  cursor: not-allowed;
+}
+
+.readonly-form textarea {
+  resize: none;
+}
+
+.appointments-table thead th a i {
+  margin-left: 6px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.appointments-table thead th a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Edit Patient Page */
+.readonly-form .form-control,
+.readonly-form .form-select,
+.readonly-form textarea {
+  background: color-mix(in srgb, var(--surface-color), white 6%);
+  opacity: 0.85;
+  cursor: not-allowed;
+}
+
+.readonly-form textarea {
+  resize: none;
+}
+
+/* Home Page */
+.appointments-filter-bar {
+  background: var(--surface-color);
+  border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.appointments-table-wrapper {
+  background: var(--surface-color);
+  border: 1px solid color-mix(in srgb, var(--default-color), transparent 88%);
+  border-radius: 22px;
+  padding: 18px;
+  box-shadow: 0 18px 45px color-mix(in srgb, var(--default-color), transparent 92%);
+}
+
+.appointments-table {
+  margin-bottom: 0;
+  color: var(--default-color);
+}
+
+.appointments-table thead th {
+  border-bottom: 1px solid color-mix(in srgb, var(--default-color), transparent 82%);
+  color: var(--heading-color);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 16px 14px;
+}
+
+.appointments-table thead th a {
+  color: var(--heading-color);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.appointments-table thead th a:hover {
+  color: var(--accent-color);
+}
+
+.appointments-table thead th a i {
+  margin-left: 6px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.appointments-table tbody td {
+  padding: 18px 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--default-color), transparent 92%);
+  vertical-align: middle;
+}
+
+.appointments-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.appointments-table tbody tr:hover {
+  background: color-mix(in srgb, var(--accent-color), transparent 94%);
+}
+
+.appointments-table small {
+  color: color-mix(in srgb, var(--default-color), transparent 35%);
+}
+
+/* patients action add appointment */
+.appointment-table-btn {
+  color: #7ff0ae;
+  background: rgba(25, 135, 84, 0.12);
+  border-color: rgba(25, 135, 84, 0.25);
+}
+
+.appointment-table-btn:hover {
+  background: rgba(25, 135, 84, 0.2);
+  color: #9ff7c4;
+}

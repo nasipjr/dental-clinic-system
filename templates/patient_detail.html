@@ -42,12 +42,21 @@
             </div>
 
             <div class="action-buttons mt-4 patient-main-actions">
-                <a href="{{ url_for('edit_patient', patient_id=patient.id) }}" class="btn-primary">Edit Patient</a>
-                <a href="{{ url_for('add_appointment', patient_id=patient.id) }}" class="btn-outline-main">Add
-                    Appointment</a>
-                <a href="{{ url_for('add_treatment', patient_id=patient.id) }}" class="btn-outline-main">Add Treatment</a>
-                <a href="{{ url_for('delete_patient', patient_id=patient.id) }}" class="btn-delete-soft">Delete
-                    Patient</a>
+                <a href="{{ url_for('edit_patient', patient_id=patient.id) }}" class="btn-primary">
+                    Edit Patient
+                </a>
+
+                <a href="{{ url_for('add_appointment', patient_id=patient.id) }}" class="btn-outline-main">
+                    Add Appointment
+                </a>
+
+                <a href="{{ url_for('add_treatment', patient_id=patient.id) }}" class="btn-outline-main">
+                    Add Treatment
+                </a>
+
+                <a href="{{ url_for('delete_patient', patient_id=patient.id) }}" class="btn-delete-soft">
+                    Delete Patient
+                </a>
             </div>
         </div>
 
@@ -62,8 +71,9 @@
         <ul class="nav justify-content-center patient-detail-tabs" id="patientTabs" role="tablist">
 
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="appointments-tab-btn" data-bs-toggle="tab"
-                    data-bs-target="#appointments-tab" type="button" role="tab">
+                <button class="nav-link {% if active_tab == 'appointments' %}active{% endif %}"
+                    id="appointments-tab-btn" data-bs-toggle="tab" data-bs-target="#appointments-tab" type="button"
+                    role="tab">
                     <div class="section-title small-section-title mb-0">
                         <h2>Appointments</h2>
                         <p>All appointments related to this patient</p>
@@ -72,8 +82,8 @@
             </li>
 
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="treatments-tab-btn" data-bs-toggle="tab"
-                    data-bs-target="#treatments-tab" type="button" role="tab">
+                <button class="nav-link {% if active_tab == 'treatments' %}active{% endif %}" id="treatments-tab-btn"
+                    data-bs-toggle="tab" data-bs-target="#treatments-tab" type="button" role="tab">
                     <div class="section-title small-section-title mb-0">
                         <h2>Treatments</h2>
                         <p>All recorded treatments and details</p>
@@ -82,8 +92,8 @@
             </li>
 
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="financial-tab-btn" data-bs-toggle="tab"
-                    data-bs-target="#financial-tab" type="button" role="tab">
+                <button class="nav-link {% if active_tab == 'financial' %}active{% endif %}" id="financial-tab-btn"
+                    data-bs-toggle="tab" data-bs-target="#financial-tab" type="button" role="tab">
                     <div class="section-title small-section-title mb-0">
                         <h2>Financial Summary</h2>
                         <p>Quick overview of this patient's financial balance</p>
@@ -97,129 +107,50 @@
         <div class="tab-content pt-2" id="patientTabsContent">
 
             <!-- Appointments Tab -->
-            <div class="tab-pane fade show active" id="appointments-tab" role="tabpanel">
+            <div class="tab-pane fade {% if active_tab == 'appointments' %}show active{% endif %}" id="appointments-tab"
+                role="tabpanel">
 
-                {% if patient.appointments %}
-                <div class="doctors-grid" data-aos="fade-up" data-aos-delay="250">
-                    {% for appointment in patient.appointments %}
-                    <div class="doctor-profile appointment-card" data-aos="zoom-in" data-aos-delay="100">
-                        <div class="profile-header">
-                            <div class="doctor-avatar">
-                                <img src="{{ url_for('static', filename='assets/my imgs/date.webp') }}" alt="Appointment" class="img-fluid">
-                                <div class="status-indicator
-                                    {% if appointment.status == 'Done' %}available
-                                    {% elif appointment.status == 'Cancelled' %}busy
-                                    {% else %}pending{% endif %}">
-                                </div>
-                            </div>
-
-                            <div class="doctor-details">
-                                <h4>{{ appointment.appointment_date }}</h4>
-                                <span class="specialty-tag">{{ appointment.reason or 'No reason provided' }}</span>
-                            </div>
-                        </div>
-
-                        <div class="appointment-meta mt-3">
-                            <p>
-                                <strong>Status:</strong>
-                                <span class="appointment-status
-                                    {% if appointment.status == 'Done' %}status-done
-                                    {% elif appointment.status == 'Cancelled' %}status-cancelled
-                                    {% else %}status-scheduled{% endif %}">
-                                    {{ appointment.status }}
-                                </span>
-                            </p>
-                        </div>
-
-                        <div class="action-buttons mt-3 d-flex flex-wrap gap-2">
-                            <a href="{{ url_for('edit_appointment', appointment_id=appointment.id) }}" class="btn-primary action-btn">Edit</a>
-                            <a href="{{ url_for('mark_appointment_done', appointment_id=appointment.id) }}" class="btn-status done-btn action-btn">Done</a>
-                            <a href="{{ url_for('mark_appointment_cancelled', appointment_id=appointment.id) }}" class="btn-status cancel-btn action-btn">Cancel</a>
-                            <a href="{{ url_for('delete_appointment', appointment_id=appointment.id) }}" class="btn-status delete-btn action-btn">Delete</a>
-                        </div>
-                    </div>
-                    {% endfor %}
+                <div id="patient-appointments-container">
+                    {% include "partials/_patient_appointments_table.html" %}
                 </div>
-                {% else %}
-                <div class="empty-box text-center" data-aos="fade-up" data-aos-delay="250">
-                    <div class="empty-icon">
-                        <i class="bi bi-calendar-x"></i>
-                    </div>
-                    <h4>No appointments yet</h4>
-                    <p>This patient has no appointments at the moment.</p>
-                    <a href="{{ url_for('add_appointment', patient_id=patient.id) }}" class="empty-btn">Add First Appointment</a>
-                </div>
-                {% endif %}
 
             </div>
 
             <!-- Treatments Tab -->
-            <div class="tab-pane fade" id="treatments-tab" role="tabpanel">
+            <div class="tab-pane fade {% if active_tab == 'treatments' %}show active{% endif %}" id="treatments-tab"
+                role="tabpanel">
 
-                {% if patient.treatments %}
-                <div class="doctors-grid" data-aos="fade-up" data-aos-delay="250">
-                    {% for treatment in patient.treatments %}
-                    <div class="doctor-profile treatment-card" data-aos="zoom-in" data-aos-delay="100">
-                        <div class="profile-header">
-                            <div class="doctor-avatar">
-                                <div class="treatment-icon-box">
-                                    <i class="bi bi-clipboard2-pulse"></i>
-                                </div>
-                                <div class="status-indicator available"></div>
-                            </div>
-
-                            <div class="doctor-details">
-                                <h4>{{ treatment.procedure_type or 'General Treatment' }}</h4>
-                                <span class="specialty-tag">{{ treatment.treatment_date }}</span>
-                            </div>
-                        </div>
-
-                        <div class="treatment-meta mt-3">
-                            <p><strong>Tooth:</strong> {{ treatment.tooth_number or 'N/A' }}</p>
-                            <p><strong>Notes:</strong> {{ treatment.notes or 'No notes available' }}</p>
-                            <p><strong>Total Cost:</strong> {{ treatment.total_cost }}</p>
-                            <p><strong>Paid:</strong> {{ treatment.paid_amount }}</p>
-                            <p><strong>Remaining:</strong> {{ treatment.remaining_amount }}</p>
-                        </div>
-
-                        <div class="action-buttons mt-3 d-flex flex-wrap gap-2">
-                            <a href="{{ url_for('edit_treatment', treatment_id=treatment.id) }}" class="btn-primary action-btn">Edit</a>
-                            <a href="{{ url_for('delete_treatment', treatment_id=treatment.id) }}" class="btn-status delete-btn action-btn">Delete</a>
-                        </div>
-                    </div>
-                    {% endfor %}
+                <div id="patient-treatments-container">
+                    {% include "partials/_patient_treatments_table.html" %}
                 </div>
-                {% else %}
-                <div class="empty-box text-center" data-aos="fade-up" data-aos-delay="250">
-                    <div class="empty-icon">
-                        <i class="bi bi-clipboard-x"></i>
-                    </div>
-                    <h4>No treatments yet</h4>
-                    <p>This patient has no recorded treatments yet.</p>
-                    <a href="{{ url_for('add_treatment', patient_id=patient.id) }}" class="empty-btn">Add First Treatment</a>
-                </div>
-                {% endif %}
 
             </div>
 
             <!-- Financial Tab -->
-            <div class="tab-pane fade" id="financial-tab" role="tabpanel">
+            <div class="tab-pane fade {% if active_tab == 'financial' %}show active{% endif %}" id="financial-tab"
+                role="tabpanel">
 
                 <div class="financial-summary-grid" data-aos="fade-up" data-aos-delay="250">
                     <div class="financial-card">
-                        <div class="financial-icon"><i class="bi bi-cash-stack"></i></div>
+                        <div class="financial-icon">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
                         <h4>Total Cost</h4>
                         <p>{{ total_cost_sum }}</p>
                     </div>
 
                     <div class="financial-card">
-                        <div class="financial-icon"><i class="bi bi-wallet2"></i></div>
+                        <div class="financial-icon">
+                            <i class="bi bi-wallet2"></i>
+                        </div>
                         <h4>Total Paid</h4>
                         <p>{{ total_paid_sum }}</p>
                     </div>
 
                     <div class="financial-card">
-                        <div class="financial-icon"><i class="bi bi-exclamation-circle"></i></div>
+                        <div class="financial-icon">
+                            <i class="bi bi-exclamation-circle"></i>
+                        </div>
                         <h4>Total Remaining</h4>
                         <p>{{ total_remaining_sum }}</p>
                     </div>
@@ -230,10 +161,5 @@
         </div>
     </div>
 </section>
-
-
-
-
-
 
 {% endblock %}
