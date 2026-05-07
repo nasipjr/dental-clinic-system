@@ -5,7 +5,6 @@
 {% block content %}
 <br><br><br><br><br><br><br>
 
-
 <section id="delete-patient-page" class="section">
     <div class="container" data-aos="fade-up">
         <div class="row justify-content-center">
@@ -24,7 +23,18 @@
 
                     <div class="delete-patient-box">
                         <p>Are you sure you want to permanently delete this treatment?</p>
-                        <h4>{{ treatment.treatment_date.replace('T', ' ') }}</h4>
+
+                        <h4>{{ treatment.procedure_type or 'General Treatment' }}</h4>
+
+                        <p class="mt-2">
+                            Appointment:
+                            {{ treatment.appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if treatment.appointment.appointment_date else 'No date' }}
+                        </p>
+
+                        <p>
+                            Patient:
+                            {{ treatment.appointment.patient.first_name }} {{ treatment.appointment.patient.last_name }}
+                        </p>
                     </div>
 
                     <form method="POST" class="mt-4">
@@ -33,7 +43,8 @@
                                 Yes, Delete Treatment
                             </button>
 
-                            <a href="{{ url_for('patient_detail', patient_id=treatment.patient_id) }}" class="btn-outline-main px-4">
+                            <a href="{{ url_for('appointment_session', appointment_id=treatment.appointment_id) }}"
+                               class="btn-outline-main px-4">
                                 Cancel
                             </a>
                         </div>

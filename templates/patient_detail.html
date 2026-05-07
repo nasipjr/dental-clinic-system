@@ -50,13 +50,13 @@
                     Add Appointment
                 </a>
 
-                <a href="{{ url_for('add_treatment', patient_id=patient.id) }}" class="btn-outline-main">
-                    Add Treatment
-                </a>
-
-                <a href="{{ url_for('delete_patient', patient_id=patient.id) }}" class="btn-delete-soft">
-                    Delete Patient
-                </a>
+                {% if not patient_appointments %}
+                <div class="patient-delete-action">
+                    <a href="{{ url_for('delete_patient', patient_id=patient.id) }}" class="btn-delete-soft">
+                        Delete Patient
+                    </a>
+                </div>
+                {% endif %}
             </div>
         </div>
 
@@ -86,7 +86,7 @@
                     data-bs-toggle="tab" data-bs-target="#treatments-tab" type="button" role="tab">
                     <div class="section-title small-section-title mb-0">
                         <h2>Treatments</h2>
-                        <p>All recorded treatments and details</p>
+                        <p>All recorded treatments across this patient's appointments</p>
                     </div>
                 </button>
             </li>

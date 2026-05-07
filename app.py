@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
 from models import db, Patient, Appointment, Treatment
-from datetime import datetime
+from datetime import datetime, timedelta, time
 
 import json
 import logging
@@ -81,12 +81,147 @@ APPOINTMENT_REASONS = {
     'Emergency Pain',
     'Follow-up'
 }
+PATIENT_GENDERS = {
+    'Male',
+    'Female'
+}
+TREATMENT_PROCEDURE_TYPES = {
+    'Check-up',
+    'Cleaning',
+    'Filling',
+    'Root Canal',
+    'Extraction',
+    'Crown / Bridge',
+    'Braces / Orthodontics',
+    'Whitening',
+    'Emergency Pain',
+    'Follow-up'
+}
 
 
 @app.errorhandler(404)
 def not_found_error(error):
     app.logger.warning(f'404 Not Found | path={request.path}')
     return 'page not found', 404
+def parse_treatment_money(total_cost_raw, paid_amount_raw):
+    total_cost_raw = str(total_cost_raw or '').strip()
+    paid_amount_raw = str(paid_amount_raw or '').strip()
+
+    try:
+        total_cost = float(total_cost_raw) if total_cost_raw else 0
+        paid_amount = float(paid_amount_raw) if paid_amount_raw else 0
+    except ValueError:
+        return None, None, 'Total cost and paid amount must be valid numbers.'
+
+    if total_cost < 0:
+        return None, None, 'Total cost cannot be negative.'
+
+    if paid_amount < 0:
+        return None, None, 'Paid amount cannot be negative.'
+
+    if paid_amount > total_cost:
+        return None, None, 'Paid amount cannot be greater than total cost.'
+
+    return total_cost, paid_amount, None
+
+def parse_patient_data(form):
+    first_name = form.get('first_name', '').strip()
+    last_name = form.get('last_name', '').strip()
+    gender = form.get('gender', '').strip()
+    date_of_birth_raw = form.get('date_of_birth', '').strip()
+
+    if not first_name:
+        return None, 'First name is required.'
+
+    if not last_name:
+        return None, 'Last name is required.'
+
+    if not gender:
+        return None, 'Gender is required.'
+
+    if gender not in PATIENT_GENDERS:
+        return None, 'Invalid gender value.'
+
+    if not date_of_birth_raw:
+        return None, 'Date of birth is required.'
+
+    try:
+        date_of_birth = datetime.strptime(date_of_birth_raw, '%Y-%m-%d').date()
+    except ValueError:
+        return None, 'Date of birth must be a valid date.'
+
+    patient_data = {
+        'title': form.get('title'),
+        'first_name': first_name,
+        'last_name': last_name,
+        'preferred_first_name': form.get('preferred_first_name'),
+        'date_of_birth': date_of_birth,
+        'gender': gender,
+        'phone': form.get('phone'),
+        'email': form.get('email'),
+        'address': form.get('address'),
+        'city': form.get('city'),
+        'state': form.get('state'),
+        'post_code': form.get('post_code'),
+        'country': form.get('country'),
+        'notes': form.get('notes'),
+        'medical_information': form.get('medical_information'),
+        'appointment_notes': form.get('appointment_notes'),
+        'occupation': form.get('occupation'),
+        'emergency_contact': form.get('emergency_contact'),
+        'medicare_number': form.get('medicare_number')
+    }
+
+    return patient_data, None
+
+def parse_appointment_data(form):
+    appointment_date_raw = form.get('appointment_date', '').strip()
+    reason = form.get('reason', '').strip()
+
+    if not appointment_date_raw:
+        return None, 'Appointment date and time is required.'
+
+    try:
+        appointment_date = datetime.strptime(appointment_date_raw, '%Y-%m-%dT%H:%M')
+    except ValueError:
+        return None, 'Appointment date and time must be valid.'
+
+    now = datetime.now().replace(second=0, microsecond=0)
+    max_appointment_date = now + timedelta(days=30)
+
+    clinic_start_time = time(8, 0)
+    clinic_end_time = time(18, 0)
+
+    if appointment_date < now:
+        return None, 'Appointment date and time cannot be in the past.'
+
+    if appointment_date > max_appointment_date:
+        return None, 'Appointment date cannot be more than 30 days from today.'
+
+    if appointment_date.time() < clinic_start_time or appointment_date.time() > clinic_end_time:
+        return None, 'Appointment time must be between 08:00 and 18:00.'
+
+    if not reason:
+        return None, 'Appointment reason is required.'
+
+    if reason not in APPOINTMENT_REASONS:
+        return None, 'Invalid appointment reason.'
+
+    appointment_data = {
+        'appointment_date': appointment_date,
+        'reason': reason
+    }
+
+    return appointment_data, None
+
+def get_appointment_datetime_limits():
+    now = datetime.now().replace(second=0, microsecond=0)
+    max_appointment_date = now + timedelta(days=30)
+
+    return (
+        now.strftime('%Y-%m-%dT%H:%M'),
+        max_appointment_date.strftime('%Y-%m-%dT%H:%M')
+    )
 
 
 @app.errorhandler(500)
@@ -154,7 +289,8 @@ def home():
             appointments_query = appointments_query.filter(
                 (Patient.first_name.ilike(f'%{appointment_search}%')) |
                 (Patient.last_name.ilike(f'%{appointment_search}%')) |
-                (Appointment.reason.ilike(f'%{appointment_search}%'))
+                (Appointment.reason.ilike(f'%{appointment_search}%')) |
+                (Appointment.status.ilike(f'%{appointment_search}%'))
             )
 
         appointment_sort_columns = {
@@ -346,47 +482,145 @@ def patients():
     except Exception:
         app.logger.exception('Error while loading patients page')
         return 'Error Loading PatientsPage', 500
+    
+    
+@app.route('/appointments/<int:appointment_id>/session')
+def appointment_session(appointment_id):
+    app.logger.info(f'Appointment session opened | appointment_id={appointment_id}')
+
+    try:
+        appointment = Appointment.query.get_or_404(appointment_id)
+
+        treatments = Treatment.query.filter_by(
+            appointment_id=appointment.id
+        ).order_by(Treatment.id.desc()).all()
+
+        total_cost_sum = sum(treatment.total_cost for treatment in treatments)
+        total_paid_sum = sum(treatment.paid_amount for treatment in treatments)
+        total_remaining_sum = sum(treatment.remaining_amount for treatment in treatments)
+
+        return render_template(
+            'appointment_session.html',
+            appointment=appointment,
+            patient=appointment.patient,
+            treatments=treatments,
+            total_cost_sum=total_cost_sum,
+            total_paid_sum=total_paid_sum,
+            total_remaining_sum=total_remaining_sum
+        )
+
+    except Exception:
+        app.logger.exception(
+            f'Failed to open appointment session | appointment_id={appointment_id}'
+        )
+        return 'Failed to open appointment session', 500
+    
+@app.route('/appointments/<int:appointment_id>/treatments/add', methods=['GET', 'POST'])
+def add_treatment_to_appointment(appointment_id):
+    app.logger.info(f'Add treatment to appointment | appointment_id={appointment_id}')
+
+    try:
+        appointment = Appointment.query.get_or_404(appointment_id)
+
+        if appointment.status != 'Scheduled':
+            return 'Cannot add treatment to a closed or cancelled appointment.', 403
+
+        if request.method == 'POST':
+            treatment_date = appointment.appointment_date
+            procedure_type = request.form.get('procedure_type', '').strip()
+            
+            if procedure_type not in TREATMENT_PROCEDURE_TYPES:
+                return 'Invalid treatment procedure type', 400
+            tooth_number = request.form.get('tooth_number', '').strip()
+            notes = request.form.get('notes', '').strip()
+            
+            total_cost_raw = request.form.get('total_cost', '')
+            paid_amount_raw = request.form.get('paid_amount', '')
+
+            total_cost, paid_amount, money_error = parse_treatment_money(
+                total_cost_raw,
+                paid_amount_raw
+            )
+
+            if money_error:
+                return render_template(
+                    'add_treatment.html',
+                    appointment=appointment,
+                    patient=appointment.patient,
+                    error_message=money_error
+                ), 400
+
+            new_treatment = Treatment(
+                appointment_id=appointment.id,
+                treatment_date=treatment_date,
+                procedure_type=procedure_type,
+                tooth_number=tooth_number,
+                notes=notes,
+                total_cost=total_cost,
+                paid_amount=paid_amount
+            )
+
+            db.session.add(new_treatment)
+            db.session.commit()
+
+            app.logger.info(
+                f'Treatment added successfully | treatment_id={new_treatment.id}, appointment_id={appointment.id}'
+            )
+
+            return redirect(url_for('appointment_session', appointment_id=appointment.id))
+
+        return render_template(
+            'add_treatment.html',
+            appointment=appointment,
+            patient=appointment.patient
+        )
+
+    except Exception:
+        db.session.rollback()
+        app.logger.exception(
+            f'Failed to add treatment to appointment | appointment_id={appointment_id}'
+        )
+        return 'Error Adding Treatment', 500
+
+@app.route('/appointments/<int:appointment_id>/end-session', methods=['POST'])
+def end_appointment_session(appointment_id):
+    app.logger.info(f'End appointment session request | appointment_id={appointment_id}')
+
+    try:
+        appointment = Appointment.query.get_or_404(appointment_id)
+
+        if appointment.status != 'Scheduled':
+            return 'Only scheduled appointments can be ended.', 400
+
+        appointment.status = 'Done'
+        db.session.commit()
+
+        app.logger.info(
+            f'Appointment session ended successfully | appointment_id={appointment.id}'
+        )
+
+        return redirect(url_for('appointment_session', appointment_id=appointment.id))
+
+    except Exception:
+        db.session.rollback()
+        app.logger.exception(
+            f'Failed to end appointment session | appointment_id={appointment_id}'
+        )
+        return 'Failed to end appointment session', 500
 
 
 @app.route('/patients/add', methods=['GET', 'POST'])
 def add_patient():
     if request.method == 'POST':
-        first_name = request.form.get('first_name', '').strip()
-        last_name = request.form.get('last_name', '').strip()
+        patient_data, patient_error = parse_patient_data(request.form)
 
+        if patient_error:
+            return render_template(
+                'add_patient.html',
+                error_message=patient_error
+            ), 400
 
-        date_of_birth_raw = request.form.get('date_of_birth')
-        date_of_birth = None
-
-        if date_of_birth_raw:
-            date_of_birth = datetime.strptime(date_of_birth_raw, '%Y-%m-%d').date()
-
-        new_patient = Patient(
-            title=request.form.get('title'),
-            first_name=first_name,
-            last_name=last_name,
-            preferred_first_name=request.form.get('preferred_first_name'),
-            date_of_birth=date_of_birth,
-            gender=request.form.get('gender'),
-
-
-            phone=request.form.get('phone'),
-            email=request.form.get('email'),
-
-            address=request.form.get('address'),
-            city=request.form.get('city'),
-            state=request.form.get('state'),
-            post_code=request.form.get('post_code'),
-            country=request.form.get('country'),
-
-            notes=request.form.get('notes'),
-            medical_information=request.form.get('medical_information'),
-            appointment_notes=request.form.get('appointment_notes'),
-
-            occupation=request.form.get('occupation'),
-            emergency_contact=request.form.get('emergency_contact'),
-            medicare_number=request.form.get('medicare_number')
-        )
+        new_patient = Patient(**patient_data)
 
         db.session.add(new_patient)
         db.session.commit()
@@ -446,7 +680,11 @@ def patient_detail(patient_id):
             Treatment.treatment_date
         )
 
-        treatments_query = Treatment.query.filter_by(patient_id=patient.id)
+        treatments_query = (
+            Treatment.query
+            .join(Appointment)
+            .filter(Appointment.patient_id == patient.id)
+        )
 
         if treatment_order == 'asc':
             treatments_query = treatments_query.order_by(treatment_sort_column.asc())
@@ -530,7 +768,11 @@ def patient_treatments_table(patient_id):
 
     sort_column = sort_columns.get(treatment_sort, Treatment.treatment_date)
 
-    query = Treatment.query.filter_by(patient_id=patient.id)
+    query = (
+        Treatment.query
+        .join(Appointment)
+        .filter(Appointment.patient_id == patient.id)
+    )
 
     if treatment_order == 'asc':
         query = query.order_by(sort_column.asc())
@@ -554,21 +796,25 @@ def add_appointment(patient_id):
 
     try:
         patient = Patient.query.get_or_404(patient_id)
+        appointment_min_datetime, appointment_max_datetime = get_appointment_datetime_limits()
 
         if request.method == 'POST':
-            appointment_date = request.form['appointment_date'].replace('T', ' ')
-            reason = request.form.get('reason', '').strip()
+            appointment_data, appointment_error = parse_appointment_data(request.form)
 
-            if reason not in APPOINTMENT_REASONS:
-                return 'Invalid appointment reason', 400
-
-            status = 'Scheduled'
+            if appointment_error:
+                return render_template(
+                    'add_appointment.html',
+                    patient=patient,
+                    error_message=appointment_error,
+                    appointment_min_datetime=appointment_min_datetime,
+                    appointment_max_datetime=appointment_max_datetime
+                ), 400
 
             new_appointment = Appointment(
                 patient_id=patient.id,
-                appointment_date=appointment_date,
-                reason=reason,
-                status=status
+                appointment_date=appointment_data['appointment_date'],
+                reason=appointment_data['reason'],
+                status='Scheduled'
             )
 
             db.session.add(new_appointment)
@@ -580,7 +826,12 @@ def add_appointment(patient_id):
 
             return redirect(url_for('patient_detail', patient_id=patient.id))
 
-        return render_template('add_appointment.html', patient=patient)
+        return render_template(
+            'add_appointment.html',
+            patient=patient,
+            appointment_min_datetime=appointment_min_datetime,
+            appointment_max_datetime=appointment_max_datetime
+        )
 
     except Exception:
         db.session.rollback()
@@ -588,46 +839,16 @@ def add_appointment(patient_id):
         return 'Error Loading AppointmentInfo', 500
 
 
-@app.route('/patients/<int:patient_id>/treatments/add', methods=['GET', 'POST'])
+@app.route('/patients/<int:patient_id>/treatments/add')
 def add_treatment(patient_id):
-    app.logger.info(f'Add treatment page/request | patient_id={patient_id}')
+    app.logger.warning(
+        f'Legacy add treatment route opened | patient_id={patient_id}'
+    )
 
-    try:
-        patient = Patient.query.get_or_404(patient_id)
-
-        if request.method == 'POST':
-            treatment_date = request.form['treatment_date'].replace('T', ' ')
-            procedure_type = request.form['procedure_type']
-            tooth_number = request.form['tooth_number']
-            notes = request.form['notes']
-            total_cost = request.form['total_cost']
-            paid_amount = request.form['paid_amount']
-
-            new_treatment = Treatment(
-                patient_id=patient.id,
-                treatment_date=treatment_date,
-                procedure_type=procedure_type,
-                tooth_number=tooth_number,
-                notes=notes,
-                total_cost=float(total_cost) if total_cost else 0,
-                paid_amount=float(paid_amount) if paid_amount else 0
-            )
-
-            db.session.add(new_treatment)
-            db.session.commit()
-
-            app.logger.info(
-                f'Treatment added successfully | treatment_id={new_treatment.id}, patient_id={patient.id}'
-            )
-
-            return redirect(url_for('patient_detail', patient_id=patient.id))
-
-        return render_template('add_treatment.html', patient=patient)
-
-    except Exception:
-        db.session.rollback()
-        app.logger.exception(f'Failed to add treatment | patient_id={patient_id}')
-        return 'Error Adding Treatment', 500
+    return (
+        'Treatments must be added from an appointment session.',
+        400
+    )
 
 
 @app.route('/appointments')
@@ -690,45 +911,29 @@ def edit_patient(patient_id):
         patient = Patient.query.get_or_404(patient_id)
 
         if request.method == 'POST':
-            first_name = request.form.get('first_name', '').strip()
-            last_name = request.form.get('last_name', '').strip()
+            patient_data, patient_error = parse_patient_data(request.form)
 
+            if patient_error:
+                return render_template(
+                    'edit_patient.html',
+                    patient=patient,
+                    mode='edit',
+                    error_message=patient_error
+                ), 400
 
-            date_of_birth_raw = request.form.get('date_of_birth')
-            date_of_birth = None
-            if date_of_birth_raw:
-                date_of_birth = datetime.strptime(date_of_birth_raw, '%Y-%m-%d').date()
-
-            patient.title = request.form.get('title')
-            patient.first_name = first_name
-            patient.last_name = last_name
-            patient.preferred_first_name = request.form.get('preferred_first_name')
-            patient.date_of_birth = date_of_birth
-            patient.gender = request.form.get('gender')
-
-            patient.phone = request.form.get('phone')
-            patient.email = request.form.get('email')
-
-            patient.address = request.form.get('address')
-            patient.city = request.form.get('city')
-            patient.state = request.form.get('state')
-            patient.post_code = request.form.get('post_code')
-            patient.country = request.form.get('country')
-
-            patient.notes = request.form.get('notes')
-            patient.medical_information = request.form.get('medical_information')
-            patient.appointment_notes = request.form.get('appointment_notes')
-
-            patient.occupation = request.form.get('occupation')
-            patient.emergency_contact = request.form.get('emergency_contact')
-            patient.medicare_number = request.form.get('medicare_number')
-
+            for field, value in patient_data.items():
+                setattr(patient, field, value)
+                
             db.session.commit()
 
             app.logger.info(f'Patient updated successfully | patient_id={patient.id}')
             return redirect(url_for('patient_detail', patient_id=patient.id))
 
-        return render_template('edit_patient.html',patient=patient,mode='edit')
+        return render_template(
+            'edit_patient.html',
+            patient=patient,
+            mode='edit'
+        )
 
     except Exception:
         db.session.rollback()
@@ -761,6 +966,12 @@ def delete_appointment(appointment_id):
     try:
         appointment = Appointment.query.get_or_404(appointment_id)
 
+        if appointment.status == 'Done':
+            return 'Cannot delete a completed appointment.', 403
+
+        if appointment.treatments:
+            return 'Cannot delete an appointment that has treatments.', 403
+
         if request.method == 'POST':
             patient_id = appointment.patient_id
             db.session.delete(appointment)
@@ -786,23 +997,57 @@ def edit_appointment(appointment_id):
 
     try:
         appointment = Appointment.query.get_or_404(appointment_id)
+        appointment_min_datetime, appointment_max_datetime = get_appointment_datetime_limits()
 
         if request.method == 'POST':
-            appointment.appointment_date = request.form['appointment_date'].replace('T', ' ')
-            reason = request.form.get('reason', '').strip()
 
-            if reason not in APPOINTMENT_REASONS:
-                return 'Invalid appointment reason', 400
+            # Only scheduled appointments can be edited.
+            # "Done" must only happen through End Session.
+            if appointment.status != 'Scheduled':
+                return 'Cannot edit a closed or cancelled appointment.', 403
 
-            appointment.reason = reason
-            appointment.status = request.form['status']
+            appointment_data, appointment_error = parse_appointment_data(request.form)
+
+            if appointment_error:
+                return render_template(
+                    'edit_appointment.html',
+                    appointment=appointment,
+                    mode='edit',
+                    error_message=appointment_error,
+                    appointment_min_datetime=appointment_min_datetime,
+                    appointment_max_datetime=appointment_max_datetime
+                ), 400
+
+            new_status = request.form.get('status', '').strip()
+
+            # In edit page, only Scheduled and Cancelled are allowed.
+            # Done is not allowed here.
+            if new_status not in {'Scheduled', 'Cancelled'}:
+                return render_template(
+                    'edit_appointment.html',
+                    appointment=appointment,
+                    mode='edit',
+                    error_message='Invalid appointment status.',
+                    appointment_min_datetime=appointment_min_datetime,
+                    appointment_max_datetime=appointment_max_datetime
+                ), 400
+
+            appointment.appointment_date = appointment_data['appointment_date']
+            appointment.reason = appointment_data['reason']
+            appointment.status = new_status
 
             db.session.commit()
 
             app.logger.info(f'Appointment updated successfully | appointment_id={appointment.id}')
             return redirect(url_for('patient_detail', patient_id=appointment.patient_id))
 
-        return render_template('edit_appointment.html',appointment=appointment,mode='edit')
+        return render_template(
+            'edit_appointment.html',
+            appointment=appointment,
+            mode='edit',
+            appointment_min_datetime=appointment_min_datetime,
+            appointment_max_datetime=appointment_max_datetime
+        )
 
     except Exception:
         db.session.rollback()
@@ -816,10 +1061,14 @@ def view_appointment(appointment_id):
     try:
         appointment = Appointment.query.get_or_404(appointment_id)
 
+        appointment_min_datetime, appointment_max_datetime = get_appointment_datetime_limits()
+
         return render_template(
             'edit_appointment.html',
             appointment=appointment,
-            mode='view'
+            mode='view',
+            appointment_min_datetime=appointment_min_datetime,
+            appointment_max_datetime=appointment_max_datetime
         )
 
     except Exception:
@@ -834,20 +1083,57 @@ def edit_treatment(treatment_id):
     try:
         treatment = Treatment.query.get_or_404(treatment_id)
 
+        if treatment.appointment.status != 'Scheduled' and request.method == 'POST':
+            return 'Cannot edit treatment after the appointment session is closed.', 403
+
         if request.method == 'POST':
-            treatment.treatment_date = request.form['treatment_date'].replace('T', ' ')
-            treatment.procedure_type = request.form['procedure_type']
-            treatment.tooth_number = request.form['tooth_number']
-            treatment.notes = request.form['notes']
-            treatment.total_cost = float(request.form['total_cost']) if request.form['total_cost'] else 0
-            treatment.paid_amount = float(request.form['paid_amount']) if request.form['paid_amount'] else 0
+            treatment.treatment_date = treatment.appointment.appointment_date
+
+            procedure_type = request.form.get('procedure_type', '').strip()
+
+            if procedure_type not in TREATMENT_PROCEDURE_TYPES:
+                return 'Invalid treatment procedure type', 400
+
+            treatment.procedure_type = procedure_type
+            treatment.tooth_number = request.form.get('tooth_number', '').strip()
+            treatment.notes = request.form.get('notes', '').strip()
+
+            total_cost_raw = request.form.get('total_cost', '')
+            paid_amount_raw = request.form.get('paid_amount', '')
+
+            total_cost, paid_amount, money_error = parse_treatment_money(
+                total_cost_raw,
+                paid_amount_raw
+            )
+
+            if money_error:
+                return render_template(
+                    'edit_treatment.html',
+                    treatment=treatment,
+                    error_message=money_error
+                ), 400
+
+            treatment.total_cost = total_cost
+            treatment.paid_amount = paid_amount
 
             db.session.commit()
 
             app.logger.info(f'Treatment updated successfully | treatment_id={treatment.id}')
-            return redirect(url_for('patient_detail', patient_id=treatment.patient_id))
 
-        return render_template('edit_treatment.html',treatment=treatment,mode='edit')
+            return redirect(
+                url_for(
+                    'appointment_session',
+                    appointment_id=treatment.appointment_id
+                )
+            )
+
+        return render_template(
+            'edit_treatment.html',
+            treatment=treatment,
+            appointment=treatment.appointment,
+            patient=treatment.appointment.patient,
+            mode='edit'
+        )
 
     except Exception:
         db.session.rollback()
@@ -865,6 +1151,8 @@ def view_treatment(treatment_id):
         return render_template(
             'edit_treatment.html',
             treatment=treatment,
+            appointment=treatment.appointment,
+            patient=treatment.appointment.patient,
             mode='view'
         )
 
@@ -873,13 +1161,15 @@ def view_treatment(treatment_id):
         return 'Failed to view treatment', 500
 
 
-
 @app.route('/patients/<int:patient_id>/delete', methods=['GET', 'POST'])
 def delete_patient(patient_id):
     app.logger.warning(f'Delete patient page/request | patient_id={patient_id}')
 
     try:
         patient = Patient.query.get_or_404(patient_id)
+
+        if patient.appointments:
+            return 'Cannot delete a patient who has appointments.', 403
 
         if request.method == 'POST':
             db.session.delete(patient)
@@ -902,14 +1192,17 @@ def delete_treatment(treatment_id):
 
     try:
         treatment = Treatment.query.get_or_404(treatment_id)
+        appointment_id = treatment.appointment_id
+
+        if treatment.appointment.status != 'Scheduled':
+            return 'Cannot delete treatment after the appointment session is closed.', 403
 
         if request.method == 'POST':
-            patient_id = treatment.patient_id
             db.session.delete(treatment)
             db.session.commit()
 
             app.logger.info(f'Treatment deleted successfully | treatment_id={treatment_id}')
-            return redirect(url_for('patient_detail', patient_id=patient_id))
+            return redirect(url_for('appointment_session', appointment_id=appointment_id))
 
         return render_template('delete_treatment.html', treatment=treatment)
 

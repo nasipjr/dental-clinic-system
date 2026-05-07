@@ -19,6 +19,8 @@
                     </a>
                 </th>
 
+                <th>Appointment</th>
+
                 <th>
                     <a href="{{ url_for(
                         'patient_treatments_table',
@@ -113,6 +115,16 @@
                 <td>{{ treatment.id }}</td>
 
                 <td>
+                    <a href="{{ url_for('appointment_session', appointment_id=treatment.appointment.id) }}">
+                        #{{ treatment.appointment.id }}
+                    </a>
+                    <br>
+                    <small>
+                        {{ treatment.appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if treatment.appointment.appointment_date else 'No date' }}
+                    </small>
+                </td>
+
+                <td>
                     {{ treatment.treatment_date.strftime('%Y-%m-%d %H:%M') if treatment.treatment_date else 'No date' }}
                 </td>
 
@@ -149,17 +161,19 @@
                             <i class="bi bi-eye"></i>
                         </a>
 
-                        <a href="{{ url_for('edit_treatment', treatment_id=treatment.id) }}"
-                           class="table-action-btn edit-btn"
-                           title="Edit Treatment">
-                            <i class="bi bi-pencil-square"></i>
-                        </a>
+                        {% if treatment.appointment.status == 'Scheduled' %}
+                            <a href="{{ url_for('edit_treatment', treatment_id=treatment.id) }}"
+                               class="table-action-btn edit-btn"
+                               title="Edit Treatment">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
 
-                        <a href="{{ url_for('delete_treatment', treatment_id=treatment.id) }}"
-                           class="table-action-btn delete-table-btn"
-                           title="Delete Treatment">
-                            <i class="bi bi-trash"></i>
-                        </a>
+                            <a href="{{ url_for('delete_treatment', treatment_id=treatment.id) }}"
+                               class="table-action-btn delete-table-btn"
+                               title="Delete Treatment">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        {% endif %}
 
                     </div>
                 </td>
@@ -174,10 +188,8 @@
     <div class="empty-icon">
         <i class="bi bi-clipboard-x"></i>
     </div>
+
     <h4>No treatments yet</h4>
-    <p>This patient has no recorded treatments yet.</p>
-    <a href="{{ url_for('add_treatment', patient_id=patient.id) }}" class="empty-btn">
-        Add First Treatment
-    </a>
+    <p>This patient has no treatments yet. Treatments are added from appointment sessions.</p>
 </div>
 {% endif %}

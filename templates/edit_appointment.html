@@ -1,8 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Edit Appointment{% endblock %}
+{% block title %}
+{{ 'View Appointment' if mode|default('edit') == 'view' else 'Edit Appointment' }}
+{% endblock %}
 
 {% block content %}
+{% set current_mode = mode|default('edit') %}
+{% set is_locked = current_mode == 'view' or appointment.status != 'Scheduled' %}
+
 <br><br><br><br><br><br>
 
 <section id="add-patient-page" class="section">
@@ -12,19 +17,39 @@
                 <div class="add-patient-wrapper">
 
                     <div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
-                        <h2>{{ 'View Appointment' if mode == 'view' else 'Edit Appointment' }}</h2>
+                        <h2>
+                            {% if is_locked %}
+                            View Appointment
+                            {% else %}
+                            Edit Appointment
+                            {% endif %}
+                        </h2>
+
                         <p>
-                            {{ 'View appointment information without editing.' if mode == 'view' else 'Update the
-                            appointment information.' }}
+                            {% if appointment.status == 'Done' %}
+                            This appointment session is done. Appointment is read-only.
+                            {% elif appointment.status == 'Cancelled' %}
+                            This appointment is cancelled. Appointment is read-only.
+                            {% elif current_mode == 'view' %}
+                            View appointment information without editing.
+                            {% else %}
+                            Update the appointment information.
+                            {% endif %}
                         </p>
                     </div>
 
                     <div class="add-patient-icon" data-aos="zoom-in" data-aos-delay="200">
-                        <i class="bi bi-calendar-check"></i>
+                        <i class="bi {{ 'bi-eye' if is_locked else 'bi-calendar-check' }}"></i>
                     </div>
+                    {% if error_message %}
+                    <div class="alert alert-danger text-center" role="alert">
+                        {{ error_message }}
+                    </div>
+                    {% endif %}
 
                     <form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300"
-                        class="{% if mode == 'view' %}readonly-form{% endif %}">
+                        class="{% if is_locked %}readonly-form{% endif %}">
+
                         <div class="row gy-4">
 
                             <div class="col-md-12">
@@ -32,66 +57,111 @@
                                 <input type="datetime-local" id="appointment_date" name="appointment_date"
                                     class="form-control"
                                     value="{{ appointment.appointment_date.strftime('%Y-%m-%dT%H:%M') if appointment.appointment_date else '' }}"
-                                    required {% if mode=='view' %}disabled{% endif %} />
+                                    min="{{ appointment_min_datetime }}" max="{{ appointment_max_datetime }}" required
+                                    {% if is_locked %}disabled{% endif %}>
                             </div>
 
                             <div class="col-12">
                                 <label for="reason" class="form-label">Reason</label>
-                                <select id="reason" name="reason" class="form-select" required {% if
-                                    mode|default('edit')=='view' %}disabled{% endif %}>
+                                <select id="reason" name="reason" class="form-select" required {% if is_locked
+                                    %}disabled{% endif %}>
                                     <option value="">Select a Reason</option>
+
                                     <option value="Check-up" {% if appointment.reason=='Check-up' %}selected{% endif %}>
-                                        Check-up</option>
+                                        Check-up
+                                    </option>
+
                                     <option value="Cleaning" {% if appointment.reason=='Cleaning' %}selected{% endif %}>
-                                        Cleaning</option>
+                                        Cleaning
+                                    </option>
+
                                     <option value="Filling" {% if appointment.reason=='Filling' %}selected{% endif %}>
-                                        Filling</option>
+                                        Filling
+                                    </option>
+
                                     <option value="Root Canal" {% if appointment.reason=='Root Canal' %}selected{% endif
-                                        %}>Root Canal</option>
+                                        %}>
+                                        Root Canal
+                                    </option>
+
                                     <option value="Extraction" {% if appointment.reason=='Extraction' %}selected{% endif
-                                        %}>Extraction</option>
+                                        %}>
+                                        Extraction
+                                    </option>
+
                                     <option value="Crown / Bridge" {% if appointment.reason=='Crown / Bridge'
-                                        %}selected{% endif %}>Crown / Bridge</option>
+                                        %}selected{% endif %}>
+                                        Crown / Bridge
+                                    </option>
+
                                     <option value="Braces / Orthodontics" {% if
-                                        appointment.reason=='Braces / Orthodontics' %}selected{% endif %}>Braces /
-                                        Orthodontics</option>
+                                        appointment.reason=='Braces / Orthodontics' %}selected{% endif %}>
+                                        Braces / Orthodontics
+                                    </option>
+
                                     <option value="Whitening" {% if appointment.reason=='Whitening' %}selected{% endif
-                                        %}>Whitening</option>
+                                        %}>
+                                        Whitening
+                                    </option>
+
                                     <option value="Emergency Pain" {% if appointment.reason=='Emergency Pain'
-                                        %}selected{% endif %}>Emergency Pain</option>
+                                        %}selected{% endif %}>
+                                        Emergency Pain
+                                    </option>
+
                                     <option value="Follow-up" {% if appointment.reason=='Follow-up' %}selected{% endif
-                                        %}>Follow-up</option>
+                                        %}>
+                                        Follow-up
+                                    </option>
                                 </select>
                             </div>
 
                             <div class="col-md-12">
                                 <label for="status" class="form-label">Status</label>
-                                <select id="status" name="status" class="form-select" required {% if mode=='view'
+
+                                <select id="status" name="status" class="form-select" required {% if is_locked
                                     %}disabled{% endif %}>
                                     <option value="">Select a Status</option>
+
                                     <option value="Scheduled" {% if appointment.status=='Scheduled' %}selected{% endif
-                                        %}>Scheduled</option>
-                                    <option value="Done" {% if appointment.status=='Done' %}selected{% endif %}>Done
+                                        %}>
+                                        Scheduled
                                     </option>
+
                                     <option value="Cancelled" {% if appointment.status=='Cancelled' %}selected{% endif
-                                        %}>Cancelled</option>
+                                        %}>
+                                        Cancelled
+                                    </option>
+
+                                    {% if appointment.status == 'Done' %}
+                                    <option value="Done" selected>
+                                        Done
+                                    </option>
+                                    {% endif %}
                                 </select>
                             </div>
 
                             <div class="col-12 text-center pt-2">
-                                {% if mode == 'edit' %}
-                                <button type="submit" class="save-patient-btn">Save Changes</button>
+                                {% if not is_locked %}
+                                <button type="submit" class="save-patient-btn">
+                                    Save Changes
+                                </button>
                                 {% endif %}
 
-                                {% if mode == 'view' %}
+                                {% if current_mode == 'view' and appointment.status == 'Scheduled' %}
                                 <a href="{{ url_for('edit_appointment', appointment_id=appointment.id) }}"
-                                    class="btn-outline-main px-4">
+                                    class="btn-primary px-4">
                                     Edit Appointment
                                 </a>
                                 {% endif %}
 
+                                <a href="{{ url_for('appointment_session', appointment_id=appointment.id) }}"
+                                    class="btn-outline-main px-4">
+                                    Back to Session
+                                </a>
+
                                 <a href="{{ url_for('appointments') }}" class="btn-outline-main px-4">
-                                    Back
+                                    Back to Appointments
                                 </a>
                             </div>
 

@@ -9,12 +9,11 @@
                         patient_id=patient.id,
                         appointment_sort='id',
                         appointment_order='asc' if appointment_sort != 'id' or appointment_order == 'desc' else 'desc'
-                    ) }}"
-                       class="dashboard-ajax-link"
-                       data-target="patient-appointments-container">
+                    ) }}" class="dashboard-ajax-link" data-target="patient-appointments-container">
                         ID
                         {% if appointment_sort == 'id' %}
-                            <i class="bi {% if appointment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        <i
+                            class="bi {% if appointment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
                     </a>
                 </th>
@@ -25,12 +24,11 @@
                         patient_id=patient.id,
                         appointment_sort='date',
                         appointment_order='asc' if appointment_sort != 'date' or appointment_order == 'desc' else 'desc'
-                    ) }}"
-                       class="dashboard-ajax-link"
-                       data-target="patient-appointments-container">
+                    ) }}" class="dashboard-ajax-link" data-target="patient-appointments-container">
                         Date & Time
                         {% if appointment_sort == 'date' %}
-                            <i class="bi {% if appointment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        <i
+                            class="bi {% if appointment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
                     </a>
                 </th>
@@ -41,12 +39,11 @@
                         patient_id=patient.id,
                         appointment_sort='reason',
                         appointment_order='asc' if appointment_sort != 'reason' or appointment_order == 'desc' else 'desc'
-                    ) }}"
-                       class="dashboard-ajax-link"
-                       data-target="patient-appointments-container">
+                    ) }}" class="dashboard-ajax-link" data-target="patient-appointments-container">
                         Reason
                         {% if appointment_sort == 'reason' %}
-                            <i class="bi {% if appointment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        <i
+                            class="bi {% if appointment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
                     </a>
                 </th>
@@ -57,12 +54,11 @@
                         patient_id=patient.id,
                         appointment_sort='status',
                         appointment_order='asc' if appointment_sort != 'status' or appointment_order == 'desc' else 'desc'
-                    ) }}"
-                       class="dashboard-ajax-link"
-                       data-target="patient-appointments-container">
+                    ) }}" class="dashboard-ajax-link" data-target="patient-appointments-container">
                         Status
                         {% if appointment_sort == 'status' %}
-                            <i class="bi {% if appointment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        <i
+                            class="bi {% if appointment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
                     </a>
                 </th>
@@ -77,7 +73,8 @@
                 <td>{{ appointment.id }}</td>
 
                 <td>
-                    {{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if appointment.appointment_date else 'No date' }}
+                    {{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if appointment.appointment_date else 'No
+                    date' }}
                 </td>
 
                 <td>
@@ -97,22 +94,28 @@
                     <div class="appointments-actions">
 
                         <a href="{{ url_for('view_appointment', appointment_id=appointment.id) }}"
-                           class="table-action-btn view-btn"
-                           title="View Appointment">
+                            class="table-action-btn view-btn" title="View Appointment">
                             <i class="bi bi-eye"></i>
                         </a>
 
-                        <a href="{{ url_for('edit_appointment', appointment_id=appointment.id) }}"
-                           class="table-action-btn edit-btn"
-                           title="Edit Appointment">
-                            <i class="bi bi-pencil-square"></i>
+                        <a href="{{ url_for('appointment_session', appointment_id=appointment.id) }}"
+                            class="table-action-btn appointment-table-btn" title="Open Session">
+                            <i class="bi bi-clipboard2-pulse"></i>
                         </a>
 
+                        {% if appointment.status == 'Scheduled' %}
+                        <a href="{{ url_for('edit_appointment', appointment_id=appointment.id) }}"
+                            class="table-action-btn edit-btn" title="Edit Appointment">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                        {% endif %}
+
+                        {% if appointment.status != 'Done' %}
                         <a href="{{ url_for('delete_appointment', appointment_id=appointment.id) }}"
-                           class="table-action-btn delete-table-btn"
-                           title="Delete Appointment">
+                            class="table-action-btn delete-table-btn" title="Delete Appointment">
                             <i class="bi bi-trash"></i>
                         </a>
+                        {% endif %}
 
                     </div>
                 </td>

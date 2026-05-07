@@ -23,7 +23,30 @@
 
                     <div class="delete-patient-box">
                         <p>Are you sure you want to permanently delete this appointment?</p>
-                        <h4>{{ appointment.appointment_date }}</h4>
+
+                        <h4>
+                            {{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if appointment.appointment_date else 'No date' }}
+                        </h4>
+
+                        <p class="mt-2">
+                            Patient:
+                            {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                        </p>
+
+                        <p>
+                            Reason:
+                            {{ appointment.reason or 'No reason provided' }}
+                        </p>
+
+                        <p>
+                            Status:
+                            <span class="appointment-status
+                                {% if appointment.status == 'Done' %}status-done
+                                {% elif appointment.status == 'Cancelled' %}status-cancelled
+                                {% else %}status-scheduled{% endif %}">
+                                {{ appointment.status }}
+                            </span>
+                        </p>
                     </div>
 
                     <form method="POST" class="mt-4">
@@ -32,8 +55,14 @@
                                 Yes, Delete Appointment
                             </button>
 
-                            <a href="{{ url_for('patient_detail', patient_id=appointment.patient_id) }}" class="btn-outline-main px-4">
-                                Cancel
+                            <a href="{{ url_for('patient_detail', patient_id=appointment.patient_id) }}"
+                               class="btn-outline-main px-4">
+                                Back to Patient
+                            </a>
+
+                            <a href="{{ url_for('appointment_session', appointment_id=appointment.id) }}"
+                               class="btn-outline-main px-4">
+                                Back to Session
                             </a>
                         </div>
                     </form>

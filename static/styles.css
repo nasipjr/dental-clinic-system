@@ -543,6 +543,39 @@
 .patient-detail-tabs .show > .nav-link {
   background: transparent !important;
 }
+/* Fix patient tabs underline:
+   show the blue underline only under the active tab */
+.patient-detail-tabs .section-title h2::before,
+.patient-detail-tabs .section-title h2::after {
+  display: none;
+}
+
+.patient-detail-tabs .nav-link.active .section-title h2::after {
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: var(--accent-color);
+  position: absolute;
+  bottom: 0;
+}
+
+.patient-detail-tabs .nav-item:nth-child(1) .nav-link.active .section-title h2::after {
+  left: 50%;
+  right: auto;
+  transform: translateX(-120%);
+}
+
+.patient-detail-tabs .nav-item:nth-child(2) .nav-link.active .section-title h2::after {
+  left: 0;
+  right: 0;
+  margin: auto;
+}
+
+.patient-detail-tabs .nav-item:nth-child(3) .nav-link.active .section-title h2::after {
+  left: auto;
+  right: 50;
+  transform: translateX(-120%);
+}
 
 /* Delete Patient Page */
 .delete-patient-card {
@@ -786,4 +819,88 @@
 .appointment-table-btn:hover {
   background: rgba(25, 135, 84, 0.2);
   color: #9ff7c4;
+}
+
+ /* Treatment */
+ .appointment-table-btn {
+  color: #7ff0ae;
+  background: rgba(25, 135, 84, 0.12);
+  border-color: rgba(25, 135, 84, 0.25);
+}
+
+.appointment-table-btn:hover {
+  background: rgba(25, 135, 84, 0.2);
+  color: #9ff7c4;
+}
+
+/* Session page buttons */
+
+.btn-session-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--accent-color);
+  background: var(--accent-color);
+  color: var(--contrast-color);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btn-session-primary:hover {
+  background: color-mix(in srgb, var(--accent-color), black 10%);
+  color: var(--contrast-color);
+  transform: translateY(-1px);
+}
+
+.session-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.session-action-form {
+  margin: 0;
+  width: 100%;
+}
+
+.session-action-btn {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.btn-end-session {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(220, 53, 69, 0.45);
+  color: #ff7b88;
+  background: rgba(220, 53, 69, 0.14);
+  transition: all 0.3s ease;
+}
+
+.btn-end-session:hover {
+  background: rgba(220, 53, 69, 0.24);
+  color: #ff9aa5;
+}
+
+@media (max-width: 768px) {
+  .session-actions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* delete patient button */
+.patient-delete-action {
+  grid-column: 1 / -1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.patient-delete-action .btn-delete-soft {
+  width: 50%;
+  max-width: 520px;
 }

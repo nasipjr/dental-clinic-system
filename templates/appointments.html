@@ -170,19 +170,28 @@
                         <td class="text-center">
                             <div class="appointments-actions">
                                 <a href="{{ url_for('view_appointment', appointment_id=appointment.id) }}"
-                                    class="table-action-btn view-btn" title="View">
+                                    class="table-action-btn view-btn" title="View Appointment">
                                     <i class="bi bi-eye"></i>
                                 </a>
 
-                                <a href="{{ url_for('edit_appointment', appointment_id=appointment.id) }}"
-                                    class="table-action-btn edit-btn" title="Edit">
-                                    <i class="bi bi-pencil-square"></i>
+                                <a href="{{ url_for('appointment_session', appointment_id=appointment.id) }}"
+                                    class="table-action-btn appointment-table-btn" title="Open Session">
+                                    <i class="bi bi-clipboard2-pulse"></i>
                                 </a>
 
+                                {% if appointment.status == 'Scheduled' %}
+                                <a href="{{ url_for('edit_appointment', appointment_id=appointment.id) }}"
+                                    class="table-action-btn edit-btn" title="Edit Appointment">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                {% endif %}
+
+                                {% if appointment.status != 'Done' %}
                                 <a href="{{ url_for('delete_appointment', appointment_id=appointment.id) }}"
-                                    class="table-action-btn delete-table-btn" title="Delete">
+                                    class="table-action-btn delete-table-btn" title="Delete Appointment">
                                     <i class="bi bi-trash"></i>
                                 </a>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>

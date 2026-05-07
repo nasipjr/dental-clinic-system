@@ -20,12 +20,18 @@
                     <div class="add-patient-icon" data-aos="zoom-in" data-aos-delay="200">
                         <i class="bi bi-calendar-event"></i>
                     </div>
+                    {% if error_message %}
+                    <div class="alert alert-danger text-center" role="alert">
+                        {{ error_message }}
+                    </div>
+                    {% endif %}
 
                     <form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300">
                         <div class="col-md-12">
                             <label for="appointment_date" class="form-label">Date Of Appointment</label>
                             <input type="datetime-local" id="appointment_date" name="appointment_date"
-                                class="form-control" required>
+                                class="form-control" min="{{ appointment_min_datetime }}"
+                                max="{{ appointment_max_datetime }}" required>
                         </div><br>
 
                         <div class="col-md-12">
@@ -68,4 +74,33 @@
     </div>
     </div>
 </section>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const appointmentInput = document.getElementById('appointment_date');
+
+    if (!appointmentInput) {
+        return;
+    }
+
+    function validateAppointmentTime() {
+        const value = appointmentInput.value;
+
+        if (!value) {
+            appointmentInput.setCustomValidity('');
+            return;
+        }
+
+        const timePart = value.split('T')[1];
+
+        if (timePart < '08:00' || timePart > '18:00') {
+            appointmentInput.setCustomValidity('Appointment time must be between 08:00 and 18:00.');
+        } else {
+            appointmentInput.setCustomValidity('');
+        }
+    }
+
+    appointmentInput.addEventListener('input', validateAppointmentTime);
+    appointmentInput.addEventListener('change', validateAppointmentTime);
+});
+</script>
 {% endblock %}

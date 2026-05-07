@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Appointment Session{% endblock %}
+
+{% block content %}
+<br><br><br><br><br><br><br>
+
+<!-- Section Title -->
+<div class="container section-title" data-aos="fade-up">
+    <h2>Appointment Session</h2>
+    <p>Manage treatments related to this appointment session</p>
+</div>
+
+<!-- Appointment Session Overview -->
+<section id="appointment-session-overview" class="find-a-doctor section pt-0">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="doctor-profile patient-detail-card" data-aos="zoom-in" data-aos-delay="150">
+
+            <div class="profile-header">
+                <div class="doctor-avatar">
+                    <img src="{{ url_for('static', filename='assets/my imgs/date.webp') }}" alt="Appointment"
+                        class="img-fluid">
+
+                    <div class="status-indicator
+                        {% if appointment.status == 'Done' %}available
+                        {% elif appointment.status == 'Cancelled' %}busy
+                        {% else %}pending{% endif %}">
+                    </div>
+                </div>
+
+                <div class="doctor-details">
+                    <h4>{{ patient.first_name }} {{ patient.last_name }}</h4>
+                    <span class="specialty-tag">
+                        {{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if appointment.appointment_date else
+                        'No date' }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="patient-info-grid mt-4">
+                <div class="patient-info-box">
+                    <span class="info-label">Patient Phone</span>
+                    <p>{{ patient.phone or 'No phone number' }}</p>
+                </div>
+
+                <div class="patient-info-box">
+                    <span class="info-label">Appointment Reason</span>
+                    <p>{{ appointment.reason or 'No reason provided' }}</p>
+                </div>
+
+                <div class="patient-info-box">
+                    <span class="info-label">Status</span>
+                    <p>
+                        <span class="appointment-status
+                            {% if appointment.status == 'Done' %}status-done
+                            {% elif appointment.status == 'Cancelled' %}status-cancelled
+                            {% else %}status-scheduled{% endif %}">
+                            {{ appointment.status }}
+                        </span>
+                    </p>
+                </div>
+
+                <div class="patient-info-box">
+                    <span class="info-label">Session Mode</span>
+                    {% if appointment.status == 'Scheduled' %}
+                    <p>Open session — treatments can be added or modified.</p>
+                    {% elif appointment.status == 'Done' %}
+                    <p>Closed session — read-only mode.</p>
+                    {% elif appointment.status == 'Cancelled' %}
+                    <p>Cancelled appointment — treatments cannot be added.</p>
+                    {% else %}
+                    <p>Unknown appointment status.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="financial-summary-grid mt-4">
+                <div class="financial-card">
+                    <div class="financial-icon">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                    <h4>Total Cost</h4>
+                    <p>{{ total_cost_sum }}</p>
+                </div>
+
+                <div class="financial-card">
+                    <div class="financial-icon">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <h4>Total Paid</h4>
+                    <p>{{ total_paid_sum }}</p>
+                </div>
+
+                <div class="financial-card">
+                    <div class="financial-icon">
+                        <i class="bi bi-exclamation-circle"></i>
+                    </div>
+                    <h4>Total Remaining</h4>
+                    <p>{{ total_remaining_sum }}</p>
+                </div>
+            </div>
+
+            <div class="session-actions-grid mt-4">
+
+                <a href="{{ url_for('patient_detail', patient_id=patient.id) }}"
+                    class="btn-outline-main session-action-btn">
+                    Back to Patient
+                </a>
+
+                <a href="{{ url_for('view_appointment', appointment_id=appointment.id) }}"
+                    class="btn-outline-main session-action-btn">
+                    View Appointment
+                </a>
+
+                {% if appointment.status == 'Scheduled' %}
+                <a href="{{ url_for('add_treatment_to_appointment', appointment_id=appointment.id) }}"
+                    class="btn-session-primary session-action-btn">
+                    Add Treatment
+                </a>
+
+                <form method="POST" action="{{ url_for('end_appointment_session', appointment_id=appointment.id) }}"
+                    class="session-action-form">
+                    <button type="submit" class="btn-end-session session-action-btn"
+                        onclick="return confirm('Are you sure you want to end this session? The appointment will become Done and treatments will become read-only.')">
+                        End Session
+                    </button>
+                </form>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<!-- Treatments Section -->
+<section id="session-treatments-section" class="find-a-doctor section pt-0">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="container section-title" data-aos="fade-up">
+            <h2>Session Treatments</h2>
+            <p>All treatments recorded during this appointment session</p>
+        </div>
+
+        {% if treatments %}
+        <div class="appointments-table-wrapper table-responsive" data-aos="fade-up" data-aos-delay="250">
+            <table class="table appointments-table align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Treatment Date</th>
+                        <th>Procedure Type</th>
+                        <th>Tooth</th>
+                        <th>Notes</th>
+                        <th>Total Cost</th>
+                        <th>Paid</th>
+                        <th>Remaining</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for treatment in treatments %}
+                    <tr>
+                        <td>{{ treatment.id }}</td>
+
+                        <td>
+                            {{ treatment.treatment_date.strftime('%Y-%m-%d %H:%M') if treatment.treatment_date else 'No
+                            date' }}
+                        </td>
+
+                        <td>
+                            <strong>{{ treatment.procedure_type or 'General Treatment' }}</strong>
+                        </td>
+
+                        <td>
+                            {{ treatment.tooth_number or 'N/A' }}
+                        </td>
+
+                        <td>
+                            {{ treatment.notes or 'No notes available' }}
+                        </td>
+
+                        <td>
+                            {{ treatment.total_cost }}
+                        </td>
+
+                        <td>
+                            {{ treatment.paid_amount }}
+                        </td>
+
+                        <td>
+                            {{ treatment.remaining_amount }}
+                        </td>
+
+                        <td class="text-center">
+                            <div class="appointments-actions">
+
+                                <a href="{{ url_for('view_treatment', treatment_id=treatment.id) }}"
+                                    class="table-action-btn view-btn" title="View Treatment">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+
+                                {% if appointment.status == 'Scheduled' %}
+                                <a href="{{ url_for('edit_treatment', treatment_id=treatment.id) }}"
+                                    class="table-action-btn edit-btn" title="Edit Treatment">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+
+                                <a href="{{ url_for('delete_treatment', treatment_id=treatment.id) }}"
+                                    class="table-action-btn delete-table-btn" title="Delete Treatment">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                                {% endif %}
+
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="empty-box text-center" data-aos="fade-up" data-aos-delay="250">
+            <div class="empty-icon">
+                <i class="bi bi-clipboard-x"></i>
+            </div>
+
+            <h4>No treatments recorded yet</h4>
+
+            {% if appointment.status == 'Scheduled' %}
+            <p>This session is still open. You can add one or more treatments.</p>
+            <a href="{{ url_for('add_treatment_to_appointment', appointment_id=appointment.id) }}" class="empty-btn">
+                Add First Treatment
+            </a>
+            {% elif appointment.status == 'Done' %}
+            <p>This session was ended without recorded treatments.</p>
+            {% elif appointment.status == 'Cancelled' %}
+            <p>This appointment is cancelled. Treatments cannot be added.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+
+{% endblock %}
