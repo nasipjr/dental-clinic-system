@@ -222,6 +222,25 @@ def get_appointment_datetime_limits():
         now.strftime('%Y-%m-%dT%H:%M'),
         max_appointment_date.strftime('%Y-%m-%dT%H:%M')
     )
+    
+def parse_payment_amount(payment_amount_raw, remaining_amount):
+    payment_amount_raw = str(payment_amount_raw or '').strip()
+
+    if not payment_amount_raw:
+        return None, 'Payment amount is required.'
+
+    try:
+        payment_amount = float(payment_amount_raw)
+    except ValueError:
+        return None, 'Payment amount must be a valid number.'
+
+    if payment_amount <= 0:
+        return None, 'Payment amount must be greater than 0.'
+
+    if payment_amount > remaining_amount:
+        return None, 'Payment amount cannot be greater than the remaining amount.'
+
+    return payment_amount, None
 
 
 @app.errorhandler(500)
@@ -1184,6 +1203,60 @@ def delete_patient(patient_id):
         db.session.rollback()
         app.logger.exception(f'Failed to delete patient | patient_id={patient_id}')
         return 'Failed to delete patient', 500
+    
+@app.route('/treatments/<int:treatment_id>/add-payment', methods=['GET', 'POST'])
+def add_payment(treatment_id):
+    app.logger.info(f'Add payment page/request | treatment_id={treatment_id}')
+
+    try:
+        treatment = Treatment.query.get_or_404(treatment_id)
+
+        remaining_amount = treatment.remaining_amount
+
+        if remaining_amount <= 0:
+            return 'This treatment has no remaining balance.', 400
+
+        if request.method == 'POST':
+            payment_amount_raw = request.form.get('payment_amount', '')
+
+            payment_amount, payment_error = parse_payment_amount(
+                payment_amount_raw,
+                remaining_amount
+            )
+
+            if payment_error:
+                return render_template(
+                    'add_payment.html',
+                    treatment=treatment,
+                    remaining_amount=remaining_amount,
+                    error_message=payment_error
+                ), 400
+
+            treatment.paid_amount = treatment.paid_amount + payment_amount
+
+            db.session.commit()
+
+            app.logger.info(
+                f'Payment added successfully | treatment_id={treatment.id}, payment_amount={payment_amount}'
+            )
+
+            return redirect(
+                url_for(
+                    'appointment_session',
+                    appointment_id=treatment.appointment_id
+                )
+            )
+
+        return render_template(
+            'add_payment.html',
+            treatment=treatment,
+            remaining_amount=remaining_amount
+        )
+
+    except Exception:
+        db.session.rollback()
+        app.logger.exception(f'Failed to add payment | treatment_id={treatment_id}')
+        return 'Failed to add payment', 500
 
 
 @app.route('/treatments/<int:treatment_id>/delete', methods=['GET', 'POST'])

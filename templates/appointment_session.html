@@ -92,12 +92,21 @@
                     <p>{{ total_paid_sum }}</p>
                 </div>
 
-                <div class="financial-card">
+                <div
+                    class="financial-card {% if total_remaining_sum > 0 %}remaining-warning{% else %}remaining-clear-card{% endif %}">
                     <div class="financial-icon">
-                        <i class="bi bi-exclamation-circle"></i>
+                        <i
+                            class="bi {% if total_remaining_sum > 0 %}bi-exclamation-circle{% else %}bi-check-circle{% endif %}"></i>
                     </div>
+
                     <h4>Total Remaining</h4>
                     <p>{{ total_remaining_sum }}</p>
+
+                    {% if total_remaining_sum > 0 %}
+                    <span class="financial-card-note">This session has an outstanding balance.</span>
+                    {% else %}
+                    <span class="financial-card-note">All payments are complete.</span>
+                    {% endif %}
                 </div>
             </div>
 
@@ -192,7 +201,17 @@
                         </td>
 
                         <td>
-                            {{ treatment.remaining_amount }}
+                            {% if treatment.remaining_amount > 0 %}
+                            <span class="remaining-due">
+                                {{ treatment.remaining_amount }}
+                                <span class="due-badge">Due</span>
+                            </span>
+                            {% else %}
+                            <span class="remaining-clear">
+                                0
+                                <span class="paid-badge">Paid</span>
+                            </span>
+                            {% endif %}
                         </td>
 
                         <td class="text-center">
@@ -202,6 +221,12 @@
                                     class="table-action-btn view-btn" title="View Treatment">
                                     <i class="bi bi-eye"></i>
                                 </a>
+                                {% if treatment.remaining_amount > 0 %}
+                                <a href="{{ url_for('add_payment', treatment_id=treatment.id) }}"
+                                    class="table-action-btn edit-btn" title="Add Payment">
+                                    <i class="bi bi-cash-coin"></i>
+                                </a>
+                                {% endif %}
 
                                 {% if appointment.status == 'Scheduled' %}
                                 <a href="{{ url_for('edit_treatment', treatment_id=treatment.id) }}"

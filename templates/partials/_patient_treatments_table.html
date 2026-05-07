@@ -9,12 +9,11 @@
                         patient_id=patient.id,
                         treatment_sort='id',
                         treatment_order='asc' if treatment_sort != 'id' or treatment_order == 'desc' else 'desc'
-                    ) }}"
-                       class="dashboard-ajax-link"
-                       data-target="patient-treatments-container">
+                    ) }}" class="dashboard-ajax-link" data-target="patient-treatments-container">
                         ID
                         {% if treatment_sort == 'id' %}
-                            <i class="bi {% if treatment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        <i
+                            class="bi {% if treatment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
                     </a>
                 </th>
@@ -27,12 +26,11 @@
                         patient_id=patient.id,
                         treatment_sort='date',
                         treatment_order='asc' if treatment_sort != 'date' or treatment_order == 'desc' else 'desc'
-                    ) }}"
-                       class="dashboard-ajax-link"
-                       data-target="patient-treatments-container">
+                    ) }}" class="dashboard-ajax-link" data-target="patient-treatments-container">
                         Treatment Date
                         {% if treatment_sort == 'date' %}
-                            <i class="bi {% if treatment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        <i
+                            class="bi {% if treatment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
                     </a>
                 </th>
@@ -43,12 +41,11 @@
                         patient_id=patient.id,
                         treatment_sort='procedure_type',
                         treatment_order='asc' if treatment_sort != 'procedure_type' or treatment_order == 'desc' else 'desc'
-                    ) }}"
-                       class="dashboard-ajax-link"
-                       data-target="patient-treatments-container">
+                    ) }}" class="dashboard-ajax-link" data-target="patient-treatments-container">
                         Procedure Type
                         {% if treatment_sort == 'procedure_type' %}
-                            <i class="bi {% if treatment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        <i
+                            class="bi {% if treatment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
                     </a>
                 </th>
@@ -59,12 +56,11 @@
                         patient_id=patient.id,
                         treatment_sort='tooth_number',
                         treatment_order='asc' if treatment_sort != 'tooth_number' or treatment_order == 'desc' else 'desc'
-                    ) }}"
-                       class="dashboard-ajax-link"
-                       data-target="patient-treatments-container">
+                    ) }}" class="dashboard-ajax-link" data-target="patient-treatments-container">
                         Tooth
                         {% if treatment_sort == 'tooth_number' %}
-                            <i class="bi {% if treatment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        <i
+                            class="bi {% if treatment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
                     </a>
                 </th>
@@ -77,12 +73,11 @@
                         patient_id=patient.id,
                         treatment_sort='total_cost',
                         treatment_order='asc' if treatment_sort != 'total_cost' or treatment_order == 'desc' else 'desc'
-                    ) }}"
-                       class="dashboard-ajax-link"
-                       data-target="patient-treatments-container">
+                    ) }}" class="dashboard-ajax-link" data-target="patient-treatments-container">
                         Total Cost
                         {% if treatment_sort == 'total_cost' %}
-                            <i class="bi {% if treatment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        <i
+                            class="bi {% if treatment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
                     </a>
                 </th>
@@ -93,12 +88,11 @@
                         patient_id=patient.id,
                         treatment_sort='paid_amount',
                         treatment_order='asc' if treatment_sort != 'paid_amount' or treatment_order == 'desc' else 'desc'
-                    ) }}"
-                       class="dashboard-ajax-link"
-                       data-target="patient-treatments-container">
+                    ) }}" class="dashboard-ajax-link" data-target="patient-treatments-container">
                         Paid
                         {% if treatment_sort == 'paid_amount' %}
-                            <i class="bi {% if treatment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        <i
+                            class="bi {% if treatment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
                     </a>
                 </th>
@@ -120,7 +114,8 @@
                     </a>
                     <br>
                     <small>
-                        {{ treatment.appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if treatment.appointment.appointment_date else 'No date' }}
+                        {{ treatment.appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if
+                        treatment.appointment.appointment_date else 'No date' }}
                     </small>
                 </td>
 
@@ -149,30 +144,43 @@
                 </td>
 
                 <td>
-                    {{ treatment.remaining_amount }}
+                    {% if treatment.remaining_amount > 0 %}
+                    <span class="remaining-due">
+                        {{ treatment.remaining_amount }}
+                        <span class="due-badge">Due</span>
+                    </span>
+                    {% else %}
+                    <span class="remaining-clear">
+                        0
+                        <span class="paid-badge">Paid</span>
+                    </span>
+                    {% endif %}
                 </td>
 
                 <td class="text-center">
                     <div class="appointments-actions">
 
                         <a href="{{ url_for('view_treatment', treatment_id=treatment.id) }}"
-                           class="table-action-btn view-btn"
-                           title="View Treatment">
+                            class="table-action-btn view-btn" title="View Treatment">
                             <i class="bi bi-eye"></i>
                         </a>
+                        {% if treatment.remaining_amount > 0 %}
+                        <a href="{{ url_for('add_payment', treatment_id=treatment.id) }}"
+                            class="table-action-btn edit-btn" title="Add Payment">
+                            <i class="bi bi-cash-coin"></i>
+                        </a>
+                        {% endif %}
 
                         {% if treatment.appointment.status == 'Scheduled' %}
-                            <a href="{{ url_for('edit_treatment', treatment_id=treatment.id) }}"
-                               class="table-action-btn edit-btn"
-                               title="Edit Treatment">
-                                <i class="bi bi-pencil-square"></i>
-                            </a>
+                        <a href="{{ url_for('edit_treatment', treatment_id=treatment.id) }}"
+                            class="table-action-btn edit-btn" title="Edit Treatment">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
 
-                            <a href="{{ url_for('delete_treatment', treatment_id=treatment.id) }}"
-                               class="table-action-btn delete-table-btn"
-                               title="Delete Treatment">
-                                <i class="bi bi-trash"></i>
-                            </a>
+                        <a href="{{ url_for('delete_treatment', treatment_id=treatment.id) }}"
+                            class="table-action-btn delete-table-btn" title="Delete Treatment">
+                            <i class="bi bi-trash"></i>
+                        </a>
                         {% endif %}
 
                     </div>

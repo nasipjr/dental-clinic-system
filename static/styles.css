@@ -904,3 +904,75 @@
   width: 50%;
   max-width: 520px;
 }
+
+/* Financial edit for loans */
+.remaining-due {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffd666;
+  font-weight: 700;
+}
+
+.remaining-clear {
+  color: #57d38c;
+  font-weight: 700;
+}
+
+.due-badge {
+  display: inline-block;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(255, 193, 7, 0.14);
+  color: #ffd666;
+  border: 1px solid rgba(255, 193, 7, 0.28);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.paid-badge {
+  display: inline-block;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(25, 135, 84, 0.16);
+  color: #57d38c;
+  border: 1px solid rgba(25, 135, 84, 0.3);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.financial-card.remaining-warning {
+  border-color: rgba(255, 193, 7, 0.45);
+  background: rgba(255, 193, 7, 0.06);
+}
+
+.financial-card.remaining-warning .financial-icon {
+  background: rgba(255, 193, 7, 0.14);
+  color: #ffd666;
+}
+
+.financial-card.remaining-warning p {
+  color: #ffd666;
+}
+
+.financial-card.remaining-clear-card {
+  border-color: rgba(25, 135, 84, 0.35);
+  background: rgba(25, 135, 84, 0.05);
+}
+
+.financial-card.remaining-clear-card .financial-icon {
+  background: rgba(25, 135, 84, 0.16);
+  color: #57d38c;
+}
+
+.financial-card.remaining-clear-card p {
+  color: #57d38c;
+}
+
+.financial-card-note {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--default-color), transparent 30%);
+}
