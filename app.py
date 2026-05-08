@@ -542,17 +542,28 @@ def add_treatment_to_appointment(appointment_id):
         appointment = Appointment.query.get_or_404(appointment_id)
 
         if appointment.status != 'Scheduled':
-            return 'Cannot add treatment to a closed or cancelled appointment.', 403
+            return render_template(
+                'error_message.html',
+                title='Action Not Allowed',
+                message='Cannot add treatment because this appointment session is closed or cancelled.',
+                back_url=url_for('appointment_session', appointment_id=appointment.id)
+            ), 403
 
         if request.method == 'POST':
             treatment_date = appointment.appointment_date
             procedure_type = request.form.get('procedure_type', '').strip()
-            
+
             if procedure_type not in TREATMENT_PROCEDURE_TYPES:
-                return 'Invalid treatment procedure type', 400
+                return render_template(
+                    'add_treatment.html',
+                    appointment=appointment,
+                    patient=appointment.patient,
+                    error_message='Invalid treatment procedure type.'
+                ), 400
+
             tooth_number = request.form.get('tooth_number', '').strip()
             notes = request.form.get('notes', '').strip()
-            
+
             total_cost_raw = request.form.get('total_cost', '')
             paid_amount_raw = request.form.get('paid_amount', '')
 
@@ -599,7 +610,12 @@ def add_treatment_to_appointment(appointment_id):
         app.logger.exception(
             f'Failed to add treatment to appointment | appointment_id={appointment_id}'
         )
-        return 'Error Adding Treatment', 500
+        return render_template(
+            'error_message.html',
+            title='Error',
+            message='Failed to add treatment.',
+            back_url=url_for('appointment_session', appointment_id=appointment_id)
+        ), 500
 
 @app.route('/appointments/<int:appointment_id>/end-session', methods=['POST'])
 def end_appointment_session(appointment_id):
@@ -609,7 +625,12 @@ def end_appointment_session(appointment_id):
         appointment = Appointment.query.get_or_404(appointment_id)
 
         if appointment.status != 'Scheduled':
-            return 'Only scheduled appointments can be ended.', 400
+            return render_template(
+                'error_message.html',
+                title='Action Not Allowed',
+                message='Only scheduled appointments can be ended.',
+                back_url=url_for('appointment_session', appointment_id=appointment.id)
+            ), 400
 
         appointment.status = 'Done'
         db.session.commit()
@@ -625,7 +646,12 @@ def end_appointment_session(appointment_id):
         app.logger.exception(
             f'Failed to end appointment session | appointment_id={appointment_id}'
         )
-        return 'Failed to end appointment session', 500
+        return render_template(
+            'error_message.html',
+            title='Error',
+            message='Failed to end appointment session.',
+            back_url=url_for('appointment_session', appointment_id=appointment_id)
+        ), 500
 
 
 @app.route('/patients/add', methods=['GET', 'POST'])
@@ -986,10 +1012,20 @@ def delete_appointment(appointment_id):
         appointment = Appointment.query.get_or_404(appointment_id)
 
         if appointment.status == 'Done':
-            return 'Cannot delete a completed appointment.', 403
+            return render_template(
+                'error_message.html',
+                title='Action Not Allowed',
+                message='Cannot delete a completed appointment because it may contain important medical or payment history.',
+                back_url=url_for('patient_detail', patient_id=appointment.patient_id)
+            ), 403
 
         if appointment.treatments:
-            return 'Cannot delete an appointment that has treatments.', 403
+            return render_template(
+                'error_message.html',
+                title='Action Not Allowed',
+                message='Cannot delete an appointment that has treatments.',
+                back_url=url_for('patient_detail', patient_id=appointment.patient_id)
+            ), 403
 
         if request.method == 'POST':
             patient_id = appointment.patient_id
@@ -1004,7 +1040,12 @@ def delete_appointment(appointment_id):
     except Exception:
         db.session.rollback()
         app.logger.exception(f'Failed to delete appointment | appointment_id={appointment_id}')
-        return 'Failed to delete appointment', 500
+        return render_template(
+            'error_message.html',
+            title='Error',
+            message='Failed to delete appointment.',
+            back_url=url_for('appointments')
+        ), 500
 
 
 
@@ -1103,7 +1144,12 @@ def edit_treatment(treatment_id):
         treatment = Treatment.query.get_or_404(treatment_id)
 
         if treatment.appointment.status != 'Scheduled' and request.method == 'POST':
-            return 'Cannot edit treatment after the appointment session is closed.', 403
+            return render_template(
+                'error_message.html',
+                title='Action Not Allowed',
+                message='Cannot edit this treatment because the appointment session is closed or cancelled.',
+                back_url=url_for('appointment_session', appointment_id=treatment.appointment_id)
+            ), 403
 
         if request.method == 'POST':
             treatment.treatment_date = treatment.appointment.appointment_date
@@ -1111,7 +1157,14 @@ def edit_treatment(treatment_id):
             procedure_type = request.form.get('procedure_type', '').strip()
 
             if procedure_type not in TREATMENT_PROCEDURE_TYPES:
-                return 'Invalid treatment procedure type', 400
+                return render_template(
+                    'edit_treatment.html',
+                    treatment=treatment,
+                    appointment=treatment.appointment,
+                    patient=treatment.appointment.patient,
+                    mode='edit',
+                    error_message='Invalid treatment procedure type.'
+                ), 400
 
             treatment.procedure_type = procedure_type
             treatment.tooth_number = request.form.get('tooth_number', '').strip()
@@ -1129,6 +1182,9 @@ def edit_treatment(treatment_id):
                 return render_template(
                     'edit_treatment.html',
                     treatment=treatment,
+                    appointment=treatment.appointment,
+                    patient=treatment.appointment.patient,
+                    mode='edit',
                     error_message=money_error
                 ), 400
 
@@ -1157,7 +1213,12 @@ def edit_treatment(treatment_id):
     except Exception:
         db.session.rollback()
         app.logger.exception(f'Failed to edit treatment | treatment_id={treatment_id}')
-        return 'Failed to edit treatment', 500
+        return render_template(
+            'error_message.html',
+            title='Error',
+            message='Failed to edit treatment.',
+            back_url=url_for('appointments')
+        ), 500
 
 
 @app.route('/treatments/<int:treatment_id>/view')
@@ -1188,7 +1249,12 @@ def delete_patient(patient_id):
         patient = Patient.query.get_or_404(patient_id)
 
         if patient.appointments:
-            return 'Cannot delete a patient who has appointments.', 403
+            return render_template(
+                'error_message.html',
+                title='Action Not Allowed',
+                message='Cannot delete this patient because they have appointments linked to their medical history.',
+                back_url=url_for('patient_detail', patient_id=patient.id)
+            ), 403
 
         if request.method == 'POST':
             db.session.delete(patient)
@@ -1202,7 +1268,12 @@ def delete_patient(patient_id):
     except Exception:
         db.session.rollback()
         app.logger.exception(f'Failed to delete patient | patient_id={patient_id}')
-        return 'Failed to delete patient', 500
+        return render_template(
+            'error_message.html',
+            title='Error',
+            message='Failed to delete patient.',
+            back_url=url_for('patients')
+        ), 500
     
 @app.route('/treatments/<int:treatment_id>/add-payment', methods=['GET', 'POST'])
 def add_payment(treatment_id):
@@ -1214,7 +1285,12 @@ def add_payment(treatment_id):
         remaining_amount = treatment.remaining_amount
 
         if remaining_amount <= 0:
-            return 'This treatment has no remaining balance.', 400
+            return render_template(
+                'error_message.html',
+                title='No Remaining Balance',
+                message='This treatment is already fully paid.',
+                back_url=url_for('appointment_session', appointment_id=treatment.appointment_id)
+            ), 400
 
         if request.method == 'POST':
             payment_amount_raw = request.form.get('payment_amount', '')
@@ -1256,7 +1332,12 @@ def add_payment(treatment_id):
     except Exception:
         db.session.rollback()
         app.logger.exception(f'Failed to add payment | treatment_id={treatment_id}')
-        return 'Failed to add payment', 500
+        return render_template(
+            'error_message.html',
+            title='Error',
+            message='Failed to add payment.',
+            back_url=url_for('appointments')
+        ), 500
 
 
 @app.route('/treatments/<int:treatment_id>/delete', methods=['GET', 'POST'])
@@ -1268,7 +1349,12 @@ def delete_treatment(treatment_id):
         appointment_id = treatment.appointment_id
 
         if treatment.appointment.status != 'Scheduled':
-            return 'Cannot delete treatment after the appointment session is closed.', 403
+            return render_template(
+                'error_message.html',
+                title='Action Not Allowed',
+                message='Cannot delete this treatment because the appointment session is closed or cancelled.',
+                back_url=url_for('appointment_session', appointment_id=appointment_id)
+            ), 403
 
         if request.method == 'POST':
             db.session.delete(treatment)
@@ -1282,7 +1368,12 @@ def delete_treatment(treatment_id):
     except Exception:
         db.session.rollback()
         app.logger.exception(f'Failed to delete treatment | treatment_id={treatment_id}')
-        return 'Failed to delete treatment', 500
+        return render_template(
+            'error_message.html',
+            title='Error',
+            message='Failed to delete treatment.',
+            back_url=url_for('appointments')
+        ), 500
 
 
 if __name__ == '__main__':
