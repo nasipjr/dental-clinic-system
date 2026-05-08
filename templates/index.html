@@ -12,114 +12,213 @@
     <div class="container" data-aos="fade-up" data-aos-delay="100">
 
       <div class="row align-items-center">
+
         <div class="col-lg-6">
           <div class="hero-content">
+
             <div class="trust-badges mb-4" data-aos="fade-right" data-aos-delay="200">
               <div class="badge-item">
-                <i class="bi bi-shield-check"></i>
-                <span>Accredited</span>
-              </div>
-              <div class="badge-item">
                 <i class="bi bi-clock"></i>
-                <span>24/7 Emergency</span>
+                <span>08:00 - 18:00 Working Hours</span>
+              </div>
+
+              <div class="badge-item">
+                <i class="bi bi-calendar-check"></i>
+                <span>30-Day Booking Window</span>
               </div>
             </div>
 
             <h1 data-aos="fade-right" data-aos-delay="300">
-              Excellence in <span class="highlight">Dentalcare</span> With Compassionate Care
+              Today’s <span class="highlight">Clinic Overview</span>
             </h1>
 
             <p class="hero-description" data-aos="fade-right" data-aos-delay="400">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et
-              dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
+              Track patients, appointments, treatments, payments, and outstanding balances
+              from one practical dashboard.
             </p>
 
-            <div class="hero-stats mb-4" data-aos="fade-right" data-aos-delay="500">
-              <div class="stat-item">
-                <h3><span data-purecounter-start="0" data-purecounter-end="{{ total_patients }}"
-                    data-purecounter-duration="2" class="purecounter"></span></h3>
+            <div class="dashboard-stat-grid mb-4" data-aos="fade-right" data-aos-delay="500">
+
+              <div class="dashboard-stat-card">
+                <h3>
+                  <span data-purecounter-start="0" data-purecounter-end="{{ total_patients }}"
+                    data-purecounter-duration="2" class="purecounter"></span>
+                </h3>
                 <p>Total Patients</p>
               </div>
 
-              <div class="stat-item">
-                <h3><span data-purecounter-start="0" data-purecounter-end="{{ done_appointments }}"
-                    data-purecounter-duration="2" class="purecounter"></span></h3>
+              <div class="dashboard-stat-card">
+                <h3>
+                  <span data-purecounter-start="0" data-purecounter-end="{{ scheduled_appointments }}"
+                    data-purecounter-duration="2" class="purecounter"></span>
+                </h3>
+                <p>Scheduled Appointments</p>
+              </div>
+
+              <div class="dashboard-stat-card">
+                <h3>
+                  <span data-purecounter-start="0" data-purecounter-end="{{ done_appointments }}"
+                    data-purecounter-duration="2" class="purecounter"></span>
+                </h3>
                 <p>Done Appointments</p>
               </div>
 
-              <div class="stat-item">
-                <h3><span data-purecounter-start="0" data-purecounter-end="{{ total_treatments }}"
-                    data-purecounter-duration="2" class="purecounter"></span></h3>
+              <div class="dashboard-stat-card">
+                <h3>
+                  <span data-purecounter-start="0" data-purecounter-end="{{ total_treatments }}"
+                    data-purecounter-duration="2" class="purecounter"></span>
+                </h3>
                 <p>Total Treatments</p>
               </div>
-            </div>
 
-            <div class="hero-stats mb-4" data-aos="fade-right" data-aos-delay="500">
-              <div class="stat-item">
-                <h3><span data-purecounter-start="0" data-purecounter-end="{{ total_revenue }}"
-                    data-purecounter-duration="2" class="purecounter"></span></h3>
+              <div class="dashboard-stat-card">
+                <h3>
+                  <span data-purecounter-start="0" data-purecounter-end="{{ total_revenue }}"
+                    data-purecounter-duration="2" class="purecounter"></span>
+                </h3>
                 <p>Total Revenue</p>
               </div>
 
-              <div class="stat-item">
-                <h3><span data-purecounter-start="0" data-purecounter-end="{{ total_paid }}"
-                    data-purecounter-duration="2" class="purecounter"></span></h3>
+              <div class="dashboard-stat-card">
+                <h3>
+                  <span data-purecounter-start="0" data-purecounter-end="{{ total_paid }}" data-purecounter-duration="2"
+                    class="purecounter"></span>
+                </h3>
                 <p>Total Paid</p>
               </div>
 
-              <div class="stat-item">
-                <h3><span data-purecounter-start="0" data-purecounter-end="{{ total_remaining }}"
-                    data-purecounter-duration="2" class="purecounter"></span></h3>
-                <p>Total Remaining</p>
-              </div>
             </div>
 
-            <div class="hero-actions" data-aos="fade-right" data-aos-delay="600">
-              <div class="hero-actions mt-3 custom-btn-position">
-                <a href="{{ url_for('appointments') }}" class="btn btn-primary">Book Appointment</a>
-              </div>
+            <div class="hero-actions d-flex gap-3 flex-wrap" data-aos="fade-right" data-aos-delay="600">
+              <a href="{{ url_for('patients') }}" class="btn btn-primary">
+                Manage Patients
+              </a>
+
+              <a href="{{ url_for('appointments') }}" class="btn btn-outline-primary">
+                View Appointments
+              </a>
             </div>
 
-            <div class="emergency-contact" data-aos="fade-right" data-aos-delay="700">
+            <div class="emergency-contact mt-4" data-aos="fade-right" data-aos-delay="700">
               <div class="emergency-icon">
-                <i class="bi bi-telephone-fill"></i>
+                <i class="bi bi-cash-coin"></i>
               </div>
+
               <div class="emergency-info">
-                <small>Emergency Hotline</small>
-                <strong>+963 958-948-727</strong>
+                <small>Outstanding Balance</small>
+                <strong>{{ total_remaining }}</strong>
               </div>
             </div>
+
           </div>
         </div>
 
         <div class="col-lg-6">
           <div class="hero-visual" data-aos="fade-left" data-aos-delay="400">
             <div class="main-image">
-              <img src="{{ url_for('static', filename='assets/img/health/staff-10.webp') }}"
-                   alt="Modern Healthcare Facility"
-                   class="img-fluid">
-
-              <div class="floating-card appointment-card" style="opacity: 0.5;">
-                <div class="card-content">
-                  <h6>Total Appointments</h6>
-                  <h3 class="text-center">{{ total_appointments }}</h3>
-                </div>
-              </div>
+              <img src="{{ url_for('static', filename='assets/img/health/staff-10.webp') }}" alt="Dental Clinic"
+                class="img-fluid">
             </div>
 
-            <div class="background-elements">
-              <div class="element element-1"></div>
-              <div class="element element-2"></div>
-              <div class="element element-3"></div>
+            <div class="floating-card appointment-card">
+              <div class="card-content">
+                <h6>Today’s Appointments</h6>
+                <h3 class="text-center">{{ today_appointments|length }}</h3>
+                <small>Scheduled for today</small>
+              </div>
             </div>
           </div>
         </div>
+
       </div>
 
     </div>
 
   </section>
   <!-- /Hero Section -->
+
+  <!-- Today's Appointments Title -->
+  <div class="container section-title" style="margin-top: 80px;" data-aos="fade-up">
+    <h2>Today’s Appointments</h2>
+    <p>Appointments scheduled for today.</p>
+  </div>
+  <!-- /Today's Appointments Title -->
+
+
+  <!-- Today's Appointments Section -->
+  <section id="today-appointments-section" class="find-a-doctor section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+      {% if today_appointments %}
+      <div class="appointments-table-wrapper table-responsive">
+        <table class="table appointments-table align-middle">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Patient</th>
+              <th>Reason</th>
+              <th>Status</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for appointment in today_appointments %}
+            <tr>
+              <td>
+                {{ appointment.appointment_date.strftime('%H:%M') if appointment.appointment_date else 'No time' }}
+              </td>
+
+              <td>
+                <strong>
+                  {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                </strong>
+                <br>
+                <small>{{ appointment.patient.phone or 'No phone number' }}</small>
+              </td>
+
+              <td>{{ appointment.reason or 'No reason provided' }}</td>
+
+              <td>
+                <span class="appointment-status
+                {% if appointment.status == 'Done' %}status-done
+                {% elif appointment.status == 'Cancelled' %}status-cancelled
+                {% else %}status-scheduled{% endif %}">
+                  {{ appointment.status }}
+                </span>
+              </td>
+
+              <td class="text-center">
+                <a href="{{ url_for('view_appointment', appointment_id=appointment.id) }}"
+                  class="table-action-btn view-btn" title="View Appointment">
+                  <i class="bi bi-eye"></i>
+                </a>
+
+                <a href="{{ url_for('appointment_session', appointment_id=appointment.id) }}"
+                  class="table-action-btn session-btn" title="Open Session">
+                  <i class="bi bi-clipboard2-pulse"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% else %}
+      <div class="empty-state-card text-center">
+        <i class="bi bi-calendar-check"></i>
+        <h4>No appointments today</h4>
+        <p>There are no appointments scheduled for today.</p>
+        <a href="{{ url_for('patients') }}" class="btn btn-primary mt-3">
+          Add Appointment
+        </a>
+      </div>
+      {% endif %}
+
+    </div>
+  </section>
+  <!-- /Today's Appointments Section -->
 
 
   <!-- Latest Patients Title -->
@@ -130,17 +229,17 @@
   <!-- /Latest Patients Title -->
 
 
-<!-- Latest Patients Table Section -->
-<section id="latest-patients-table-section" class="find-a-doctor section">
-  <div class="container" data-aos="fade-up" data-aos-delay="100">
+  <!-- Latest Patients Table Section -->
+  <section id="latest-patients-table-section" class="find-a-doctor section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
 
-    <div id="latest-patients-container">
-      {% include "partials/_latest_patients_table.html" %}
+      <div id="latest-patients-container">
+        {% include "partials/_latest_patients_table.html" %}
+      </div>
+
     </div>
-
-  </div>
-</section>
-<!-- /Latest Patients Table Section -->
+  </section>
+  <!-- /Latest Patients Table Section -->
 
 
   <!-- Latest Appointments Title -->
@@ -151,17 +250,17 @@
   <!-- /Latest Appointments Title -->
 
 
-<!-- Latest Appointments Table Section -->
-<section id="latest-appointments-table-section" class="find-a-doctor section">
-  <div class="container" data-aos="fade-up" data-aos-delay="100">
+  <!-- Latest Appointments Table Section -->
+  <section id="latest-appointments-table-section" class="find-a-doctor section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
 
-    <div id="latest-appointments-container">
-      {% include "partials/_latest_appointments_table.html" %}
+      <div id="latest-appointments-container">
+        {% include "partials/_latest_appointments_table.html" %}
+      </div>
+
     </div>
-
-  </div>
-</section>
-<!-- /Latest Appointments Table Section -->
+  </section>
+  <!-- /Latest Appointments Table Section -->
 
 </main>
 

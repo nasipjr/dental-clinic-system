@@ -257,8 +257,22 @@ def home():
     try:
         total_patients = Patient.query.count()
         total_appointments = Appointment.query.count()
+        scheduled_appointments = Appointment.query.filter_by(status='Scheduled').count()
         done_appointments = Appointment.query.filter_by(status='Done').count()
         total_treatments = Treatment.query.count()
+
+        today = datetime.now().date()
+        today_start = datetime.combine(today, time.min)
+        today_end = datetime.combine(today, time.max)
+
+        today_appointments = (
+            Appointment.query
+            .join(Patient)
+            .filter(Appointment.appointment_date >= today_start)
+            .filter(Appointment.appointment_date <= today_end)
+            .order_by(Appointment.appointment_date.asc())
+            .all()
+        )
 
         all_treatments = Treatment.query.all()
         total_revenue = sum(treatment.total_cost for treatment in all_treatments)
@@ -336,11 +350,13 @@ def home():
             'index.html',
             total_patients=total_patients,
             total_appointments=total_appointments,
+            scheduled_appointments=scheduled_appointments,
             done_appointments=done_appointments,
             total_treatments=total_treatments,
             total_revenue=total_revenue,
             total_paid=total_paid,
             total_remaining=total_remaining,
+            today_appointments=today_appointments,
             latest_patients=latest_patients,
             latest_appointments=latest_appointments,
             patient_search=patient_search,
