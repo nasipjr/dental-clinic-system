@@ -265,11 +265,22 @@ def home():
         today_start = datetime.combine(today, time.min)
         today_end = datetime.combine(today, time.max)
 
-        today_appointments = (
+        today_scheduled_appointments = (
             Appointment.query
             .join(Patient)
             .filter(Appointment.appointment_date >= today_start)
             .filter(Appointment.appointment_date <= today_end)
+            .filter(Appointment.status == 'Scheduled')
+            .order_by(Appointment.appointment_date.asc())
+            .all()
+        )
+
+        today_done_appointments = (
+            Appointment.query
+            .join(Patient)
+            .filter(Appointment.appointment_date >= today_start)
+            .filter(Appointment.appointment_date <= today_end)
+            .filter(Appointment.status == 'Done')
             .order_by(Appointment.appointment_date.asc())
             .all()
         )
@@ -356,7 +367,8 @@ def home():
             total_revenue=total_revenue,
             total_paid=total_paid,
             total_remaining=total_remaining,
-            today_appointments=today_appointments,
+            today_scheduled_appointments=today_scheduled_appointments,
+            today_done_appointments=today_done_appointments,
             latest_patients=latest_patients,
             latest_appointments=latest_appointments,
             patient_search=patient_search,

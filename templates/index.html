@@ -122,9 +122,9 @@
 
             <div class="floating-card appointment-card">
               <div class="card-content">
-                <h6>Today’s Appointments</h6>
-                <h3 class="text-center">{{ today_appointments|length }}</h3>
-                <small>Scheduled for today</small>
+                <h6>Today’s Scheduled</h6>
+                <h3 class="text-center">{{ today_scheduled_appointments|length }}</h3>
+                <small>Appointments waiting today</small>
               </div>
             </div>
           </div>
@@ -137,25 +137,26 @@
   </section>
   <!-- /Hero Section -->
 
-  <!-- Today's Appointments Title -->
+  <!-- Today's Scheduled Appointments Title -->
   <div class="container section-title" style="margin-top: 80px;" data-aos="fade-up">
-    <h2>Today’s Appointments</h2>
-    <p>Appointments scheduled for today.</p>
+    <h2>Today’s Scheduled Appointments</h2>
+    <p>Appointments scheduled for today and still waiting to be completed.</p>
   </div>
-  <!-- /Today's Appointments Title -->
+  <!-- /Today's Scheduled Appointments Title -->
 
 
-  <!-- Today's Appointments Section -->
-  <section id="today-appointments-section" class="find-a-doctor section">
+  <!-- Today's Scheduled Appointments Section -->
+  <section id="today-scheduled-appointments-section" class="find-a-doctor section">
     <div class="container" data-aos="fade-up" data-aos-delay="100">
 
-      {% if today_appointments %}
+      {% if today_scheduled_appointments %}
       <div class="appointments-table-wrapper table-responsive">
         <table class="table appointments-table align-middle">
           <thead>
             <tr>
               <th>Time</th>
               <th>Patient</th>
+              <th>Phone</th>
               <th>Reason</th>
               <th>Status</th>
               <th class="text-center">Actions</th>
@@ -163,7 +164,101 @@
           </thead>
 
           <tbody>
-            {% for appointment in today_appointments %}
+            {% for appointment in today_scheduled_appointments %}
+            <tr>
+              <td>
+                {{ appointment.appointment_date.strftime('%H:%M') if appointment.appointment_date else 'No time' }}
+              </td>
+
+              <td>
+                <strong>
+                  {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                </strong>
+              </td>
+
+              <td>
+                {{ appointment.patient.phone or 'No phone number' }}
+              </td>
+
+              <td>
+                {{ appointment.reason or 'No reason provided' }}
+              </td>
+
+              <td>
+                <span class="appointment-status status-scheduled">
+                  {{ appointment.status }}
+                </span>
+              </td>
+
+              <td class="text-center">
+                <a href="{{ url_for('view_appointment', appointment_id=appointment.id) }}"
+                   class="table-action-btn view-btn"
+                   title="View Appointment">
+                  <i class="bi bi-eye"></i>
+                </a>
+
+                <a href="{{ url_for('appointment_session', appointment_id=appointment.id) }}"
+                   class="table-action-btn session-btn"
+                   title="Open Session">
+                  <i class="bi bi-clipboard2-pulse"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% else %}
+      <div class="empty-state-card text-center">
+        <i class="bi bi-calendar-check"></i>
+        <h4>No scheduled appointments today</h4>
+        <p>There are no scheduled appointments waiting for today.</p>
+        <a href="{{ url_for('patients') }}" class="btn btn-primary mt-3">
+          Add Appointment
+        </a>
+      </div>
+      {% endif %}
+
+    </div>
+  </section>
+  <!-- /Today's Scheduled Appointments Section -->
+
+
+  <!-- Done Today Title -->
+  <div class="container section-title" style="margin-top: 80px;" data-aos="fade-up">
+    <h2>Done Today</h2>
+    <p>Appointments completed today with treatment and payment summary.</p>
+  </div>
+  <!-- /Done Today Title -->
+
+
+  <!-- Done Today Section -->
+  <section id="done-today-section" class="find-a-doctor section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+      {% if today_done_appointments %}
+      <div class="appointments-table-wrapper table-responsive">
+        <table class="table appointments-table align-middle">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Patient</th>
+              <th>Reason</th>
+              <th>Treatments</th>
+              <th>Total Cost</th>
+              <th>Paid</th>
+              <th>Remaining</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for appointment in today_done_appointments %}
+            {% set total_cost = appointment.treatments|sum(attribute='total_cost') %}
+            {% set total_paid = appointment.treatments|sum(attribute='paid_amount') %}
+            {% set total_remaining = total_cost - total_paid %}
+
             <tr>
               <td>
                 {{ appointment.appointment_date.strftime('%H:%M') if appointment.appointment_date else 'No time' }}
@@ -177,25 +272,46 @@
                 <small>{{ appointment.patient.phone or 'No phone number' }}</small>
               </td>
 
-              <td>{{ appointment.reason or 'No reason provided' }}</td>
+              <td>
+                {{ appointment.reason or 'No reason provided' }}
+              </td>
 
               <td>
-                <span class="appointment-status
-                {% if appointment.status == 'Done' %}status-done
-                {% elif appointment.status == 'Cancelled' %}status-cancelled
-                {% else %}status-scheduled{% endif %}">
-                  {{ appointment.status }}
-                </span>
+                {{ appointment.treatments|length }}
+              </td>
+
+              <td>
+                {{ total_cost }}
+              </td>
+
+              <td>
+                {{ total_paid }}
+              </td>
+
+              <td>
+                {% if total_remaining > 0 %}
+                  <span class="remaining-due">
+                    {{ total_remaining }}
+                    <span class="due-badge">Due</span>
+                  </span>
+                {% else %}
+                  <span class="remaining-clear">
+                    0
+                    <span class="paid-badge">Paid</span>
+                  </span>
+                {% endif %}
               </td>
 
               <td class="text-center">
                 <a href="{{ url_for('view_appointment', appointment_id=appointment.id) }}"
-                  class="table-action-btn view-btn" title="View Appointment">
+                   class="table-action-btn view-btn"
+                   title="View Appointment">
                   <i class="bi bi-eye"></i>
                 </a>
 
                 <a href="{{ url_for('appointment_session', appointment_id=appointment.id) }}"
-                  class="table-action-btn session-btn" title="Open Session">
+                   class="table-action-btn session-btn"
+                   title="Open Session">
                   <i class="bi bi-clipboard2-pulse"></i>
                 </a>
               </td>
@@ -207,61 +323,15 @@
 
       {% else %}
       <div class="empty-state-card text-center">
-        <i class="bi bi-calendar-check"></i>
-        <h4>No appointments today</h4>
-        <p>There are no appointments scheduled for today.</p>
-        <a href="{{ url_for('patients') }}" class="btn btn-primary mt-3">
-          Add Appointment
-        </a>
+        <i class="bi bi-check-circle"></i>
+        <h4>No completed appointments today</h4>
+        <p>Completed appointment sessions will appear here after using End Session.</p>
       </div>
       {% endif %}
 
     </div>
   </section>
-  <!-- /Today's Appointments Section -->
-
-
-  <!-- Latest Patients Title -->
-  <div class="container section-title" style="margin-top: 80px;" data-aos="fade-up">
-    <h2>Latest Patients</h2>
-    <p>Search and sort the latest patient records.</p>
-  </div>
-  <!-- /Latest Patients Title -->
-
-
-  <!-- Latest Patients Table Section -->
-  <section id="latest-patients-table-section" class="find-a-doctor section">
-    <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-      <div id="latest-patients-container">
-        {% include "partials/_latest_patients_table.html" %}
-      </div>
-
-    </div>
-  </section>
-  <!-- /Latest Patients Table Section -->
-
-
-  <!-- Latest Appointments Title -->
-  <div class="container section-title" style="margin-top: 80px;" data-aos="fade-up">
-    <h2>Latest Appointments</h2>
-    <p>Search and sort the latest appointment records.</p>
-  </div>
-  <!-- /Latest Appointments Title -->
-
-
-  <!-- Latest Appointments Table Section -->
-  <section id="latest-appointments-table-section" class="find-a-doctor section">
-    <div class="container" data-aos="fade-up" data-aos-delay="100">
-
-      <div id="latest-appointments-container">
-        {% include "partials/_latest_appointments_table.html" %}
-      </div>
-
-    </div>
-  </section>
-  <!-- /Latest Appointments Table Section -->
-
+  <!-- /Done Today Section -->
 </main>
 
 {% endblock %}
