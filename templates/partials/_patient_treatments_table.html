@@ -67,38 +67,6 @@
 
                 <th>Notes</th>
 
-                <th>
-                    <a href="{{ url_for(
-                        'patient_treatments_table',
-                        patient_id=patient.id,
-                        treatment_sort='total_cost',
-                        treatment_order='asc' if treatment_sort != 'total_cost' or treatment_order == 'desc' else 'desc'
-                    ) }}" class="dashboard-ajax-link" data-target="patient-treatments-container">
-                        Total Cost
-                        {% if treatment_sort == 'total_cost' %}
-                        <i
-                            class="bi {% if treatment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
-                        {% endif %}
-                    </a>
-                </th>
-
-                <th>
-                    <a href="{{ url_for(
-                        'patient_treatments_table',
-                        patient_id=patient.id,
-                        treatment_sort='paid_amount',
-                        treatment_order='asc' if treatment_sort != 'paid_amount' or treatment_order == 'desc' else 'desc'
-                    ) }}" class="dashboard-ajax-link" data-target="patient-treatments-container">
-                        Paid
-                        {% if treatment_sort == 'paid_amount' %}
-                        <i
-                            class="bi {% if treatment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
-                        {% endif %}
-                    </a>
-                </th>
-
-                <th>Remaining</th>
-
                 <th class="text-center">Actions</th>
             </tr>
         </thead>
@@ -135,27 +103,6 @@
                     {{ treatment.notes or 'No notes available' }}
                 </td>
 
-                <td>
-                    {{ treatment.total_cost }}
-                </td>
-
-                <td>
-                    {{ treatment.paid_amount }}
-                </td>
-
-                <td>
-                    {% if treatment.remaining_amount > 0 %}
-                    <span class="remaining-due">
-                        {{ treatment.remaining_amount }}
-                        <span class="due-badge">Due</span>
-                    </span>
-                    {% else %}
-                    <span class="remaining-clear">
-                        0
-                        <span class="paid-badge">Paid</span>
-                    </span>
-                    {% endif %}
-                </td>
 
                 <td class="text-center">
                     <div class="appointments-actions">
@@ -164,12 +111,6 @@
                             class="table-action-btn view-btn" title="View Treatment">
                             <i class="bi bi-eye"></i>
                         </a>
-                        {% if treatment.remaining_amount > 0 %}
-                        <a href="{{ url_for('add_payment', treatment_id=treatment.id) }}"
-                            class="table-action-btn edit-btn" title="Add Payment">
-                            <i class="bi bi-cash-coin"></i>
-                        </a>
-                        {% endif %}
 
                         {% if treatment.appointment.status == 'Scheduled' %}
                         <a href="{{ url_for('edit_treatment', treatment_id=treatment.id) }}"

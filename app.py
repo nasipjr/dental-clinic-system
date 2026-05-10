@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from models import db, Patient, Appointment, Treatment
+from models import db, Patient, Appointment, Treatment, Payment, PaymentAllocation
 from datetime import datetime, timedelta, time
 
 import json
@@ -85,18 +85,20 @@ PATIENT_GENDERS = {
     'Male',
     'Female'
 }
-TREATMENT_PROCEDURE_TYPES = {
-    'Check-up',
-    'Cleaning',
-    'Filling',
-    'Root Canal',
-    'Extraction',
-    'Crown / Bridge',
-    'Braces / Orthodontics',
-    'Whitening',
-    'Emergency Pain',
-    'Follow-up'
+TREATMENT_PRICES = {
+    'Check-up': 25000,
+    'Cleaning': 50000,
+    'Filling': 75000,
+    'Root Canal': 150000,
+    'Extraction': 80000,
+    'Crown / Bridge': 200000,
+    'Braces / Orthodontics': 300000,
+    'Whitening': 120000,
+    'Emergency Pain': 60000,
+    'Follow-up': 20000
 }
+
+TREATMENT_PROCEDURE_TYPES = set(TREATMENT_PRICES.keys())
 
 
 @app.errorhandler(404)
@@ -242,6 +244,66 @@ def parse_payment_amount(payment_amount_raw, remaining_amount):
 
     return payment_amount, None
 
+def parse_invoice_payment_amount(payment_amount_raw):
+    payment_amount_raw = str(payment_amount_raw or '').strip()
+
+    if not payment_amount_raw:
+        return None, 'Payment amount is required.'
+
+    try:
+        payment_amount = float(payment_amount_raw)
+    except ValueError:
+        return None, 'Payment amount must be a valid number.'
+
+    if payment_amount <= 0:
+        return None, 'Payment amount must be greater than 0.'
+
+    return payment_amount, None
+
+def allocate_patient_payments_to_invoices(patient_id):
+    patient_payments = (
+        Payment.query
+        .filter_by(patient_id=patient_id)
+        .order_by(Payment.payment_date.asc(), Payment.id.asc())
+        .all()
+    )
+
+    unpaid_invoices = (
+        Appointment.query
+        .filter(Appointment.patient_id == patient_id)
+        .join(Treatment)
+        .distinct()
+        .order_by(Appointment.appointment_date.asc(), Appointment.id.asc())
+        .all()
+    )
+
+    for payment in patient_payments:
+        remaining_payment = payment.unallocated_amount
+
+        if remaining_payment <= 0:
+            continue
+
+        for appointment in unpaid_invoices:
+            if remaining_payment <= 0:
+                break
+
+            invoice_outstanding = appointment.outstanding_amount
+
+            if invoice_outstanding <= 0:
+                continue
+
+            allocation_amount = min(remaining_payment, invoice_outstanding)
+
+            allocation = PaymentAllocation(
+                payment_id=payment.id,
+                appointment_id=appointment.id,
+                amount=allocation_amount
+            )
+
+            db.session.add(allocation)
+            db.session.flush()
+
+            remaining_payment -= allocation_amount
 
 @app.errorhandler(500)
 def internal_error(error):
@@ -286,8 +348,10 @@ def home():
         )
 
         all_treatments = Treatment.query.all()
+        all_payments = Payment.query.all()
+
         total_revenue = sum(treatment.total_cost for treatment in all_treatments)
-        total_paid = sum(treatment.paid_amount for treatment in all_treatments)
+        total_paid = sum(payment.amount for payment in all_payments)
         total_remaining = total_revenue - total_paid
 
         patient_search = request.args.get('patient_search', '')
@@ -542,9 +606,10 @@ def appointment_session(appointment_id):
             appointment_id=appointment.id
         ).order_by(Treatment.id.desc()).all()
 
-        total_cost_sum = sum(treatment.total_cost for treatment in treatments)
-        total_paid_sum = sum(treatment.paid_amount for treatment in treatments)
-        total_remaining_sum = sum(treatment.remaining_amount for treatment in treatments)
+        total_cost_sum = appointment.invoice_total
+        total_paid_sum = appointment.total_paid
+        total_remaining_sum = appointment.balance
+        credit_amount = appointment.credit
 
         return render_template(
             'appointment_session.html',
@@ -553,14 +618,20 @@ def appointment_session(appointment_id):
             treatments=treatments,
             total_cost_sum=total_cost_sum,
             total_paid_sum=total_paid_sum,
-            total_remaining_sum=total_remaining_sum
+            total_remaining_sum=total_remaining_sum,
+            credit_amount=credit_amount
         )
 
     except Exception:
         app.logger.exception(
             f'Failed to open appointment session | appointment_id={appointment_id}'
         )
-        return 'Failed to open appointment session', 500
+        return render_template(
+            'error_message.html',
+            title='Error',
+            message='Failed to open appointment session.',
+            back_url=url_for('appointments')
+        ), 500
     
 @app.route('/appointments/<int:appointment_id>/treatments/add', methods=['GET', 'POST'])
 def add_treatment_to_appointment(appointment_id):
@@ -586,27 +657,14 @@ def add_treatment_to_appointment(appointment_id):
                     'add_treatment.html',
                     appointment=appointment,
                     patient=appointment.patient,
+                    treatment_prices=TREATMENT_PRICES,
                     error_message='Invalid treatment procedure type.'
                 ), 400
 
             tooth_number = request.form.get('tooth_number', '').strip()
             notes = request.form.get('notes', '').strip()
 
-            total_cost_raw = request.form.get('total_cost', '')
-            paid_amount_raw = request.form.get('paid_amount', '')
-
-            total_cost, paid_amount, money_error = parse_treatment_money(
-                total_cost_raw,
-                paid_amount_raw
-            )
-
-            if money_error:
-                return render_template(
-                    'add_treatment.html',
-                    appointment=appointment,
-                    patient=appointment.patient,
-                    error_message=money_error
-                ), 400
+            total_cost = TREATMENT_PRICES[procedure_type]
 
             new_treatment = Treatment(
                 appointment_id=appointment.id,
@@ -614,8 +672,7 @@ def add_treatment_to_appointment(appointment_id):
                 procedure_type=procedure_type,
                 tooth_number=tooth_number,
                 notes=notes,
-                total_cost=total_cost,
-                paid_amount=paid_amount
+                total_cost=total_cost
             )
 
             db.session.add(new_treatment)
@@ -630,7 +687,8 @@ def add_treatment_to_appointment(appointment_id):
         return render_template(
             'add_treatment.html',
             appointment=appointment,
-            patient=appointment.patient
+            patient=appointment.patient,
+            treatment_prices=TREATMENT_PRICES
         )
 
     except Exception:
@@ -744,8 +802,6 @@ def patient_detail(patient_id):
             'date': Treatment.treatment_date,
             'procedure_type': Treatment.procedure_type,
             'tooth_number': Treatment.tooth_number,
-            'total_cost': Treatment.total_cost,
-            'paid_amount': Treatment.paid_amount
         }
 
         treatment_sort_column = treatment_sort_columns.get(
@@ -766,9 +822,10 @@ def patient_detail(patient_id):
 
         patient_treatments = treatments_query.all()
 
-        total_cost_sum = sum(treatment.total_cost for treatment in patient_treatments)
-        total_paid_sum = sum(treatment.paid_amount for treatment in patient_treatments)
-        total_remaining_sum = sum(treatment.remaining_amount for treatment in patient_treatments)
+        total_cost_sum = patient.total_invoice_amount
+        total_paid_sum = patient.total_payments_amount
+        total_remaining_sum = patient.outstanding_amount
+        credit_amount = patient.credit_amount
 
         return render_template(
             'patient_detail.html',
@@ -778,6 +835,7 @@ def patient_detail(patient_id):
             total_cost_sum=total_cost_sum,
             total_paid_sum=total_paid_sum,
             total_remaining_sum=total_remaining_sum,
+            credit_amount=credit_amount,
             appointment_sort=appointment_sort,
             appointment_order=appointment_order,
             treatment_sort=treatment_sort,
@@ -835,8 +893,6 @@ def patient_treatments_table(patient_id):
         'date': Treatment.treatment_date,
         'procedure_type': Treatment.procedure_type,
         'tooth_number': Treatment.tooth_number,
-        'total_cost': Treatment.total_cost,
-        'paid_amount': Treatment.paid_amount
     }
 
     sort_column = sort_columns.get(treatment_sort, Treatment.treatment_date)
@@ -922,6 +978,131 @@ def add_treatment(patient_id):
         'Treatments must be added from an appointment session.',
         400
     )
+    
+    
+@app.route('/payments')
+def payments():
+    app.logger.info('Payments page opened')
+
+    try:
+        all_payments = (
+            Payment.query
+            .join(Patient)
+            .order_by(Payment.payment_date.desc(), Payment.id.desc())
+            .all()
+        )
+
+        return render_template(
+            'payments.html',
+            payments=all_payments
+        )
+
+    except Exception:
+        app.logger.exception('Failed to load payments page')
+        return render_template(
+            'error_message.html',
+            title='Error',
+            message='Failed to load payments.',
+            back_url=url_for('home')
+        ), 500
+
+
+@app.route('/payments/add', methods=['GET', 'POST'])
+def add_patient_payment():
+    app.logger.info('Add patient payment page/request')
+
+    try:
+        patients = Patient.query.order_by(Patient.first_name.asc(), Patient.last_name.asc()).all()
+        selected_patient_id = request.args.get('patient_id', type=int)
+
+        if request.method == 'POST':
+            patient_id = request.form.get('patient_id', type=int)
+            payment_amount_raw = request.form.get('payment_amount', '')
+            notes = request.form.get('notes', '').strip()
+
+            patient = Patient.query.get(patient_id)
+
+            if not patient:
+                return render_template(
+                    'add_patient_payment.html',
+                    patients=patients,
+                    selected_patient_id=selected_patient_id,
+                    error_message='Please select a valid patient.'
+                ), 400
+
+            payment_amount, payment_error = parse_invoice_payment_amount(payment_amount_raw)
+
+            if payment_error:
+                return render_template(
+                    'add_patient_payment.html',
+                    patients=patients,
+                    selected_patient_id=patient_id,
+                    error_message=payment_error
+                ), 400
+
+            new_payment = Payment(
+                patient_id=patient.id,
+                amount=payment_amount,
+                notes=notes
+            )
+
+            db.session.add(new_payment)
+            db.session.flush()
+
+            allocate_patient_payments_to_invoices(patient.id)
+
+            db.session.commit()
+
+            app.logger.info(
+                f'Patient payment added successfully | patient_id={patient.id}, payment_id={new_payment.id}, amount={payment_amount}'
+            )
+
+            return redirect(url_for('payments'))
+
+        return render_template(
+            'add_patient_payment.html',
+            patients=patients,
+            selected_patient_id=selected_patient_id
+        )
+
+    except Exception:
+        db.session.rollback()
+        app.logger.exception('Failed to add patient payment')
+        return render_template(
+            'error_message.html',
+            title='Error',
+            message='Failed to add payment.',
+            back_url=url_for('payments')
+        ), 500
+
+
+    
+@app.route('/invoices')
+def invoices():
+    app.logger.info('Invoices page opened')
+
+    try:
+        invoice_appointments = (
+            Appointment.query
+            .join(Treatment)
+            .distinct()
+            .order_by(Appointment.appointment_date.desc())
+            .all()
+        )
+
+        return render_template(
+            'invoices.html',
+            invoice_appointments=invoice_appointments
+        )
+
+    except Exception:
+        app.logger.exception('Failed to load invoices page')
+        return render_template(
+            'error_message.html',
+            title='Error',
+            message='Failed to load invoices.',
+            back_url=url_for('home')
+        ), 500
 
 
 @app.route('/appointments')
@@ -1191,6 +1372,7 @@ def edit_treatment(treatment_id):
                     appointment=treatment.appointment,
                     patient=treatment.appointment.patient,
                     mode='edit',
+                    treatment_prices=TREATMENT_PRICES,
                     error_message='Invalid treatment procedure type.'
                 ), 400
 
@@ -1198,26 +1380,7 @@ def edit_treatment(treatment_id):
             treatment.tooth_number = request.form.get('tooth_number', '').strip()
             treatment.notes = request.form.get('notes', '').strip()
 
-            total_cost_raw = request.form.get('total_cost', '')
-            paid_amount_raw = request.form.get('paid_amount', '')
-
-            total_cost, paid_amount, money_error = parse_treatment_money(
-                total_cost_raw,
-                paid_amount_raw
-            )
-
-            if money_error:
-                return render_template(
-                    'edit_treatment.html',
-                    treatment=treatment,
-                    appointment=treatment.appointment,
-                    patient=treatment.appointment.patient,
-                    mode='edit',
-                    error_message=money_error
-                ), 400
-
-            treatment.total_cost = total_cost
-            treatment.paid_amount = paid_amount
+            treatment.total_cost = TREATMENT_PRICES[procedure_type]
 
             db.session.commit()
 
@@ -1235,7 +1398,8 @@ def edit_treatment(treatment_id):
             treatment=treatment,
             appointment=treatment.appointment,
             patient=treatment.appointment.patient,
-            mode='edit'
+            mode='edit',
+            treatment_prices=TREATMENT_PRICES
         )
 
     except Exception:
@@ -1261,12 +1425,18 @@ def view_treatment(treatment_id):
             treatment=treatment,
             appointment=treatment.appointment,
             patient=treatment.appointment.patient,
-            mode='view'
+            mode='view',
+            treatment_prices=TREATMENT_PRICES
         )
 
     except Exception:
         app.logger.exception(f'Failed to view treatment | treatment_id={treatment_id}')
-        return 'Failed to view treatment', 500
+        return render_template(
+            'error_message.html',
+            title='Error',
+            message='Failed to view treatment.',
+            back_url=url_for('appointments')
+        ), 500
 
 
 @app.route('/patients/<int:patient_id>/delete', methods=['GET', 'POST'])
@@ -1303,69 +1473,6 @@ def delete_patient(patient_id):
             back_url=url_for('patients')
         ), 500
     
-@app.route('/treatments/<int:treatment_id>/add-payment', methods=['GET', 'POST'])
-def add_payment(treatment_id):
-    app.logger.info(f'Add payment page/request | treatment_id={treatment_id}')
-
-    try:
-        treatment = Treatment.query.get_or_404(treatment_id)
-
-        remaining_amount = treatment.remaining_amount
-
-        if remaining_amount <= 0:
-            return render_template(
-                'error_message.html',
-                title='No Remaining Balance',
-                message='This treatment is already fully paid.',
-                back_url=url_for('appointment_session', appointment_id=treatment.appointment_id)
-            ), 400
-
-        if request.method == 'POST':
-            payment_amount_raw = request.form.get('payment_amount', '')
-
-            payment_amount, payment_error = parse_payment_amount(
-                payment_amount_raw,
-                remaining_amount
-            )
-
-            if payment_error:
-                return render_template(
-                    'add_payment.html',
-                    treatment=treatment,
-                    remaining_amount=remaining_amount,
-                    error_message=payment_error
-                ), 400
-
-            treatment.paid_amount = treatment.paid_amount + payment_amount
-
-            db.session.commit()
-
-            app.logger.info(
-                f'Payment added successfully | treatment_id={treatment.id}, payment_amount={payment_amount}'
-            )
-
-            return redirect(
-                url_for(
-                    'appointment_session',
-                    appointment_id=treatment.appointment_id
-                )
-            )
-
-        return render_template(
-            'add_payment.html',
-            treatment=treatment,
-            remaining_amount=remaining_amount
-        )
-
-    except Exception:
-        db.session.rollback()
-        app.logger.exception(f'Failed to add payment | treatment_id={treatment_id}')
-        return render_template(
-            'error_message.html',
-            title='Error',
-            message='Failed to add payment.',
-            back_url=url_for('appointments')
-        ), 500
 
 
 @app.route('/treatments/<int:treatment_id>/delete', methods=['GET', 'POST'])

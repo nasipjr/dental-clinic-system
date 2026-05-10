@@ -80,7 +80,7 @@
                     <div class="financial-icon">
                         <i class="bi bi-cash-stack"></i>
                     </div>
-                    <h4>Total Cost</h4>
+                    <h4>Total Invoices</h4>
                     <p>{{ total_cost_sum }}</p>
                 </div>
 
@@ -88,7 +88,9 @@
                     <div class="financial-icon">
                         <i class="bi bi-wallet2"></i>
                     </div>
-                    <h4>Total Paid</h4>
+                    <h4>
+                        <h4>Total Payments</h4>
+                    </h4>
                     <p>{{ total_paid_sum }}</p>
                 </div>
 
@@ -99,13 +101,23 @@
                             class="bi {% if total_remaining_sum > 0 %}bi-exclamation-circle{% else %}bi-check-circle{% endif %}"></i>
                     </div>
 
+                    {% if credit_amount > 0 %}
+                    <h4>Credit</h4>
+                    <p>
+                        <span class="credit-amount">
+                            {{ credit_amount }}
+                            <span class="credit-badge">Credit</span>
+                        </span>
+                    </p>
+                    <span class="financial-card-note">This invoice has an overpayment credit.</span>
+                    {% elif total_remaining_sum > 0 %}
                     <h4>Total Remaining</h4>
                     <p>{{ total_remaining_sum }}</p>
-
-                    {% if total_remaining_sum > 0 %}
-                    <span class="financial-card-note">This session has an outstanding balance.</span>
+                    <span class="financial-card-note">This invoice has an outstanding balance.</span>
                     {% else %}
-                    <span class="financial-card-note">All payments are complete.</span>
+                    <h4>Total Remaining</h4>
+                    <p>0</p>
+                    <span class="financial-card-note">This invoice is fully paid.</span>
                     {% endif %}
                 </div>
             </div>
@@ -121,6 +133,12 @@
                     class="btn-outline-main session-action-btn">
                     View Appointment
                 </a>
+                {% if appointment.has_invoice %}
+                <a href="{{ url_for('add_patient_payment', patient_id=patient.id) }}"
+                    class="btn-session-primary session-action-btn">
+                    Add Payment
+                </a>
+                {% endif %}
 
                 {% if appointment.status == 'Scheduled' %}
                 <a href="{{ url_for('add_treatment_to_appointment', appointment_id=appointment.id) }}"
@@ -163,9 +181,6 @@
                         <th>Procedure Type</th>
                         <th>Tooth</th>
                         <th>Notes</th>
-                        <th>Total Cost</th>
-                        <th>Paid</th>
-                        <th>Remaining</th>
                         <th class="text-center">Actions</th>
                     </tr>
                 </thead>
@@ -192,28 +207,6 @@
                             {{ treatment.notes or 'No notes available' }}
                         </td>
 
-                        <td>
-                            {{ treatment.total_cost }}
-                        </td>
-
-                        <td>
-                            {{ treatment.paid_amount }}
-                        </td>
-
-                        <td>
-                            {% if treatment.remaining_amount > 0 %}
-                            <span class="remaining-due">
-                                {{ treatment.remaining_amount }}
-                                <span class="due-badge">Due</span>
-                            </span>
-                            {% else %}
-                            <span class="remaining-clear">
-                                0
-                                <span class="paid-badge">Paid</span>
-                            </span>
-                            {% endif %}
-                        </td>
-
                         <td class="text-center">
                             <div class="appointments-actions">
 
@@ -221,12 +214,6 @@
                                     class="table-action-btn view-btn" title="View Treatment">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                {% if treatment.remaining_amount > 0 %}
-                                <a href="{{ url_for('add_payment', treatment_id=treatment.id) }}"
-                                    class="table-action-btn edit-btn" title="Add Payment">
-                                    <i class="bi bi-cash-coin"></i>
-                                </a>
-                                {% endif %}
 
                                 {% if appointment.status == 'Scheduled' %}
                                 <a href="{{ url_for('edit_treatment', treatment_id=treatment.id) }}"

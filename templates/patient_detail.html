@@ -135,7 +135,7 @@
                         <div class="financial-icon">
                             <i class="bi bi-cash-stack"></i>
                         </div>
-                        <h4>Total Cost</h4>
+                        <h4>Total Invoices</h4>
                         <p>{{ total_cost_sum }}</p>
                     </div>
 
@@ -143,24 +143,34 @@
                         <div class="financial-icon">
                             <i class="bi bi-wallet2"></i>
                         </div>
-                        <h4>Total Paid</h4>
+                        <h4>Total Payments</h4>
                         <p>{{ total_paid_sum }}</p>
                     </div>
 
                     <div
-                        class="financial-card {% if total_remaining_sum > 0 %}remaining-warning{% else %}remaining-clear-card{% endif %}">
+                        class="financial-card {% if credit_amount > 0 %}remaining-clear-card{% elif total_remaining_sum > 0 %}remaining-warning{% else %}remaining-clear-card{% endif %}">
                         <div class="financial-icon">
                             <i
-                                class="bi {% if total_remaining_sum > 0 %}bi-exclamation-circle{% else %}bi-check-circle{% endif %}"></i>
+                                class="bi {% if credit_amount > 0 %}bi-wallet2{% elif total_remaining_sum > 0 %}bi-exclamation-circle{% else %}bi-check-circle{% endif %}"></i>
                         </div>
 
-                        <h4>Total Remaining</h4>
+                        {% if credit_amount > 0 %}
+                        <h4>Patient Credit</h4>
+                        <p>
+                            <span class="credit-amount">
+                                {{ credit_amount }}
+                                <span class="credit-badge">Credit</span>
+                            </span>
+                        </p>
+                        <span class="financial-card-note">This patient has an overpayment credit.</span>
+                        {% elif total_remaining_sum > 0 %}
+                        <h4>Outstanding Amount</h4>
                         <p>{{ total_remaining_sum }}</p>
-
-                        {% if total_remaining_sum > 0 %}
                         <span class="financial-card-note">This patient has an outstanding balance.</span>
                         {% else %}
-                        <span class="financial-card-note">All payments are complete.</span>
+                        <h4>Outstanding Amount</h4>
+                        <p>0</p>
+                        <span class="financial-card-note">All invoices are fully paid.</span>
                         {% endif %}
                     </div>
                 </div>

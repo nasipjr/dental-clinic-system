@@ -76,7 +76,7 @@
                   <span data-purecounter-start="0" data-purecounter-end="{{ total_revenue }}"
                     data-purecounter-duration="2" class="purecounter"></span>
                 </h3>
-                <p>Total Revenue</p>
+                <p>Total Invoices</p>
               </div>
 
               <div class="dashboard-stat-card">
@@ -84,7 +84,7 @@
                   <span data-purecounter-start="0" data-purecounter-end="{{ total_paid }}" data-purecounter-duration="2"
                     class="purecounter"></span>
                 </h3>
-                <p>Total Paid</p>
+                <p>Total Payments</p>
               </div>
 
             </div>
@@ -101,12 +101,20 @@
 
             <div class="emergency-contact mt-4" data-aos="fade-right" data-aos-delay="700">
               <div class="emergency-icon">
-                <i class="bi bi-cash-coin"></i>
+                <i
+                  class="bi {% if total_remaining < 0 %}bi-wallet2{% elif total_remaining > 0 %}bi-exclamation-circle{% else %}bi-check-circle{% endif %}"></i>
               </div>
 
               <div class="emergency-info">
-                <small>Outstanding Balance</small>
-                <strong>{{ total_remaining }}</strong>
+                {% if total_remaining < 0 %} <small>Clinic Credit</small>
+                  <strong>{{ total_remaining|abs }}</strong>
+                  {% elif total_remaining > 0 %}
+                  <small>Outstanding Amount</small>
+                  <strong>{{ total_remaining }}</strong>
+                  {% else %}
+                  <small>Outstanding Amount</small>
+                  <strong>0</strong>
+                  {% endif %}
               </div>
             </div>
 
@@ -192,14 +200,12 @@
 
               <td class="text-center">
                 <a href="{{ url_for('view_appointment', appointment_id=appointment.id) }}"
-                   class="table-action-btn view-btn"
-                   title="View Appointment">
+                  class="table-action-btn view-btn" title="View Appointment">
                   <i class="bi bi-eye"></i>
                 </a>
 
                 <a href="{{ url_for('appointment_session', appointment_id=appointment.id) }}"
-                   class="table-action-btn session-btn"
-                   title="Open Session">
+                  class="table-action-btn session-btn" title="Open Session">
                   <i class="bi bi-clipboard2-pulse"></i>
                 </a>
               </td>
@@ -246,18 +252,19 @@
               <th>Patient</th>
               <th>Reason</th>
               <th>Treatments</th>
-              <th>Total Cost</th>
-              <th>Paid</th>
-              <th>Remaining</th>
+              <th>Total Invoices</th>
+              <th>Payments</th>
+              <th>Outstanding / Credit</th>
               <th class="text-center">Actions</th>
             </tr>
           </thead>
 
           <tbody>
             {% for appointment in today_done_appointments %}
-            {% set total_cost = appointment.treatments|sum(attribute='total_cost') %}
-            {% set total_paid = appointment.treatments|sum(attribute='paid_amount') %}
-            {% set total_remaining = total_cost - total_paid %}
+            {% set invoice_total = appointment.invoice_total %}
+            {% set total_paid = appointment.total_paid %}
+            {% set balance = appointment.balance %}
+            {% set credit = appointment.credit %}
 
             <tr>
               <td>
@@ -281,7 +288,7 @@
               </td>
 
               <td>
-                {{ total_cost }}
+                {{ invoice_total }}
               </td>
 
               <td>
@@ -289,29 +296,32 @@
               </td>
 
               <td>
-                {% if total_remaining > 0 %}
-                  <span class="remaining-due">
-                    {{ total_remaining }}
-                    <span class="due-badge">Due</span>
-                  </span>
+                {% if credit > 0 %}
+                <span class="credit-amount">
+                  {{ credit }}
+                  <span class="credit-badge">Credit</span>
+                </span>
+                {% elif balance > 0 %}
+                <span class="remaining-due">
+                  {{ balance }}
+                  <span class="due-badge">Due</span>
+                </span>
                 {% else %}
-                  <span class="remaining-clear">
-                    0
-                    <span class="paid-badge">Paid</span>
-                  </span>
+                <span class="remaining-clear">
+                  0
+                  <span class="paid-badge">Paid</span>
+                </span>
                 {% endif %}
               </td>
 
               <td class="text-center">
                 <a href="{{ url_for('view_appointment', appointment_id=appointment.id) }}"
-                   class="table-action-btn view-btn"
-                   title="View Appointment">
+                  class="table-action-btn view-btn" title="View Appointment">
                   <i class="bi bi-eye"></i>
                 </a>
 
                 <a href="{{ url_for('appointment_session', appointment_id=appointment.id) }}"
-                   class="table-action-btn session-btn"
-                   title="Open Session">
+                  class="table-action-btn session-btn" title="Open Session">
                   <i class="bi bi-clipboard2-pulse"></i>
                 </a>
               </td>

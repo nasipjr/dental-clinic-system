@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Invoices{% endblock %}
+
+{% block content %}
+<br><br><br><br><br><br><br>
+
+<!-- Section Title -->
+<div class="container section-title" data-aos="fade-up">
+    <h2>Invoices</h2>
+    <p>Invoices are generated from appointments that include treatments.</p>
+</div>
+<!-- End Section Title -->
+
+
+<section id="invoices-section" class="find-a-doctor section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        {% if invoice_appointments %}
+        <div class="appointments-table-wrapper table-responsive">
+            <table class="table appointments-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Invoice #</th>
+                        <th>Patient</th>
+                        <th>Appointment Date</th>
+                        <th>Treatments</th>
+                        <th>Invoice Total</th>
+                        <th>Total Payments</th>
+                        <th>Outstanding / Credit</th>
+                        <th>Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for appointment in invoice_appointments %}
+                    <tr>
+                        <td>
+                            INV-{{ appointment.id }}
+                        </td>
+
+                        <td>
+                            <strong>
+                                {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                            </strong>
+                            <br>
+                            <small>{{ appointment.patient.phone or 'No phone number' }}</small>
+                        </td>
+
+                        <td>
+                            {{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if appointment.appointment_date
+                            else 'No date' }}
+                        </td>
+
+                        <td>
+                            {{ appointment.treatments_count }}
+                        </td>
+
+                        <td>
+                            {{ appointment.invoice_total }}
+                        </td>
+
+                        <td>
+                            {{ appointment.total_paid }}
+                        </td>
+
+                        <td>
+                            {% if appointment.credit > 0 %}
+                            <span class="credit-amount">
+                                {{ appointment.credit }}
+                                <span class="credit-badge">Credit</span>
+                            </span>
+                            {% elif appointment.balance > 0 %}
+                            <span class="remaining-due">
+                                {{ appointment.balance }}
+                                <span class="due-badge">Due</span>
+                            </span>
+                            {% else %}
+                            <span class="remaining-clear">
+                                0
+                                <span class="paid-badge">Paid</span>
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if appointment.credit > 0 %}
+                            <span class="paid-badge">Credit</span>
+                            {% elif appointment.balance > 0 %}
+                            <span class="due-badge">Unpaid</span>
+                            {% else %}
+                            <span class="paid-badge">Paid</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-center">
+                            <a href="{{ url_for('view_appointment', appointment_id=appointment.id) }}"
+                                class="table-action-btn view-btn" title="View Appointment">
+                                <i class="bi bi-eye"></i>
+                            </a>
+
+                            <a href="{{ url_for('appointment_session', appointment_id=appointment.id) }}"
+                                class="table-action-btn session-btn" title="Open Session">
+                                <i class="bi bi-clipboard2-pulse"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="empty-state-card text-center">
+            <i class="bi bi-receipt"></i>
+            <h4>No invoices yet</h4>
+            <p>Invoices will appear here when an appointment has at least one treatment.</p>
+
+            <a href="{{ url_for('appointments') }}" class="btn btn-primary mt-3">
+                View Appointments
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Payments{% endblock %}
+
+{% block content %}
+<br><br><br><br><br><br><br>
+
+<div class="container section-title" data-aos="fade-up">
+    <h2>Payments</h2>
+    <p>All patient payments recorded in the clinic.</p>
+</div>
+
+<section id="payments-section" class="find-a-doctor section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="d-flex justify-content-end mb-4">
+            <a href="{{ url_for('add_patient_payment') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>
+                Add New Payment
+            </a>
+        </div>
+
+        {% if payments %}
+        <div class="appointments-table-wrapper table-responsive">
+            <table class="table appointments-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Payment #</th>
+                        <th>Date</th>
+                        <th>Patient</th>
+                        <th>Amount</th>
+                        <th>Allocated</th>
+                        <th>Credit</th>
+                        <th>Notes</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for payment in payments %}
+                    <tr>
+                        <td>
+                            <strong>PAY-{{ payment.id }}</strong>
+                        </td>
+
+                        <td>
+                            {{ payment.payment_date.strftime('%Y-%m-%d %H:%M') if payment.payment_date else 'No date' }}
+                        </td>
+
+                        <td>
+                            <strong>
+                                {{ payment.patient.first_name }} {{ payment.patient.last_name }}
+                            </strong>
+                            <br>
+                            <small>{{ payment.patient.phone or 'No phone number' }}</small>
+                        </td>
+
+                        <td>
+                            <span class="price-badge">
+                                {{ payment.amount }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {{ payment.allocated_amount }}
+                        </td>
+
+                        <td>
+                            {% if payment.unallocated_amount > 0 %}
+                                <span class="credit-amount">
+                                    {{ payment.unallocated_amount }}
+                                    <span class="credit-badge">Credit</span>
+                                </span>
+                            {% else %}
+                                <span class="remaining-clear">
+                                    0
+                                    <span class="paid-badge">Allocated</span>
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ payment.notes or 'No notes available' }}
+                        </td>
+
+                        <td class="text-center">
+                            <div class="appointments-actions">
+                                <a href="{{ url_for('patient_detail', patient_id=payment.patient_id) }}"
+                                   class="table-action-btn view-btn"
+                                   title="Open Patient">
+                                    <i class="bi bi-person"></i>
+                                </a>
+
+                                <a href="{{ url_for('invoices') }}"
+                                   class="table-action-btn session-btn"
+                                   title="View Invoices">
+                                    <i class="bi bi-receipt"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="empty-state-card text-center">
+            <i class="bi bi-cash-coin"></i>
+            <h4>No payments yet</h4>
+            <p>Payments will appear here after they are recorded for patients.</p>
+
+            <a href="{{ url_for('add_patient_payment') }}" class="btn btn-primary mt-3">
+                Add New Payment
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}

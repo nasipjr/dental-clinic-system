@@ -95,7 +95,8 @@
                                 <div class="col-md-12">
                                     <label for="procedure_type" class="form-label">Procedure Type</label>
 
-                                    <select id="procedure_type" name="procedure_type" class="form-select" required>
+                                    <select id="procedure_type" name="procedure_type" class="form-select"
+                                        data-prices='{{ treatment_prices|tojson }}' required>
                                         <option value="">Select a Procedure Type</option>
 
                                         <option value="Check-up" {% if treatment.procedure_type=='Check-up' %}selected{%
@@ -161,27 +162,13 @@
                                     <textarea id="notes" name="notes" class="form-control" rows="5"
                                         placeholder="Add treatment notes">{{ treatment.notes or '' }}</textarea>
                                 </div>
-
-                                <div class="col-md-6">
-                                    <label for="total_cost" class="form-label">Total Cost</label>
-                                    <input type="number" step="0.01" min="0" id="total_cost" name="total_cost"
-                                        class="form-control" value="{{ treatment.total_cost or 0 }}"
-                                        placeholder="Enter total cost">
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label for="paid_amount" class="form-label">Paid Amount</label>
-                                    <input type="number" step="0.01" min="0" id="paid_amount" name="paid_amount"
-                                        class="form-control" value="{{ treatment.paid_amount or 0 }}"
-                                        placeholder="Enter paid amount">
-                                </div>
-
                                 <div class="col-md-12">
-                                    <label class="form-label">Remaining Amount</label>
-                                    <div class="form-control readonly-status-field">
-                                        {{ treatment.remaining_amount }}
+                                    <label class="form-label">Procedure Price</label>
+                                    <div id="procedure_price_display" class="form-control readonly-status-field">
+                                        {{ treatment.total_cost or 0 }}
                                     </div>
                                 </div>
+
 
                             </div>
                         </fieldset>
@@ -213,5 +200,31 @@
         </div>
     </div>
 </section>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const procedureSelect = document.getElementById('procedure_type');
+    const priceDisplay = document.getElementById('procedure_price_display');
+
+    if (!procedureSelect || !priceDisplay) {
+        return;
+    }
+
+    const prices = JSON.parse(procedureSelect.dataset.prices || '{}');
+
+    function updateProcedurePrice() {
+        const selectedProcedure = procedureSelect.value;
+
+        if (!selectedProcedure || prices[selectedProcedure] === undefined) {
+            priceDisplay.textContent = 'Select a procedure type to show price';
+            return;
+        }
+
+        priceDisplay.textContent = prices[selectedProcedure];
+    }
+
+    procedureSelect.addEventListener('change', updateProcedurePrice);
+    updateProcedurePrice();
+});
+</script>
 
 {% endblock %}

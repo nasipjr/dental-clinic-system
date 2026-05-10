@@ -75,7 +75,8 @@
 
                             <div class="col-md-12">
                                 <label for="procedure_type" class="form-label">Procedure Type</label>
-                                <select id="procedure_type" name="procedure_type" class="form-select" required>
+                                <select id="procedure_type" name="procedure_type" class="form-select"
+                                    data-prices='{{ treatment_prices|tojson }}' required>
                                     <option value="">Select a Procedure Type</option>
                                     <option value="Check-up">Check-up</option>
                                     <option value="Cleaning">Cleaning</option>
@@ -101,23 +102,18 @@
                                 <textarea id="notes" name="notes" class="form-control" rows="5"
                                     placeholder="Add treatment notes"></textarea>
                             </div>
-
-                            <div class="col-md-6">
-                                <label for="total_cost" class="form-label">Total Cost</label>
-                                <input type="number" step="0.01" min="0" id="total_cost" name="total_cost"
-                                    class="form-control" placeholder="Enter total cost" value="0">
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="paid_amount" class="form-label">Paid Amount</label>
-                                <input type="number" step="0.01" min="0" id="paid_amount" name="paid_amount"
-                                    class="form-control" placeholder="Enter paid amount" value="0">
+                            <div class="col-md-12">
+                                <label class="form-label">Procedure Price</label>
+                                <div id="procedure_price_display" class="form-control readonly-status-field">
+                                    Select a procedure type to show price
+                                </div>
                             </div>
 
                             <div class="col-12 text-center pt-2">
                                 <button type="submit" class="save-patient-btn">
                                     Save Treatment
                                 </button>
+
 
                                 <a href="{{ url_for('appointment_session', appointment_id=appointment.id) }}"
                                     class="btn-outline-main px-4 ms-2">
@@ -134,5 +130,30 @@
         </div>
     </div>
 </section>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const procedureSelect = document.getElementById('procedure_type');
+    const priceDisplay = document.getElementById('procedure_price_display');
 
+    if (!procedureSelect || !priceDisplay) {
+        return;
+    }
+
+    const prices = JSON.parse(procedureSelect.dataset.prices || '{}');
+
+    function updateProcedurePrice() {
+        const selectedProcedure = procedureSelect.value;
+
+        if (!selectedProcedure || prices[selectedProcedure] === undefined) {
+            priceDisplay.textContent = 'Select a procedure type to show price';
+            return;
+        }
+
+        priceDisplay.textContent = prices[selectedProcedure];
+    }
+
+    procedureSelect.addEventListener('change', updateProcedurePrice);
+    updateProcedurePrice();
+});
+</script>
 {% endblock %}
