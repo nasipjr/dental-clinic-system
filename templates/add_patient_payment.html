@@ -13,7 +13,8 @@
 
                     <div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
                         <h2>Add New Payment</h2>
-                        <p>Record a payment on the patient profile. The system will apply it to the oldest unpaid invoices automatically.</p>
+                        <p>Record a payment on the patient profile. The system will apply it to the oldest unpaid
+                            invoices automatically.</p>
                     </div>
 
                     <div class="add-patient-icon" data-aos="zoom-in" data-aos-delay="200">
@@ -26,6 +27,60 @@
                     </div>
                     {% endif %}
 
+                    {% if selected_patient %}
+                    <div class="patient-info-grid mb-4">
+
+                        <div class="patient-info-box">
+                            <span class="info-label">Patient</span>
+                            <p>
+                                {{ selected_patient.first_name }} {{ selected_patient.last_name }}
+                                <br>
+                                <small>{{ selected_patient.phone or 'No phone number' }}</small>
+                            </p>
+                        </div>
+
+                        <div class="patient-info-box">
+                            <span class="info-label">Total Invoices</span>
+                            <p>{{ selected_patient.total_invoice_amount }}</p>
+                        </div>
+
+                        <div class="patient-info-box">
+                            <span class="info-label">Total Payments</span>
+                            <p>{{ selected_patient.total_payments_amount }}</p>
+                        </div>
+
+                        <div class="patient-info-box">
+                            <span class="info-label">
+                                {% if selected_patient.credit_amount > 0 %}
+                                Patient Credit
+                                {% else %}
+                                Outstanding Amount
+                                {% endif %}
+                            </span>
+
+                            <p>
+                                {% if selected_patient.credit_amount > 0 %}
+                                <span class="credit-amount">
+                                    {{ selected_patient.credit_amount }}
+                                    <span class="credit-badge">Credit</span>
+                                </span>
+                                {% elif selected_patient.outstanding_amount > 0 %}
+                                <span class="remaining-due">
+                                    {{ selected_patient.outstanding_amount }}
+                                    <span class="due-badge">Due</span>
+                                </span>
+                                {% else %}
+                                <span class="remaining-clear">
+                                    0
+                                    <span class="paid-badge">Paid</span>
+                                </span>
+                                {% endif %}
+                            </p>
+                        </div>
+
+                    </div>
+                    {% endif %}
+
                     <form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300">
                         <div class="row gy-4">
 
@@ -35,8 +90,8 @@
                                     <option value="">Select Patient</option>
 
                                     {% for patient in patients %}
-                                    <option value="{{ patient.id }}"
-                                        {% if selected_patient_id and selected_patient_id == patient.id %}selected{% endif %}>
+                                    <option value="{{ patient.id }}" {% if selected_patient_id and
+                                        selected_patient_id==patient.id %}selected{% endif %}>
                                         {{ patient.first_name }} {{ patient.last_name }}
                                         {% if patient.phone %} - {{ patient.phone }}{% endif %}
                                     </option>
@@ -46,27 +101,14 @@
 
                             <div class="col-md-12">
                                 <label for="payment_amount" class="form-label">Payment Amount</label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    min="0.01"
-                                    id="payment_amount"
-                                    name="payment_amount"
-                                    class="form-control"
-                                    placeholder="Enter payment amount"
-                                    required
-                                >
+                                <input type="number" step="0.01" min="0.01" id="payment_amount" name="payment_amount"
+                                    class="form-control" placeholder="Enter payment amount" required>
                             </div>
 
                             <div class="col-md-12">
                                 <label for="notes" class="form-label">Payment Notes</label>
-                                <textarea
-                                    id="notes"
-                                    name="notes"
-                                    class="form-control"
-                                    rows="3"
-                                    placeholder="Optional notes about this payment"
-                                ></textarea>
+                                <textarea id="notes" name="notes" class="form-control" rows="3"
+                                    placeholder="Optional notes about this payment"></textarea>
                             </div>
 
                             <div class="col-12">
@@ -89,4 +131,24 @@
         </div>
     </div>
 </section>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const patientSelect = document.getElementById('patient_id');
+
+    if (!patientSelect) {
+        return;
+    }
+
+    patientSelect.addEventListener('change', function () {
+        const selectedPatientId = patientSelect.value;
+
+        if (!selectedPatientId) {
+            window.location.href = "{{ url_for('add_patient_payment') }}";
+            return;
+        }
+
+        window.location.href = "{{ url_for('add_patient_payment') }}?patient_id=" + selectedPatientId;
+    });
+});
+</script>
 {% endblock %}

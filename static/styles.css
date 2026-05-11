@@ -1166,3 +1166,61 @@
   color: #57d38c;
   font-weight: 700;
 }
+/*reset button invoices*/
+.reset-filter-btn {
+  min-width: 86px;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  color: #ffffff;
+  background: transparent;
+}
+
+.reset-filter-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+/*patient detailes/ financial summary two tables*/
+.financial-details-stack {
+  width: 100%;
+}
+
+.financial-detail-card {
+  padding: 22px 24px;
+  border-radius: 22px;
+  border: 1px solid rgba(102, 224, 255, 0.14);
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.financial-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.financial-table-header h4 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--heading-color);
+}
+
+.financial-table-header p {
+  margin: 0;
+  font-size: 13px;
+  color: color-mix(in srgb, var(--default-color), transparent 28%);
+}
+
+.financial-detail-card .appointments-table {
+  margin-bottom: 0;
+}
+
+.financial-detail-card .empty-box {
+  margin-top: 10px;
+}

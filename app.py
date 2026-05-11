@@ -605,6 +605,16 @@ def appointment_session(appointment_id):
         treatments = Treatment.query.filter_by(
             appointment_id=appointment.id
         ).order_by(Treatment.id.desc()).all()
+        
+        previous_treatments = (
+            Treatment.query
+            .join(Appointment)
+            .filter(Appointment.patient_id == appointment.patient_id)
+            .filter(Treatment.appointment_id != appointment.id)
+            .order_by(Treatment.treatment_date.desc(), Treatment.id.desc())
+            .all()
+        )
+        
 
         total_cost_sum = appointment.invoice_total
         total_paid_sum = appointment.total_paid
@@ -619,7 +629,8 @@ def appointment_session(appointment_id):
             total_cost_sum=total_cost_sum,
             total_paid_sum=total_paid_sum,
             total_remaining_sum=total_remaining_sum,
-            credit_amount=credit_amount
+            credit_amount=credit_amount,
+            previous_treatments=previous_treatments,
         )
 
     except Exception:
@@ -985,16 +996,75 @@ def payments():
     app.logger.info('Payments page opened')
 
     try:
+        search_query = request.args.get('search', '').strip()
+        sort_by = request.args.get('sort', 'date')
+        order = request.args.get('order', 'desc')
+
         all_payments = (
             Payment.query
             .join(Patient)
-            .order_by(Payment.payment_date.desc(), Payment.id.desc())
             .all()
+        )
+
+        if search_query:
+            search_lower = search_query.lower()
+
+            def matches_payment(payment):
+                patient = payment.patient
+                payment_number = f'pay-{payment.id}'.lower()
+                payment_date = (
+                    payment.payment_date.strftime('%Y-%m-%d %H:%M').lower()
+                    if payment.payment_date else ''
+                )
+
+                searchable_values = [
+                    payment_number,
+                    str(payment.id),
+                    patient.first_name or '',
+                    patient.last_name or '',
+                    patient.phone or '',
+                    str(payment.amount),
+                    str(payment.allocated_amount),
+                    str(payment.unallocated_amount),
+                    payment.notes or '',
+                    payment_date
+                ]
+
+                return any(search_lower in str(value).lower() for value in searchable_values)
+
+            all_payments = [
+                payment
+                for payment in all_payments
+                if matches_payment(payment)
+            ]
+
+        sort_key_map = {
+            'id': lambda payment: payment.id,
+            'date': lambda payment: payment.payment_date or datetime.min,
+            'patient': lambda payment: (
+                payment.patient.first_name or '',
+                payment.patient.last_name or ''
+            ),
+            'amount': lambda payment: payment.amount,
+            'allocated': lambda payment: payment.allocated_amount,
+            'credit': lambda payment: payment.unallocated_amount
+        }
+
+        sort_key = sort_key_map.get(sort_by, sort_key_map['date'])
+        reverse_order = order != 'asc'
+
+        all_payments = sorted(
+            all_payments,
+            key=sort_key,
+            reverse=reverse_order
         )
 
         return render_template(
             'payments.html',
-            payments=all_payments
+            payments=all_payments,
+            search_query=search_query,
+            sort_by=sort_by,
+            order=order
         )
 
     except Exception:
@@ -1012,8 +1082,16 @@ def add_patient_payment():
     app.logger.info('Add patient payment page/request')
 
     try:
-        patients = Patient.query.order_by(Patient.first_name.asc(), Patient.last_name.asc()).all()
+        patients = Patient.query.order_by(
+            Patient.first_name.asc(),
+            Patient.last_name.asc()
+        ).all()
+
         selected_patient_id = request.args.get('patient_id', type=int)
+        selected_patient = None
+
+        if selected_patient_id:
+            selected_patient = Patient.query.get(selected_patient_id)
 
         if request.method == 'POST':
             patient_id = request.form.get('patient_id', type=int)
@@ -1027,6 +1105,7 @@ def add_patient_payment():
                     'add_patient_payment.html',
                     patients=patients,
                     selected_patient_id=selected_patient_id,
+                    selected_patient=selected_patient,
                     error_message='Please select a valid patient.'
                 ), 400
 
@@ -1037,6 +1116,7 @@ def add_patient_payment():
                     'add_patient_payment.html',
                     patients=patients,
                     selected_patient_id=patient_id,
+                    selected_patient=patient,
                     error_message=payment_error
                 ), 400
 
@@ -1062,7 +1142,8 @@ def add_patient_payment():
         return render_template(
             'add_patient_payment.html',
             patients=patients,
-            selected_patient_id=selected_patient_id
+            selected_patient_id=selected_patient_id,
+            selected_patient=selected_patient
         )
 
     except Exception:
@@ -1082,17 +1163,75 @@ def invoices():
     app.logger.info('Invoices page opened')
 
     try:
+        search_query = request.args.get('search', '').strip()
+        sort_by = request.args.get('sort', 'date')
+        order = request.args.get('order', 'desc')
+
         invoice_appointments = (
             Appointment.query
             .join(Treatment)
             .distinct()
-            .order_by(Appointment.appointment_date.desc())
             .all()
+        )
+
+        if search_query:
+            search_lower = search_query.lower()
+
+            def matches_invoice(appointment):
+                patient = appointment.patient
+                invoice_number = f'inv-{appointment.id}'.lower()
+                appointment_date = (
+                    appointment.appointment_date.strftime('%Y-%m-%d %H:%M').lower()
+                    if appointment.appointment_date else ''
+                )
+
+                searchable_values = [
+                    invoice_number,
+                    str(appointment.id),
+                    patient.first_name or '',
+                    patient.last_name or '',
+                    patient.phone or '',
+                    appointment.status or '',
+                    appointment_date
+                ]
+
+                return any(search_lower in str(value).lower() for value in searchable_values)
+
+            invoice_appointments = [
+                appointment
+                for appointment in invoice_appointments
+                if matches_invoice(appointment)
+            ]
+
+        sort_key_map = {
+            'id': lambda appointment: appointment.id,
+            'patient': lambda appointment: (
+                appointment.patient.first_name or '',
+                appointment.patient.last_name or ''
+            ),
+            'date': lambda appointment: appointment.appointment_date or datetime.min,
+            'treatments': lambda appointment: appointment.treatments_count,
+            'total': lambda appointment: appointment.invoice_total,
+            'payments': lambda appointment: appointment.total_paid,
+            'outstanding': lambda appointment: appointment.balance,
+            'status': lambda appointment: appointment.invoice_status
+        }
+
+        sort_key = sort_key_map.get(sort_by, sort_key_map['date'])
+        reverse_order = order != 'asc'
+
+        invoice_appointments = sorted(
+            invoice_appointments,
+            key=sort_key,
+            reverse=reverse_order
         )
 
         return render_template(
             'invoices.html',
-            invoice_appointments=invoice_appointments
+            invoice_appointments=invoice_appointments,
+            search_query=search_query,
+            sort_by=sort_by,
+            order=order
         )
 
     except Exception:
@@ -1104,6 +1243,36 @@ def invoices():
             back_url=url_for('home')
         ), 500
 
+@app.route('/invoices/<int:appointment_id>')
+def view_invoice(appointment_id):
+    app.logger.info(f'Invoice detail page opened | appointment_id={appointment_id}')
+
+    try:
+        appointment = Appointment.query.get_or_404(appointment_id)
+
+        if not appointment.has_invoice:
+            return render_template(
+                'error_message.html',
+                title='No Invoice Available',
+                message='This appointment has no treatments, so there is no invoice to view.',
+                back_url=url_for('invoices')
+            ), 400
+
+        return render_template(
+            'invoice_detail.html',
+            appointment=appointment,
+            patient=appointment.patient,
+            treatments=appointment.treatments
+        )
+
+    except Exception:
+        app.logger.exception(f'Failed to load invoice detail | appointment_id={appointment_id}')
+        return render_template(
+            'error_message.html',
+            title='Error',
+            message='Failed to load invoice.',
+            back_url=url_for('invoices')
+        ), 500
 
 @app.route('/appointments')
 def appointments():

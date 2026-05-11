@@ -255,6 +255,120 @@
             {% endif %}
         </div>
         {% endif %}
+        <!-- Previous Treatments Title -->
+        <div class="container section-title" style="margin-top: 70px;" data-aos="fade-up">
+            <h2>Previous Treatments</h2>
+            <p>All previous treatments recorded for this patient, ordered from newest to oldest.</p>
+        </div>
+        <!-- /Previous Treatments Title -->
+
+
+        <!-- Previous Treatments Section -->
+        <section id="previous-treatments-section" class="find-a-doctor section">
+            <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+                {% if previous_treatments %}
+                <div class="appointments-table-wrapper table-responsive">
+                    <table class="table appointments-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Appointment</th>
+                                <th>Treatment Date</th>
+                                <th>Procedure Type</th>
+                                <th>Tooth</th>
+                                <th>Notes</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for treatment in previous_treatments %}
+                            <tr>
+                                <td>
+                                    <strong>{{ treatment.id }}</strong>
+                                </td>
+
+                                <td>
+                                    <a
+                                        href="{{ url_for('appointment_session', appointment_id=treatment.appointment.id) }}">
+                                        <strong>#{{ treatment.appointment.id }}</strong>
+                                    </a>
+                                    <br>
+                                    <small>
+                                        {{ treatment.appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if
+                                        treatment.appointment.appointment_date else 'No date' }}
+                                    </small>
+                                    <br>
+                                    <span class="appointment-status
+                                {% if treatment.appointment.status == 'Done' %}status-done
+                                {% elif treatment.appointment.status == 'Cancelled' %}status-cancelled
+                                {% else %}status-scheduled{% endif %}">
+                                        {{ treatment.appointment.status }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {{ treatment.treatment_date.strftime('%Y-%m-%d %H:%M') if treatment.treatment_date
+                                    else 'No date' }}
+                                </td>
+
+                                <td>
+                                    <span class="procedure-badge">
+                                        {{ treatment.procedure_type or 'General Treatment' }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {% if treatment.tooth_number %}
+                                    <span class="tooth-badge">
+                                        {{ treatment.tooth_number }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if treatment.notes %}
+                                    {{ treatment.notes }}
+                                    {% else %}
+                                    <span class="text-muted">No notes available</span>
+                                    {% endif %}
+                                </td>
+
+                                <td class="text-center">
+                                    <div class="appointments-actions">
+
+                                        <a href="{{ url_for('view_treatment', treatment_id=treatment.id) }}"
+                                            class="table-action-btn view-btn" title="View Treatment">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+
+                                        <a href="{{ url_for('appointment_session', appointment_id=treatment.appointment.id) }}"
+                                            class="table-action-btn session-btn" title="Open Treatment Session">
+                                            <i class="bi bi-clipboard2-pulse"></i>
+                                        </a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% else %}
+                <div class="empty-state-card text-center">
+                    <i class="bi bi-clock-history"></i>
+                    <h4>No previous treatments</h4>
+                    <p>This patient has no treatments from previous appointments.</p>
+                </div>
+                {% endif %}
+
+            </div>
+        </section>
+        <!-- /Previous Treatments Section -->
 
     </div>
 </section>
