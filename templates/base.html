@@ -91,14 +91,14 @@
             </li>
 
             <li>
-              <a href="{{ url_for('invoices') }}"
+              <a href="{{ url_for('invoices.invoices') }}"
                 class="{% if request.path.startswith('/invoices') %}active{% endif %}">
                 Invoices
               </a>
             </li>
 
             <li>
-              <a href="{{ url_for('payments') }}"
+              <a href="{{ url_for('payments.payments') }}"
                 class="{% if request.path.startswith('/payments') %}active{% endif %}">
                 Payments
               </a>
@@ -138,7 +138,7 @@
 
         <div class="col-lg-4 col-md-6">
           <div class="brand-section">
-            <a href="{{ url_for('home') }}" class="logo d-flex align-items-center mb-3">
+            <a href="{{ url_for('dashboard.home') }}" class="logo d-flex align-items-center mb-3">
               <span class="sitename">Clinic</span>
             </a>
 
@@ -153,10 +153,10 @@
           <div class="nav-column">
             <h6>Quick Access</h6>
             <nav class="footer-nav">
-              <a href="{{ url_for('home') }}">Dashboard</a>
-              <a href="{{ url_for('patients') }}">Patients</a>
-              <a href="{{ url_for('appointments') }}">Appointments</a>
-              <a href="{{ url_for('invoices') }}">Invoices</a>
+              <a href="{{ url_for('dashboard.home') }}">Dashboard</a>
+              <a href="{{ url_for('patients.patients') }}">Patients</a>
+              <a href="{{ url_for('appointments.appointments') }}">Appointments</a>
+              <a href="{{ url_for('invoices.invoices') }}">Invoices</a>
             </nav>
           </div>
         </div>
@@ -168,7 +168,7 @@
               <a href="#!">Reports</a>
               <a href="#!">Settings</a>
               <a href="#!">Outstanding Balances</a>
-              <a href="{{ url_for('appointments') }}">Appointment Sessions</a>
+              <a href="{{ url_for('appointments.appointments') }}">Appointment Sessions</a>
             </nav>
           </div>
         </div>

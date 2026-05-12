@@ -5,7 +5,7 @@
             <tr>
                 <th>
                     <a href="{{ url_for(
-                        'patient_appointments_table',
+                        'patients.patient_appointments_table',
                         patient_id=patient.id,
                         appointment_sort='id',
                         appointment_order='asc' if appointment_sort != 'id' or appointment_order == 'desc' else 'desc'
@@ -20,7 +20,7 @@
 
                 <th>
                     <a href="{{ url_for(
-                        'patient_appointments_table',
+                        'patients.patient_appointments_table',
                         patient_id=patient.id,
                         appointment_sort='date',
                         appointment_order='asc' if appointment_sort != 'date' or appointment_order == 'desc' else 'desc'
@@ -35,7 +35,7 @@
 
                 <th>
                     <a href="{{ url_for(
-                        'patient_appointments_table',
+                        'patients.patient_appointments_table',
                         patient_id=patient.id,
                         appointment_sort='reason',
                         appointment_order='asc' if appointment_sort != 'reason' or appointment_order == 'desc' else 'desc'
@@ -50,7 +50,7 @@
 
                 <th>
                     <a href="{{ url_for(
-                        'patient_appointments_table',
+                        'patients.patient_appointments_table',
                         patient_id=patient.id,
                         appointment_sort='status',
                         appointment_order='asc' if appointment_sort != 'status' or appointment_order == 'desc' else 'desc'
@@ -93,25 +93,25 @@
                 <td class="text-center">
                     <div class="appointments-actions">
 
-                        <a href="{{ url_for('view_appointment', appointment_id=appointment.id) }}"
+                        <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}"
                             class="table-action-btn view-btn" title="View Appointment">
                             <i class="bi bi-eye"></i>
                         </a>
 
-                        <a href="{{ url_for('appointment_session', appointment_id=appointment.id) }}"
+                        <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
                             class="table-action-btn appointment-table-btn" title="Open Session">
                             <i class="bi bi-clipboard2-pulse"></i>
                         </a>
 
                         {% if appointment.status == 'Scheduled' %}
-                        <a href="{{ url_for('edit_appointment', appointment_id=appointment.id) }}"
+                        <a href="{{ url_for('appointments.edit_appointment', appointment_id=appointment.id) }}"
                             class="table-action-btn edit-btn" title="Edit Appointment">
                             <i class="bi bi-pencil-square"></i>
                         </a>
                         {% endif %}
 
                         {% if appointment.status != 'Done' %}
-                        <a href="{{ url_for('delete_appointment', appointment_id=appointment.id) }}"
+                        <a href="{{ url_for('appointments.delete_appointment', appointment_id=appointment.id) }}"
                             class="table-action-btn delete-table-btn" title="Delete Appointment">
                             <i class="bi bi-trash"></i>
                         </a>
@@ -132,7 +132,7 @@
     </div>
     <h4>No appointments yet</h4>
     <p>This patient has no appointments at the moment.</p>
-    <a href="{{ url_for('add_appointment', patient_id=patient.id) }}" class="empty-btn">
+    <a href="{{ url_for('appointments.add_appointment', patient_id=patient.id) }}" class="empty-btn">
         Add First Appointment
     </a>
 </div>

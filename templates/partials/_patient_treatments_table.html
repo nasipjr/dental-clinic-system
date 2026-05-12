@@ -5,7 +5,7 @@
             <tr>
                 <th>
                     <a href="{{ url_for(
-                        'patient_treatments_table',
+                        'patients.patient_treatments_table',
                         patient_id=patient.id,
                         treatment_sort='id',
                         treatment_order='asc' if treatment_sort != 'id' or treatment_order == 'desc' else 'desc'
@@ -22,7 +22,7 @@
 
                 <th>
                     <a href="{{ url_for(
-                        'patient_treatments_table',
+                        'patients.patient_treatments_table',
                         patient_id=patient.id,
                         treatment_sort='date',
                         treatment_order='asc' if treatment_sort != 'date' or treatment_order == 'desc' else 'desc'
@@ -37,7 +37,7 @@
 
                 <th>
                     <a href="{{ url_for(
-                        'patient_treatments_table',
+                        'patients.patient_treatments_table',
                         patient_id=patient.id,
                         treatment_sort='procedure_type',
                         treatment_order='asc' if treatment_sort != 'procedure_type' or treatment_order == 'desc' else 'desc'
@@ -52,7 +52,7 @@
 
                 <th>
                     <a href="{{ url_for(
-                        'patient_treatments_table',
+                        'patients.patient_treatments_table',
                         patient_id=patient.id,
                         treatment_sort='tooth_number',
                         treatment_order='asc' if treatment_sort != 'tooth_number' or treatment_order == 'desc' else 'desc'
@@ -77,7 +77,7 @@
                 <td>{{ treatment.id }}</td>
 
                 <td>
-                    <a href="{{ url_for('appointment_session', appointment_id=treatment.appointment.id) }}">
+                    <a href="{{ url_for('treatments.appointment_session', appointment_id=treatment.appointment.id) }}">
                         #{{ treatment.appointment.id }}
                     </a>
                     <br>
@@ -107,18 +107,18 @@
                 <td class="text-center">
                     <div class="appointments-actions">
 
-                        <a href="{{ url_for('view_treatment', treatment_id=treatment.id) }}"
+                        <a href="{{ url_for('treatments.view_treatment', treatment_id=treatment.id) }}"
                             class="table-action-btn view-btn" title="View Treatment">
                             <i class="bi bi-eye"></i>
                         </a>
 
                         {% if treatment.appointment.status == 'Scheduled' %}
-                        <a href="{{ url_for('edit_treatment', treatment_id=treatment.id) }}"
+                        <a href="{{ url_for('treatments.edit_treatment', treatment_id=treatment.id) }}"
                             class="table-action-btn edit-btn" title="Edit Treatment">
                             <i class="bi bi-pencil-square"></i>
                         </a>
 
-                        <a href="{{ url_for('delete_treatment', treatment_id=treatment.id) }}"
+                        <a href="{{ url_for('treatments.delete_treatment', treatment_id=treatment.id) }}"
                             class="table-action-btn delete-table-btn" title="Delete Treatment">
                             <i class="bi bi-trash"></i>
                         </a>
