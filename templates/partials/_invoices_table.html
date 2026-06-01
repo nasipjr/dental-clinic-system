@@ -1,4 +1,4 @@
-{% if invoice_appointments %}
+{% if invoices %}
 <div class="appointments-table-wrapper table-responsive">
     <table class="table appointments-table align-middle">
         <thead>
@@ -120,45 +120,45 @@
         </thead>
 
         <tbody>
-            {% for appointment in invoice_appointments %}
+            {% for invoice in invoices %}
             <tr>
                 <td>
-                    <strong>INV-{{ appointment.id }}</strong>
+                    <strong>{{ invoice.invoice_number }}</strong>
                 </td>
 
                 <td>
                     <strong>
-                        {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                        {{ invoice.patient.first_name }} {{ invoice.patient.last_name }}
                     </strong>
                     <br>
-                    <small>{{ appointment.patient.phone or 'No phone number' }}</small>
+                    <small>{{ invoice.patient.phone or 'No phone number' }}</small>
                 </td>
 
                 <td>
-                    {{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if appointment.appointment_date else 'No date' }}
+                    {{ invoice.appointment_date.strftime('%Y-%m-%d %H:%M') if invoice.appointment_date else 'No date' }}
                 </td>
 
                 <td>
-                    {{ appointment.treatments_count }}
+                    {{ invoice.treatments_count }}
                 </td>
 
                 <td>
-                    {{ appointment.invoice_total }}
+                    {{ invoice.total_amount }}
                 </td>
 
                 <td>
-                    {{ appointment.total_paid }}
+                    {{ invoice.total_paid }}
                 </td>
 
                 <td>
-                    {% if appointment.credit > 0 %}
+                    {% if invoice.credit > 0 %}
                     <span class="credit-amount">
-                        {{ appointment.credit }}
+                        {{ invoice.credit }}
                         <span class="credit-badge">Credit</span>
                     </span>
-                    {% elif appointment.outstanding_amount > 0 %}
+                    {% elif invoice.outstanding_amount > 0 %}
                     <span class="remaining-due">
-                        {{ appointment.outstanding_amount }}
+                        {{ invoice.outstanding_amount }}
                         <span class="due-badge">Due</span>
                     </span>
                     {% else %}
@@ -170,11 +170,11 @@
                 </td>
 
                 <td>
-                    {% if appointment.invoice_status == 'Credit' %}
+                    {% if invoice.status == 'Credit' %}
                     <span class="credit-badge">Credit</span>
-                    {% elif appointment.invoice_status == 'Paid' %}
+                    {% elif invoice.status == 'Paid' %}
                     <span class="paid-badge">Paid</span>
-                    {% elif appointment.invoice_status == 'Partially Paid' %}
+                    {% elif invoice.status == 'Partially Paid' %}
                     <span class="due-badge">Partial</span>
                     {% else %}
                     <span class="due-badge">Unpaid</span>
@@ -184,17 +184,17 @@
                 <td class="text-center">
                     <div class="appointments-actions">
 
-                        <a href="{{ url_for('invoices.view_invoice', appointment_id=appointment.id) }}"
+                        <a href="{{ url_for('invoices.view_invoice', invoice_id=invoice.id) }}"
                             class="table-action-btn view-btn" title="View Invoice">
                             <i class="bi bi-receipt"></i>
                         </a>
 
-                        <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}"
+                        <a href="{{ url_for('appointments.view_appointment', appointment_id=invoice.appointment_id) }}"
                             class="table-action-btn session-btn" title="View Appointment">
                             <i class="bi bi-eye"></i>
                         </a>
 
-                        <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
+                        <a href="{{ url_for('treatments.appointment_session', appointment_id=invoice.appointment_id) }}"
                             class="table-action-btn edit-btn" title="Open Session">
                             <i class="bi bi-clipboard2-pulse"></i>
                         </a>

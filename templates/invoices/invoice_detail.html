@@ -19,7 +19,7 @@
         <div class="add-patient-wrapper">
 
             <div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
-                <h2>Invoice INV-{{ appointment.id }}</h2>
+                <h2>Invoice {{ invoice.invoice_number }}</h2>
                 <p>Generated from appointment treatments.</p>
             </div>
 
@@ -28,7 +28,7 @@
 
                 <div class="patient-info-box">
                     <span class="info-label">Invoice Number</span>
-                    <p>INV-{{ appointment.id }}</p>
+                    <p>{{ invoice.invoice_number }}</p>
                 </div>
 
                 <div class="patient-info-box">
@@ -61,25 +61,25 @@
 
                 <div class="patient-info-box">
                     <span class="info-label">Invoice Total</span>
-                    <p>{{ appointment.invoice_total }}</p>
+                    <p>{{ invoice.total_amount }}</p>
                 </div>
 
                 <div class="patient-info-box">
                     <span class="info-label">Total Payments</span>
-                    <p>{{ appointment.total_paid }}</p>
+                    <p>{{ invoice.total_paid }}</p>
                 </div>
 
                 <div class="patient-info-box">
                     <span class="info-label">Outstanding / Credit</span>
                     <p>
-                        {% if appointment.credit > 0 %}
+                        {% if invoice.credit > 0 %}
                             <span class="credit-amount">
-                                {{ appointment.credit }}
+                                {{ invoice.credit }}
                                 <span class="credit-badge">Credit</span>
                             </span>
-                        {% elif appointment.outstanding_amount > 0 %}
+                        {% elif invoice.outstanding_amount > 0 %}
                             <span class="remaining-due">
-                                {{ appointment.outstanding_amount }}
+                                {{ invoice.outstanding_amount }}
                                 <span class="due-badge">Due</span>
                             </span>
                         {% else %}
@@ -94,11 +94,11 @@
                 <div class="patient-info-box">
                     <span class="info-label">Invoice Status</span>
                     <p>
-                        {% if appointment.invoice_status == 'Credit' %}
+                        {% if invoice.status == 'Credit' %}
                             <span class="credit-badge">Credit</span>
-                        {% elif appointment.invoice_status == 'Paid' %}
+                        {% elif invoice.status == 'Paid' %}
                             <span class="paid-badge">Paid</span>
-                        {% elif appointment.invoice_status == 'Partially Paid' %}
+                        {% elif invoice.status == 'Partially Paid' %}
                             <span class="due-badge">Partial</span>
                         {% else %}
                             <span class="due-badge">Unpaid</span>
@@ -178,7 +178,7 @@
                             <th colspan="5" class="text-end">Invoice Total</th>
                             <th>
                                 <span class="price-badge">
-                                    {{ appointment.invoice_total }}
+                                    {{ invoice.total_amount }}
                                 </span>
                             </th>
                         </tr>
@@ -186,6 +186,65 @@
                 </table>
             </div>
             <!-- /Invoice Items -->
+
+
+            <!-- Payment Allocations -->
+            <div class="container section-title" style="margin-top: 35px;" data-aos="fade-up">
+                <h2>Payment Allocations</h2>
+                <p>Payments allocated to this invoice.</p>
+            </div>
+
+            {% if invoice.payment_allocations %}
+            <div class="appointments-table-wrapper table-responsive mb-4">
+                <table class="table appointments-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Payment Date</th>
+                            <th>Payment Amount</th>
+                            <th>Allocated Amount</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for allocation in invoice.payment_allocations %}
+                        <tr>
+                            <td>
+                                <strong>PAY-{{ allocation.payment.id }}</strong>
+                            </td>
+
+                            <td>
+                                {{ allocation.payment.payment_date.strftime('%Y-%m-%d %H:%M') if allocation.payment.payment_date else 'No date' }}
+                            </td>
+
+                            <td>
+                                <span class="price-badge">
+                                    {{ allocation.payment.amount }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="remaining-clear">
+                                    {{ allocation.amount }}
+                                    <span class="paid-badge">Allocated</span>
+                                </span>
+                            </td>
+
+                            <td>
+                                {% if allocation.payment.notes %}
+                                    {{ allocation.payment.notes }}
+                                {% else %}
+                                    <span class="text-muted">No notes available</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+            <!-- /Payment Allocations -->
 
 
             <!-- Invoice Actions -->
@@ -201,6 +260,10 @@
 
                 <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}" class="btn btn-primary px-4">
                     Open Session
+                </a>
+
+                <a href="{{ url_for('payments.add_patient_payment', patient_id=patient.id) }}" class="btn btn-primary px-4">
+                    Add Payment
                 </a>
 
             </div>

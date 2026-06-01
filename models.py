@@ -46,6 +46,13 @@ class Patient(db.Model):
         cascade="all, delete-orphan"
     )
 
+    invoices = db.relationship(
+        "Invoice",
+        backref="patient",
+        lazy=True,
+        cascade="all, delete-orphan"
+    )
+
     @property
     def treatments(self):
         patient_treatments = []
@@ -58,17 +65,14 @@ class Patient(db.Model):
     @property
     def invoice_appointments(self):
         return [
-            appointment
-            for appointment in self.appointments
-            if appointment.has_invoice
+            invoice.appointment
+            for invoice in self.invoices
+            if invoice.appointment is not None
         ]
 
     @property
     def total_invoice_amount(self):
-        return sum(
-            appointment.invoice_total
-            for appointment in self.invoice_appointments
-        )
+        return sum(invoice.total_amount for invoice in self.invoices)
 
     @property
     def total_payments_amount(self):
@@ -121,40 +125,51 @@ class Appointment(db.Model):
         cascade="all, delete-orphan"
     )
 
-    payment_allocations = db.relationship(
-        "PaymentAllocation",
+    invoice = db.relationship(
+        "Invoice",
         backref="appointment",
         lazy=True,
+        uselist=False,
         cascade="all, delete-orphan"
     )
 
     @property
     def invoice_total(self):
+        if self.invoice:
+            return self.invoice.total_amount
+
         return sum(treatment.total_cost for treatment in self.treatments)
 
     @property
     def total_paid(self):
-        return sum(allocation.amount for allocation in self.payment_allocations)
+        if self.invoice:
+            return self.invoice.total_paid
+
+        return 0
 
     @property
     def outstanding_amount(self):
-        balance = self.invoice_total - self.total_paid
+        if self.invoice:
+            return self.invoice.outstanding_amount
 
-        if balance > 0:
-            return balance
+        total = self.invoice_total
+
+        if total > 0:
+            return total
 
         return 0
 
     @property
     def balance(self):
-        return self.invoice_total - self.total_paid
+        if self.invoice:
+            return self.invoice.balance
+
+        return self.invoice_total
 
     @property
     def credit(self):
-        credit = self.total_paid - self.invoice_total
-
-        if credit > 0:
-            return credit
+        if self.invoice:
+            return self.invoice.credit
 
         return 0
 
@@ -164,23 +179,21 @@ class Appointment(db.Model):
 
     @property
     def has_invoice(self):
-        return self.treatments_count > 0
+        return self.invoice is not None
 
     @property
     def invoice_status(self):
-        if not self.has_invoice:
-            return "No Invoice"
+        if self.invoice:
+            return self.invoice.status
 
-        if self.total_paid <= 0:
-            return "Unpaid"
+        return "No Invoice"
 
-        if self.total_paid < self.invoice_total:
-            return "Partially Paid"
+    @property
+    def payment_allocations(self):
+        if self.invoice:
+            return self.invoice.payment_allocations
 
-        if self.total_paid == self.invoice_total:
-            return "Paid"
-
-        return "Credit"
+        return []
 
 
 class Treatment(db.Model):
@@ -206,6 +219,97 @@ class Treatment(db.Model):
     @property
     def patient_id(self):
         return self.appointment.patient_id
+
+
+class Invoice(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    appointment_id = db.Column(
+        db.Integer,
+        db.ForeignKey("appointment.id"),
+        nullable=False,
+        unique=True
+    )
+
+    patient_id = db.Column(
+        db.Integer,
+        db.ForeignKey("patient.id"),
+        nullable=False
+    )
+
+    issue_date = db.Column(db.DateTime, default=datetime.now, nullable=False)
+
+    payment_allocations = db.relationship(
+        "PaymentAllocation",
+        backref="invoice",
+        lazy=True,
+        cascade="all, delete-orphan"
+    )
+
+    @property
+    def invoice_number(self):
+        return f"INV-{self.id}"
+
+    @property
+    def treatments(self):
+        if not self.appointment:
+            return []
+
+        return self.appointment.treatments
+
+    @property
+    def appointment_date(self):
+        if not self.appointment:
+            return None
+
+        return self.appointment.appointment_date
+
+    @property
+    def total_amount(self):
+        return sum(treatment.total_cost for treatment in self.treatments)
+
+    @property
+    def total_paid(self):
+        return sum(allocation.amount for allocation in self.payment_allocations)
+
+    @property
+    def outstanding_amount(self):
+        balance = self.total_amount - self.total_paid
+
+        if balance > 0:
+            return balance
+
+        return 0
+
+    @property
+    def balance(self):
+        return self.total_amount - self.total_paid
+
+    @property
+    def credit(self):
+        credit = self.total_paid - self.total_amount
+
+        if credit > 0:
+            return credit
+
+        return 0
+
+    @property
+    def treatments_count(self):
+        return len(self.treatments)
+
+    @property
+    def status(self):
+        if self.total_paid <= 0:
+            return "Unpaid"
+
+        if self.total_paid < self.total_amount:
+            return "Partially Paid"
+
+        if self.total_paid == self.total_amount:
+            return "Paid"
+
+        return "Credit"
 
 
 class Payment(db.Model):
@@ -251,10 +355,26 @@ class PaymentAllocation(db.Model):
         nullable=False
     )
 
-    appointment_id = db.Column(
+    invoice_id = db.Column(
         db.Integer,
-        db.ForeignKey("appointment.id"),
+        db.ForeignKey("invoice.id"),
         nullable=False
     )
 
     amount = db.Column(db.Float, nullable=False)
+
+    @property
+    def appointment(self):
+        return self.invoice.appointment
+
+    @property
+    def appointment_id(self):
+        return self.invoice.appointment_id
+
+    @property
+    def patient(self):
+        return self.invoice.patient
+
+    @property
+    def patient_id(self):
+        return self.invoice.patient_id

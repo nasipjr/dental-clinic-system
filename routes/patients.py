@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, render_template, request, redirect, url_for
 
-from models import db, Patient, Appointment, Treatment, Payment
+from models import db, Patient, Appointment, Treatment, Payment, Invoice
 from utils.validators import parse_patient_data
 
 
@@ -93,20 +93,21 @@ def get_patient_invoices_context(patient_id):
     invoice_sort = request.args.get("invoice_sort", "date")
     invoice_order = request.args.get("invoice_order", "desc")
 
-    patient_invoices = [
-        appointment
-        for appointment in Appointment.query.filter_by(patient_id=patient.id).all()
-        if appointment.has_invoice
-    ]
+    patient_invoices = (
+        Invoice.query
+        .filter_by(patient_id=patient.id)
+        .join(Appointment)
+        .all()
+    )
 
     sort_key_map = {
-        "id": lambda appointment: appointment.id,
-        "date": lambda appointment: appointment.appointment_date,
-        "treatments": lambda appointment: appointment.treatments_count,
-        "total": lambda appointment: appointment.invoice_total,
-        "payments": lambda appointment: appointment.total_paid,
-        "outstanding": lambda appointment: appointment.balance,
-        "status": lambda appointment: appointment.invoice_status,
+        "id": lambda invoice: invoice.id,
+        "date": lambda invoice: invoice.appointment_date,
+        "treatments": lambda invoice: invoice.treatments_count,
+        "total": lambda invoice: invoice.total_amount,
+        "payments": lambda invoice: invoice.total_paid,
+        "outstanding": lambda invoice: invoice.balance,
+        "status": lambda invoice: invoice.status,
     }
 
     sort_key = sort_key_map.get(invoice_sort, sort_key_map["date"])
@@ -235,6 +236,14 @@ def patient_detail(patient_id):
             treatments_query = treatments_query.order_by(treatment_sort_column.desc())
 
         patient_treatments = treatments_query.all()
+        
+        patient_invoices = (
+                Invoice.query
+                .filter_by(patient_id=patient.id)
+                .join(Appointment)
+                .order_by(Appointment.appointment_date.desc(), Invoice.id.desc())
+                .all()
+            )
 
         total_cost_sum = patient.total_invoice_amount
         total_paid_sum = patient.total_payments_amount

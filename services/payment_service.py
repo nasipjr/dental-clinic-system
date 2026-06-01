@@ -1,4 +1,4 @@
-from models import db, Appointment, Payment, PaymentAllocation
+from models import db, Appointment, Invoice, Payment, PaymentAllocation
 
 
 def allocate_patient_payments_to_invoices(patient_id):
@@ -9,10 +9,11 @@ def allocate_patient_payments_to_invoices(patient_id):
         .all()
     )
 
-    appointments = (
-        Appointment.query
-        .filter_by(patient_id=patient_id)
-        .order_by(Appointment.appointment_date.asc(), Appointment.id.asc())
+    invoices = (
+        Invoice.query
+        .join(Appointment)
+        .filter(Invoice.patient_id == patient_id)
+        .order_by(Appointment.appointment_date.asc(), Invoice.id.asc())
         .all()
     )
 
@@ -27,20 +28,20 @@ def allocate_patient_payments_to_invoices(patient_id):
         if remaining_payment_amount <= 0:
             continue
 
-        for appointment in appointments:
-            invoice_total = float(appointment.invoice_total or 0)
+        for invoice in invoices:
+            invoice_total = float(invoice.total_amount or 0)
 
             if invoice_total <= 0:
                 continue
 
-            allocated_to_appointment = sum(
+            allocated_to_invoice = sum(
                 float(allocation.amount or 0)
                 for allocation in PaymentAllocation.query.filter_by(
-                    appointment_id=appointment.id
+                    invoice_id=invoice.id
                 ).all()
             )
 
-            outstanding_amount = invoice_total - allocated_to_appointment
+            outstanding_amount = invoice_total - allocated_to_invoice
 
             if outstanding_amount <= 0:
                 continue
@@ -49,7 +50,7 @@ def allocate_patient_payments_to_invoices(patient_id):
 
             allocation = PaymentAllocation(
                 payment_id=payment.id,
-                appointment_id=appointment.id,
+                invoice_id=invoice.id,
                 amount=allocation_amount,
             )
 
