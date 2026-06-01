@@ -10,84 +10,88 @@ from utils.validators import parse_invoice_payment_amount
 payments_bp = Blueprint("payments", __name__)
 
 
+def get_payments_context():
+    search_query = request.args.get("search", "").strip()
+    sort_by = request.args.get("sort", "date")
+    order = request.args.get("order", "desc")
+
+    all_payments = (
+        Payment.query
+        .join(Patient)
+        .all()
+    )
+
+    if search_query:
+        search_lower = search_query.lower()
+
+        def matches_payment(payment):
+            patient = payment.patient
+            payment_number = f"pay-{payment.id}".lower()
+            payment_date = (
+                payment.payment_date.strftime("%Y-%m-%d %H:%M").lower()
+                if payment.payment_date else ""
+            )
+
+            searchable_values = [
+                payment_number,
+                str(payment.id),
+                patient.first_name or "",
+                patient.last_name or "",
+                patient.phone or "",
+                str(payment.amount),
+                str(payment.allocated_amount),
+                str(payment.unallocated_amount),
+                payment.notes or "",
+                payment_date,
+            ]
+
+            return any(
+                search_lower in str(value).lower()
+                for value in searchable_values
+            )
+
+        all_payments = [
+            payment
+            for payment in all_payments
+            if matches_payment(payment)
+        ]
+
+    sort_key_map = {
+        "id": lambda payment: payment.id,
+        "date": lambda payment: payment.payment_date or datetime.min,
+        "patient": lambda payment: (
+            payment.patient.first_name or "",
+            payment.patient.last_name or "",
+        ),
+        "amount": lambda payment: payment.amount,
+        "allocated": lambda payment: payment.allocated_amount,
+        "credit": lambda payment: payment.unallocated_amount,
+    }
+
+    sort_key = sort_key_map.get(sort_by, sort_key_map["date"])
+    reverse_order = order != "asc"
+
+    all_payments = sorted(
+        all_payments,
+        key=sort_key,
+        reverse=reverse_order,
+    )
+
+    return {
+        "payments": all_payments,
+        "search_query": search_query,
+        "sort_by": sort_by,
+        "order": order,
+    }
+
+
 @payments_bp.route("/payments")
 def payments():
     current_app.logger.info("Payments page opened")
 
     try:
-        search_query = request.args.get("search", "").strip()
-        sort_by = request.args.get("sort", "date")
-        order = request.args.get("order", "desc")
-
-        all_payments = (
-            Payment.query
-            .join(Patient)
-            .all()
-        )
-
-        if search_query:
-            search_lower = search_query.lower()
-
-            def matches_payment(payment):
-                patient = payment.patient
-                payment_number = f"pay-{payment.id}".lower()
-                payment_date = (
-                    payment.payment_date.strftime("%Y-%m-%d %H:%M").lower()
-                    if payment.payment_date else ""
-                )
-
-                searchable_values = [
-                    payment_number,
-                    str(payment.id),
-                    patient.first_name or "",
-                    patient.last_name or "",
-                    patient.phone or "",
-                    str(payment.amount),
-                    str(payment.allocated_amount),
-                    str(payment.unallocated_amount),
-                    payment.notes or "",
-                    payment_date,
-                ]
-
-                return any(
-                    search_lower in str(value).lower()
-                    for value in searchable_values
-                )
-
-            all_payments = [
-                payment
-                for payment in all_payments
-                if matches_payment(payment)
-            ]
-
-        sort_key_map = {
-            "id": lambda payment: payment.id,
-            "date": lambda payment: payment.payment_date or datetime.min,
-            "patient": lambda payment: (
-                payment.patient.first_name or "",
-                payment.patient.last_name or "",
-            ),
-            "amount": lambda payment: payment.amount,
-            "allocated": lambda payment: payment.allocated_amount,
-            "credit": lambda payment: payment.unallocated_amount,
-        }
-
-        sort_key = sort_key_map.get(sort_by, sort_key_map["date"])
-        reverse_order = order != "asc"
-
-        all_payments = sorted(
-            all_payments,
-            key=sort_key,
-            reverse=reverse_order,
-        )
-
-        return render_template(
-            "payments/payments.html",
-            payments=all_payments,
-            search_query=search_query,
-            sort_by=sort_by,
-            order=order,
-        )
+        context = get_payments_context()
+        return render_template("payments/payments.html", **context)
 
     except Exception:
         current_app.logger.exception("Failed to load payments page")
@@ -95,6 +99,24 @@ def payments():
             "error_message.html",
             title="Error",
             message="Failed to load payments.",
+            back_url=url_for("dashboard.home"),
+        ), 500
+
+
+@payments_bp.route("/payments/table")
+def payments_table():
+    current_app.logger.info("Payments table partial requested")
+
+    try:
+        context = get_payments_context()
+        return render_template("partials/_payments_table.html", **context)
+
+    except Exception:
+        current_app.logger.exception("Failed to load payments table")
+        return render_template(
+            "error_message.html",
+            title="Error",
+            message="Failed to load payments table.",
             back_url=url_for("dashboard.home"),
         ), 500
 

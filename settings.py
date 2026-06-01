@@ -3,7 +3,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()
 
-
+#gives us Path object for settings.py then gives us the parent directory of settings.py which is the root of our project. This allows us to construct paths to other files in a way that works regardless of where the code is run from.
 BASE_DIR = Path(__file__).resolve().parent
 
 
@@ -31,5 +31,5 @@ class Config:
     SQLALCHEMY_DATABASE_URI = build_database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    CLINIC_CONFIG_FILE = BASE_DIR / "config" / "clinic_config.json"
+    LOG_DIRECTORY = os.getenv("LOG_DIRECTORY", str(BASE_DIR / "logs"))
     LOG_FILE_NAME = os.getenv("LOG_FILE_NAME", "clinic.log")

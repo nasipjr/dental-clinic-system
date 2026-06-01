@@ -1,0 +1,227 @@
+{% if invoice_appointments %}
+<div class="appointments-table-wrapper table-responsive">
+    <table class="table appointments-table align-middle">
+        <thead>
+            <tr>
+                <th>
+                    <a class="invoices-ajax-link" href="{{ url_for(
+                        'invoices.invoices_table',
+                        search=search_query,
+                        sort='id',
+                        order='asc' if sort_by != 'id' or order == 'desc' else 'desc'
+                    ) }}">
+                        Invoice #
+                        {% if sort_by == 'id' %}
+                        <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        {% endif %}
+                    </a>
+                </th>
+
+                <th>
+                    <a class="invoices-ajax-link" href="{{ url_for(
+                        'invoices.invoices_table',
+                        search=search_query,
+                        sort='patient',
+                        order='asc' if sort_by != 'patient' or order == 'desc' else 'desc'
+                    ) }}">
+                        Patient
+                        {% if sort_by == 'patient' %}
+                        <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        {% endif %}
+                    </a>
+                </th>
+
+                <th>
+                    <a class="invoices-ajax-link" href="{{ url_for(
+                        'invoices.invoices_table',
+                        search=search_query,
+                        sort='date',
+                        order='asc' if sort_by != 'date' or order == 'desc' else 'desc'
+                    ) }}">
+                        Appointment Date
+                        {% if sort_by == 'date' %}
+                        <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        {% endif %}
+                    </a>
+                </th>
+
+                <th>
+                    <a class="invoices-ajax-link" href="{{ url_for(
+                        'invoices.invoices_table',
+                        search=search_query,
+                        sort='treatments',
+                        order='asc' if sort_by != 'treatments' or order == 'desc' else 'desc'
+                    ) }}">
+                        Treatments
+                        {% if sort_by == 'treatments' %}
+                        <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        {% endif %}
+                    </a>
+                </th>
+
+                <th>
+                    <a class="invoices-ajax-link" href="{{ url_for(
+                        'invoices.invoices_table',
+                        search=search_query,
+                        sort='total',
+                        order='asc' if sort_by != 'total' or order == 'desc' else 'desc'
+                    ) }}">
+                        Invoice Total
+                        {% if sort_by == 'total' %}
+                        <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        {% endif %}
+                    </a>
+                </th>
+
+                <th>
+                    <a class="invoices-ajax-link" href="{{ url_for(
+                        'invoices.invoices_table',
+                        search=search_query,
+                        sort='payments',
+                        order='asc' if sort_by != 'payments' or order == 'desc' else 'desc'
+                    ) }}">
+                        Total Payments
+                        {% if sort_by == 'payments' %}
+                        <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        {% endif %}
+                    </a>
+                </th>
+
+                <th>
+                    <a class="invoices-ajax-link" href="{{ url_for(
+                        'invoices.invoices_table',
+                        search=search_query,
+                        sort='outstanding',
+                        order='asc' if sort_by != 'outstanding' or order == 'desc' else 'desc'
+                    ) }}">
+                        Outstanding / Credit
+                        {% if sort_by == 'outstanding' %}
+                        <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        {% endif %}
+                    </a>
+                </th>
+
+                <th>
+                    <a class="invoices-ajax-link" href="{{ url_for(
+                        'invoices.invoices_table',
+                        search=search_query,
+                        sort='status',
+                        order='asc' if sort_by != 'status' or order == 'desc' else 'desc'
+                    ) }}">
+                        Status
+                        {% if sort_by == 'status' %}
+                        <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        {% endif %}
+                    </a>
+                </th>
+
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for appointment in invoice_appointments %}
+            <tr>
+                <td>
+                    <strong>INV-{{ appointment.id }}</strong>
+                </td>
+
+                <td>
+                    <strong>
+                        {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                    </strong>
+                    <br>
+                    <small>{{ appointment.patient.phone or 'No phone number' }}</small>
+                </td>
+
+                <td>
+                    {{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if appointment.appointment_date else 'No date' }}
+                </td>
+
+                <td>
+                    {{ appointment.treatments_count }}
+                </td>
+
+                <td>
+                    {{ appointment.invoice_total }}
+                </td>
+
+                <td>
+                    {{ appointment.total_paid }}
+                </td>
+
+                <td>
+                    {% if appointment.credit > 0 %}
+                    <span class="credit-amount">
+                        {{ appointment.credit }}
+                        <span class="credit-badge">Credit</span>
+                    </span>
+                    {% elif appointment.outstanding_amount > 0 %}
+                    <span class="remaining-due">
+                        {{ appointment.outstanding_amount }}
+                        <span class="due-badge">Due</span>
+                    </span>
+                    {% else %}
+                    <span class="remaining-clear">
+                        0
+                        <span class="paid-badge">Paid</span>
+                    </span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if appointment.invoice_status == 'Credit' %}
+                    <span class="credit-badge">Credit</span>
+                    {% elif appointment.invoice_status == 'Paid' %}
+                    <span class="paid-badge">Paid</span>
+                    {% elif appointment.invoice_status == 'Partially Paid' %}
+                    <span class="due-badge">Partial</span>
+                    {% else %}
+                    <span class="due-badge">Unpaid</span>
+                    {% endif %}
+                </td>
+
+                <td class="text-center">
+                    <div class="appointments-actions">
+
+                        <a href="{{ url_for('invoices.view_invoice', appointment_id=appointment.id) }}"
+                            class="table-action-btn view-btn" title="View Invoice">
+                            <i class="bi bi-receipt"></i>
+                        </a>
+
+                        <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}"
+                            class="table-action-btn session-btn" title="View Appointment">
+                            <i class="bi bi-eye"></i>
+                        </a>
+
+                        <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
+                            class="table-action-btn edit-btn" title="Open Session">
+                            <i class="bi bi-clipboard2-pulse"></i>
+                        </a>
+
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% else %}
+<div class="empty-state-card text-center">
+    <i class="bi bi-receipt"></i>
+    <h4>No invoices found</h4>
+
+    {% if search_query %}
+    <p>No invoices match your search.</p>
+    <a href="{{ url_for('invoices.invoices') }}" class="btn btn-primary mt-3">
+        Reset Search
+    </a>
+    {% else %}
+    <p>Invoices will appear here when an appointment has at least one treatment.</p>
+    <a href="{{ url_for('appointments.appointments') }}" class="btn btn-primary mt-3">
+        View Appointments
+    </a>
+    {% endif %}
+</div>
+{% endif %}

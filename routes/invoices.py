@@ -8,84 +8,88 @@ from models import Appointment, Treatment
 invoices_bp = Blueprint("invoices", __name__)
 
 
+def get_invoices_context():
+    search_query = request.args.get("search", "").strip()
+    sort_by = request.args.get("sort", "date")
+    order = request.args.get("order", "desc")
+
+    invoice_appointments = (
+        Appointment.query
+        .join(Treatment)
+        .distinct()
+        .all()
+    )
+
+    if search_query:
+        search_lower = search_query.lower()
+
+        def matches_invoice(appointment):
+            patient = appointment.patient
+            invoice_number = f"inv-{appointment.id}".lower()
+            appointment_date = (
+                appointment.appointment_date.strftime("%Y-%m-%d %H:%M").lower()
+                if appointment.appointment_date else ""
+            )
+
+            searchable_values = [
+                invoice_number,
+                str(appointment.id),
+                patient.first_name or "",
+                patient.last_name or "",
+                patient.phone or "",
+                appointment.status or "",
+                appointment_date,
+            ]
+
+            return any(
+                search_lower in str(value).lower()
+                for value in searchable_values
+            )
+
+        invoice_appointments = [
+            appointment
+            for appointment in invoice_appointments
+            if matches_invoice(appointment)
+        ]
+
+    sort_key_map = {
+        "id": lambda appointment: appointment.id,
+        "patient": lambda appointment: (
+            appointment.patient.first_name or "",
+            appointment.patient.last_name or "",
+        ),
+        "date": lambda appointment: appointment.appointment_date or datetime.min,
+        "treatments": lambda appointment: appointment.treatments_count,
+        "total": lambda appointment: appointment.invoice_total,
+        "payments": lambda appointment: appointment.total_paid,
+        "outstanding": lambda appointment: appointment.balance,
+        "status": lambda appointment: appointment.invoice_status,
+    }
+
+    sort_key = sort_key_map.get(sort_by, sort_key_map["date"])
+    reverse_order = order != "asc"
+
+    invoice_appointments = sorted(
+        invoice_appointments,
+        key=sort_key,
+        reverse=reverse_order,
+    )
+
+    return {
+        "invoice_appointments": invoice_appointments,
+        "search_query": search_query,
+        "sort_by": sort_by,
+        "order": order,
+    }
+
+
 @invoices_bp.route("/invoices")
 def invoices():
     current_app.logger.info("Invoices page opened")
 
     try:
-        search_query = request.args.get("search", "").strip()
-        sort_by = request.args.get("sort", "date")
-        order = request.args.get("order", "desc")
-
-        invoice_appointments = (
-            Appointment.query
-            .join(Treatment)
-            .distinct()
-            .all()
-        )
-
-        if search_query:
-            search_lower = search_query.lower()
-
-            def matches_invoice(appointment):
-                patient = appointment.patient
-                invoice_number = f"inv-{appointment.id}".lower()
-                appointment_date = (
-                    appointment.appointment_date.strftime("%Y-%m-%d %H:%M").lower()
-                    if appointment.appointment_date else ""
-                )
-
-                searchable_values = [
-                    invoice_number,
-                    str(appointment.id),
-                    patient.first_name or "",
-                    patient.last_name or "",
-                    patient.phone or "",
-                    appointment.status or "",
-                    appointment_date,
-                ]
-
-                return any(
-                    search_lower in str(value).lower()
-                    for value in searchable_values
-                )
-
-            invoice_appointments = [
-                appointment
-                for appointment in invoice_appointments
-                if matches_invoice(appointment)
-            ]
-
-        sort_key_map = {
-            "id": lambda appointment: appointment.id,
-            "patient": lambda appointment: (
-                appointment.patient.first_name or "",
-                appointment.patient.last_name or "",
-            ),
-            "date": lambda appointment: appointment.appointment_date or datetime.min,
-            "treatments": lambda appointment: appointment.treatments_count,
-            "total": lambda appointment: appointment.invoice_total,
-            "payments": lambda appointment: appointment.total_paid,
-            "outstanding": lambda appointment: appointment.balance,
-            "status": lambda appointment: appointment.invoice_status,
-        }
-
-        sort_key = sort_key_map.get(sort_by, sort_key_map["date"])
-        reverse_order = order != "asc"
-
-        invoice_appointments = sorted(
-            invoice_appointments,
-            key=sort_key,
-            reverse=reverse_order,
-        )
-
-        return render_template(
-            "invoices/invoices.html",
-            invoice_appointments=invoice_appointments,
-            search_query=search_query,
-            sort_by=sort_by,
-            order=order,
-        )
+        context = get_invoices_context()
+        return render_template("invoices/invoices.html", **context)
 
     except Exception:
         current_app.logger.exception("Failed to load invoices page")
@@ -93,6 +97,25 @@ def invoices():
             "error_message.html",
             title="Error",
             message="Failed to load invoices.",
+            back_url=url_for("dashboard.home"),
+        ), 500
+
+
+@invoices_bp.route("/invoices/table")
+def invoices_table():
+    current_app.logger.info("Invoices table partial requested")
+
+    try:
+        context = get_invoices_context()
+
+        return render_template("partials/_invoices_table.html", **context)
+
+    except Exception:
+        current_app.logger.exception("Failed to load invoices table")
+        return render_template(
+            "error_message.html",
+            title="Error",
+            message="Failed to load invoices table.",
             back_url=url_for("dashboard.home"),
         ), 500
 

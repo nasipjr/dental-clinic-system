@@ -1,6 +1,7 @@
 from flask import Blueprint, current_app, render_template, request, redirect, url_for
 
 from models import db, Appointment, Treatment
+from services.payment_service import allocate_patient_payments_to_invoices
 from utils.constants import TREATMENT_PRICES, TREATMENT_PROCEDURE_TYPES
 
 
@@ -102,6 +103,10 @@ def add_treatment_to_appointment(appointment_id):
             )
 
             db.session.add(new_treatment)
+            db.session.flush()
+
+            allocate_patient_payments_to_invoices(appointment.patient_id)
+
             db.session.commit()
 
             current_app.logger.info(
@@ -222,6 +227,10 @@ def edit_treatment(treatment_id):
             treatment.notes = request.form.get("notes", "").strip()
             treatment.total_cost = TREATMENT_PRICES[procedure_type]
 
+            db.session.flush()
+
+            allocate_patient_payments_to_invoices(treatment.appointment.patient_id)
+
             db.session.commit()
 
             current_app.logger.info(
@@ -298,7 +307,13 @@ def delete_treatment(treatment_id):
             ), 403
 
         if request.method == "POST":
+            patient_id = treatment.appointment.patient_id
+
             db.session.delete(treatment)
+            db.session.flush()
+
+            allocate_patient_payments_to_invoices(patient_id)
+
             db.session.commit()
 
             current_app.logger.info(

@@ -1,69 +1,154 @@
 from flask import Blueprint, current_app, render_template, request, redirect, url_for
 
-from models import db, Patient, Appointment, Treatment
+from models import db, Patient, Appointment, Treatment, Payment
 from utils.validators import parse_patient_data
 
 
 patients_bp = Blueprint("patients", __name__)
 
 
-@patients_bp.route("/patients")
-def patients():
+def get_patients_context():
     search_query = request.args.get("search", "")
     sort_by = request.args.get("sort", "id")
     order = request.args.get("order", "desc")
     page = request.args.get("page", 1, type=int)
     per_page = 10
 
+    query = Patient.query
+
+    if search_query:
+        query = query.filter(
+            (Patient.first_name.ilike(f"%{search_query}%")) |
+            (Patient.last_name.ilike(f"%{search_query}%")) |
+            (Patient.phone.ilike(f"%{search_query}%")) |
+            (Patient.email.ilike(f"%{search_query}%")) |
+            (Patient.city.ilike(f"%{search_query}%"))
+        )
+
+    sort_columns = {
+        "id": Patient.id,
+        "first_name": Patient.first_name,
+        "last_name": Patient.last_name,
+        "phone": Patient.phone,
+        "email": Patient.email,
+        "city": Patient.city,
+        "date_of_birth": Patient.date_of_birth,
+    }
+
+    sort_column = sort_columns.get(sort_by, Patient.id)
+
+    if order == "asc":
+        query = query.order_by(sort_column.asc())
+    else:
+        query = query.order_by(sort_column.desc())
+
+    pagination = query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False,
+    )
+
+    return {
+        "patients": pagination.items,
+        "pagination": pagination,
+        "search_query": search_query,
+        "sort_by": sort_by,
+        "order": order,
+    }
+
+
+def get_patient_payments_context(patient_id):
+    patient = Patient.query.get_or_404(patient_id)
+    payment_sort = request.args.get("payment_sort", "date")
+    payment_order = request.args.get("payment_order", "desc")
+
+    patient_payments = Payment.query.filter_by(patient_id=patient.id).all()
+
+    sort_key_map = {
+        "id": lambda payment: payment.id,
+        "date": lambda payment: payment.payment_date,
+        "amount": lambda payment: payment.amount,
+        "allocated": lambda payment: payment.allocated_amount,
+        "credit": lambda payment: payment.unallocated_amount,
+    }
+
+    sort_key = sort_key_map.get(payment_sort, sort_key_map["date"])
+
+    patient_payments = sorted(
+        patient_payments,
+        key=sort_key,
+        reverse=payment_order != "asc",
+    )
+
+    return {
+        "patient": patient,
+        "patient_payments": patient_payments,
+        "payment_sort": payment_sort,
+        "payment_order": payment_order,
+    }
+
+
+def get_patient_invoices_context(patient_id):
+    patient = Patient.query.get_or_404(patient_id)
+    invoice_sort = request.args.get("invoice_sort", "date")
+    invoice_order = request.args.get("invoice_order", "desc")
+
+    patient_invoices = [
+        appointment
+        for appointment in Appointment.query.filter_by(patient_id=patient.id).all()
+        if appointment.has_invoice
+    ]
+
+    sort_key_map = {
+        "id": lambda appointment: appointment.id,
+        "date": lambda appointment: appointment.appointment_date,
+        "treatments": lambda appointment: appointment.treatments_count,
+        "total": lambda appointment: appointment.invoice_total,
+        "payments": lambda appointment: appointment.total_paid,
+        "outstanding": lambda appointment: appointment.balance,
+        "status": lambda appointment: appointment.invoice_status,
+    }
+
+    sort_key = sort_key_map.get(invoice_sort, sort_key_map["date"])
+
+    patient_invoices = sorted(
+        patient_invoices,
+        key=sort_key,
+        reverse=invoice_order != "asc",
+    )
+
+    return {
+        "patient": patient,
+        "patient_invoices": patient_invoices,
+        "invoice_sort": invoice_sort,
+        "invoice_order": invoice_order,
+    }
+
+
+@patients_bp.route("/patients")
+def patients():
     current_app.logger.info("Patients page opened")
 
     try:
-        query = Patient.query
-
-        if search_query:
-            query = query.filter(
-                (Patient.first_name.ilike(f"%{search_query}%")) |
-                (Patient.last_name.ilike(f"%{search_query}%")) |
-                (Patient.phone.ilike(f"%{search_query}%")) |
-                (Patient.email.ilike(f"%{search_query}%")) |
-                (Patient.city.ilike(f"%{search_query}%"))
-            )
-
-        sort_columns = {
-            "id": Patient.id,
-            "first_name": Patient.first_name,
-            "last_name": Patient.last_name,
-            "phone": Patient.phone,
-            "email": Patient.email,
-            "city": Patient.city,
-            "date_of_birth": Patient.date_of_birth,
-        }
-
-        sort_column = sort_columns.get(sort_by, Patient.id)
-
-        if order == "asc":
-            query = query.order_by(sort_column.asc())
-        else:
-            query = query.order_by(sort_column.desc())
-
-        pagination = query.paginate(
-            page=page,
-            per_page=per_page,
-            error_out=False,
-        )
-
-        return render_template(
-            "patients/patients.html",
-            patients=pagination.items,
-            pagination=pagination,
-            search_query=search_query,
-            sort_by=sort_by,
-            order=order,
-        )
+        context = get_patients_context()
+        return render_template("patients/patients.html", **context)
 
     except Exception:
         current_app.logger.exception("Error while loading patients page")
         return "Error Loading PatientsPage", 500
+
+
+@patients_bp.route("/patients/table")
+def patients_table():
+    current_app.logger.info("Patients table partial requested")
+
+    try:
+        context = get_patients_context()
+        return render_template("partials/_patients_table.html", **context)
+
+    except Exception:
+        current_app.logger.exception("Error while loading patients table")
+        return "Error Loading PatientsTable", 500
 
 
 @patients_bp.route("/patients/add", methods=["GET", "POST"])
@@ -99,6 +184,9 @@ def patient_detail(patient_id):
 
         treatment_sort = request.args.get("treatment_sort", "date")
         treatment_order = request.args.get("treatment_order", "desc")
+
+        payment_context = get_patient_payments_context(patient.id)
+        invoice_context = get_patient_invoices_context(patient.id)
 
         active_tab = request.args.get("tab", "appointments")
 
@@ -158,6 +246,8 @@ def patient_detail(patient_id):
             patient=patient,
             patient_appointments=patient_appointments,
             patient_treatments=patient_treatments,
+            patient_payments=payment_context["patient_payments"],
+            patient_invoices=invoice_context["patient_invoices"],
             total_cost_sum=total_cost_sum,
             total_paid_sum=total_paid_sum,
             total_remaining_sum=total_remaining_sum,
@@ -166,6 +256,10 @@ def patient_detail(patient_id):
             appointment_order=appointment_order,
             treatment_sort=treatment_sort,
             treatment_order=treatment_order,
+            payment_sort=payment_context["payment_sort"],
+            payment_order=payment_context["payment_order"],
+            invoice_sort=invoice_context["invoice_sort"],
+            invoice_order=invoice_context["invoice_order"],
             active_tab=active_tab,
         )
 
@@ -174,6 +268,26 @@ def patient_detail(patient_id):
             f"Error while loading patient detail | patient_id={patient_id}"
         )
         return "Error Loading PatientsInfo", 500
+
+
+@patients_bp.route("/patients/<int:patient_id>/payments-table")
+def patient_payments_table(patient_id):
+    context = get_patient_payments_context(patient_id)
+
+    return render_template(
+        "partials/_patient_payments_table.html",
+        **context,
+    )
+
+
+@patients_bp.route("/patients/<int:patient_id>/invoices-table")
+def patient_invoices_table(patient_id):
+    context = get_patient_invoices_context(patient_id)
+
+    return render_template(
+        "partials/_patient_invoices_table.html",
+        **context,
+    )
 
 
 @patients_bp.route("/patients/<int:patient_id>/appointments-table")

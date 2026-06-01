@@ -1,30 +1,5 @@
-import json
 import logging
 from pathlib import Path
-
-
-def load_log_directory(config_file: Path) -> str:
-    if not config_file.exists():
-        raise RuntimeError(
-            "System is not configured yet. Please run setup.py first."
-        )
-
-    try:
-        with config_file.open("r", encoding="utf-8") as file:
-            config_data = json.load(file)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(
-            "Configuration file is invalid. Please check config/clinic_config.json."
-        ) from exc
-
-    log_directory = str(config_data.get("log_directory", "")).strip()
-
-    if not log_directory:
-        raise RuntimeError(
-            "Configuration is incomplete. Missing log_directory."
-        )
-
-    return log_directory
 
 
 def setup_logging(app, log_directory: str, log_file_name: str) -> None:

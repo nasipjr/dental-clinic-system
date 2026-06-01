@@ -2,7 +2,7 @@ from flask import Flask, request
 
 from models import db
 from settings import Config
-from utils.logging_config import load_log_directory, setup_logging
+from utils.logging_config import setup_logging
 
 from routes.dashboard import dashboard_bp
 from routes.patients import patients_bp
@@ -15,7 +15,7 @@ from routes.invoices import invoices_bp
 app = Flask(__name__)
 app.config.from_object(Config)
 
-CONFIG_FILE = app.config["CLINIC_CONFIG_FILE"]
+LOG_DIRECTORY = app.config["LOG_DIRECTORY"]
 LOG_FILE_NAME = app.config["LOG_FILE_NAME"]
 
 db.init_app(app)
@@ -23,8 +23,7 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
-log_directory = load_log_directory(CONFIG_FILE)
-setup_logging(app, log_directory, LOG_FILE_NAME)
+setup_logging(app, LOG_DIRECTORY, LOG_FILE_NAME)
 app.logger.info("Application started successfully")
 
 app.register_blueprint(dashboard_bp)
