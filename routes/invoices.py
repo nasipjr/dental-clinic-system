@@ -1,8 +1,11 @@
 from datetime import datetime
 
-from flask import Blueprint, current_app, render_template, request, url_for
+from flask import Blueprint, current_app, render_template, request, redirect, url_for
 
-from models import Invoice
+from models import db, Patient, Appointment, Treatment, Invoice, Payment
+from services.invoice_service import sync_invoice_for_appointment
+from services.payment_service import allocate_patient_payments_to_invoices
+from utils.constants import TREATMENT_PRICES, TREATMENT_PROCEDURE_TYPES
 
 
 invoices_bp = Blueprint("invoices", __name__)
@@ -114,6 +117,214 @@ def invoices_table():
             title="Error",
             message="Failed to load invoices table.",
             back_url=url_for("dashboard.home"),
+        ), 500
+        
+@invoices_bp.route("/invoices/add", methods=["GET", "POST"])
+def add_invoice():
+    current_app.logger.info("Add manual invoice page/request")
+
+    try:
+        patients = (
+            Patient.query
+            .order_by(Patient.first_name.asc(), Patient.last_name.asc())
+            .all()
+        )
+
+        default_visit_datetime = datetime.now().replace(second=0, microsecond=0)
+
+        if request.method == "POST":
+            patient_id = request.form.get("patient_id", type=int)
+            appointment_date_raw = request.form.get("appointment_date", "").strip()
+
+            procedure_types = request.form.getlist("procedure_type")
+            tooth_numbers = request.form.getlist("tooth_number")
+            notes_list = request.form.getlist("notes")
+
+            payment_option = request.form.get("payment_option", "no_payment").strip()
+            custom_payment_amount_raw = request.form.get("custom_payment_amount", "").strip()
+
+            patient = Patient.query.get(patient_id)
+
+            if not patient:
+                return render_template(
+                    "invoices/add_invoice.html",
+                    patients=patients,
+                    treatment_prices=TREATMENT_PRICES,
+                    default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
+                    error_message="Please select a valid patient.",
+                ), 400
+
+            if not appointment_date_raw:
+                return render_template(
+                    "invoices/add_invoice.html",
+                    patients=patients,
+                    treatment_prices=TREATMENT_PRICES,
+                    default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
+                    error_message="Visit date is required.",
+                ), 400
+
+            try:
+                appointment_date = datetime.strptime(appointment_date_raw, "%Y-%m-%dT%H:%M")
+            except ValueError:
+                return render_template(
+                    "invoices/add_invoice.html",
+                    patients=patients,
+                    treatment_prices=TREATMENT_PRICES,
+                    default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
+                    error_message="Visit date must be valid.",
+                ), 400
+
+            invoice_items = []
+
+            for index, procedure_type in enumerate(procedure_types):
+                procedure_type = procedure_type.strip()
+
+                if not procedure_type:
+                    continue
+
+                if procedure_type not in TREATMENT_PROCEDURE_TYPES:
+                    return render_template(
+                        "invoices/add_invoice.html",
+                        patients=patients,
+                        treatment_prices=TREATMENT_PRICES,
+                        default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
+                        error_message="Invalid treatment procedure type.",
+                    ), 400
+
+                tooth_number = tooth_numbers[index].strip() if index < len(tooth_numbers) else ""
+                notes = notes_list[index].strip() if index < len(notes_list) else ""
+
+                invoice_items.append({
+                    "procedure_type": procedure_type,
+                    "tooth_number": tooth_number,
+                    "notes": notes,
+                    "total_cost": TREATMENT_PRICES[procedure_type],
+                })
+
+            if not invoice_items:
+                return render_template(
+                    "invoices/add_invoice.html",
+                    patients=patients,
+                    treatment_prices=TREATMENT_PRICES,
+                    default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
+                    error_message="Please add at least one invoice item.",
+                ), 400
+
+            appointment = Appointment(
+                patient_id=patient.id,
+                appointment_date=appointment_date,
+                reason="Manual",
+                status="Done",
+            )
+
+            db.session.add(appointment)
+            db.session.flush()
+
+            for item in invoice_items:
+                treatment = Treatment(
+                    appointment_id=appointment.id,
+                    treatment_date=appointment.appointment_date,
+                    procedure_type=item["procedure_type"],
+                    tooth_number=item["tooth_number"],
+                    notes=item["notes"],
+                    total_cost=item["total_cost"],
+                )
+
+                db.session.add(treatment)
+
+            db.session.flush()
+
+            invoice = sync_invoice_for_appointment(appointment)
+            invoice_total = invoice.total_amount
+
+            if payment_option not in {"no_payment", "full_price", "custom_amount"}:
+                return render_template(
+                    "invoices/add_invoice.html",
+                    patients=patients,
+                    treatment_prices=TREATMENT_PRICES,
+                    default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
+                    error_message="Invalid payment option.",
+                ), 400
+
+            payment_amount = 0
+
+            if payment_option == "full_price":
+                payment_amount = invoice_total
+
+            elif payment_option == "custom_amount":
+                if not custom_payment_amount_raw:
+                    return render_template(
+                        "invoices/add_invoice.html",
+                        patients=patients,
+                        treatment_prices=TREATMENT_PRICES,
+                        default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
+                        error_message="Custom payment amount is required.",
+                    ), 400
+
+                try:
+                    payment_amount = float(custom_payment_amount_raw)
+                except ValueError:
+                    return render_template(
+                        "invoices/add_invoice.html",
+                        patients=patients,
+                        treatment_prices=TREATMENT_PRICES,
+                        default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
+                        error_message="Custom payment amount must be a valid number.",
+                    ), 400
+
+                if payment_amount <= 0:
+                    return render_template(
+                        "invoices/add_invoice.html",
+                        patients=patients,
+                        treatment_prices=TREATMENT_PRICES,
+                        default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
+                        error_message="Custom payment amount must be greater than 0.",
+                    ), 400
+
+                if payment_amount > invoice_total:
+                    return render_template(
+                        "invoices/add_invoice.html",
+                        patients=patients,
+                        treatment_prices=TREATMENT_PRICES,
+                        default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
+                        error_message="Custom payment amount cannot be greater than invoice total.",
+                    ), 400
+
+            if payment_amount > 0:
+                payment = Payment(
+                    patient_id=patient.id,
+                    amount=payment_amount,
+                    notes=f"Manual invoice payment for {invoice.invoice_number}",
+                )
+
+                db.session.add(payment)
+                db.session.flush()
+
+            allocate_patient_payments_to_invoices(patient.id)
+
+            db.session.commit()
+
+            current_app.logger.info(
+                f"Manual invoice created successfully | invoice_id={invoice.id}, patient_id={patient.id}"
+            )
+
+            return redirect(url_for("invoices.view_invoice", invoice_id=invoice.id))
+
+        return render_template(
+            "invoices/add_invoice.html",
+            patients=patients,
+            treatment_prices=TREATMENT_PRICES,
+            default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
+        )
+
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Failed to create manual invoice")
+        return render_template(
+            "error_message.html",
+            title="Error",
+            message="Failed to create manual invoice.",
+            back_url=url_for("invoices.invoices"),
         ), 500
 
 
