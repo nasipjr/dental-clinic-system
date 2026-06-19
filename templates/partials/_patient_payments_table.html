@@ -6,11 +6,13 @@
             <p>All payments recorded for this patient.</p>
         </div>
 
+        {% if current_user.role in ('admin', 'receptionist') %}
         <a href="{{ url_for('payments.add_patient_payment', patient_id=patient.id) }}"
             class="btn btn-primary btn-sm">
             <i class="bi bi-plus-circle me-1"></i>
             Add Payment
         </a>
+        {% endif %}
     </div>
 
     {% if patient_payments %}

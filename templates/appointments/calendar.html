@@ -3,6 +3,9 @@
 {% block title %}Interactive Calendar{% endblock %}
 
 {% block content %}
+<script>
+  document.body.classList.add('calendar-page');
+</script>
 <br><br><br><br><br><br>
 
 <!-- Section Title -->
@@ -62,30 +65,30 @@
 <div class="modal fade" id="eventModal" tabindex="-1" aria-labelledby="eventModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content"
-            style="background: #ffffff; border: 1px solid rgba(23, 92, 221, 0.15); border-radius: 20px; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);">
+            style="background: var(--surface-color); border: 1px solid color-mix(in srgb, var(--accent-color), transparent 85%); border-radius: 20px; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);">
             <div class="modal-header border-bottom-0 pb-0">
                 <h5 class="modal-title" id="eventModalLabel"
-                    style="font-weight: 700; color: #112344; font-family: var(--heading-font);">Appointment Details</h5>
+                    style="font-weight: 700; color: var(--heading-color); font-family: var(--heading-font);">Appointment Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body py-4">
                 <div class="text-center mb-4">
                     <div class="d-inline-flex align-items-center justify-content-center rounded-circle"
                         style="width: 70px; height: 70px; background: rgba(23, 92, 221, 0.08); border: 2px solid rgba(23, 92, 221, 0.2);">
-                        <i class="bi bi-calendar2-pulse-fill text-primary fs-1"></i>
+                        <i class="bi bi-person-fill text-primary fs-1"></i>
                     </div>
                 </div>
                 <div class="px-3">
-                    <p class="mb-3 fs-5" style="color: #112344;"><strong>Patient:</strong> <span id="modal-patient-name"
+                    <p class="mb-3 fs-5" style="color: var(--heading-color);"><strong>Patient:</strong> <span id="modal-patient-name"
                             class="text-primary" style="font-weight: 700;"></span></p>
-                    <div class="p-3 rounded-4" style="background-color: #f8fafc; border: 1px solid #f1f5f9;">
-                        <p class="mb-2" style="color: #475569;"><strong style="color: #1e293b;">Phone:</strong> <span
+                    <div class="p-3 rounded-4" style="background-color: color-mix(in srgb, var(--default-color), transparent 95%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);">
+                        <p class="mb-2" style="color: var(--default-color);"><strong style="color: var(--heading-color);">Phone:</strong> <span
                                 id="modal-phone" class="ms-1"></span></p>
-                        <p class="mb-2" style="color: #475569;"><strong style="color: #1e293b;">Date & Time:</strong>
-                            <span id="modal-date-time" class="ms-1 fw-bold text-dark"></span></p>
-                        <p class="mb-2" style="color: #475569;"><strong style="color: #1e293b;">Reason:</strong> <span
+                        <p class="mb-2" style="color: var(--default-color);"><strong style="color: var(--heading-color);">Date & Time:</strong>
+                            <span id="modal-date-time" class="ms-1 fw-bold text-primary"></span></p>
+                        <p class="mb-2" style="color: var(--default-color);"><strong style="color: var(--heading-color);">Reason:</strong> <span
                                 id="modal-reason" class="ms-1"></span></p>
-                        <p class="mb-0" style="color: #475569;"><strong style="color: #1e293b;">Status:</strong> <span
+                        <p class="mb-0" style="color: var(--default-color);"><strong style="color: var(--heading-color);">Status:</strong> <span
                                 class="badge ms-1" id="modal-status"></span></p>
                     </div>
                 </div>
@@ -111,8 +114,62 @@
 <!-- FullCalendar Integration -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
+    /* Styling for disabled cells in the calendar */
+    .fc-day-disabled {
+        cursor: not-allowed !important;
+    }
+    .fc-day-disabled, .fc-day-disabled * {
+        cursor: not-allowed !important;
+    }
+    td.fc-day-disabled {
+        background-color: rgba(100, 116, 139, 0.07) !important;
+    }
+
+    /* Target past days globally using FullCalendar classes */
+    td.fc-day-past {
+        background-color: rgba(100, 116, 139, 0.07) !important;
+        cursor: not-allowed !important;
+    }
+    /* Keep pointer cursor on actual events in the past so users know they can click to view details */
+    .fc-day-past .fc-event,
+    .fc-day-past .fc-event * {
+        cursor: pointer !important;
+    }
+
+    /* Override FullCalendar scroller and harness overflows to enable window-level sticky headers */
+    .fc-view-harness,
+    .fc-scroller,
+    .fc-timegrid,
+    .fc-daygrid {
+        overflow: visible !important;
+    }
+
+    /* Sticky headers for month and week views, offset dynamically by the fixed navbar states */
+    .fc-timegrid-header,
+    .fc-daygrid-header,
+    .fc-col-header,
+    .fc-col-header-cell,
+    th.fc-timegrid-axis {
+        position: sticky !important;
+        top: 120px !important; /* Default header height when not scrolled */
+        z-index: 101 !important; /* Sit above event cards and columns */
+        background-color: var(--surface-color, #ffffff) !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        transition: top 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    /* Adjust sticky top position when page is scrolled */
+    body.scrolled .fc-timegrid-header,
+    body.scrolled .fc-daygrid-header,
+    body.scrolled .fc-col-header,
+    body.scrolled .fc-col-header-cell,
+    body.scrolled th.fc-timegrid-axis {
+        top: 72px !important; /* Sticky height under compact navbar */
+    }
+
     /* FullCalendar Custom Adaptive Theme overrides */
     .fc {
         background: var(--surface-color) !important;
@@ -151,8 +208,17 @@
         font-size: 0.9rem;
     }
 
-    .fc-daygrid-day:hover {
-        background-color: color-mix(in srgb, var(--default-color), transparent 97%) !important;
+    /* Hover effects and cursor for selectable (enabled) day/time cells */
+    .fc-daygrid-day:not(.fc-day-disabled):not(.fc-day-past) {
+        cursor: pointer !important;
+    }
+    .fc-daygrid-day:not(.fc-day-disabled):not(.fc-day-past):hover {
+        background-color: color-mix(in srgb, var(--accent-color), transparent 94%) !important;
+        transition: background-color 0.2s ease;
+    }
+
+    .fc-timegrid-col:not(.fc-day-disabled):not(.fc-day-past) {
+        cursor: pointer !important;
     }
 
     .fc-day-today {
@@ -456,9 +522,40 @@
     document.addEventListener('DOMContentLoaded', function () {
         const calendarEl = document.getElementById('calendar');
 
+        const workingHoursStart = "{{ working_hours_start }}"; // e.g. "08:00"
+        const workingHoursEnd = "{{ working_hours_end }}"; // e.g. "18:00"
+
+        const startParts = workingHoursStart ? workingHoursStart.split(':') : ["09", "00"];
+        const endParts = workingHoursEnd ? workingHoursEnd.split(':') : ["17", "00"];
+        const startHrs = parseInt(startParts[0], 10) || 9;
+        const startMins = parseInt(startParts[1], 10) || 0;
+        const endHrs = parseInt(endParts[0], 10) || 17;
+        const endMins = parseInt(endParts[1], 10) || 0;
+
+        // slotMinTime is simply start time
+        const slotMinTime = `${String(startHrs).padStart(2, '0')}:${String(startMins).padStart(2, '0')}:00`;
+
+        // slotMaxTime: add 30 minutes to make the last slot visible (e.g. 17:30:00 if end is 17:00)
+        let maxHrs = endHrs;
+        let maxMins = endMins + 30;
+        if (maxMins >= 60) {
+            maxHrs += 1;
+            maxMins -= 60;
+        }
+        const slotMaxTime = `${String(maxHrs).padStart(2, '0')}:${String(maxMins).padStart(2, '0')}:00`;
+
         // Initialize FullCalendar
         const calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
+            allDaySlot: false, // Removes the "all-day" slot/row
+            slotMinTime: slotMinTime, // Dynamic start visible slots
+            slotMaxTime: slotMaxTime, // Dynamic end visible slots
+            eventTimeFormat: {
+                hour: 'numeric',
+                minute: '2-digit',
+                meridiem: 'short',
+                hour12: true
+            },
             eventDisplay: 'block', // Forces events to display as block elements
             contentHeight: 'auto', // Expands the grid cells dynamically without internal scrollbars
             headerToolbar: {
@@ -470,6 +567,168 @@
             eventClassNames: function (arg) {
                 const status = arg.event.extendedProps.status;
                 return ['event-status-' + (status ? status.toLowerCase() : 'scheduled')];
+            },
+            eventContent: function (arg) {
+                if (arg.view && arg.view.type && arg.view.type.startsWith('list')) {
+                    return; // Let FullCalendar render default list view items (avoid white-on-white text)
+                }
+                const start = arg.event.start;
+                if (!start) return { html: arg.event.title };
+                
+                let hours = start.getHours();
+                const minutes = String(start.getMinutes()).padStart(2, '0');
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                const timeText = `${hours}:${minutes} ${ampm}`;
+                
+                return {
+                    html: `<div class="fc-event-main-frame" style="display: flex; flex-wrap: wrap; align-items: baseline;">
+                             <div class="fc-event-time" style="font-weight: 800; margin-right: 6px; white-space: nowrap; color: #ffffff !important;">${timeText}</div>
+                             <div class="fc-event-title" style="font-weight: 600; color: #ffffff !important;">${arg.event.title}</div>
+                           </div>`
+                };
+            },
+            datesSet: function (info) {
+                const now = new Date();
+                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const maxDate = new Date(todayStart);
+                maxDate.setDate(maxDate.getDate() + 30);
+                
+                const workingDays = {{ working_days_list | tojson }} || [0, 1, 2, 3, 4, 6];
+                
+                const dateEls = document.querySelectorAll('[data-date]');
+                dateEls.forEach(el => {
+                    const dateStr = el.getAttribute('data-date');
+                    if (!dateStr) return;
+                    
+                    const parts = dateStr.split('-');
+                    if (parts.length !== 3) return;
+                    const date = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                    const dateStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                    
+                    const dayOfWeek = date.getDay();
+                    const isHoliday = !workingDays.includes(dayOfWeek);
+                    const isPast = dateStart < todayStart;
+                    const isFutureLimit = dateStart > maxDate;
+                    
+                    if (isHoliday || isPast || isFutureLimit) {
+                        el.classList.add('fc-day-disabled');
+                    } else {
+                        el.classList.remove('fc-day-disabled');
+                    }
+                });
+            },
+            dateClick: function (info) {
+                const clickedDate = info.date;
+                const now = new Date();
+                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const clickedDateStart = new Date(clickedDate.getFullYear(), clickedDate.getMonth(), clickedDate.getDate());
+                
+                const workingDays = {{ working_days_list | tojson }};
+                const dayOfWeek = clickedDate.getDay();
+                
+                if (!workingDays.includes(dayOfWeek)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Clinic Closed',
+                        text: 'Appointments cannot be booked on holidays (Clinic is closed).',
+                        confirmButtonColor: '#175cdd'
+                    });
+                    return;
+                }
+                
+                if (clickedDateStart < todayStart) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Date',
+                        text: 'Appointments cannot be booked in the past.',
+                        confirmButtonColor: '#175cdd'
+                    });
+                    return;
+                }
+                
+                const hasTime = info.dateStr.includes('T') || info.dateStr.includes(' ');
+                if (hasTime && clickedDate < now) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Time',
+                        text: 'Selected time is in the past. Please choose a future time.',
+                        confirmButtonColor: '#175cdd'
+                    });
+                    return;
+                }
+
+                if (hasTime) {
+                    const hours = clickedDate.getHours();
+                    const minutes = clickedDate.getMinutes();
+                    const timeVal = hours * 60 + minutes;
+                    const startVal = startHrs * 60 + startMins;
+                    const endVal = endHrs * 60 + endMins;
+                    if (timeVal < startVal || timeVal > endVal) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Outside Business Hours',
+                            text: `Appointments must be scheduled between ${workingHoursStart} and ${workingHoursEnd}.`,
+                            confirmButtonColor: '#175cdd'
+                        });
+                        return;
+                    }
+                }
+
+                const maxDate = new Date(todayStart);
+                maxDate.setDate(maxDate.getDate() + 30);
+                maxDate.setHours(23, 59, 59, 999);
+                if (clickedDate > maxDate) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Booking Period Exceeded',
+                        text: 'Appointments cannot be booked more than 30 days in advance.',
+                        confirmButtonColor: '#175cdd'
+                    });
+                    return;
+                }
+
+                let dateParam = info.dateStr;
+                if (!hasTime) {
+                    if (clickedDateStart.getTime() === todayStart.getTime()) {
+                        const nextSlot = new Date(now);
+                        const mins = nextSlot.getMinutes();
+                        if (mins < 30) {
+                            nextSlot.setMinutes(30, 0, 0);
+                        } else {
+                            nextSlot.setHours(nextSlot.getHours() + 1, 0, 0, 0);
+                        }
+                        
+                        if (nextSlot.getHours() * 60 + nextSlot.getMinutes() >= endHrs * 60 + endMins) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'Clinic Closing Soon',
+                                text: 'There are no remaining booking slots for today. Please select a future date.',
+                                confirmButtonColor: '#175cdd'
+                            });
+                            return;
+                        } else {
+                            const hoursStr = String(nextSlot.getHours()).padStart(2, '0');
+                            const minsStr = String(nextSlot.getMinutes()).padStart(2, '0');
+                            dateParam += `T${hoursStr}:${minsStr}`;
+                        }
+                    } else {
+                        dateParam += `T${workingHoursStart}`;
+                    }
+                } else {
+                    dateParam = dateParam.substring(0, 16);
+                }
+                
+                Swal.fire({
+                    title: 'Creating Appointment...',
+                    text: 'Redirecting to appointment form',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                        window.location.href = `/appointments/add?date=${encodeURIComponent(dateParam)}`;
+                    }
+                });
             },
             eventClick: function (info) {
                 const props = info.event.extendedProps;
@@ -517,6 +776,91 @@
         });
 
         calendar.render();
+
+        // 30-minute slot hover highlight in Week/Day views
+        const hoverHighlight = document.createElement('div');
+        hoverHighlight.className = 'fc-timegrid-hover-highlight';
+        hoverHighlight.style.position = 'absolute';
+        hoverHighlight.style.pointerEvents = 'none';
+        hoverHighlight.style.display = 'none';
+        hoverHighlight.style.backgroundColor = 'color-mix(in srgb, var(--accent-color), transparent 92%)';
+        hoverHighlight.style.zIndex = '5'; // Above columns background, below event cards (z-index 6+)
+        hoverHighlight.style.borderRadius = '4px';
+        hoverHighlight.style.border = '1px solid color-mix(in srgb, var(--accent-color), transparent 75%)';
+        hoverHighlight.style.transition = 'left 0.05s ease, top 0.05s ease, width 0.05s ease, height 0.05s ease';
+
+        document.addEventListener('mousemove', function (e) {
+            if (!e.target || typeof e.target.closest !== 'function') {
+                return;
+            }
+            const timegridBody = e.target.closest('.fc-timegrid-body');
+            if (!timegridBody) {
+                hoverHighlight.style.display = 'none';
+                return;
+            }
+            
+            if (hoverHighlight.parentElement !== timegridBody) {
+                timegridBody.appendChild(hoverHighlight);
+            }
+            
+            const rect = timegridBody.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const cols = timegridBody.querySelectorAll('.fc-timegrid-col');
+            let hoveredCol = null;
+            let colLeft = 0;
+            let colWidth = 0;
+            
+            cols.forEach(col => {
+                const colRect = col.getBoundingClientRect();
+                const left = colRect.left - rect.left;
+                if (x >= left && x <= left + colRect.width) {
+                    if (!col.classList.contains('fc-day-disabled') && !col.classList.contains('fc-day-past')) {
+                        hoveredCol = col;
+                        colLeft = left;
+                        colWidth = colRect.width;
+                    }
+                }
+            });
+            
+            if (!hoveredCol) {
+                hoverHighlight.style.display = 'none';
+                return;
+            }
+            
+            const slotLanes = timegridBody.querySelectorAll('.fc-timegrid-slots tr');
+            let hoveredSlotRow = null;
+            let slotTop = 0;
+            let slotHeight = 0;
+            
+            slotLanes.forEach(lane => {
+                const laneRect = lane.getBoundingClientRect();
+                const top = laneRect.top - rect.top;
+                if (y >= top && y <= top + laneRect.height) {
+                    hoveredSlotRow = lane;
+                    slotTop = top;
+                    slotHeight = laneRect.height;
+                }
+            });
+            
+            if (!hoveredSlotRow) {
+                hoverHighlight.style.display = 'none';
+                return;
+            }
+            
+            hoverHighlight.style.left = (colLeft + 2) + 'px';
+            hoverHighlight.style.width = (colWidth - 4) + 'px';
+            hoverHighlight.style.top = (slotTop + 1) + 'px';
+            hoverHighlight.style.height = (slotHeight - 2) + 'px';
+            hoverHighlight.style.display = 'block';
+        });
+
+        document.addEventListener('mouseleave', function (e) {
+            if (e.target && e.target.classList && typeof e.target.classList.contains === 'function' && e.target.classList.contains('fc-timegrid-body')) {
+                hoverHighlight.style.display = 'none';
+            }
+        }, true);
     });
 </script>
 {% endblock %}

@@ -2,6 +2,7 @@ from flask import Blueprint, current_app, render_template, request, redirect, ur
 
 from models import db, Patient, Appointment, Treatment, Payment, Invoice
 from utils.validators import parse_patient_data
+from utils.auth_helper import role_required
 
 
 patients_bp = Blueprint("patients", __name__)
@@ -128,6 +129,7 @@ def get_patient_invoices_context(patient_id):
 
 
 @patients_bp.route("/patients")
+@role_required("admin", "doctor", "receptionist")
 def patients():
     current_app.logger.info("Patients page opened")
 
@@ -141,6 +143,7 @@ def patients():
 
 
 @patients_bp.route("/patients/table")
+@role_required("admin", "doctor", "receptionist")
 def patients_table():
     current_app.logger.info("Patients table partial requested")
 
@@ -154,6 +157,7 @@ def patients_table():
 
 
 @patients_bp.route("/patients/add", methods=["GET", "POST"])
+@role_required("admin", "receptionist")
 def add_patient():
     if request.method == "POST":
         patient_data, patient_error = parse_patient_data(request.form)
@@ -175,6 +179,7 @@ def add_patient():
 
 
 @patients_bp.route("/patients/<int:patient_id>")
+@role_required("admin", "doctor", "receptionist")
 def patient_detail(patient_id):
     current_app.logger.info(f"Patient detail page opened | patient_id={patient_id}")
 
@@ -281,6 +286,7 @@ def patient_detail(patient_id):
 
 
 @patients_bp.route("/patients/<int:patient_id>/payments-table")
+@role_required("admin", "doctor", "receptionist")
 def patient_payments_table(patient_id):
     context = get_patient_payments_context(patient_id)
 
@@ -291,6 +297,7 @@ def patient_payments_table(patient_id):
 
 
 @patients_bp.route("/patients/<int:patient_id>/invoices-table")
+@role_required("admin", "doctor", "receptionist")
 def patient_invoices_table(patient_id):
     context = get_patient_invoices_context(patient_id)
 
@@ -301,6 +308,7 @@ def patient_invoices_table(patient_id):
 
 
 @patients_bp.route("/patients/<int:patient_id>/appointments-table")
+@role_required("admin", "doctor", "receptionist")
 def patient_appointments_table(patient_id):
     patient = Patient.query.get_or_404(patient_id)
 
@@ -335,6 +343,7 @@ def patient_appointments_table(patient_id):
 
 
 @patients_bp.route("/patients/<int:patient_id>/treatments-table")
+@role_required("admin", "doctor", "receptionist")
 def patient_treatments_table(patient_id):
     patient = Patient.query.get_or_404(patient_id)
 
@@ -373,6 +382,7 @@ def patient_treatments_table(patient_id):
 
 
 @patients_bp.route("/patients/<int:patient_id>/edit", methods=["GET", "POST"])
+@role_required("admin", "receptionist")
 def edit_patient(patient_id):
     current_app.logger.info(f"Edit patient page/request | patient_id={patient_id}")
 
@@ -413,6 +423,7 @@ def edit_patient(patient_id):
 
 
 @patients_bp.route("/patients/<int:patient_id>/view")
+@role_required("admin", "doctor", "receptionist")
 def view_patient(patient_id):
     current_app.logger.info(f"View patient page opened | patient_id={patient_id}")
 
@@ -431,6 +442,7 @@ def view_patient(patient_id):
 
 
 @patients_bp.route("/patients/<int:patient_id>/delete", methods=["GET", "POST"])
+@role_required("admin")
 def delete_patient(patient_id):
     current_app.logger.warning(f"Delete patient page/request | patient_id={patient_id}")
 

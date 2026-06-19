@@ -194,10 +194,12 @@
                             <i class="bi bi-eye"></i>
                         </a>
 
+                        {% if current_user.role in ('admin', 'doctor') %}
                         <a href="{{ url_for('treatments.appointment_session', appointment_id=invoice.appointment_id) }}"
                             class="table-action-btn edit-btn" title="Open Session">
                             <i class="bi bi-clipboard2-pulse"></i>
                         </a>
+                        {% endif %}
 
                     </div>
                 </td>

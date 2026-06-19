@@ -1,6 +1,7 @@
 from datetime import datetime
 from flask import Blueprint, render_template, current_app
 from sqlalchemy import func
+from utils.auth_helper import role_required
 
 from models import db, Patient, Appointment, Treatment, Payment, PaymentAllocation
 
@@ -8,6 +9,7 @@ reports_bp = Blueprint("reports", __name__)
 
 
 @reports_bp.route("/reports")
+@role_required("admin")
 def reports_dashboard():
     current_app.logger.info("Reports dashboard page opened")
 
@@ -18,6 +20,7 @@ def reports_dashboard():
         total_invoiced = float(db.session.query(func.sum(Treatment.total_cost)).scalar() or 0.0)
         total_payments = float(db.session.query(func.sum(Payment.amount)).scalar() or 0.0)
         total_outstanding = max(0.0, total_invoiced - total_payments)
+        total_credit = max(0.0, total_payments - total_invoiced)
 
         # 2. Last 6 Months Income (Billed vs Paid) - DB Agnostic Python Logic
         today = datetime.now()
@@ -107,6 +110,7 @@ def reports_dashboard():
             total_invoiced=total_invoiced,
             total_payments=total_payments,
             total_outstanding=total_outstanding,
+            total_credit=total_credit,
             monthly_labels=monthly_labels,
             monthly_billed=monthly_billed,
             monthly_paid=monthly_paid,

@@ -7,6 +7,7 @@ from utils.validators import (
     parse_appointment_data,
     check_appointment_conflict,
 )
+from utils.auth_helper import role_required
 
 
 appointments_bp = Blueprint("appointments", __name__)
@@ -71,6 +72,8 @@ def get_appointments_context():
         error_out=False,
     )
 
+    has_cancelled = Appointment.query.filter(Appointment.status == "Cancelled").first() is not None
+
     return {
         "appointments": pagination.items,
         "pagination": pagination,
@@ -78,10 +81,12 @@ def get_appointments_context():
         "status_filter": status_filter,
         "sort_by": sort_by,
         "order": order,
+        "has_cancelled": has_cancelled,
     }
 
 
 @appointments_bp.route("/appointments")
+@role_required("admin", "doctor", "receptionist")
 def appointments():
     current_app.logger.info("Appointments page opened")
 
@@ -94,6 +99,7 @@ def appointments():
         return "Error Loading AppointmentsPage", 500
     
 @appointments_bp.route("/appointments/table")
+@role_required("admin", "doctor", "receptionist")
 def appointments_table():
     current_app.logger.info("Appointments table partial requested")
 
@@ -107,11 +113,16 @@ def appointments_table():
 
 
 @appointments_bp.route("/appointments/add", methods=["GET", "POST"])
+@role_required("admin", "receptionist")
 def add_appointment_direct():
     current_app.logger.info("Direct add appointment page/request")
     try:
         patients = Patient.query.order_by(Patient.first_name.asc(), Patient.last_name.asc()).all()
         appointment_min_datetime, appointment_max_datetime = get_appointment_datetime_limits()
+        
+        prefilled_date = request.args.get("date", "")
+        if prefilled_date:
+            prefilled_date = prefilled_date.replace("T", " ")
 
         if request.method == "POST":
             patient_id = request.form.get("patient_id")
@@ -128,6 +139,7 @@ def add_appointment_direct():
                     error_message=appointment_error,
                     appointment_min_datetime=appointment_min_datetime,
                     appointment_max_datetime=appointment_max_datetime,
+                    prefilled_date=prefilled_date,
                 ), 400
 
             conflict = check_appointment_conflict(appointment_data["appointment_date"])
@@ -138,6 +150,7 @@ def add_appointment_direct():
                     error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %H:%M')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
                     appointment_min_datetime=appointment_min_datetime,
                     appointment_max_datetime=appointment_max_datetime,
+                    prefilled_date=prefilled_date,
                 ), 400
 
             new_appointment = Appointment(
@@ -161,6 +174,7 @@ def add_appointment_direct():
             patients=patients,
             appointment_min_datetime=appointment_min_datetime,
             appointment_max_datetime=appointment_max_datetime,
+            prefilled_date=prefilled_date,
         )
 
     except Exception:
@@ -170,7 +184,7 @@ def add_appointment_direct():
 
 
 @appointments_bp.route("/patients/<int:patient_id>/appointments/add", methods=["GET", "POST"])
-
+@role_required("admin", "receptionist")
 def add_appointment(patient_id):
     current_app.logger.info(f"Add appointment page/request | patient_id={patient_id}")
 
@@ -231,6 +245,7 @@ def add_appointment(patient_id):
 
 
 @appointments_bp.route("/appointments/<int:appointment_id>/edit", methods=["GET", "POST"])
+@role_required("admin", "receptionist")
 def edit_appointment(appointment_id):
     current_app.logger.info(f"Edit appointment page/request | appointment_id={appointment_id}")
 
@@ -309,6 +324,7 @@ def edit_appointment(appointment_id):
 
 
 @appointments_bp.route("/appointments/<int:appointment_id>/view")
+@role_required("admin", "doctor", "receptionist")
 def view_appointment(appointment_id):
     current_app.logger.info(f"View appointment page opened | appointment_id={appointment_id}")
 
@@ -330,6 +346,7 @@ def view_appointment(appointment_id):
 
 
 @appointments_bp.route("/appointments/<int:appointment_id>/delete", methods=["GET", "POST"])
+@role_required("admin", "receptionist")
 def delete_appointment(appointment_id):
     current_app.logger.warning(f"Delete appointment page/request | appointment_id={appointment_id}")
 
@@ -381,6 +398,7 @@ def delete_appointment(appointment_id):
 
 
 @appointments_bp.route("/appointments/<int:appointment_id>/quick-cancel", methods=["POST"])
+@role_required("admin", "receptionist")
 def quick_cancel(appointment_id):
     current_app.logger.info(f"Quick cancel appointment | id={appointment_id}")
     try:
@@ -398,6 +416,7 @@ def quick_cancel(appointment_id):
 
 
 @appointments_bp.route("/appointments/<int:appointment_id>/quick-done", methods=["POST"])
+@role_required("admin", "receptionist")
 def quick_done(appointment_id):
     current_app.logger.info(f"Quick done appointment | id={appointment_id}")
     try:
@@ -417,6 +436,7 @@ def quick_done(appointment_id):
 
 
 @appointments_bp.route("/appointments/booked-slots")
+@role_required("admin", "doctor", "receptionist")
 def booked_slots():
     try:
         exclude_id = request.args.get("exclude_id", type=int)
@@ -432,16 +452,21 @@ def booked_slots():
 
 
 @appointments_bp.route("/calendar")
+@role_required("admin", "doctor", "receptionist")
 def calendar():
     current_app.logger.info("Calendar page opened")
     try:
-        return render_template("appointments/calendar.html")
+        from utils.settings_helper import get_setting
+        working_days = get_setting("working_days", "0,1,2,3,4,6")
+        working_days_list = [int(d) for d in working_days.split(",") if d.strip().isdigit()]
+        return render_template("appointments/calendar.html", working_days_list=working_days_list)
     except Exception:
         current_app.logger.exception("Failed to load calendar page")
         return "Error loading calendar page", 500
 
 
 @appointments_bp.route("/appointments/events")
+@role_required("admin", "doctor", "receptionist")
 def appointment_events():
     current_app.logger.info("Appointment events requested")
     try:
@@ -479,5 +504,28 @@ def appointment_events():
     except Exception:
         current_app.logger.exception("Failed to fetch appointment events")
         return jsonify([]), 500
+
+
+@appointments_bp.route("/appointments/delete-all-cancelled", methods=["POST"])
+@role_required("admin", "receptionist")
+def delete_all_cancelled():
+    current_app.logger.warning("Delete all cancelled appointments requested")
+    try:
+        cancelled_appointments = Appointment.query.filter(Appointment.status == "Cancelled").all()
+        count = len(cancelled_appointments)
+        for appt in cancelled_appointments:
+            db.session.delete(appt)
+        db.session.commit()
+        current_app.logger.info(f"Successfully deleted {count} cancelled appointments")
+        return redirect(url_for("appointments.appointments"))
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Failed to delete all cancelled appointments")
+        return render_template(
+            "error_message.html",
+            title="Error",
+            message="Failed to delete cancelled appointments.",
+            back_url=url_for("appointments.appointments"),
+        ), 500
 
 

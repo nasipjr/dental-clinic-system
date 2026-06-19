@@ -4,12 +4,14 @@ from models import db, Appointment, Treatment
 from services.invoice_service import sync_invoice_for_appointment
 from services.payment_service import allocate_patient_payments_to_invoices
 from utils.constants import TREATMENT_PRICES, TREATMENT_PROCEDURE_TYPES
+from utils.auth_helper import role_required
 
 
 treatments_bp = Blueprint("treatments", __name__)
 
 
 @treatments_bp.route("/appointments/<int:appointment_id>/session")
+@role_required("admin", "doctor")
 def appointment_session(appointment_id):
     current_app.logger.info(f"Appointment session opened | appointment_id={appointment_id}")
 
@@ -62,6 +64,7 @@ def appointment_session(appointment_id):
 
 
 @treatments_bp.route("/appointments/<int:appointment_id>/treatments/add", methods=["GET", "POST"])
+@role_required("admin", "doctor")
 def add_treatment_to_appointment(appointment_id):
     current_app.logger.info(f"Add treatment to appointment | appointment_id={appointment_id}")
 
@@ -140,6 +143,7 @@ def add_treatment_to_appointment(appointment_id):
 
 
 @treatments_bp.route("/appointments/<int:appointment_id>/end-session", methods=["POST"])
+@role_required("admin", "doctor")
 def end_appointment_session(appointment_id):
     current_app.logger.info(f"End appointment session request | appointment_id={appointment_id}")
 
@@ -179,6 +183,7 @@ def end_appointment_session(appointment_id):
 
 
 @treatments_bp.route("/appointments/<int:appointment_id>/reopen-session", methods=["POST"])
+@role_required("admin", "doctor")
 def reopen_appointment_session(appointment_id):
     current_app.logger.info(f"Reopen appointment session request | appointment_id={appointment_id}")
     try:
@@ -225,7 +230,7 @@ def reopen_appointment_session(appointment_id):
 
 
 @treatments_bp.route("/patients/<int:patient_id>/treatments/add")
-
+@role_required("admin", "doctor")
 def add_treatment(patient_id):
     current_app.logger.warning(
         f"Legacy add treatment route opened | patient_id={patient_id}"
@@ -238,6 +243,7 @@ def add_treatment(patient_id):
 
 
 @treatments_bp.route("/treatments/<int:treatment_id>/edit", methods=["GET", "POST"])
+@role_required("admin", "doctor")
 def edit_treatment(treatment_id):
     current_app.logger.info(f"Edit treatment page/request | treatment_id={treatment_id}")
 
@@ -315,6 +321,7 @@ def edit_treatment(treatment_id):
 
 
 @treatments_bp.route("/treatments/<int:treatment_id>/view")
+@role_required("admin", "doctor")
 def view_treatment(treatment_id):
     current_app.logger.info(f"View treatment page opened | treatment_id={treatment_id}")
 
@@ -341,6 +348,7 @@ def view_treatment(treatment_id):
 
 
 @treatments_bp.route("/treatments/<int:treatment_id>/delete", methods=["GET", "POST"])
+@role_required("admin", "doctor")
 def delete_treatment(treatment_id):
     current_app.logger.warning(f"Delete treatment page/request | treatment_id={treatment_id}")
 

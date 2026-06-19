@@ -199,9 +199,11 @@
                                 <span class="price-badge text-danger">
                                     - {{ invoice.discount_amount | format_price }} {{ currency_symbol }}
                                 </span>
+                                {% if current_user.role in ('admin', 'receptionist') %}
                                 <button type="button" class="btn btn-sm btn-outline-secondary ms-2 p-1 py-0" data-bs-toggle="collapse" data-bs-target="#edit-discount-form" title="Edit Discount">
                                     <i class="bi bi-pencil"></i>
                                 </button>
+                                {% endif %}
                             </th>
                         </tr>
                         <!-- Collapsible Edit Discount Form -->
@@ -304,13 +306,17 @@
                     View Appointment
                 </a>
 
+                {% if current_user.role in ('admin', 'doctor') %}
                 <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}" class="btn btn-primary px-4">
                     Open Session
                 </a>
+                {% endif %}
 
+                {% if current_user.role in ('admin', 'receptionist') %}
                 <a href="{{ url_for('payments.add_patient_payment', patient_id=patient.id) }}" class="btn btn-primary px-4">
                     Add Payment
                 </a>
+                {% endif %}
 
             </div>
             <!-- /Invoice Actions -->

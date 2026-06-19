@@ -42,15 +42,19 @@
             </div>
 
             <div class="action-buttons mt-4 patient-main-actions">
+                {% if current_user.role in ('admin', 'receptionist') %}
                 <a href="{{ url_for('patients.edit_patient', patient_id=patient.id) }}" class="btn-primary">
                     Edit Patient
                 </a>
+                {% endif %}
 
+                {% if current_user.role in ('admin', 'receptionist') %}
                 <a href="{{ url_for('appointments.add_appointment', patient_id=patient.id) }}" class="btn-outline-main">
                     Add Appointment
                 </a>
+                {% endif %}
 
-                {% if not patient_appointments %}
+                {% if current_user.role == 'admin' and not patient_appointments %}
                 <div class="patient-delete-action">
                     <a href="{{ url_for('patients.delete_patient', patient_id=patient.id) }}" class="btn-delete-soft">
                         Delete Patient

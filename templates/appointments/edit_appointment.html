@@ -57,7 +57,10 @@
                                 <input type="datetime-local" id="appointment_date" name="appointment_date"
                                     class="form-control"
                                     value="{{ appointment.appointment_date.strftime('%Y-%m-%dT%H:%M') if appointment.appointment_date else '' }}"
-                                    min="{{ appointment_min_datetime }}" max="{{ appointment_max_datetime }}" required
+                                    min="{{ appointment_min_datetime }}" max="{{ appointment_max_datetime }}"
+                                    data-working-days="{{ working_days }}"
+                                    data-min-time="{{ working_hours_start }}"
+                                    data-max-time="{{ working_hours_end }}" required
                                     {% if is_locked %}disabled{% endif %}>
                             </div>
 

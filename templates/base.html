@@ -2,6 +2,12 @@
 <html lang="en">
 
 <head>
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-bs-theme', savedTheme);
+    })();
+  </script>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
   <title>HomePage</title>
@@ -31,7 +37,7 @@
 
   <!-- Main CSS File -->
   <link href="{{ url_for('static', filename='assets/css/main.css') }}" rel="stylesheet">
-  <link href="{{ url_for('static', filename='styles.css') }}?v=1.4" rel="stylesheet">
+  <link href="{{ url_for('static', filename='styles.css') }}?v=1.5" rel="stylesheet">
 
 
 
@@ -55,11 +61,21 @@
               href="mailto:{{ clinic_email }}">{{ clinic_email }}</a></i>
           <i class="bi bi-phone d-flex align-items-center ms-4"><span>{{ clinic_phone }}</span></i>
         </div>
-        <div class="social-links d-none d-md-flex align-items-center">
-          <a href="#!" class="twitter"><i class="bi bi-twitter-x"></i></a>
-          <a href="https://www.facebook.com/nasip.jabbara" class="facebook"><i class="bi bi-facebook"></i></a>
-          <a href="https://www.instagram.com/nasip_j/?hl=en" class="instagram"><i class="bi bi-instagram"></i></a>
-          <a href="#!" class="linkedin"><i class="bi bi-linkedin"></i></a>
+        <div class="social-links d-none d-md-flex align-items-center gap-3">
+          {% if current_user %}
+            <span class="text-white me-2" style="font-size: 13px;">
+              <i class="bi bi-person-circle me-1"></i>
+              {{ current_user.first_name or current_user.username }} ({{ current_user.role|capitalize }})
+            </span>
+            <a href="{{ url_for('auth.logout') }}" class="topbar-logout-btn">
+              <i class="bi bi-box-arrow-right me-1"></i>Logout
+            </a>
+          {% else %}
+            <a href="#!" class="twitter"><i class="bi bi-twitter-x"></i></a>
+            <a href="https://www.facebook.com/nasip.jabbara" class="facebook"><i class="bi bi-facebook"></i></a>
+            <a href="https://www.instagram.com/nasip_j/?hl=en" class="instagram"><i class="bi bi-instagram"></i></a>
+            <a href="#!" class="linkedin"><i class="bi bi-linkedin"></i></a>
+          {% endif %}
         </div>
       </div>
     </div><!-- End Top Bar -->
@@ -75,6 +91,7 @@
 
         <nav id="navmenu" class="navmenu">
           <ul>
+            {% if current_user %}
             <li>
               <a href="/" class="{% if request.path == '/' %}active{% endif %}">
                 Dashboard
@@ -99,7 +116,7 @@
               </a>
             </li>
 
-
+            {% if current_user.role in ('admin', 'receptionist') %}
             <li>
               <a href="{{ url_for('invoices.invoices') }}"
                 class="{% if request.path.startswith('/invoices') %}active{% endif %}">
@@ -113,7 +130,9 @@
                 Payments
               </a>
             </li>
+            {% endif %}
 
+            {% if current_user.role == 'admin' %}
             <li>
               <a href="{{ url_for('reports.reports_dashboard') }}" class="{% if request.path.startswith('/reports') %}active{% endif %}">
                 Reports
@@ -125,6 +144,19 @@
                 Settings
               </a>
             </li>
+            {% endif %}
+
+            <li class="d-xl-none border-top pt-2 mt-2">
+              <span class="nav-link text-muted" style="cursor: default; padding: 10px 14px;">
+                Logged in: <strong>{{ current_user.first_name or current_user.username }}</strong>
+              </span>
+            </li>
+            <li class="d-xl-none">
+              <a href="{{ url_for('auth.logout') }}" class="text-danger">
+                Logout
+              </a>
+            </li>
+            {% endif %}
           </ul>
 
           <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
@@ -148,7 +180,8 @@
 
         <div class="col-lg-4 col-md-6">
           <div class="brand-section">
-            <a href="{{ url_for('dashboard.home') }}" class="logo d-flex align-items-center mb-3">
+            <a href="{{ url_for('dashboard.home') }}" class="logo d-flex align-items-center mb-3 text-decoration-none">
+              <i class="fa-solid fa-tooth me-2 fs-3 text-primary footer-logo-glow"></i>
               <span class="sitename">{{ clinic_name }}</span>
             </a>
 
@@ -156,6 +189,13 @@
               Dental Clinic Management System for managing patients, appointments,
               treatments, and payments in one place.
             </p>
+
+            <div class="footer-social-links d-flex gap-3 mt-4">
+              <a href="https://facebook.com" target="_blank" class="footer-social-icon-btn" title="Facebook"><i class="bi bi-facebook"></i></a>
+              <a href="https://instagram.com" target="_blank" class="footer-social-icon-btn" title="Instagram"><i class="bi bi-instagram"></i></a>
+              <a href="https://linkedin.com" target="_blank" class="footer-social-icon-btn" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+              <a href="https://wa.me/963958948727" target="_blank" class="footer-social-icon-btn" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+            </div>
           </div>
         </div>
 
@@ -163,10 +203,12 @@
           <div class="nav-column">
             <h6>Quick Access</h6>
             <nav class="footer-nav">
-              <a href="{{ url_for('dashboard.home') }}">Dashboard</a>
-              <a href="{{ url_for('patients.patients') }}">Patients</a>
-              <a href="{{ url_for('appointments.appointments') }}">Appointments</a>
-              <a href="{{ url_for('invoices.invoices') }}">Invoices</a>
+              <a href="{{ url_for('dashboard.home') }}"><i class="bi bi-chevron-right me-1 small"></i> Dashboard</a>
+              <a href="{{ url_for('patients.patients') }}"><i class="bi bi-chevron-right me-1 small"></i> Patients</a>
+              <a href="{{ url_for('appointments.appointments') }}"><i class="bi bi-chevron-right me-1 small"></i> Appointments</a>
+              {% if current_user and current_user.role in ('admin', 'receptionist') %}
+              <a href="{{ url_for('invoices.invoices') }}"><i class="bi bi-chevron-right me-1 small"></i> Invoices</a>
+              {% endif %}
             </nav>
           </div>
         </div>
@@ -175,10 +217,14 @@
           <div class="nav-column">
             <h6>Clinic Tools</h6>
             <nav class="footer-nav">
-              <a href="{{ url_for('reports.reports_dashboard') }}">Reports</a>
-              <a href="{{ url_for('settings.settings_page') }}">Settings</a>
-              <a href="#!">Outstanding Balances</a>
-              <a href="{{ url_for('appointments.appointments') }}">Appointment Sessions</a>
+              {% if current_user and current_user.role == 'admin' %}
+              <a href="{{ url_for('reports.reports_dashboard') }}"><i class="bi bi-chevron-right me-1 small"></i> Reports</a>
+              <a href="{{ url_for('settings.settings_page') }}"><i class="bi bi-chevron-right me-1 small"></i> Settings</a>
+              {% endif %}
+              <a href="{% if current_user and current_user.role == 'admin' %}{{ url_for('reports.reports_dashboard') }}#reports-dashboard-section{% else %}{{ url_for('invoices.invoices') }}{% endif %}"><i class="bi bi-chevron-right me-1 small"></i> Outstanding Balances</a>
+              {% if current_user and current_user.role in ('admin', 'doctor') %}
+              <a href="{{ url_for('appointments.appointments') }}"><i class="bi bi-chevron-right me-1 small"></i> Appointment Sessions</a>
+              {% endif %}
             </nav>
           </div>
         </div>
@@ -188,20 +234,32 @@
             <h6>Clinic Info</h6>
 
             <div class="footer-nav">
-              <span>
-                <i class="bi bi-envelope me-2"></i>
-                {{ clinic_email }}
-              </span>
+              <a href="mailto:{{ clinic_email }}" class="d-flex align-items-center gap-2 py-1">
+                <i class="bi bi-envelope text-primary fs-5"></i>
+                <span>{{ clinic_email }}</span>
+              </a>
 
-              <span>
-                <i class="bi bi-phone me-2"></i>
-                {{ clinic_phone }}
-              </span>
+              <a href="tel:{{ clinic_phone }}" class="d-flex align-items-center gap-2 py-1">
+                <i class="bi bi-phone text-primary fs-5"></i>
+                <span>{{ clinic_phone }}</span>
+              </a>
 
-              <span>
-                <i class="bi bi-geo-alt me-2"></i>
-                {{ clinic_address }}
+              <span class="d-flex align-items-center gap-2 py-1 text-muted">
+                <i class="bi bi-geo-alt text-primary fs-5"></i>
+                <span>{{ clinic_address }}</span>
               </span>
+            </div>
+
+            <h6 class="mt-4 mb-2 pt-2 text-white text-uppercase" style="font-size: 0.8rem; letter-spacing: 1px; font-weight: 600;">Operating Hours</h6>
+            <div class="footer-nav">
+              <span class="small d-flex align-items-center gap-2 text-muted">
+                <i class="bi bi-clock text-primary"></i> {{ operating_days }}: {{ operating_hours }}
+              </span>
+              {% if operating_closed != 'None' %}
+              <span class="small d-flex align-items-center gap-2 text-muted">
+                <i class="bi bi-calendar-x text-danger"></i> {{ operating_closed }}: Closed
+              </span>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -213,18 +271,18 @@
       <div class="row align-items-center gy-3">
 
         <div class="col-lg-6">
-          <div class="copyright">
-            <p>
+          <div class="copyright text-center text-lg-start">
+            <p class="mb-0">
               © <span>2026</span>
-              <strong class="px-1 sitename">Dental Clinic MS</strong>
-              <span>All rights reserved.</span>
+              <strong class="px-1 sitename">Dental Clinic MS</strong>. All rights reserved.
             </p>
           </div>
         </div>
 
-        <div class="col-lg-6">
-          <div class="legal-links">
-            <span>Built for clinic management.</span>
+        <div class="col-lg-6 text-center text-lg-end">
+          <div class="legal-links d-inline-flex align-items-center gap-2">
+            <i class="bi bi-shield-check text-success"></i>
+            <span class="text-muted small">Built for professional clinic management.</span>
           </div>
         </div>
 

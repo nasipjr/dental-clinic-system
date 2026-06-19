@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, session, redirect, url_for, g
 
 from models import db
 from settings import Config
@@ -12,6 +12,7 @@ from routes.payments import payments_bp
 from routes.invoices import invoices_bp
 from routes.reports import reports_bp
 from routes.settings import settings_bp
+from routes.auth import auth_bp
 
 
 app = Flask(__name__)
@@ -65,10 +66,32 @@ def check_and_add_discount_column():
             app.logger.error(f"Failed to add discount_type column: {e}")
 
 
+def ensure_default_admin():
+    from models import User
+    try:
+        admin = User.query.filter_by(role="admin").first()
+        if not admin:
+            app.logger.info("Seeding default admin account...")
+            default_admin = User(
+                username="admin",
+                role="admin",
+                first_name="Admin",
+                last_name="User"
+            )
+            default_admin.set_password("admin123")
+            db.session.add(default_admin)
+            db.session.commit()
+            app.logger.info("Successfully seeded default admin account!")
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Failed to seed default admin: {e}")
+
+
 with app.app_context():
     db.create_all()
     populate_default_settings()
     check_and_add_discount_column()
+    ensure_default_admin()
 
 setup_logging(app, LOG_DIRECTORY, LOG_FILE_NAME)
 app.logger.info("Application started successfully")
@@ -88,18 +111,90 @@ def format_price(value):
         return str(value)
 
 
+@app.before_request
+def load_logged_in_user():
+    from models import User
+    user_id = session.get("user_id")
+    if user_id is None:
+        g.current_user = None
+    else:
+        g.current_user = User.query.get(user_id)
+
+
+@app.before_request
+def check_login():
+    # Exclude login and static resources
+    if request.endpoint in ("auth.login", "static") or not request.endpoint:
+        return
+    if "user_id" not in session:
+        return redirect(url_for("auth.login"))
+
+
 @app.context_processor
 def inject_settings():
     from utils.settings_helper import get_setting, get_currency_symbol
+    from datetime import datetime
+
+    # Get dynamic operating hours formatting
+    start_str = get_setting("working_hours_start", "08:00")
+    end_str = get_setting("working_hours_end", "18:00")
+    
+    def to_12h(t_str):
+        try:
+            return datetime.strptime(t_str, "%H:%M").strftime("%I:%M %p").lstrip("0")
+        except Exception:
+            return t_str
+            
+    hours_formatted = f"{to_12h(start_str)} - {to_12h(end_str)}"
+    
+    wd_str = get_setting("working_days", "0,1,2,3,4,6")
+    active_days = set()
+    for x in wd_str.split(","):
+        if x.strip().isdigit():
+            active_days.add(int(x))
+            
+    DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    SHORT_DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    
+    active_names = [SHORT_DAY_NAMES[d] for d in range(7) if d in active_days]
+    closed_names = [DAY_NAMES[d] for d in range(7) if d not in active_days]
+    
+    active_set = set(active_days)
+    if active_set == {0, 1, 2, 3, 4, 6}:
+        days_str = "Sat - Thu"
+    elif active_set == {0, 1, 2, 3, 4}:
+        days_str = "Sun - Thu"
+    elif active_set == {1, 2, 3, 4, 5}:
+        days_str = "Mon - Fri"
+    elif active_set == {1, 2, 3, 4, 5, 6}:
+        days_str = "Mon - Sat"
+    elif active_set == {0, 1, 2, 3, 4, 5, 6}:
+        days_str = "Every day"
+    else:
+        days_str = ", ".join(active_names)
+        
+    if not closed_names:
+        closed_str = "None"
+    else:
+        closed_str = ", ".join(closed_names)
+
     return {
         "clinic_name": get_setting("clinic_name", "Clinic"),
         "currency_symbol": get_currency_symbol(),
         "clinic_phone": get_setting("clinic_phone", "+963 958 948 727"),
         "clinic_email": get_setting("clinic_email", "kh.nasipdragon@gmail.com"),
-        "clinic_address": get_setting("clinic_address", "Damascus, Syria")
+        "clinic_address": get_setting("clinic_address", "Damascus, Syria"),
+        "current_user": g.current_user if "current_user" in dir(g) else None,
+        "operating_hours": hours_formatted,
+        "operating_days": days_str,
+        "operating_closed": closed_str,
+        "working_days": wd_str,
+        "working_hours_start": start_str,
+        "working_hours_end": end_str
     }
 
 
+app.register_blueprint(auth_bp)
 app.register_blueprint(dashboard_bp)
 app.register_blueprint(patients_bp)
 app.register_blueprint(appointments_bp)

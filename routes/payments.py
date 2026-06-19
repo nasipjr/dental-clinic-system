@@ -6,6 +6,7 @@ from flask import Blueprint, current_app, render_template, request, redirect, ur
 from models import db, Patient, Payment, PaymentAllocation
 from services.payment_service import allocate_patient_payments_to_invoices
 from utils.validators import parse_invoice_payment_amount
+from utils.auth_helper import role_required
 
 
 payments_bp = Blueprint("payments", __name__)
@@ -90,6 +91,7 @@ def get_payments_context():
 
 
 @payments_bp.route("/payments")
+@role_required("admin", "receptionist")
 def payments():
     current_app.logger.info("Payments page opened")
 
@@ -108,6 +110,7 @@ def payments():
 
 
 @payments_bp.route("/payments/table")
+@role_required("admin", "receptionist")
 def payments_table():
     current_app.logger.info("Payments table partial requested")
 
@@ -126,6 +129,7 @@ def payments_table():
 
 
 @payments_bp.route("/payments/add", methods=["GET", "POST"])
+@role_required("admin", "receptionist")
 def add_patient_payment():
     current_app.logger.info("Add patient payment page/request")
 

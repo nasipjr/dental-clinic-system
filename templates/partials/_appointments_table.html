@@ -92,12 +92,15 @@
                             <i class="bi bi-eye"></i>
                         </a>
 
+                        {% if current_user.role in ('admin', 'doctor') %}
                         <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
                             class="table-action-btn appointment-table-btn" title="Open Session">
                             <i class="bi bi-clipboard2-pulse"></i>
                         </a>
+                        {% endif %}
 
                         {% if appointment.status == 'Scheduled' %}
+                        {% if current_user.role in ('admin', 'receptionist') %}
                         <a href="{{ url_for('appointments.edit_appointment', appointment_id=appointment.id) }}"
                             class="table-action-btn edit-btn" title="Edit Appointment">
                             <i class="bi bi-pencil-square"></i>
@@ -119,8 +122,9 @@
                             <i class="bi bi-check-circle text-success"></i>
                         </button>
                         {% endif %}
+                        {% endif %}
 
-                        {% if appointment.status != 'Done' %}
+                        {% if current_user.role in ('admin', 'receptionist') and appointment.status != 'Done' %}
                         <a href="{{ url_for('appointments.delete_appointment', appointment_id=appointment.id) }}"
                             class="table-action-btn delete-table-btn" title="Delete Appointment">
                             <i class="bi bi-trash"></i>

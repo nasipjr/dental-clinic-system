@@ -6,6 +6,12 @@ document.addEventListener("DOMContentLoaded", function () {
     appointmentInput.setAttribute("type", "text");
     appointmentInput.setAttribute("placeholder", "Select Date & Time");
 
+    // Retrieve settings parameters from data attributes
+    const workingDaysAttr = appointmentInput.getAttribute("data-working-days") || "0,1,2,3,4,6";
+    const minTimeAttr = appointmentInput.getAttribute("data-min-time") || "08:00";
+    const maxTimeAttr = appointmentInput.getAttribute("data-max-time") || "18:00";
+    const workingDaysList = workingDaysAttr.split(",").map(d => parseInt(d.trim(), 10));
+
     // Fetch booked slots
     const currentAppointmentId = typeof appointmentIdForEdit !== 'undefined' ? appointmentIdForEdit : "";
     const url = "/appointments/booked-slots" + (currentAppointmentId ? "?exclude_id=" + currentAppointmentId : "");
@@ -28,9 +34,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
             });
             
-            // Add Friday disable function
+            // Add closed days disable function
             disabledDates.push(function(date) {
-                return (date.getDay() === 5); // 5 = Friday
+                return !workingDaysList.includes(date.getDay());
             });
 
             flatpickr(appointmentInput, {
@@ -39,8 +45,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 minDate: "today",
                 maxDate: new Date().fp_incr(30),
                 minuteIncrement: 30,
-                minTime: "08:00",
-                maxTime: "18:00",
+                minTime: minTimeAttr,
+                maxTime: maxTimeAttr,
                 disable: disabledDates,
                 locale: {
                     firstDayOfWeek: 0 // Sunday
@@ -56,11 +62,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 minDate: "today",
                 maxDate: new Date().fp_incr(30),
                 minuteIncrement: 30,
-                minTime: "08:00",
-                maxTime: "18:00",
+                minTime: minTimeAttr,
+                maxTime: maxTimeAttr,
                 disable: [
                     function(date) {
-                        return (date.getDay() === 5); // 5 = Friday
+                        return !workingDaysList.includes(date.getDay());
                     }
                 ],
                 locale: {

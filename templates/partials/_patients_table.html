@@ -113,17 +113,21 @@
                             <i class="bi bi-eye"></i>
                         </a>
 
+                        {% if current_user.role in ('admin', 'receptionist') %}
                         <a href="{{ url_for('appointments.add_appointment', patient_id=patient.id) }}"
                             class="table-action-btn appointment-table-btn" title="Add Appointment">
                             <i class="bi bi-calendar-plus"></i>
                         </a>
+                        {% endif %}
 
+                        {% if current_user.role in ('admin', 'receptionist') %}
                         <a href="{{ url_for('patients.edit_patient', patient_id=patient.id) }}"
                             class="table-action-btn edit-btn" title="Edit Patient">
                             <i class="bi bi-pencil-square"></i>
                         </a>
+                        {% endif %}
 
-                        {% if not patient.appointments %}
+                        {% if current_user.role == 'admin' and not patient.appointments %}
                         <a href="{{ url_for('patients.delete_patient', patient_id=patient.id) }}"
                             class="table-action-btn delete-table-btn" title="Delete Patient">
                             <i class="bi bi-trash"></i>

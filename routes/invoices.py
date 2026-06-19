@@ -7,6 +7,7 @@ from models import db, Patient, Appointment, Treatment, Invoice, Payment, Paymen
 from services.invoice_service import sync_invoice_for_appointment
 from services.payment_service import allocate_patient_payments_to_invoices
 from utils.constants import TREATMENT_PRICES, TREATMENT_PROCEDURE_TYPES
+from utils.auth_helper import role_required
 
 
 invoices_bp = Blueprint("invoices", __name__)
@@ -105,6 +106,7 @@ def get_invoices_context():
 
 
 @invoices_bp.route("/invoices")
+@role_required("admin", "doctor", "receptionist")
 def invoices():
     current_app.logger.info("Invoices page opened")
 
@@ -123,6 +125,7 @@ def invoices():
 
 
 @invoices_bp.route("/invoices/table")
+@role_required("admin", "doctor", "receptionist")
 def invoices_table():
     current_app.logger.info("Invoices table partial requested")
 
@@ -140,6 +143,7 @@ def invoices_table():
         ), 500
         
 @invoices_bp.route("/invoices/add", methods=["GET", "POST"])
+@role_required("admin", "receptionist")
 def add_invoice():
     current_app.logger.info("Add manual invoice page/request")
 
@@ -374,6 +378,7 @@ def add_invoice():
 
 
 @invoices_bp.route("/invoices/<int:invoice_id>")
+@role_required("admin", "doctor", "receptionist")
 def view_invoice(invoice_id):
     current_app.logger.info(f"Invoice detail page opened | invoice_id={invoice_id}")
 
@@ -401,6 +406,7 @@ def view_invoice(invoice_id):
 
 
 @invoices_bp.route("/invoices/<int:invoice_id>/discount", methods=["POST"])
+@role_required("admin", "receptionist")
 def update_invoice_discount(invoice_id):
     current_app.logger.info(f"Update discount request | invoice_id={invoice_id}")
     try:

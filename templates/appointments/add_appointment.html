@@ -43,7 +43,11 @@
                             <label for="appointment_date" class="form-label">Date Of Appointment</label>
                             <input type="datetime-local" id="appointment_date" name="appointment_date"
                                 class="form-control" min="{{ appointment_min_datetime }}"
-                                max="{{ appointment_max_datetime }}" required>
+                                max="{{ appointment_max_datetime }}"
+                                value="{{ prefilled_date }}"
+                                data-working-days="{{ working_days }}"
+                                data-min-time="{{ working_hours_start }}"
+                                data-max-time="{{ working_hours_end }}" required>
                         </div><br>
 
                         <div class="col-md-12">

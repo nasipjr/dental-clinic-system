@@ -23,6 +23,7 @@ DEFAULT_SETTINGS = {
     "default_appointment_duration": "30",
     "working_hours_start": "09:00",
     "working_hours_end": "17:00",
+    "working_days": "0,1,2,3,4,6",
     "treatment_prices": json.dumps(DEFAULT_TREATMENT_PRICES)
 }
 

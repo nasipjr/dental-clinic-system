@@ -92,11 +92,29 @@ def parse_appointment_data(form):
             return None, "Appointment date and time must be valid."
 
 
+    from utils.settings_helper import get_setting
+
     now = datetime.now().replace(second=0, microsecond=0)
     max_appointment_date = now + timedelta(days=30)
 
-    clinic_start_time = time(8, 0)
-    clinic_end_time = time(18, 0)
+    # Load dynamic working days and hours constraints
+    working_days = get_setting("working_days", "0,1,2,3,4,6")
+    working_days_list = [d.strip() for d in working_days.split(",") if d.strip()]
+    
+    start_str = get_setting("working_hours_start", "08:00")
+    end_str = get_setting("working_hours_end", "18:00")
+
+    try:
+        sh, sm = map(int, start_str.split(':'))
+        clinic_start_time = time(sh, sm)
+    except Exception:
+        clinic_start_time = time(8, 0)
+
+    try:
+        eh, em = map(int, end_str.split(':'))
+        clinic_end_time = time(eh, em)
+    except Exception:
+        clinic_end_time = time(18, 0)
 
     if appointment_date < now:
         return None, "Appointment date and time cannot be in the past."
@@ -104,8 +122,13 @@ def parse_appointment_data(form):
     if appointment_date > max_appointment_date:
         return None, "Appointment date cannot be more than 30 days from today."
 
+    # Validate dynamic working days of the week (0 = Sunday, 6 = Saturday)
+    day_str = appointment_date.strftime("%w")
+    if day_str not in working_days_list:
+        return None, "Clinic is closed on this day (holiday)."
+
     if appointment_date.time() < clinic_start_time or appointment_date.time() > clinic_end_time:
-        return None, "Appointment time must be between 08:00 and 18:00."
+        return None, f"Appointment time must be between {start_str} and {end_str}."
 
     if not reason:
         return None, "Appointment reason is required."
