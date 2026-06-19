@@ -86,7 +86,11 @@ def parse_appointment_data(form):
     try:
         appointment_date = datetime.strptime(appointment_date_raw, "%Y-%m-%dT%H:%M")
     except ValueError:
-        return None, "Appointment date and time must be valid."
+        try:
+            appointment_date = datetime.strptime(appointment_date_raw, "%Y-%m-%d %H:%M")
+        except ValueError:
+            return None, "Appointment date and time must be valid."
+
 
     now = datetime.now().replace(second=0, microsecond=0)
     max_appointment_date = now + timedelta(days=30)
@@ -162,3 +166,18 @@ def parse_invoice_payment_amount(payment_amount_raw):
         return None, "Payment amount must be greater than 0."
 
     return payment_amount, None
+
+
+def check_appointment_conflict(appointment_date, current_appointment_id=None):
+    from models import Appointment
+    from datetime import timedelta
+
+    conflict = Appointment.query.filter(
+        Appointment.status == "Scheduled",
+        Appointment.appointment_date < appointment_date + timedelta(minutes=30),
+        Appointment.appointment_date > appointment_date - timedelta(minutes=30)
+    )
+    if current_appointment_id:
+        conflict = conflict.filter(Appointment.id != current_appointment_id)
+
+    return conflict.first()

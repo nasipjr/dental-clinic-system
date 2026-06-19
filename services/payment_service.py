@@ -11,16 +11,19 @@ def allocate_patient_payments_to_invoices(patient_id):
 
     invoices = (
         Invoice.query
-        .join(Appointment)
+        .join(Invoice.appointment)
         .filter(Invoice.patient_id == patient_id)
         .order_by(Appointment.appointment_date.asc(), Invoice.id.asc())
         .all()
     )
 
-    for payment in payments:
-        PaymentAllocation.query.filter_by(payment_id=payment.id).delete()
+    payment_ids = [p.id for p in payments]
+    if payment_ids:
+        PaymentAllocation.query.filter(PaymentAllocation.payment_id.in_(payment_ids)).delete(synchronize_session=False)
 
     db.session.flush()
+
+    invoice_allocated = {invoice.id: 0.0 for invoice in invoices}
 
     for payment in payments:
         remaining_payment_amount = float(payment.amount or 0)
@@ -34,13 +37,7 @@ def allocate_patient_payments_to_invoices(patient_id):
             if invoice_total <= 0:
                 continue
 
-            allocated_to_invoice = sum(
-                float(allocation.amount or 0)
-                for allocation in PaymentAllocation.query.filter_by(
-                    invoice_id=invoice.id
-                ).all()
-            )
-
+            allocated_to_invoice = invoice_allocated[invoice.id]
             outstanding_amount = invoice_total - allocated_to_invoice
 
             if outstanding_amount <= 0:
@@ -55,6 +52,7 @@ def allocate_patient_payments_to_invoices(patient_id):
             )
 
             db.session.add(allocation)
+            invoice_allocated[invoice.id] += allocation_amount
             remaining_payment_amount -= allocation_amount
 
             if remaining_payment_amount <= 0:

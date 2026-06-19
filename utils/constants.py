@@ -18,18 +18,50 @@ PATIENT_GENDERS = {
 }
 
 
-TREATMENT_PRICES = {
-    "Check-up": 25000,
-    "Cleaning": 50000,
-    "Filling": 75000,
-    "Root Canal": 150000,
-    "Extraction": 80000,
-    "Crown / Bridge": 200000,
-    "Braces / Orthodontics": 300000,
-    "Whitening": 120000,
-    "Emergency Pain": 60000,
-    "Follow-up": 20000,
-}
+from utils.settings_helper import get_treatment_prices
+
+class TreatmentPricesProxy(dict):
+    def __getitem__(self, key):
+        return get_treatment_prices()[key]
+        
+    def get(self, key, default=None):
+        return get_treatment_prices().get(key, default)
+        
+    def keys(self):
+        return get_treatment_prices().keys()
+        
+    def items(self):
+        return get_treatment_prices().items()
+        
+    def values(self):
+        return get_treatment_prices().values()
+        
+    def __contains__(self, key):
+        return key in get_treatment_prices()
+        
+    def __iter__(self):
+        return iter(get_treatment_prices())
+
+    def __len__(self):
+        return len(get_treatment_prices())
+
+    def __repr__(self):
+        return repr(get_treatment_prices())
 
 
-TREATMENT_PROCEDURE_TYPES = set(TREATMENT_PRICES.keys())
+class TreatmentProcedureTypesProxy(set):
+    def __contains__(self, item):
+        return item in get_treatment_prices()
+        
+    def __iter__(self):
+        return iter(get_treatment_prices().keys())
+
+    def __len__(self):
+        return len(get_treatment_prices())
+
+    def __repr__(self):
+        return repr(set(get_treatment_prices().keys()))
+
+
+TREATMENT_PRICES = TreatmentPricesProxy()
+TREATMENT_PROCEDURE_TYPES = TreatmentProcedureTypesProxy()

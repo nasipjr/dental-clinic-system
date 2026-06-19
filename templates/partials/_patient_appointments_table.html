@@ -108,6 +108,22 @@
                             class="table-action-btn edit-btn" title="Edit Appointment">
                             <i class="bi bi-pencil-square"></i>
                         </a>
+
+                        <button type="button"
+                            class="table-action-btn quick-action-btn border-0 bg-transparent p-0"
+                            data-action-url="{{ url_for('appointments.quick_cancel', appointment_id=appointment.id) }}"
+                            data-confirm-msg="Are you sure you want to cancel this appointment?"
+                            title="Quick Cancel">
+                            <i class="bi bi-x-circle text-danger"></i>
+                        </button>
+
+                        <button type="button"
+                            class="table-action-btn quick-action-btn border-0 bg-transparent p-0"
+                            data-action-url="{{ url_for('appointments.quick_done', appointment_id=appointment.id) }}"
+                            data-confirm-msg="Are you sure you want to mark this appointment as Done without treatments?"
+                            title="Quick Complete">
+                            <i class="bi bi-check-circle text-success"></i>
+                        </button>
                         {% endif %}
 
                         {% if appointment.status != 'Done' %}
@@ -116,6 +132,7 @@
                             <i class="bi bi-trash"></i>
                         </a>
                         {% endif %}
+
 
                     </div>
                 </td>

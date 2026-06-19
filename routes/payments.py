@@ -1,8 +1,9 @@
 from datetime import datetime
+from sqlalchemy import func, or_
 
 from flask import Blueprint, current_app, render_template, request, redirect, url_for
 
-from models import db, Patient, Payment
+from models import db, Patient, Payment, PaymentAllocation
 from services.payment_service import allocate_patient_payments_to_invoices
 from utils.validators import parse_invoice_payment_amount
 
@@ -14,71 +15,74 @@ def get_payments_context():
     search_query = request.args.get("search", "").strip()
     sort_by = request.args.get("sort", "date")
     order = request.args.get("order", "desc")
+    page = request.args.get("page", 1, type=int)
+    per_page = 10
 
-    all_payments = (
-        Payment.query
-        .join(Patient)
-        .all()
-    )
+    query = Payment.query.join(Patient)
 
     if search_query:
-        search_lower = search_query.lower()
+        clean_search = search_query
+        if search_query.lower().startswith("pay-"):
+            clean_search = search_query[4:]
 
-        def matches_payment(payment):
-            patient = payment.patient
-            payment_number = f"pay-{payment.id}".lower()
-            payment_date = (
-                payment.payment_date.strftime("%Y-%m-%d %H:%M").lower()
-                if payment.payment_date else ""
-            )
-
-            searchable_values = [
-                payment_number,
-                str(payment.id),
-                patient.first_name or "",
-                patient.last_name or "",
-                patient.phone or "",
-                str(payment.amount),
-                str(payment.allocated_amount),
-                str(payment.unallocated_amount),
-                payment.notes or "",
-                payment_date,
-            ]
-
-            return any(
-                search_lower in str(value).lower()
-                for value in searchable_values
-            )
-
-        all_payments = [
-            payment
-            for payment in all_payments
-            if matches_payment(payment)
+        filter_conds = [
+            Patient.first_name.ilike(f"%{search_query}%"),
+            Patient.last_name.ilike(f"%{search_query}%"),
+            Patient.phone.ilike(f"%{search_query}%"),
+            Payment.notes.ilike(f"%{search_query}%")
         ]
 
-    sort_key_map = {
-        "id": lambda payment: payment.id,
-        "date": lambda payment: payment.payment_date or datetime.min,
-        "patient": lambda payment: (
-            payment.patient.first_name or "",
-            payment.patient.last_name or "",
-        ),
-        "amount": lambda payment: payment.amount,
-        "allocated": lambda payment: payment.allocated_amount,
-        "credit": lambda payment: payment.unallocated_amount,
+        try:
+            payment_id_val = int(clean_search)
+            filter_conds.append(Payment.id == payment_id_val)
+        except ValueError:
+            pass
+
+        try:
+            amount_val = float(search_query)
+            filter_conds.append(Payment.amount == amount_val)
+        except ValueError:
+            pass
+
+        query = query.filter(or_(*filter_conds))
+
+    allocated_sum = (
+        db.select(func.coalesce(func.sum(PaymentAllocation.amount), 0.0))
+        .where(PaymentAllocation.payment_id == Payment.id)
+        .scalar_subquery()
+    )
+
+    sort_columns = {
+        "id": Payment.id,
+        "date": Payment.payment_date,
+        "patient": [Patient.first_name, Patient.last_name],
+        "amount": Payment.amount,
+        "allocated": allocated_sum,
+        "credit": Payment.amount - allocated_sum,
     }
 
-    sort_key = sort_key_map.get(sort_by, sort_key_map["date"])
-    reverse_order = order != "asc"
+    sort_col = sort_columns.get(sort_by, Payment.payment_date)
 
-    all_payments = sorted(
-        all_payments,
-        key=sort_key,
-        reverse=reverse_order,
+    if isinstance(sort_col, list):
+        if order == "asc":
+            query = query.order_by(*(c.asc() for c in sort_col))
+        else:
+            query = query.order_by(*(c.desc() for c in sort_col))
+    else:
+        if order == "asc":
+            query = query.order_by(sort_col.asc())
+        else:
+            query = query.order_by(sort_col.desc())
+
+    pagination = query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False,
     )
 
     return {
-        "payments": all_payments,
+        "payments": pagination.items,
+        "pagination": pagination,
         "search_query": search_query,
         "sort_by": sort_by,
         "order": order,

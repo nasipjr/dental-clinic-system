@@ -88,6 +88,9 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(function (html) {
             tableContainer.innerHTML = html;
+            if (window.initCustomTooltips) {
+                window.initCustomTooltips();
+            }
         })
         .catch(function (error) {
             console.error(error);

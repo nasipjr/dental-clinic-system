@@ -174,4 +174,10 @@
         </div>
     </div>
 </section>
+{% if not is_locked %}
+<script>
+    const appointmentIdForEdit = "{{ appointment.id }}";
+</script>
+<script src="{{ url_for('static', filename='assets/js/appointments_flatpickr.js') }}"></script>
+{% endif %}
 {% endblock %}

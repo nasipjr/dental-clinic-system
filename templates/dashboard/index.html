@@ -74,7 +74,7 @@
               <div class="dashboard-stat-card">
                 <h3>
                   <span data-purecounter-start="0" data-purecounter-end="{{ total_revenue }}"
-                    data-purecounter-duration="2" class="purecounter"></span>
+                    data-purecounter-duration="2" data-purecounter-separator="true" data-purecounter-formater="de-DE" class="purecounter"></span> {{ currency_symbol }}
                 </h3>
                 <p>Total Invoices</p>
               </div>
@@ -82,7 +82,7 @@
               <div class="dashboard-stat-card">
                 <h3>
                   <span data-purecounter-start="0" data-purecounter-end="{{ total_paid }}" data-purecounter-duration="2"
-                    class="purecounter"></span>
+                    data-purecounter-separator="true" data-purecounter-formater="de-DE" class="purecounter"></span> {{ currency_symbol }}
                 </h3>
                 <p>Total Payments</p>
               </div>
@@ -107,13 +107,13 @@
 
               <div class="emergency-info">
                 {% if total_remaining < 0 %} <small>Clinic Credit</small>
-                  <strong>{{ total_remaining|abs }}</strong>
+                  <strong>{{ (total_remaining|abs) | format_price }} {{ currency_symbol }}</strong>
                   {% elif total_remaining > 0 %}
                   <small>Outstanding Amount</small>
-                  <strong>{{ total_remaining }}</strong>
+                  <strong>{{ total_remaining | format_price }} {{ currency_symbol }}</strong>
                   {% else %}
                   <small>Outstanding Amount</small>
-                  <strong>0</strong>
+                  <strong>0 {{ currency_symbol }}</strong>
                   {% endif %}
               </div>
             </div>
@@ -288,27 +288,27 @@
               </td>
 
               <td>
-                {{ invoice_total }}
+                {{ invoice_total | format_price }} {{ currency_symbol }}
               </td>
 
               <td>
-                {{ total_paid }}
+                {{ total_paid | format_price }} {{ currency_symbol }}
               </td>
 
               <td>
                 {% if credit > 0 %}
                 <span class="credit-amount">
-                  {{ credit }}
+                  {{ credit | format_price }} {{ currency_symbol }}
                   <span class="credit-badge">Credit</span>
                 </span>
                 {% elif balance > 0 %}
                 <span class="remaining-due">
-                  {{ balance }}
+                  {{ balance | format_price }} {{ currency_symbol }}
                   <span class="due-badge">Due</span>
                 </span>
                 {% else %}
                 <span class="remaining-clear">
-                  0
+                  0 {{ currency_symbol }}
                   <span class="paid-badge">Paid</span>
                 </span>
                 {% endif %}

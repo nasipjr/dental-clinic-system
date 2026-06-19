@@ -104,13 +104,13 @@
 
                 <td>
                     <span class="price-badge">
-                        {{ payment.amount }}
+                        {{ payment.amount | format_price }} {{ currency_symbol }}
                     </span>
                 </td>
 
                 <td>
                     <span class="remaining-clear">
-                        {{ payment.allocated_amount }}
+                        {{ payment.allocated_amount | format_price }} {{ currency_symbol }}
                         <span class="paid-badge">Allocated</span>
                     </span>
                 </td>
@@ -118,12 +118,12 @@
                 <td>
                     {% if payment.unallocated_amount > 0 %}
                     <span class="credit-amount">
-                        {{ payment.unallocated_amount }}
+                        {{ payment.unallocated_amount | format_price }} {{ currency_symbol }}
                         <span class="credit-badge">Credit</span>
                     </span>
                     {% else %}
                     <span class="remaining-clear">
-                        0
+                        0.00 {{ currency_symbol }}
                         <span class="paid-badge">No Credit</span>
                     </span>
                     {% endif %}

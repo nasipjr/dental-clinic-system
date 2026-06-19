@@ -102,6 +102,22 @@
                             class="table-action-btn edit-btn" title="Edit Appointment">
                             <i class="bi bi-pencil-square"></i>
                         </a>
+
+                        <button type="button"
+                            class="table-action-btn quick-action-btn border-0 bg-transparent p-0"
+                            data-action-url="{{ url_for('appointments.quick_cancel', appointment_id=appointment.id) }}"
+                            data-confirm-msg="Are you sure you want to cancel this appointment?"
+                            title="Quick Cancel">
+                            <i class="bi bi-x-circle text-danger"></i>
+                        </button>
+
+                        <button type="button"
+                            class="table-action-btn quick-action-btn border-0 bg-transparent p-0"
+                            data-action-url="{{ url_for('appointments.quick_done', appointment_id=appointment.id) }}"
+                            data-confirm-msg="Are you sure you want to mark this appointment as Done without treatments?"
+                            title="Quick Complete">
+                            <i class="bi bi-check-circle text-success"></i>
+                        </button>
                         {% endif %}
 
                         {% if appointment.status != 'Done' %}
@@ -110,6 +126,7 @@
                             <i class="bi bi-trash"></i>
                         </a>
                         {% endif %}
+
                     </div>
                 </td>
             </tr>
@@ -123,10 +140,14 @@
     <ul class="pagination justify-content-center">
 
         <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            {% if pagination.has_prev %}
             <a class="page-link appointments-ajax-link"
                 href="{{ url_for('appointments.appointments_table', page=pagination.prev_num, search=search_query, status=status_filter, sort=sort_by, order=order) }}">
                 Previous
             </a>
+            {% else %}
+            <span class="page-link">Previous</span>
+            {% endif %}
         </li>
 
         {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
@@ -145,10 +166,14 @@
         {% endfor %}
 
         <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            {% if pagination.has_next %}
             <a class="page-link appointments-ajax-link"
                 href="{{ url_for('appointments.appointments_table', page=pagination.next_num, search=search_query, status=status_filter, sort=sort_by, order=order) }}">
                 Next
             </a>
+            {% else %}
+            <span class="page-link">Next</span>
+            {% endif %}
         </li>
 
     </ul>

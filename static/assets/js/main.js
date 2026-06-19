@@ -169,6 +169,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const html = await response.text();
       target.innerHTML = html;
+      if (window.initCustomTooltips) {
+        window.initCustomTooltips();
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -207,4 +210,71 @@ document.addEventListener("DOMContentLoaded", function () {
 
     loadDashboardPartial(url, targetId);
   });
+
+  document.addEventListener("click", function (event) {
+    const btn = event.target.closest(".quick-action-btn");
+    if (!btn) {
+      return;
+    }
+
+    event.preventDefault();
+    const url = btn.getAttribute("data-action-url");
+    const msg = btn.getAttribute("data-confirm-msg");
+
+    if (confirm(msg)) {
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          "Content-Type": "application/json"
+        }
+      })
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        if (data.success) {
+          const apptsContainer = document.getElementById("appointments-table-container");
+          if (apptsContainer) {
+            const activeLink = document.querySelector(".appointments-ajax-link");
+            const fetchUrl = activeLink ? activeLink.href : window.location.href;
+            fetch(fetchUrl, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+              .then(function (res) { return res.text(); })
+              .then(function (html) { apptsContainer.innerHTML = html; });
+          } else {
+            const patientApptsContainer = document.getElementById("patient-appointments-container");
+            if (patientApptsContainer) {
+              const activeLink = patientApptsContainer.querySelector(".dashboard-ajax-link");
+              const fetchUrl = activeLink ? activeLink.href : window.location.href;
+              fetch(fetchUrl, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+                .then(function (res) { return res.text(); })
+                .then(function (html) { patientApptsContainer.innerHTML = html; });
+            } else {
+              window.location.reload();
+            }
+          }
+        } else {
+          alert(data.message || "An error occurred.");
+        }
+      })
+      .catch(function (error) {
+        console.error(error);
+        alert("Failed to perform action.");
+      });
+    }
+  });
+
+  window.initCustomTooltips = function() {
+    const elements = document.querySelectorAll('.table-action-btn[title], a[title], button[title]');
+    elements.forEach(function (el) {
+      const title = el.getAttribute('title');
+      if (title) {
+        el.setAttribute('data-tooltip', title);
+        el.removeAttribute('title');
+      }
+    });
+  };
+
+  // Run initial tooltips parsing
+  window.initCustomTooltips();
 });

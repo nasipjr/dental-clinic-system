@@ -96,13 +96,14 @@ def get_patient_invoices_context(patient_id):
     patient_invoices = (
         Invoice.query
         .filter_by(patient_id=patient.id)
-        .join(Appointment)
+        .join(Invoice.appointment)
         .all()
     )
 
     sort_key_map = {
         "id": lambda invoice: invoice.id,
         "date": lambda invoice: invoice.appointment_date,
+        "patient": lambda invoice: (invoice.patient.first_name, invoice.patient.last_name),
         "treatments": lambda invoice: invoice.treatments_count,
         "total": lambda invoice: invoice.total_amount,
         "payments": lambda invoice: invoice.total_paid,
@@ -120,7 +121,7 @@ def get_patient_invoices_context(patient_id):
 
     return {
         "patient": patient,
-        "patient_invoices": patient_invoices,
+        "invoices": patient_invoices,
         "invoice_sort": invoice_sort,
         "invoice_order": invoice_order,
     }
@@ -240,7 +241,7 @@ def patient_detail(patient_id):
         patient_invoices = (
                 Invoice.query
                 .filter_by(patient_id=patient.id)
-                .join(Appointment)
+                .join(Invoice.appointment)
                 .order_by(Appointment.appointment_date.desc(), Invoice.id.desc())
                 .all()
             )
@@ -256,7 +257,7 @@ def patient_detail(patient_id):
             patient_appointments=patient_appointments,
             patient_treatments=patient_treatments,
             patient_payments=payment_context["patient_payments"],
-            patient_invoices=invoice_context["patient_invoices"],
+            invoices=invoice_context["invoices"],
             total_cost_sum=total_cost_sum,
             total_paid_sum=total_paid_sum,
             total_remaining_sum=total_remaining_sum,

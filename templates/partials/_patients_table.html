@@ -142,10 +142,14 @@
     <ul class="pagination justify-content-center">
 
         <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            {% if pagination.has_prev %}
             <a class="page-link patients-ajax-link"
                 href="{{ url_for('patients.patients_table', page=pagination.prev_num, search=search_query, sort=sort_by, order=order) }}">
                 Previous
             </a>
+            {% else %}
+            <span class="page-link">Previous</span>
+            {% endif %}
         </li>
 
         {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
@@ -164,10 +168,14 @@
         {% endfor %}
 
         <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            {% if pagination.has_next %}
             <a class="page-link patients-ajax-link"
                 href="{{ url_for('patients.patients_table', page=pagination.next_num, search=search_query, sort=sort_by, order=order) }}">
                 Next
             </a>
+            {% else %}
+            <span class="page-link">Next</span>
+            {% endif %}
         </li>
 
     </ul>

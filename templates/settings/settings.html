@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}System Settings{% endblock %}
+
+{% block content %}
+<br><br><br><br><br><br><br>
+
+<div class="container section-title" data-aos="fade-up">
+    <h2>System Settings</h2>
+    <p>Customize clinic profile, working hours, billing details, and treatment prices.</p>
+</div>
+
+<section id="settings-section" class="section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('settings.settings_page') }}" class="settings-form">
+            <div class="row gy-4">
+                <!-- Sidebar Tabs Nav -->
+                <div class="col-lg-3 col-md-4">
+                    <div class="settings-sidebar-nav list-group list-group-flush shadow-sm rounded-4" id="settings-tabs" role="tablist">
+                        <button class="list-group-item list-group-item-action active" id="tab-general-btn" data-bs-toggle="pill" data-bs-target="#tab-general" type="button" role="tab">
+                            <i class="bi bi-building me-2"></i> Clinic Profile
+                        </button>
+                        <button class="list-group-item list-group-item-action" id="tab-calendar-btn" data-bs-toggle="pill" data-bs-target="#tab-calendar" type="button" role="tab">
+                            <i class="bi bi-calendar-range me-2"></i> Calendar Settings
+                        </button>
+                        <button class="list-group-item list-group-item-action" id="tab-billing-btn" data-bs-toggle="pill" data-bs-target="#tab-billing" type="button" role="tab">
+                            <i class="bi bi-wallet2 me-2"></i> Billing & Finance
+                        </button>
+                        <button class="list-group-item list-group-item-action" id="tab-treatments-btn" data-bs-toggle="pill" data-bs-target="#tab-treatments" type="button" role="tab">
+                            <i class="bi bi-clipboard2-pulse me-2"></i> Treatment Pricing
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="col-lg-9 col-md-8">
+                    <div class="tab-content settings-tab-content shadow-sm p-4 rounded-4 bg-white" id="settings-tabs-content">
+                        
+                        <!-- Clinic Profile Tab -->
+                        <div class="tab-pane fade show active" id="tab-general" role="tabpanel">
+                            <h4 class="mb-4 text-primary fw-bold"><i class="bi bi-building me-2"></i> Clinic Profile</h4>
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label for="clinic_name" class="form-label fw-semibold">Clinic Name</label>
+                                    <input type="text" class="form-control rounded-3" id="clinic_name" name="clinic_name" value="{{ settings.clinic_name }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="clinic_phone" class="form-label fw-semibold">Phone Number</label>
+                                    <input type="text" class="form-control rounded-3" id="clinic_phone" name="clinic_phone" value="{{ settings.clinic_phone }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="clinic_email" class="form-label fw-semibold">Email Address</label>
+                                    <input type="email" class="form-control rounded-3" id="clinic_email" name="clinic_email" value="{{ settings.clinic_email }}">
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="clinic_address" class="form-label fw-semibold">Address</label>
+                                    <textarea class="form-control rounded-3" id="clinic_address" name="clinic_address" rows="3">{{ settings.clinic_address }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calendar Settings Tab -->
+                        <div class="tab-pane fade" id="tab-calendar" role="tabpanel">
+                            <h4 class="mb-4 text-primary fw-bold"><i class="bi bi-calendar-range me-2"></i> Calendar & Appointment Settings</h4>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="working_hours_start" class="form-label fw-semibold">Daily Working Hours Start</label>
+                                    <input type="time" class="form-control rounded-3" id="working_hours_start" name="working_hours_start" value="{{ settings.working_hours_start }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="working_hours_end" class="form-label fw-semibold">Daily Working Hours End</label>
+                                    <input type="time" class="form-control rounded-3" id="working_hours_end" name="working_hours_end" value="{{ settings.working_hours_end }}">
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="default_appointment_duration" class="form-label fw-semibold">Default Session Duration</label>
+                                    <select class="form-select rounded-3" id="default_appointment_duration" name="default_appointment_duration">
+                                        <option value="15" {% if settings.default_appointment_duration == '15' %}selected{% endif %}>15 Minutes</option>
+                                        <option value="30" {% if settings.default_appointment_duration == '30' %}selected{% endif %}>30 Minutes</option>
+                                        <option value="45" {% if settings.default_appointment_duration == '45' %}selected{% endif %}>45 Minutes</option>
+                                        <option value="60" {% if settings.default_appointment_duration == '60' %}selected{% endif %}>60 Minutes</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Billing & Finance Tab -->
+                        <div class="tab-pane fade" id="tab-billing" role="tabpanel">
+                            <h4 class="mb-4 text-primary fw-bold"><i class="bi bi-wallet2 me-2"></i> Billing & Finance Settings</h4>
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label for="currency_symbol" class="form-label fw-semibold">Custom Currency Symbol</label>
+                                    <input type="text" class="form-control rounded-3" id="currency_symbol" name="currency_symbol" value="{{ settings.currency_symbol }}" required placeholder="e.g., $, USD, EUR, SAR">
+                                    <div class="form-text text-muted">This symbol will be applied dynamically to all invoices, payments, and report pages.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Treatment Pricing Tab -->
+                        <div class="tab-pane fade" id="tab-treatments" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h4 class="text-primary fw-bold mb-0"><i class="bi bi-clipboard2-pulse me-2"></i> Treatment Services & Prices</h4>
+                                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" id="add-procedure-btn">
+                                    <i class="bi bi-plus-circle me-1"></i> Add New Procedure
+                                </button>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table align-middle" id="procedures-table" style="table-layout: fixed; width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 60%;">Procedure Name</th>
+                                            <th style="width: 30%;">Default Price</th>
+                                            <th style="width: 10%;" class="text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="procedures-list">
+                                        {% for name, price in treatment_prices.items() %}
+                                        <tr class="procedure-row">
+                                            <td style="width: 60%;">
+                                                <input type="text" name="procedure_names[]" class="form-control rounded-3" value="{{ name }}" required placeholder="e.g., Cleaning">
+                                            </td>
+                                            <td style="width: 30%;">
+                                                <div class="input-group rounded-3 overflow-hidden">
+                                                    <input type="text" name="procedure_prices[]" class="form-control border-end-0" value="{{ price }}" required placeholder="0">
+                                                    <span class="input-group-text bg-light border-start-0">{{ currency_symbol }}</span>
+                                                </div>
+                                            </td>
+                                            <td style="width: 10%;" class="text-center">
+                                                <button type="button" class="btn btn-outline-danger btn-sm rounded-circle delete-row-btn" data-tooltip="Delete Procedure">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+                            <i class="bi bi-check-circle me-1"></i> Save All Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const addBtn = document.getElementById("add-procedure-btn");
+    const tbody = document.getElementById("procedures-list");
+    const currencySymbol = "{{ currency_symbol }}";
+
+    // Add new procedure row
+    addBtn.addEventListener("click", function () {
+        const row = document.createElement("tr");
+        row.className = "procedure-row";
+        row.innerHTML = `
+            <td style="width: 60%;">
+                <input type="text" name="procedure_names[]" class="form-control rounded-3" required placeholder="Procedure Name">
+            </td>
+            <td style="width: 30%;">
+                <div class="input-group rounded-3 overflow-hidden">
+                    <input type="text" name="procedure_prices[]" class="form-control border-end-0" required placeholder="0">
+                    <span class="input-group-text bg-light border-start-0">${currencySymbol}</span>
+                </div>
+            </td>
+            <td style="width: 10%;" class="text-center">
+                <button type="button" class="btn btn-outline-danger btn-sm rounded-circle delete-row-btn" data-tooltip="Delete Procedure">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+        
+        // Reinitialize tooltips for the new row
+        if (typeof window.initCustomTooltips === "function") {
+            window.initCustomTooltips();
+        }
+    });
+
+    // Delete row from table
+    tbody.addEventListener("click", function (e) {
+        const deleteBtn = e.target.closest(".delete-row-btn");
+        if (deleteBtn) {
+            const row = deleteBtn.closest("tr");
+            row.remove();
+        }
+    });
+});
+</script>
+{% endblock %}

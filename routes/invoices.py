@@ -1,8 +1,9 @@
 from datetime import datetime
+from sqlalchemy import func, or_
 
-from flask import Blueprint, current_app, render_template, request, redirect, url_for
+from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash
 
-from models import db, Patient, Appointment, Treatment, Invoice, Payment
+from models import db, Patient, Appointment, Treatment, Invoice, Payment, PaymentAllocation
 from services.invoice_service import sync_invoice_for_appointment
 from services.payment_service import allocate_patient_payments_to_invoices
 from utils.constants import TREATMENT_PRICES, TREATMENT_PROCEDURE_TYPES
@@ -15,69 +16,88 @@ def get_invoices_context():
     search_query = request.args.get("search", "").strip()
     sort_by = request.args.get("sort", "date")
     order = request.args.get("order", "desc")
+    page = request.args.get("page", 1, type=int)
+    per_page = 10
 
-    invoices = Invoice.query.all()
+    query = Invoice.query.join(Invoice.patient).join(Invoice.appointment)
 
     if search_query:
-        search_lower = search_query.lower()
+        clean_search = search_query
+        if search_query.lower().startswith("inv-"):
+            clean_search = search_query[4:]
 
-        def matches_invoice(invoice):
-            patient = invoice.patient
-            appointment = invoice.appointment
-
-            invoice_number = invoice.invoice_number.lower()
-            appointment_date = (
-                invoice.appointment_date.strftime("%Y-%m-%d %H:%M").lower()
-                if invoice.appointment_date else ""
-            )
-
-            searchable_values = [
-                invoice_number,
-                str(invoice.id),
-                str(invoice.appointment_id),
-                patient.first_name or "",
-                patient.last_name or "",
-                patient.phone or "",
-                appointment.status if appointment else "",
-                appointment_date,
-            ]
-
-            return any(
-                search_lower in str(value).lower()
-                for value in searchable_values
-            )
-
-        invoices = [
-            invoice
-            for invoice in invoices
-            if matches_invoice(invoice)
+        filter_conds = [
+            Patient.first_name.ilike(f"%{search_query}%"),
+            Patient.last_name.ilike(f"%{search_query}%"),
+            Patient.phone.ilike(f"%{search_query}%"),
+            Appointment.status.ilike(f"%{search_query}%")
         ]
 
-    sort_key_map = {
-        "id": lambda invoice: invoice.id,
-        "patient": lambda invoice: (
-            invoice.patient.first_name or "",
-            invoice.patient.last_name or "",
-        ),
-        "date": lambda invoice: invoice.appointment_date or datetime.min,
-        "treatments": lambda invoice: invoice.treatments_count,
-        "total": lambda invoice: invoice.total_amount,
-        "payments": lambda invoice: invoice.total_paid,
-        "outstanding": lambda invoice: invoice.outstanding_amount,
-        "status": lambda invoice: invoice.status,
+        try:
+            invoice_id_val = int(clean_search)
+            filter_conds.append(Invoice.id == invoice_id_val)
+        except ValueError:
+            pass
+
+        try:
+            appt_id_val = int(search_query)
+            filter_conds.append(Invoice.appointment_id == appt_id_val)
+        except ValueError:
+            pass
+
+        query = query.filter(or_(*filter_conds))
+
+    treatments_count_sub = (
+        db.select(func.count(Treatment.id))
+        .where(Treatment.appointment_id == Invoice.appointment_id)
+        .scalar_subquery()
+    )
+
+    total_amount_sub = (
+        db.select(func.coalesce(func.sum(Treatment.total_cost), 0.0))
+        .where(Treatment.appointment_id == Invoice.appointment_id)
+        .scalar_subquery()
+    )
+
+    total_paid_sub = (
+        db.select(func.coalesce(func.sum(PaymentAllocation.amount), 0.0))
+        .where(PaymentAllocation.invoice_id == Invoice.id)
+        .scalar_subquery()
+    )
+
+    sort_columns = {
+        "id": Invoice.id,
+        "patient": [Patient.first_name, Patient.last_name],
+        "date": Appointment.appointment_date,
+        "treatments": treatments_count_sub,
+        "total": total_amount_sub,
+        "payments": total_paid_sub,
+        "outstanding": total_amount_sub - total_paid_sub,
+        "status": total_amount_sub - total_paid_sub,
     }
 
-    sort_key = sort_key_map.get(sort_by, sort_key_map["date"])
-    reverse_order = order != "asc"
+    sort_col = sort_columns.get(sort_by, Appointment.appointment_date)
 
-    invoices = sorted(
-        invoices,
-        key=sort_key,
-        reverse=reverse_order,
+    if isinstance(sort_col, list):
+        if order == "asc":
+            query = query.order_by(*(c.asc() for c in sort_col))
+        else:
+            query = query.order_by(*(c.desc() for c in sort_col))
+    else:
+        if order == "asc":
+            query = query.order_by(sort_col.asc())
+        else:
+            query = query.order_by(sort_col.desc())
+
+    pagination = query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False,
     )
 
     return {
-        "invoices": invoices,
+        "invoices": pagination.items,
+        "pagination": pagination,
         "search_query": search_query,
         "sort_by": sort_by,
         "order": order,
@@ -235,6 +255,31 @@ def add_invoice():
             db.session.flush()
 
             invoice = sync_invoice_for_appointment(appointment)
+            
+            discount_type = request.form.get("discount_type", "value").strip()
+            if discount_type not in {"value", "percentage"}:
+                discount_type = "value"
+                
+            discount_val = 0.0
+            discount_raw = request.form.get("discount", "0").strip()
+            if discount_raw:
+                try:
+                    discount_val = float(discount_raw)
+                    if discount_val < 0:
+                        discount_val = 0.0
+                except ValueError:
+                    pass
+            
+            if discount_type == "percentage" and discount_val > 100.0:
+                discount_val = 100.0
+            elif discount_type == "value" and discount_val > float(invoice.subtotal):
+                discount_val = float(invoice.subtotal)
+                
+            from decimal import Decimal
+            invoice.discount = Decimal(str(discount_val))
+            invoice.discount_type = discount_type
+            db.session.flush()
+
             invoice_total = invoice.total_amount
 
             if payment_option not in {"no_payment", "full_price", "custom_amount"}:
@@ -353,3 +398,49 @@ def view_invoice(invoice_id):
             message="Failed to load invoice.",
             back_url=url_for("invoices.invoices"),
         ), 500
+
+
+@invoices_bp.route("/invoices/<int:invoice_id>/discount", methods=["POST"])
+def update_invoice_discount(invoice_id):
+    current_app.logger.info(f"Update discount request | invoice_id={invoice_id}")
+    try:
+        invoice = Invoice.query.get_or_404(invoice_id)
+        
+        discount_type = request.form.get("discount_type", "value").strip()
+        if discount_type not in {"value", "percentage"}:
+            discount_type = "value"
+            
+        discount_raw = request.form.get("discount", "0").strip()
+        discount_val = 0.0
+        if discount_raw:
+            try:
+                discount_val = float(discount_raw)
+                if discount_val < 0:
+                    discount_val = 0.0
+            except ValueError:
+                flash("Invalid discount amount.", "danger")
+                return redirect(url_for("invoices.view_invoice", invoice_id=invoice.id))
+        
+        if discount_type == "percentage" and discount_val > 100.0:
+            flash("Discount percentage cannot exceed 100%.", "danger")
+            return redirect(url_for("invoices.view_invoice", invoice_id=invoice.id))
+        elif discount_type == "value" and discount_val > float(invoice.subtotal):
+            flash("Discount cannot exceed the subtotal.", "danger")
+            return redirect(url_for("invoices.view_invoice", invoice_id=invoice.id))
+            
+        from decimal import Decimal
+        invoice.discount = Decimal(str(discount_val))
+        invoice.discount_type = discount_type
+        db.session.flush()
+        
+        # Recalculate allocations for the patient since invoice total has changed
+        allocate_patient_payments_to_invoices(invoice.patient_id)
+        db.session.commit()
+        
+        flash("Discount updated successfully!", "success")
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(f"Failed to update discount for invoice {invoice_id}")
+        flash("Failed to update discount.", "danger")
+        
+    return redirect(url_for("invoices.view_invoice", invoice_id=invoice_id))

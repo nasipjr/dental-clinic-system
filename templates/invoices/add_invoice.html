@@ -126,7 +126,7 @@
                                 </td>
 
                                 <td>
-                                    <span class="price-badge item-price">0</span>
+                                    <span class="price-badge"><span class="item-price">0</span> {{ currency_symbol }}</span>
                                 </td>
 
                                 <td class="text-center">
@@ -139,9 +139,29 @@
 
                         <tfoot>
                             <tr>
+                                <th colspan="3" class="text-end">Subtotal</th>
+                                <th>
+                                    <span class="price-badge"><span id="invoice-subtotal">0.00</span> {{ currency_symbol }}</span>
+                                </th>
+                                <th></th>
+                            </tr>
+                            <tr>
+                                <th colspan="3" class="text-end">Discount</th>
+                                <th>
+                                    <div class="input-group input-group-sm rounded-3 overflow-hidden" style="width: 220px;">
+                                        <input type="number" step="any" min="0" name="discount" id="invoice-discount-input" class="form-control border-end-0" value="0">
+                                        <select name="discount_type" id="invoice-discount-type" class="form-select border-start-0 bg-light" style="max-width: 90px;">
+                                            <option value="value">{{ currency_symbol }}</option>
+                                            <option value="percentage">%</option>
+                                        </select>
+                                    </div>
+                                </th>
+                                <th></th>
+                            </tr>
+                            <tr>
                                 <th colspan="3" class="text-end">Invoice Total</th>
                                 <th>
-                                    <span class="price-badge" id="invoice-total">0</span>
+                                    <span class="price-badge"><span id="invoice-total">0.00</span> {{ currency_symbol }}</span>
                                 </th>
                                 <th></th>
                             </tr>
@@ -191,7 +211,7 @@
                     <div class="patient-info-box">
                         <span class="info-label">Selected Payment</span>
                         <p>
-                            <span class="price-badge" id="selected-payment-display">0</span>
+                            <span class="price-badge"><span id="selected-payment-display">0</span> {{ currency_symbol }}</span>
                         </p>
                     </div>
 
@@ -235,6 +255,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const itemsBody = document.getElementById("invoice-items-body");
     const addItemButton = document.getElementById("add-item-btn");
     const invoiceTotalElement = document.getElementById("invoice-total");
+    const invoiceSubtotalElement = document.getElementById("invoice-subtotal");
+    const discountInput = document.getElementById("invoice-discount-input");
+    const discountTypeSelect = document.getElementById("invoice-discount-type");
 
     const paymentOption = document.getElementById("payment-option");
     const customPaymentBox = document.getElementById("custom-payment-box");
@@ -260,7 +283,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function calculateTotal() {
-        let total = 0;
+        let subtotal = 0;
 
         const rows = itemsBody.querySelectorAll(".invoice-item-row");
 
@@ -270,16 +293,42 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const price = getProcedurePrice(procedureSelect.value);
 
-            priceElement.textContent = price;
-            total += price;
+            priceElement.textContent = price.toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+            subtotal += price;
         });
 
-        invoiceTotalElement.textContent = total;
+        invoiceSubtotalElement.textContent = subtotal.toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+        
+        let discount = Number(discountInput.value || 0);
+        let discountType = discountTypeSelect.value;
+        if (discount < 0) {
+            discount = 0;
+            discountInput.value = 0;
+        }
+        
+        let discountAmount = 0;
+        if (discountType === "percentage") {
+            if (discount > 100) {
+                discount = 100;
+                discountInput.value = 100;
+            }
+            discountAmount = (subtotal * discount) / 100;
+        } else {
+            if (discount > subtotal) {
+                discount = subtotal;
+                discountInput.value = subtotal;
+            }
+            discountAmount = discount;
+        }
+        
+        const total = subtotal - discountAmount;
+
+        invoiceTotalElement.textContent = total.toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0});
         updatePaymentDisplay();
     }
 
     function updatePaymentDisplay() {
-        const total = Number(invoiceTotalElement.textContent || 0);
+        const total = Number(invoiceTotalElement.textContent.replace(/\./g, '') || 0);
         const option = paymentOption.value;
 
         let selectedPayment = 0;
@@ -318,7 +367,7 @@ document.addEventListener("DOMContentLoaded", function () {
             statusClass = "due-badge";
         }
 
-        selectedPaymentDisplay.textContent = selectedPayment;
+        selectedPaymentDisplay.textContent = selectedPayment.toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0});
 
         expectedStatusDisplay.textContent = statusText;
         expectedStatusDisplay.className = statusClass;
@@ -356,7 +405,7 @@ document.addEventListener("DOMContentLoaded", function () {
             </td>
 
             <td>
-                <span class="price-badge item-price">0</span>
+                <span class="price-badge"><span class="item-price">0</span> {{ currency_symbol }}</span>
             </td>
 
             <td class="text-center">
@@ -392,6 +441,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     paymentOption.addEventListener("change", updatePaymentDisplay);
     customPaymentAmount.addEventListener("input", updatePaymentDisplay);
+    discountInput.addEventListener("input", calculateTotal);
+    discountTypeSelect.addEventListener("change", calculateTotal);
 
     updateRemoveButtons();
     calculateTotal();

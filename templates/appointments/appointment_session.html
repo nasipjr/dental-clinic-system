@@ -81,7 +81,7 @@
                         <i class="bi bi-cash-stack"></i>
                     </div>
                     <h4>Total Invoices</h4>
-                    <p>{{ total_cost_sum }}</p>
+                    <p>{{ total_cost_sum | format_price }} {{ currency_symbol }}</p>
                 </div>
 
                 <div class="financial-card">
@@ -91,7 +91,7 @@
                     <h4>
                         <h4>Total Payments</h4>
                     </h4>
-                    <p>{{ total_paid_sum }}</p>
+                    <p>{{ total_paid_sum | format_price }} {{ currency_symbol }}</p>
                 </div>
 
                 <div
@@ -105,18 +105,18 @@
                     <h4>Credit</h4>
                     <p>
                         <span class="credit-amount">
-                            {{ credit_amount }}
+                            {{ credit_amount | format_price }} {{ currency_symbol }}
                             <span class="credit-badge">Credit</span>
                         </span>
                     </p>
                     <span class="financial-card-note">This invoice has an overpayment credit.</span>
                     {% elif total_remaining_sum > 0 %}
                     <h4>Total Remaining</h4>
-                    <p>{{ total_remaining_sum }}</p>
+                    <p>{{ total_remaining_sum | format_price }} {{ currency_symbol }}</p>
                     <span class="financial-card-note">This invoice has an outstanding balance.</span>
                     {% else %}
                     <h4>Total Remaining</h4>
-                    <p>0</p>
+                    <p>0 {{ currency_symbol }}</p>
                     <span class="financial-card-note">This invoice is fully paid.</span>
                     {% endif %}
                 </div>
@@ -154,6 +154,17 @@
                     </button>
                 </form>
                 {% endif %}
+
+                {% if appointment.status == 'Done' and (not appointment.invoice or appointment.invoice.total_paid == 0) %}
+                <form method="POST" action="{{ url_for('treatments.reopen_appointment_session', appointment_id=appointment.id) }}"
+                    class="session-action-form">
+                    <button type="submit" class="btn-session-primary session-action-btn"
+                        onclick="return confirm('Are you sure you want to reopen this session? This will set it back to Scheduled and allow editing treatments.')">
+                        Reopen Session
+                    </button>
+                </form>
+                {% endif %}
+
 
             </div>
 

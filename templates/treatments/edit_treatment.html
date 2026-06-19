@@ -165,7 +165,7 @@
                                 <div class="col-md-12">
                                     <label class="form-label">Procedure Price</label>
                                     <div id="procedure_price_display" class="form-control readonly-status-field">
-                                        {{ treatment.total_cost or 0 }}
+                                        {{ (treatment.total_cost or 0) | format_price }} {{ currency_symbol }}
                                     </div>
                                 </div>
 
@@ -219,7 +219,8 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        priceDisplay.textContent = prices[selectedProcedure];
+        const priceNum = parseFloat(prices[selectedProcedure]);
+        priceDisplay.textContent = priceNum.toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' {{ currency_symbol }}';
     }
 
     procedureSelect.addEventListener('change', updateProcedurePrice);

@@ -149,7 +149,8 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        priceDisplay.textContent = prices[selectedProcedure];
+        const priceNum = parseFloat(prices[selectedProcedure]);
+        priceDisplay.textContent = priceNum.toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' {{ currency_symbol }}';
     }
 
     procedureSelect.addEventListener('change', updateProcedurePrice);

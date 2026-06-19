@@ -114,13 +114,13 @@
 
                 <td>
                     <span class="price-badge">
-                        {{ payment.amount }}
+                        {{ payment.amount | format_price }} {{ currency_symbol }}
                     </span>
                 </td>
 
                 <td>
                     <span class="remaining-clear">
-                        {{ payment.allocated_amount }}
+                        {{ payment.allocated_amount | format_price }} {{ currency_symbol }}
                         <span class="paid-badge">Allocated</span>
                     </span>
                 </td>
@@ -128,12 +128,12 @@
                 <td>
                     {% if payment.unallocated_amount > 0 %}
                     <span class="credit-amount">
-                        {{ payment.unallocated_amount }}
+                        {{ payment.unallocated_amount | format_price }} {{ currency_symbol }}
                         <span class="credit-badge">Credit</span>
                     </span>
                     {% else %}
                     <span class="remaining-clear">
-                        0
+                        0.00 {{ currency_symbol }}
                         <span class="paid-badge">No Credit</span>
                     </span>
                     {% endif %}
@@ -165,6 +165,51 @@
         </tbody>
     </table>
 </div>
+
+{% if pagination.pages > 1 %}
+<nav class="appointments-pagination mt-4">
+    <ul class="pagination justify-content-center">
+
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            {% if pagination.has_prev %}
+            <a class="page-link payments-ajax-link"
+                href="{{ url_for('payments.payments_table', page=pagination.prev_num, search=search_query, sort=sort_by, order=order) }}">
+                Previous
+            </a>
+            {% else %}
+            <span class="page-link">Previous</span>
+            {% endif %}
+        </li>
+
+        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if page_num %}
+        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+            <a class="page-link payments-ajax-link"
+                href="{{ url_for('payments.payments_table', page=page_num, search=search_query, sort=sort_by, order=order) }}">
+                {{ page_num }}
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">...</span>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            {% if pagination.has_next %}
+            <a class="page-link payments-ajax-link"
+                href="{{ url_for('payments.payments_table', page=pagination.next_num, search=search_query, sort=sort_by, order=order) }}">
+                Next
+            </a>
+            {% else %}
+            <span class="page-link">Next</span>
+            {% endif %}
+        </li>
+
+    </ul>
+</nav>
+{% endif %}
 
 {% else %}
 <div class="empty-state-card text-center">

@@ -5,7 +5,7 @@
             <tr>
                 <th>
                     <a class="invoices-ajax-link" href="{{ url_for(
-                        'invoices.invoices_table',
+                        'invoices.invoices',
                         search=search_query,
                         sort='id',
                         order='asc' if sort_by != 'id' or order == 'desc' else 'desc'
@@ -19,7 +19,7 @@
 
                 <th>
                     <a class="invoices-ajax-link" href="{{ url_for(
-                        'invoices.invoices_table',
+                        'invoices.invoices',
                         search=search_query,
                         sort='patient',
                         order='asc' if sort_by != 'patient' or order == 'desc' else 'desc'
@@ -33,7 +33,7 @@
 
                 <th>
                     <a class="invoices-ajax-link" href="{{ url_for(
-                        'invoices.invoices_table',
+                        'invoices.invoices',
                         search=search_query,
                         sort='date',
                         order='asc' if sort_by != 'date' or order == 'desc' else 'desc'
@@ -47,7 +47,7 @@
 
                 <th>
                     <a class="invoices-ajax-link" href="{{ url_for(
-                        'invoices.invoices_table',
+                        'invoices.invoices',
                         search=search_query,
                         sort='treatments',
                         order='asc' if sort_by != 'treatments' or order == 'desc' else 'desc'
@@ -61,7 +61,7 @@
 
                 <th>
                     <a class="invoices-ajax-link" href="{{ url_for(
-                        'invoices.invoices_table',
+                        'invoices.invoices',
                         search=search_query,
                         sort='total',
                         order='asc' if sort_by != 'total' or order == 'desc' else 'desc'
@@ -75,7 +75,7 @@
 
                 <th>
                     <a class="invoices-ajax-link" href="{{ url_for(
-                        'invoices.invoices_table',
+                        'invoices.invoices',
                         search=search_query,
                         sort='payments',
                         order='asc' if sort_by != 'payments' or order == 'desc' else 'desc'
@@ -89,7 +89,7 @@
 
                 <th>
                     <a class="invoices-ajax-link" href="{{ url_for(
-                        'invoices.invoices_table',
+                        'invoices.invoices',
                         search=search_query,
                         sort='outstanding',
                         order='asc' if sort_by != 'outstanding' or order == 'desc' else 'desc'
@@ -103,7 +103,7 @@
 
                 <th>
                     <a class="invoices-ajax-link" href="{{ url_for(
-                        'invoices.invoices_table',
+                        'invoices.invoices',
                         search=search_query,
                         sort='status',
                         order='asc' if sort_by != 'status' or order == 'desc' else 'desc'
@@ -143,27 +143,27 @@
                 </td>
 
                 <td>
-                    {{ invoice.total_amount }}
+                    {{ invoice.total_amount | format_price }} {{ currency_symbol }}
                 </td>
 
                 <td>
-                    {{ invoice.total_paid }}
+                    {{ invoice.total_paid | format_price }} {{ currency_symbol }}
                 </td>
 
                 <td>
                     {% if invoice.credit > 0 %}
                     <span class="credit-amount">
-                        {{ invoice.credit }}
+                        {{ invoice.credit | format_price }} {{ currency_symbol }}
                         <span class="credit-badge">Credit</span>
                     </span>
                     {% elif invoice.outstanding_amount > 0 %}
                     <span class="remaining-due">
-                        {{ invoice.outstanding_amount }}
+                        {{ invoice.outstanding_amount | format_price }} {{ currency_symbol }}
                         <span class="due-badge">Due</span>
                     </span>
                     {% else %}
                     <span class="remaining-clear">
-                        0
+                        0 {{ currency_symbol }}
                         <span class="paid-badge">Paid</span>
                     </span>
                     {% endif %}
@@ -206,6 +206,51 @@
         </tbody>
     </table>
 </div>
+
+{% if pagination.pages > 1 %}
+<nav class="appointments-pagination mt-4">
+    <ul class="pagination justify-content-center">
+
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            {% if pagination.has_prev %}
+            <a class="page-link invoices-ajax-link"
+                href="{{ url_for('invoices.invoices', page=pagination.prev_num, search=search_query, sort=sort_by, order=order) }}">
+                Previous
+            </a>
+            {% else %}
+            <span class="page-link">Previous</span>
+            {% endif %}
+        </li>
+
+        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if page_num %}
+        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+            <a class="page-link invoices-ajax-link"
+                href="{{ url_for('invoices.invoices', page=page_num, search=search_query, sort=sort_by, order=order) }}">
+                {{ page_num }}
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">...</span>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            {% if pagination.has_next %}
+            <a class="page-link invoices-ajax-link"
+                href="{{ url_for('invoices.invoices', page=pagination.next_num, search=search_query, sort=sort_by, order=order) }}">
+                Next
+            </a>
+            {% else %}
+            <span class="page-link">Next</span>
+            {% endif %}
+        </li>
+
+    </ul>
+</nav>
+{% endif %}
 
 {% else %}
 <div class="empty-state-card text-center">

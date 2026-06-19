@@ -41,12 +41,12 @@
 
                         <div class="patient-info-box">
                             <span class="info-label">Total Invoices</span>
-                            <p>{{ selected_patient.total_invoice_amount }}</p>
+                            <p>{{ selected_patient.total_invoice_amount | format_price }} {{ currency_symbol }}</p>
                         </div>
 
                         <div class="patient-info-box">
                             <span class="info-label">Total Payments</span>
-                            <p>{{ selected_patient.total_payments_amount }}</p>
+                            <p>{{ selected_patient.total_payments_amount | format_price }} {{ currency_symbol }}</p>
                         </div>
 
                         <div class="patient-info-box">
@@ -61,17 +61,17 @@
                             <p>
                                 {% if selected_patient.credit_amount > 0 %}
                                 <span class="credit-amount">
-                                    {{ selected_patient.credit_amount }}
+                                    {{ selected_patient.credit_amount | format_price }} {{ currency_symbol }}
                                     <span class="credit-badge">Credit</span>
                                 </span>
                                 {% elif selected_patient.outstanding_amount > 0 %}
                                 <span class="remaining-due">
-                                    {{ selected_patient.outstanding_amount }}
+                                    {{ selected_patient.outstanding_amount | format_price }} {{ currency_symbol }}
                                     <span class="due-badge">Due</span>
                                 </span>
                                 {% else %}
                                 <span class="remaining-clear">
-                                    0
+                                    0 {{ currency_symbol }}
                                     <span class="paid-badge">Paid</span>
                                 </span>
                                 {% endif %}
@@ -101,9 +101,17 @@
 
                             <div class="col-md-12">
                                 <label for="payment_amount" class="form-label">Payment Amount</label>
-                                <input type="number" step="0.01" min="0.01" id="payment_amount" name="payment_amount"
-                                    class="form-control" placeholder="Enter payment amount" required>
+                                <div class="d-flex align-items-stretch gap-2">
+                                    <input type="number" step="5000" min="0" id="payment_amount" name="payment_amount"
+                                        class="form-control" placeholder="Enter payment amount" required>
+                                    {% if selected_patient and selected_patient.outstanding_amount > 0 %}
+                                    <button class="btn-outline-main px-3" type="button" id="btn-full-payment" data-amount="{{ selected_patient.outstanding_amount }}" style="white-space: nowrap;">
+                                        Full Payment
+                                    </button>
+                                    {% endif %}
+                                </div>
                             </div>
+
 
                             <div class="col-md-12">
                                 <label for="notes" class="form-label">Payment Notes</label>
@@ -134,21 +142,28 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const patientSelect = document.getElementById('patient_id');
+    const fullPaymentBtn = document.getElementById('btn-full-payment');
+    const paymentAmountInput = document.getElementById('payment_amount');
 
-    if (!patientSelect) {
-        return;
+    if (patientSelect) {
+        patientSelect.addEventListener('change', function () {
+            const selectedPatientId = patientSelect.value;
+
+            if (!selectedPatientId) {
+                window.location.href = "{{ url_for('payments.add_patient_payment') }}";
+                return;
+            }
+
+            window.location.href = "{{ url_for('payments.add_patient_payment') }}?patient_id=" + selectedPatientId;
+        });
     }
 
-    patientSelect.addEventListener('change', function () {
-        const selectedPatientId = patientSelect.value;
-
-        if (!selectedPatientId) {
-            window.location.href = "{{ url_for('payments.add_patient_payment') }}";
-            return;
-        }
-
-        window.location.href = "{{ url_for('payments.add_patient_payment') }}?patient_id=" + selectedPatientId;
-    });
+    if (fullPaymentBtn && paymentAmountInput) {
+        fullPaymentBtn.addEventListener('click', function () {
+            const amount = fullPaymentBtn.getAttribute('data-amount');
+            paymentAmountInput.value = amount;
+        });
+    }
 });
 </script>
 {% endblock %}

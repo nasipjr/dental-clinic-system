@@ -394,9 +394,9 @@
 
 /* 🔥 Custom select style */
 .form-select {
-  background-color: transparent;
-  border: 1px solid #2c3e50;
-  color: #fff;
+  background-color: var(--surface-color);
+  border: 1px solid #ced4da;
+  color: var(--default-color);
   border-radius: 10px;
   padding: 10px 14px;
   font-size: 14px;
@@ -407,7 +407,7 @@
   -moz-appearance: none;
 
   /* custom arrow */
-  background-image: url("data:image/svg+xml,%3Csvg fill='%23ffffff' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg fill='%233c4049' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 16px;
@@ -422,10 +422,10 @@
   outline: none;
 }
 
-/* option fix (dark) */
+/* option style matching light theme */
 .form-select option {
-  background: #1e1e1e;
-  color: #fff;
+  background: var(--surface-color);
+  color: var(--default-color);
 }
 
 /*  Empty state for home page */
@@ -1224,3 +1224,424 @@
 .financial-detail-card .empty-box {
   margin-top: 10px;
 }
+
+/* ==========================================
+   PREMIUM PAGINATION BUTTONS GLOBAL OVERRIDES
+   ========================================== */
+.pagination {
+    display: flex;
+    gap: 8px !important; /* Separated button elements */
+    margin: 0 !important;
+}
+
+.pagination .page-item {
+    border: none !important;
+    margin: 0 !important;
+}
+
+.pagination .page-link {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 40px !important;
+    height: 40px !important;
+    padding: 0 14px !important;
+    border-radius: 10px !important; /* Soft premium corners */
+    font-size: 0.88rem !important;
+    font-weight: 700 !important;
+    color: var(--accent-color) !important;
+    background-color: var(--surface-color) !important;
+    border: 1px solid color-mix(in srgb, var(--accent-color), transparent 82%) !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    text-decoration: none !important;
+    cursor: pointer;
+}
+
+.pagination .page-link:hover {
+    background-color: color-mix(in srgb, var(--accent-color), transparent 92%) !important;
+    border-color: var(--accent-color) !important;
+    color: var(--accent-color) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--accent-color), transparent 82%) !important;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+    color: var(--contrast-color) !important;
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--accent-color), transparent 70%) !important;
+    transform: none !important;
+}
+
+.pagination .page-item.disabled .page-link,
+.pagination .page-item.disabled span.page-link {
+    background-color: color-mix(in srgb, var(--default-color), transparent 95%) !important;
+    border-color: color-mix(in srgb, var(--default-color), transparent 90%) !important;
+    color: color-mix(in srgb, var(--default-color), transparent 60%) !important;
+    box-shadow: none !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+/* Fix Bootstrap focus ring */
+.pagination .page-link:focus {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color), transparent 85%) !important;
+    outline: none !important;
+}
+
+/* ==========================================
+   PREMIUM GLOBAL BUTTONS UNIFICATION
+   ========================================== */
+.btn,
+.btn-primary,
+.btn-outline-main,
+.btn-delete-soft,
+.empty-btn,
+.done-btn,
+.cancel-btn,
+.delete-btn,
+.reset-filter-btn,
+.btn-status,
+.action-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 10px 22px !important;
+    border-radius: 12px !important; /* Soft premium corners matching pagination */
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+    font-family: var(--default-font), sans-serif !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03) !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    gap: 8px !important; /* Spacing between icon and text */
+}
+
+/* Primary Button Style (Active/Filled Pagination style) */
+.btn-primary,
+.btn-teal {
+    background-color: var(--accent-color) !important;
+    border: 1px solid var(--accent-color) !important;
+    color: var(--contrast-color) !important;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--accent-color), transparent 75%) !important;
+}
+
+.btn-primary:hover,
+.btn-teal:hover {
+    background-color: color-mix(in srgb, var(--accent-color), transparent 10%) !important;
+    border-color: color-mix(in srgb, var(--accent-color), transparent 10%) !important;
+    color: var(--contrast-color) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--accent-color), transparent 60%) !important;
+}
+
+.btn-primary:active,
+.btn-teal:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 6px color-mix(in srgb, var(--accent-color), transparent 60%) !important;
+}
+
+/* Outline Secondary / Default Button Style (Inactive Pagination style) */
+.btn-outline-secondary,
+.btn-outline-light,
+.btn-outline-main,
+.empty-btn,
+.reset-filter-btn {
+    color: var(--accent-color) !important;
+    background-color: var(--surface-color) !important;
+    border: 1px solid color-mix(in srgb, var(--accent-color), transparent 82%) !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03) !important;
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-light:hover,
+.btn-outline-main:hover,
+.empty-btn:hover,
+.reset-filter-btn:hover {
+    background-color: color-mix(in srgb, var(--accent-color), transparent 92%) !important;
+    border-color: var(--accent-color) !important;
+    color: var(--accent-color) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--accent-color), transparent 82%) !important;
+}
+
+.btn-outline-secondary:active,
+.btn-outline-light:active,
+.btn-outline-main:active,
+.empty-btn:active,
+.reset-filter-btn:active {
+    transform: translateY(0) !important;
+}
+
+/* Outline Primary Button Style */
+.btn-outline-primary {
+    color: var(--accent-color) !important;
+    background-color: transparent !important;
+    border: 1px solid color-mix(in srgb, var(--accent-color), transparent 50%) !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: color-mix(in srgb, var(--accent-color), transparent 92%) !important;
+    border-color: var(--accent-color) !important;
+    color: var(--accent-color) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--accent-color), transparent 82%) !important;
+}
+
+.btn-outline-primary:active {
+    transform: translateY(0) !important;
+}
+
+/* Danger Button Style */
+.btn-outline-danger,
+.btn-danger,
+.btn-delete-soft,
+.delete-btn {
+    color: #ff7b88 !important;
+    background-color: rgba(220, 53, 69, 0.12) !important;
+    border: 1px solid rgba(220, 53, 69, 0.35) !important;
+}
+
+.btn-outline-danger:hover,
+.btn-danger:hover,
+.btn-delete-soft:hover,
+.delete-btn:hover {
+    background-color: rgba(220, 53, 69, 0.22) !important;
+    border-color: #ff7b88 !important;
+    color: #ff9aa5 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(220, 53, 69, 0.25) !important;
+}
+
+.btn-outline-danger:active,
+.btn-danger:active,
+.btn-delete-soft:active,
+.delete-btn:active {
+    transform: translateY(0) !important;
+}
+
+/* Warning/Cancel Button Style */
+.cancel-btn {
+    background-color: rgba(255, 193, 7, 0.12) !important;
+    border: 1px solid rgba(255, 193, 7, 0.25) !important;
+    color: #ffd666 !important;
+}
+
+.cancel-btn:hover {
+    background-color: rgba(255, 193, 7, 0.2) !important;
+    border-color: #ffd666 !important;
+    color: #ffe28a !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(255, 193, 7, 0.15) !important;
+}
+
+.cancel-btn:active {
+    transform: translateY(0) !important;
+}
+
+/* Small Buttons */
+.btn-sm {
+    padding: 6px 14px !important;
+    font-size: 0.82rem !important;
+    border-radius: 8px !important;
+}
+
+/* ==========================================
+   PREMIUM CUSTOM CSS TOOLTIP STYLING
+   ========================================== */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 130%; /* Position above the element */
+    left: 50%;
+    transform: translate(-50%, 8px) scale(0.9);
+    background-color: var(--accent-color);
+    color: var(--contrast-color);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-family: var(--default-font), sans-serif;
+    white-space: nowrap;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 99999;
+}
+
+[data-tooltip]::before {
+    content: "";
+    position: absolute;
+    bottom: 112%; /* Arrow positioned right below tooltip body */
+    left: 50%;
+    transform: translate(-50%, 4px) scale(0.9);
+    border-width: 6px 6px 0;
+    border-style: solid;
+    border-color: var(--accent-color) transparent transparent;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 99999;
+}
+
+[data-tooltip]:hover::after,
+[data-tooltip]:hover::before {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0) scale(1);
+}
+
+
+/* ==========================================
+   PREMIUM SETTINGS DASHBOARD STYLING
+   ========================================== */
+#settings-section {
+    background: linear-gradient(135deg, rgba(243, 244, 246, 0.4), rgba(229, 231, 235, 0.4));
+    padding: 60px 0;
+}
+
+.settings-sidebar-nav {
+    border: none;
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+}
+
+.settings-sidebar-nav .list-group-item {
+    border: none;
+    padding: 15px 20px;
+    font-weight: 600;
+    color: var(--heading-color);
+    background: transparent;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.settings-sidebar-nav .list-group-item i {
+    font-size: 1.15rem;
+    color: color-mix(in srgb, var(--heading-color), transparent 40%);
+    transition: color 0.3s ease;
+}
+
+.settings-sidebar-nav .list-group-item:hover {
+    background: rgba(23, 92, 221, 0.05);
+    color: var(--accent-color);
+}
+
+.settings-sidebar-nav .list-group-item:hover i {
+    color: var(--accent-color);
+}
+
+.settings-sidebar-nav .list-group-item.active {
+    background: var(--accent-color) !important;
+    color: #ffffff !important;
+}
+
+.settings-sidebar-nav .list-group-item.active i {
+    color: #ffffff !important;
+}
+
+.settings-tab-content {
+    background: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(23, 92, 221, 0.08);
+}
+
+.settings-tab-content h4 {
+    border-bottom: 2px solid rgba(23, 92, 221, 0.08);
+    padding-bottom: 12px;
+}
+
+.settings-form label {
+    color: var(--heading-color);
+    margin-bottom: 6px;
+}
+
+.settings-form .form-control,
+.settings-form .form-select {
+    border: 1.5px solid rgba(23, 92, 221, 0.15);
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+}
+
+.settings-form .form-control:focus,
+.settings-form .form-select:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(23, 92, 221, 0.15);
+}
+
+/* Treatment price rows styling */
+.procedure-row {
+    transition: background-color 0.25s ease;
+}
+
+.procedure-row:hover {
+    background-color: rgba(23, 92, 221, 0.02);
+}
+
+#procedures-table th {
+    font-weight: 600;
+    color: var(--heading-color);
+    border-bottom: 2px solid rgba(23, 92, 221, 0.1);
+}
+
+.delete-row-btn {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .settings-sidebar-nav {
+        flex-direction: row !important;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+    .settings-sidebar-nav .list-group-item {
+        flex: 1 1 auto;
+        text-align: center;
+        justify-content: center;
+        padding: 10px 15px;
+    }
+}
+
+/* Specific styling for the procedures table to prevent overflow */
+#procedures-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+#procedures-table td {
+    padding: 8px 4px !important;
+}
+
+#procedures-table th {
+    padding: 12px 4px !important;
+}
+
+#procedures-table .form-control {
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+#procedures-table .input-group-text {
+    font-size: 14px;
+    padding: 8px 12px;
+}
+

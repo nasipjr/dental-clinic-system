@@ -23,6 +23,17 @@
                 <p>Generated from appointment treatments.</p>
             </div>
 
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show text-center mb-4" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
             <!-- Invoice Main Info -->
             <div class="patient-info-grid mb-4">
 
@@ -61,12 +72,12 @@
 
                 <div class="patient-info-box">
                     <span class="info-label">Invoice Total</span>
-                    <p>{{ invoice.total_amount }}</p>
+                    <p>{{ invoice.total_amount | format_price }} {{ currency_symbol }}</p>
                 </div>
 
                 <div class="patient-info-box">
                     <span class="info-label">Total Payments</span>
-                    <p>{{ invoice.total_paid }}</p>
+                    <p>{{ invoice.total_paid | format_price }} {{ currency_symbol }}</p>
                 </div>
 
                 <div class="patient-info-box">
@@ -74,17 +85,17 @@
                     <p>
                         {% if invoice.credit > 0 %}
                             <span class="credit-amount">
-                                {{ invoice.credit }}
+                                {{ invoice.credit | format_price }} {{ currency_symbol }}
                                 <span class="credit-badge">Credit</span>
                             </span>
                         {% elif invoice.outstanding_amount > 0 %}
                             <span class="remaining-due">
-                                {{ invoice.outstanding_amount }}
+                                {{ invoice.outstanding_amount | format_price }} {{ currency_symbol }}
                                 <span class="due-badge">Due</span>
                             </span>
                         {% else %}
                             <span class="remaining-clear">
-                                0
+                                0 {{ currency_symbol }}
                                 <span class="paid-badge">Paid</span>
                             </span>
                         {% endif %}
@@ -166,7 +177,7 @@
 
                             <td>
                                 <span class="price-badge">
-                                    {{ treatment.total_cost }}
+                                    {{ treatment.total_cost | format_price }} {{ currency_symbol }}
                                 </span>
                             </td>
                         </tr>
@@ -175,10 +186,45 @@
 
                     <tfoot>
                         <tr>
+                            <th colspan="5" class="text-end">Subtotal</th>
+                            <th>
+                                <span class="price-badge">
+                                    {{ invoice.subtotal | format_price }} {{ currency_symbol }}
+                                </span>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th colspan="5" class="text-end">Discount {% if invoice.discount_type == 'percentage' %}({{ "{:,.0f}".format(invoice.discount) }}%){% endif %}</th>
+                            <th>
+                                <span class="price-badge text-danger">
+                                    - {{ invoice.discount_amount | format_price }} {{ currency_symbol }}
+                                </span>
+                                <button type="button" class="btn btn-sm btn-outline-secondary ms-2 p-1 py-0" data-bs-toggle="collapse" data-bs-target="#edit-discount-form" title="Edit Discount">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                            </th>
+                        </tr>
+                        <!-- Collapsible Edit Discount Form -->
+                        <tr class="collapse" id="edit-discount-form">
+                            <td colspan="6" class="bg-light p-3">
+                                <form method="POST" action="{{ url_for('invoices.update_invoice_discount', invoice_id=invoice.id) }}" class="d-flex align-items-center justify-content-end gap-2">
+                                    <label for="discount" class="form-label mb-0 fw-semibold">Discount:</label>
+                                    <div class="input-group input-group-sm rounded-3 overflow-hidden" style="width: 220px;">
+                                        <input type="number" step="any" min="0" name="discount" class="form-control border-end-0" value="{{ invoice.discount }}" required>
+                                        <select name="discount_type" class="form-select border-start-0 bg-light" style="max-width: 90px;">
+                                            <option value="value" {% if invoice.discount_type == 'value' %}selected{% endif %}>{{ currency_symbol }}</option>
+                                            <option value="percentage" {% if invoice.discount_type == 'percentage' %}selected{% endif %}>%</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3">Apply</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
                             <th colspan="5" class="text-end">Invoice Total</th>
                             <th>
                                 <span class="price-badge">
-                                    {{ invoice.total_amount }}
+                                    {{ invoice.total_amount | format_price }} {{ currency_symbol }}
                                 </span>
                             </th>
                         </tr>
@@ -220,13 +266,13 @@
 
                             <td>
                                 <span class="price-badge">
-                                    {{ allocation.payment.amount }}
+                                    {{ allocation.payment.amount | format_price }} {{ currency_symbol }}
                                 </span>
                             </td>
 
                             <td>
                                 <span class="remaining-clear">
-                                    {{ allocation.amount }}
+                                    {{ allocation.amount | format_price }} {{ currency_symbol }}
                                     <span class="paid-badge">Allocated</span>
                                 </span>
                             </td>

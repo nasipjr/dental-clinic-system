@@ -5,6 +5,9 @@ db = SQLAlchemy()
 
 
 class Patient(db.Model):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     id = db.Column(db.Integer, primary_key=True)
 
     title = db.Column(db.String(20))
@@ -36,21 +39,18 @@ class Patient(db.Model):
         "Appointment",
         backref="patient",
         lazy=True,
-        cascade="all, delete-orphan"
     )
 
     payments = db.relationship(
         "Payment",
         backref="patient",
         lazy=True,
-        cascade="all, delete-orphan"
     )
 
     invoices = db.relationship(
         "Invoice",
         backref="patient",
         lazy=True,
-        cascade="all, delete-orphan"
     )
 
     @property
@@ -106,6 +106,9 @@ class Patient(db.Model):
 
 
 class Appointment(db.Model):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     id = db.Column(db.Integer, primary_key=True)
 
     patient_id = db.Column(
@@ -197,6 +200,9 @@ class Appointment(db.Model):
 
 
 class Treatment(db.Model):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     id = db.Column(db.Integer, primary_key=True)
 
     appointment_id = db.Column(
@@ -210,7 +216,7 @@ class Treatment(db.Model):
     tooth_number = db.Column(db.String(50))
     notes = db.Column(db.Text)
 
-    total_cost = db.Column(db.Float, default=0)
+    total_cost = db.Column(db.Numeric(10, 2), default=0.00)
 
     @property
     def patient(self):
@@ -222,6 +228,9 @@ class Treatment(db.Model):
 
 
 class Invoice(db.Model):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     id = db.Column(db.Integer, primary_key=True)
 
     appointment_id = db.Column(
@@ -238,6 +247,8 @@ class Invoice(db.Model):
     )
 
     issue_date = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    discount = db.Column(db.Numeric(10, 2), default=0.00, nullable=False)
+    discount_type = db.Column(db.String(20), default="value", nullable=False)
 
     payment_allocations = db.relationship(
         "PaymentAllocation",
@@ -265,8 +276,25 @@ class Invoice(db.Model):
         return self.appointment.appointment_date
 
     @property
-    def total_amount(self):
+    def subtotal(self):
         return sum(treatment.total_cost for treatment in self.treatments)
+
+    @property
+    def discount_amount(self):
+        from decimal import Decimal
+        sub = Decimal(str(self.subtotal or 0))
+        disc = Decimal(str(self.discount or 0))
+        if self.discount_type == "percentage":
+            return (sub * disc / Decimal('100.00')).quantize(Decimal('0.01'))
+        return disc
+
+    @property
+    def total_amount(self):
+        from decimal import Decimal
+        sub = Decimal(str(self.subtotal or 0))
+        disc_amt = Decimal(str(self.discount_amount or 0))
+        net = sub - disc_amt
+        return max(net, Decimal('0.00'))
 
     @property
     def total_paid(self):
@@ -313,6 +341,9 @@ class Invoice(db.Model):
 
 
 class Payment(db.Model):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     id = db.Column(db.Integer, primary_key=True)
 
     patient_id = db.Column(
@@ -321,7 +352,7 @@ class Payment(db.Model):
         nullable=False
     )
 
-    amount = db.Column(db.Float, nullable=False)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
     payment_date = db.Column(db.DateTime, default=datetime.now, nullable=False)
     notes = db.Column(db.Text)
 
@@ -347,6 +378,9 @@ class Payment(db.Model):
 
 
 class PaymentAllocation(db.Model):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     id = db.Column(db.Integer, primary_key=True)
 
     payment_id = db.Column(
@@ -361,7 +395,7 @@ class PaymentAllocation(db.Model):
         nullable=False
     )
 
-    amount = db.Column(db.Float, nullable=False)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
 
     @property
     def appointment(self):
@@ -378,3 +412,14 @@ class PaymentAllocation(db.Model):
     @property
     def patient_id(self):
         return self.invoice.patient_id
+
+
+class SystemSetting(db.Model):
+    __tablename__ = "system_setting"
+
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    value = db.Column(db.Text, nullable=True)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
