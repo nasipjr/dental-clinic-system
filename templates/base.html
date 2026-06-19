@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+{% set current_lang = request.cookies.get('lang', 'en') %}
+<html lang="{{ current_lang }}" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
 
 <head>
   <script>
     (function() {
       const savedTheme = localStorage.getItem('theme') || 'light';
       document.documentElement.setAttribute('data-bs-theme', savedTheme);
+      
+      // Sync local storage lang with server side cookie
+      localStorage.setItem('lang', '{{ current_lang }}');
     })();
   </script>
   <meta charset="utf-8">
@@ -26,8 +30,14 @@
     href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap"
     rel="stylesheet">
 
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
   <!-- Vendor CSS Files -->
+  {% if current_lang == 'ar' %}
+  <link href="{{ url_for('static', filename='assets/vendor/bootstrap/css/bootstrap.rtl.min.css') }}" rel="stylesheet">
+  {% else %}
   <link href="{{ url_for('static', filename='assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+  {% endif %}
   <link href="{{ url_for('static', filename='assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='assets/vendor/aos/aos.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='assets/vendor/glightbox/css/glightbox.min.css') }}" rel="stylesheet">
@@ -310,6 +320,176 @@
   <!-- Main JS File -->
   <script src="{{ url_for('static', filename='assets/js/main.js') }}"></script>
 
+  <script>
+    // ── Translation Script for Arabic Language ──
+    (function() {
+        const arabicTranslations = {
+            // Nav menu
+            "Dashboard": "لوحة التحكم",
+            "Patients": "المرضى",
+            "Appointments": "المواعيد",
+            "Calendar": "التقويم",
+            "Invoices": "الفواتير",
+            "Payments": "المدفوعات",
+            "Reports": "التقارير",
+            "Settings": "الإعدادات",
+            "Logout": "تسجيل الخروج",
+
+            // Dashboard overview stats
+            "Today’s Clinic Overview": "نظرة عامة على العيادة اليوم",
+            "Today’s": "نظرة عامة على",
+            "Clinic Overview": "العيادة اليوم",
+            "Track patients, appointments, treatments, payments, and outstanding balances from one practical dashboard.": "تتبع المرضى، المواعيد، المعالجات، المدفوعات، والديون المستحقة من لوحة تحكم عملية واحدة.",
+            "Total Patients": "إجمالي المرضى",
+            "Scheduled Appointments": "المواعيد المجدولة",
+            "Done Appointments": "المواعيد المنجزة",
+            "Total Treatments": "إجمالي المعالجات",
+            "Total Invoices": "إجمالي الفواتير",
+            "Total Payments": "إجمالي المدفوعات",
+            "Outstanding Debt": "الديون المستحقة",
+            "Clinic Credit": "رصيد العيادة",
+            "Manage Patients": "إدارة المرضى",
+            "View Appointments": "عرض المواعيد",
+            "Today’s Scheduled Appointments": "مواعيد اليوم المجدولة",
+            "Done Today": "منجز اليوم",
+            "Clinic Activity": "نشاط العيادة",
+            "Realtime operational metrics": "مؤشرات التشغيل الفورية",
+            "Finance Load": "العبء المالي",
+            "Today's Status": "حالة اليوم",
+            "Scheduled Today": "مجدول اليوم",
+            "Completed Today": "منجز اليوم",
+            "Today's Revenue": "إيرادات اليوم",
+            "Today's Paid": "المدفوع اليوم",
+            "waiting sessions": "جلسات قيد الانتظار",
+            "done sessions": "جلسات منجزة",
+            "invoiced treatments": "المعالجات المفوترة",
+            "payments collected": "المدفوعات المحصلة",
+            "Today's Progress": "تقدم اليوم",
+            "Completed": "منجز",
+            "Scheduled": "مجدول",
+            "Cancelled": "ملغى",
+            "Next Upcoming Appointment": "الموعد القادم التالي",
+            "No more upcoming appointments scheduled for today.": "لا يوجد مواعيد مجدولة اليوم.",
+            "No scheduled appointments today": "لا يوجد مواعيد مجدولة اليوم",
+            "There are no scheduled appointments waiting for today.": "لا يوجد مواعيد مجدولة بانتظار البدء اليوم.",
+            "No completed appointments today": "لا يوجد مواعيد منجزة اليوم",
+            "Completed appointment sessions will appear here after using End Session.": "الجلسات المكتملة ستظهر هنا بعد إنهاء الجلسة.",
+            "Time": "الوقت",
+            "Patient": "المريض",
+            "Phone": "الهاتف",
+            "Reason": "السبب",
+            "Status": "الحالة",
+            "Actions": "الإجراءات",
+            "Start Session": "بدء الجلسة",
+            "End Session": "إنهاء الجلسة",
+
+            // Patients page
+            "Patients List": "قائمة المرضى",
+            "Search Patients...": "ابحث عن المرضى...",
+            "Add Patient": "إضافة مريض",
+            "Patient Name": "اسم المريض",
+            "Age": "العمر",
+            "Gender": "الجنس",
+            "Balance": "الرصيد",
+            "No patients found.": "لم يتم العثور على مرضى.",
+            "Male": "ذكر",
+            "Female": "أنثى",
+            "Book Appointment": "حجز موعد",
+            "Edit Patient": "تعديل المريض",
+            "Delete Patient": "حذف المريض",
+
+            // Reports Dashboard
+            "Reports & Statistics": "التقارير والإحصائيات",
+            "Comprehensive financial and operational analysis for your clinic.": "تحليل مالي وتشغيلي شامل لعيادتك.",
+            "Total Invoiced": "إجمالي الفواتير",
+            "Total Payments": "إجمالي المدفوعات",
+            "Outstanding Debt": "الديون المستحقة",
+            "Clinic Credit": "رصيد العيادة",
+            "Invoiced": "مفوتر",
+            "Revenue": "الإيرادات",
+            "Outstanding": "مستحق",
+            "Credit": "رصيد",
+            "Monthly Financial Performance (Last 6 Months)": "الأداء المالي الشهري (آخر 6 أشهر)",
+            "Appointment Statuses": "حالات المواعيد",
+            "Top 5 Procedure Types (by Volume)": "أهم 5 معالجات (من حيث العدد)",
+            "Patient Gender Demographics": "التركيبة السكانية للمرضى حسب الجنس",
+            "Top Patient Outstanding Balances": "أعلى أرصدة ديون مستحقة على المرضى",
+            "Follow up with patients having outstanding dental invoices.": "متابعة المرضى الذين لديهم فواتير معلقة.",
+            "Total Billed": "إجمالي الفواتير",
+            "Total Paid": "إجمالي المدفوعات",
+            "Outstanding Balance": "الرصيد المستحق",
+            "Action": "الإجراء",
+            "Patient Details": "تفاصيل المريض",
+            "All clear! No patients have outstanding balances.": "كل شيء تمام! لا يوجد ديون مستحقة على أي مريض.",
+
+            // Settings page
+            "Clinic Profile": "ملف العيادة",
+            "Calendar Settings": "إعدادات التقويم",
+            "Billing & Finance": "الفوترة والمالية",
+            "Treatment Pricing": "أسعار المعالجات",
+            "User Accounts": "حسابات المستخدمين",
+            "Theme & Appearance": "المظهر والثيم",
+            "Customize the visual theme of the application": "تخصيص المظهر المرئي للنظام وتفضيلاته",
+            "System Display Theme": "ثيم العرض للنظام",
+            "Light Mode": "الوضع الفاتح",
+            "Dark Mode": "الوضع الداكن",
+            "System Interface Language": "لغة واجهة النظام",
+            "English": "الإنجليزية",
+            "Arabic": "العربية",
+            "Save All Settings": "حفظ جميع الإعدادات",
+            
+            // Calendar Page
+            "Clinic Calendar": "تقويم العيادة",
+            "Book New Appointment": "حجز موعد جديد",
+            "Next Patient": "المريض التالي",
+            "No phone number": "لا يوجد رقم هاتف",
+            "No reason provided": "لا يوجد سبب",
+            
+            // Invoices and Payments
+            "Invoices List": "قائمة الفواتير",
+            "Payments List": "قائمة المدفوعات",
+            "Due": "مستحق",
+            "Paid": "مدفوع",
+            "Paid Payments": "المدفوعات المسددة"
+        };
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const currentLang = document.documentElement.getAttribute('lang') || 'en';
+            if (currentLang === 'ar') {
+                translateDOM(document.body);
+                const title = document.title.trim();
+                if (arabicTranslations[title]) {
+                    document.title = arabicTranslations[title];
+                }
+            }
+        });
+
+        function translateDOM(node) {
+            if (node.nodeType === Node.TEXT_NODE) {
+                const rawText = node.nodeValue;
+                const trimmed = rawText.trim();
+                if (trimmed && arabicTranslations[trimmed]) {
+                    node.nodeValue = rawText.replace(trimmed, arabicTranslations[trimmed]);
+                }
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+                if (node.tagName === 'SCRIPT' || node.tagName === 'STYLE') return;
+                
+                const placeholder = node.getAttribute('placeholder');
+                if (placeholder && arabicTranslations[placeholder.trim()]) {
+                    node.setAttribute('placeholder', arabicTranslations[placeholder.trim()]);
+                }
+                const titleAttr = node.getAttribute('title');
+                if (titleAttr && arabicTranslations[titleAttr.trim()]) {
+                    node.setAttribute('title', arabicTranslations[titleAttr.trim()]);
+                }
+                
+                for (let child of node.childNodes) {
+                    translateDOM(child);
+                }
+            }
+        }
+    })();
+  </script>
 
 </body>
 

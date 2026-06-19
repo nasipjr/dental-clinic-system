@@ -508,6 +508,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const ctx = document.getElementById('dashboardOverviewChart').getContext('2d');
     const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
     const legendColor = isDark ? '#e2e8f0' : '#475569';
+    const isArabic = document.documentElement.getAttribute('lang') === 'ar';
+    const statusLabels = isArabic ? ['مجدول', 'منجز', 'ملغى'] : ['Scheduled', 'Completed', 'Cancelled'];
+    const financialLabels = isArabic ? ['المدفوعات المسددة', 'الديون المستحقة'] : ['Paid Payments', 'Outstanding Debt'];
     
     // Injecting values from backend
     const scheduled = {{ scheduled_appointments }};
@@ -525,7 +528,7 @@ document.addEventListener("DOMContentLoaded", function () {
         currentChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Scheduled', 'Completed', 'Cancelled'],
+                labels: statusLabels,
                 datasets: [{
                     data: [scheduled, completed, cancelled],
                     backgroundColor: [
@@ -555,7 +558,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return ' ' + context.label + ': ' + context.raw + ' sessions';
+                                const unit = isArabic ? ' جلسات' : ' sessions';
+                                return ' ' + context.label + ': ' + context.raw + unit;
                             }
                         }
                     }
@@ -569,7 +573,7 @@ document.addEventListener("DOMContentLoaded", function () {
         currentChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Paid Payments', 'Outstanding Debt'],
+                labels: financialLabels,
                 datasets: [{
                     data: [paid, debt],
                     backgroundColor: [

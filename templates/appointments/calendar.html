@@ -544,8 +544,12 @@
         }
         const slotMaxTime = `${String(maxHrs).padStart(2, '0')}:${String(maxMins).padStart(2, '0')}:00`;
 
+        const currentLang = document.documentElement.getAttribute('lang') || 'en';
+
         // Initialize FullCalendar
         const calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: currentLang === 'ar' ? 'ar' : 'en',
+            direction: currentLang === 'ar' ? 'rtl' : 'ltr',
             initialView: 'dayGridMonth',
             allDaySlot: false, // Removes the "all-day" slot/row
             slotMinTime: slotMinTime, // Dynamic start visible slots

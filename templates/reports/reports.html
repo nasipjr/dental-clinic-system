@@ -214,6 +214,7 @@
         const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
         const textColor = isDark ? '#e2e8f0' : '#475569';
         const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+        const isArabic = document.documentElement.getAttribute('lang') === 'ar';
 
         // 1. Monthly Financials (Bar Chart)
         const monthlyCanvas = document.getElementById('monthlyFinancialsChart');
@@ -221,14 +222,26 @@
         const monthlyBilled = JSON.parse(monthlyCanvas.getAttribute('data-billed'));
         const monthlyPaid = JSON.parse(monthlyCanvas.getAttribute('data-paid'));
 
+        // Translate English months if Arabic
+        const monthsAr = {
+            "Jan": "كانون الثاني", "Feb": "شباط", "Mar": "آذار",
+            "Apr": "نيسان", "May": "أيار", "Jun": "حزيران",
+            "Jul": "تموز", "Aug": "آب", "Sep": "أيلول",
+            "Oct": "تشرين الأول", "Nov": "تشرين الثاني", "Dec": "كانون الأول"
+        };
+        const monthlyLabelsMapped = monthlyLabels.map(l => {
+            const trimmed = l.trim();
+            return isArabic && monthsAr[trimmed] ? monthsAr[trimmed] : l;
+        });
+
         const monthlyCtx = monthlyCanvas.getContext('2d');
         new Chart(monthlyCtx, {
             type: 'bar',
             data: {
-                labels: monthlyLabels,
+                labels: monthlyLabelsMapped,
                 datasets: [
                     {
-                        label: 'Invoiced Amount',
+                        label: isArabic ? 'المبلغ المفوتر' : 'Invoiced Amount',
                         data: monthlyBilled,
                         backgroundColor: 'rgba(13, 110, 253, 0.75)',
                         borderColor: 'rgb(13, 110, 253)',
@@ -236,7 +249,7 @@
                         borderRadius: 6
                     },
                     {
-                        label: 'Payments Received',
+                        label: isArabic ? 'المدفوعات المستلمة' : 'Payments Received',
                         data: monthlyPaid,
                         backgroundColor: 'rgba(25, 135, 84, 0.75)',
                         borderColor: 'rgb(25, 135, 84)',
@@ -282,11 +295,18 @@
         const statusLabels = JSON.parse(statusCanvas.getAttribute('data-labels'));
         const statusValues = JSON.parse(statusCanvas.getAttribute('data-values'));
 
+        const statusLabelsMapped = statusLabels.map(l => {
+            if (l === 'Scheduled') return isArabic ? 'مجدول' : 'Scheduled';
+            if (l === 'Done') return isArabic ? 'منجز' : 'Done';
+            if (l === 'Cancelled') return isArabic ? 'ملغى' : 'Cancelled';
+            return l;
+        });
+
         const statusCtx = statusCanvas.getContext('2d');
         new Chart(statusCtx, {
             type: 'doughnut',
             data: {
-                labels: statusLabels,
+                labels: statusLabelsMapped,
                 datasets: [{
                     data: statusValues,
                     backgroundColor: [
@@ -320,7 +340,7 @@
             data: {
                 labels: proceduresLabels,
                 datasets: [{
-                    label: 'Procedure Count',
+                    label: isArabic ? 'عدد الإجراءات المعالجة' : 'Procedure Count',
                     data: proceduresCounts,
                     backgroundColor: 'rgba(13, 202, 240, 0.8)',
                     borderColor: 'rgb(13, 202, 240)',
@@ -359,11 +379,18 @@
         const genderLabels = JSON.parse(genderCanvas.getAttribute('data-labels'));
         const genderValues = JSON.parse(genderCanvas.getAttribute('data-values'));
 
+        const genderLabelsMapped = genderLabels.map(g => {
+            if (g === 'Male') return isArabic ? 'ذكر' : 'Male';
+            if (g === 'Female') return isArabic ? 'أنثى' : 'Female';
+            if (g === 'Not specified') return isArabic ? 'غير محدد' : 'Not specified';
+            return g;
+        });
+
         const genderCtx = genderCanvas.getContext('2d');
         new Chart(genderCtx, {
             type: 'pie',
             data: {
-                labels: genderLabels,
+                labels: genderLabelsMapped,
                 datasets: [{
                     data: genderValues,
                     backgroundColor: [

@@ -2341,3 +2341,53 @@ body.calendar-page.scrolled .header {
 [data-bs-theme="dark"] .stat-grid-item.collected strong {
   color: #4ade80 !important;
 }
+
+/* ────────────────────────────────────────────────────────── */
+/* ════════════════════ ARABIC LOCALIZATION ═════════════════ */
+/* ────────────────────────────────────────────────────────── */
+html[lang="ar"],
+html[lang="ar"] body,
+html[lang="ar"] h1,
+html[lang="ar"] h2,
+html[lang="ar"] h3,
+html[lang="ar"] h4,
+html[lang="ar"] h5,
+html[lang="ar"] h6 {
+  font-family: "Cairo", sans-serif !important;
+}
+
+html[lang="ar"] .custom-btn-position {
+  margin-left: 0;
+  margin-right: 100px;
+}
+
+html[lang="ar"] .ms-auto {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+
+html[lang="ar"] .me-auto {
+  margin-right: 0 !important;
+  margin-left: auto !important;
+}
+
+/* Adjust FullCalendar custom borders in RTL */
+html[lang="ar"] .fc-list-event-dot {
+  margin-right: 0 !important;
+  margin-left: 12px !important;
+}
+
+html[lang="ar"] .fc-list-event.event-status-scheduled {
+  border-left: none !important;
+  border-right: 6px solid #0284c7 !important;
+}
+
+html[lang="ar"] .fc-list-event.event-status-completed {
+  border-left: none !important;
+  border-right: 6px solid #0d9488 !important;
+}
+
+html[lang="ar"] .fc-list-event.event-status-cancelled {
+  border-left: none !important;
+  border-right: 6px solid #e11d48 !important;
+}

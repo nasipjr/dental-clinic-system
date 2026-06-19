@@ -311,6 +311,19 @@
                                     <button type="button" class="btn theme-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2" id="theme-dark-btn" onclick="setAppTheme('dark')" style="border-radius: 16px; transition: all 0.3s ease;">
                                         <i class="bi bi-moon-stars-fill fs-2 mb-2 text-primary"></i>
                                         <strong style="font-size: 1.05rem;">Dark Mode</strong>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12 mt-4 pt-4 border-top" style="border-top-color: rgba(13, 110, 253, 0.08) !important;">
+                                <label class="settings-label d-block mb-3">System Interface Language</label>
+                                <div class="d-flex gap-3">
+                                    <button type="button" class="btn lang-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2" id="lang-en-btn" onclick="setAppLang('en')" style="border-radius: 16px; transition: all 0.3s ease;">
+                                        <span class="fs-2 mb-2">🇬🇧</span>
+                                        <strong style="font-size: 1.05rem;">English</strong>
+                                    </button>
+                                    <button type="button" class="btn lang-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2" id="lang-ar-btn" onclick="setAppLang('ar')" style="border-radius: 16px; transition: all 0.3s ease;">
+                                        <span class="fs-2 mb-2">🇸🇾</span>
+                                        <strong style="font-size: 1.05rem;">العربية</strong>
                                     </button>
                                 </div>
                             </div>
@@ -537,9 +550,48 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Initialize button states based on current theme
+    // ── Language Selector Logic ──
+    window.setAppLang = function(lang) {
+        document.cookie = "lang=" + lang + ";path=/;max-age=31536000";
+        localStorage.setItem('lang', lang);
+        updateLangButtons(lang);
+        window.location.reload();
+    };
+
+    function updateLangButtons(lang) {
+        const enBtn = document.getElementById('lang-en-btn');
+        const arBtn = document.getElementById('lang-ar-btn');
+        if (!enBtn || !arBtn) return;
+        
+        if (lang === 'ar') {
+            arBtn.classList.remove('btn-outline-secondary', 'border-secondary-subtle');
+            arBtn.classList.add('btn-primary', 'border-primary', 'shadow-sm');
+            arBtn.style.backgroundColor = 'var(--accent-color)';
+            arBtn.style.color = '#ffffff';
+            
+            enBtn.classList.remove('btn-primary', 'border-primary', 'shadow-sm');
+            enBtn.classList.add('btn-outline-secondary', 'border-secondary-subtle');
+            enBtn.style.backgroundColor = 'transparent';
+            enBtn.style.color = 'var(--default-color)';
+        } else {
+            enBtn.classList.remove('btn-outline-secondary', 'border-secondary-subtle');
+            enBtn.classList.add('btn-primary', 'border-primary', 'shadow-sm');
+            enBtn.style.backgroundColor = 'var(--accent-color)';
+            enBtn.style.color = '#ffffff';
+            
+            arBtn.classList.remove('btn-primary', 'border-primary', 'shadow-sm');
+            arBtn.classList.add('btn-outline-secondary', 'border-secondary-subtle');
+            arBtn.style.backgroundColor = 'transparent';
+            arBtn.style.color = 'var(--default-color)';
+        }
+    }
+
+    // Initialize button states based on current theme and language
     const currentTheme = localStorage.getItem('theme') || 'light';
     updateThemeButtons(currentTheme);
+
+    const currentLang = localStorage.getItem('lang') || 'en';
+    updateLangButtons(currentLang);
 
     // Listen for tab changes
     document.querySelectorAll('#settings-tabs button[data-bs-toggle="pill"]').forEach(function (btn) {
