@@ -173,7 +173,7 @@ def add_invoice():
                 return render_template(
                     "invoices/add_invoice.html",
                     patients=patients,
-                    treatment_prices=TREATMENT_PRICES,
+                    treatment_prices=dict(TREATMENT_PRICES),
                     default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                     error_message="Please select a valid patient.",
                 ), 400
@@ -182,7 +182,7 @@ def add_invoice():
                 return render_template(
                     "invoices/add_invoice.html",
                     patients=patients,
-                    treatment_prices=TREATMENT_PRICES,
+                    treatment_prices=dict(TREATMENT_PRICES),
                     default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                     error_message="Visit date is required.",
                 ), 400
@@ -193,7 +193,7 @@ def add_invoice():
                 return render_template(
                     "invoices/add_invoice.html",
                     patients=patients,
-                    treatment_prices=TREATMENT_PRICES,
+                    treatment_prices=dict(TREATMENT_PRICES),
                     default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                     error_message="Visit date must be valid.",
                 ), 400
@@ -210,7 +210,7 @@ def add_invoice():
                     return render_template(
                         "invoices/add_invoice.html",
                         patients=patients,
-                        treatment_prices=TREATMENT_PRICES,
+                        treatment_prices=dict(TREATMENT_PRICES),
                         default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                         error_message="Invalid treatment procedure type.",
                     ), 400
@@ -220,7 +220,7 @@ def add_invoice():
                     return render_template(
                         "invoices/add_invoice.html",
                         patients=patients,
-                        treatment_prices=TREATMENT_PRICES,
+                        treatment_prices=dict(TREATMENT_PRICES),
                         default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                         error_message="Tooth number cannot exceed 50 characters.",
                     ), 400
@@ -237,7 +237,7 @@ def add_invoice():
                 return render_template(
                     "invoices/add_invoice.html",
                     patients=patients,
-                    treatment_prices=TREATMENT_PRICES,
+                    treatment_prices=dict(TREATMENT_PRICES),
                     default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                     error_message="Please add at least one invoice item.",
                 ), 400
@@ -298,7 +298,7 @@ def add_invoice():
                 return render_template(
                     "invoices/add_invoice.html",
                     patients=patients,
-                    treatment_prices=TREATMENT_PRICES,
+                    treatment_prices=dict(TREATMENT_PRICES),
                     default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                     error_message="Invalid payment option.",
                 ), 400
@@ -313,7 +313,7 @@ def add_invoice():
                     return render_template(
                         "invoices/add_invoice.html",
                         patients=patients,
-                        treatment_prices=TREATMENT_PRICES,
+                        treatment_prices=dict(TREATMENT_PRICES),
                         default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                         error_message="Custom payment amount is required.",
                     ), 400
@@ -324,7 +324,7 @@ def add_invoice():
                     return render_template(
                         "invoices/add_invoice.html",
                         patients=patients,
-                        treatment_prices=TREATMENT_PRICES,
+                        treatment_prices=dict(TREATMENT_PRICES),
                         default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                         error_message="Custom payment amount must be a valid number.",
                     ), 400
@@ -333,7 +333,7 @@ def add_invoice():
                     return render_template(
                         "invoices/add_invoice.html",
                         patients=patients,
-                        treatment_prices=TREATMENT_PRICES,
+                        treatment_prices=dict(TREATMENT_PRICES),
                         default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                         error_message="Custom payment amount must be greater than 0.",
                     ), 400
@@ -342,7 +342,7 @@ def add_invoice():
                     return render_template(
                         "invoices/add_invoice.html",
                         patients=patients,
-                        treatment_prices=TREATMENT_PRICES,
+                        treatment_prices=dict(TREATMENT_PRICES),
                         default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                         error_message="Custom payment amount cannot be greater than invoice total.",
                     ), 400
@@ -370,7 +370,7 @@ def add_invoice():
         return render_template(
             "invoices/add_invoice.html",
             patients=patients,
-            treatment_prices=TREATMENT_PRICES,
+            treatment_prices=dict(TREATMENT_PRICES),
             default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
         )
 
@@ -458,3 +458,4 @@ def update_invoice_discount(invoice_id):
         flash("Failed to update discount.", "danger")
         
     return redirect(url_for("invoices.view_invoice", invoice_id=invoice_id))
+

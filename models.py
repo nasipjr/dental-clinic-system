@@ -53,6 +53,13 @@ class Patient(db.Model):
         lazy=True,
     )
 
+    files = db.relationship(
+        "PatientFile",
+        backref="patient",
+        lazy=True,
+        cascade="all, delete-orphan"
+    )
+
     @property
     def treatments(self):
         patient_treatments = []
@@ -249,6 +256,7 @@ class Invoice(db.Model):
     issue_date = db.Column(db.DateTime, default=datetime.now, nullable=False)
     discount = db.Column(db.Numeric(10, 2), default=0.00, nullable=False)
     discount_type = db.Column(db.String(20), default="value", nullable=False)
+    tax_rate = db.Column(db.Numeric(5, 2), default=0.00, nullable=False)
 
     payment_allocations = db.relationship(
         "PaymentAllocation",
@@ -289,12 +297,17 @@ class Invoice(db.Model):
         return disc
 
     @property
+    def tax_amount(self):
+        from decimal import Decimal
+        return Decimal('0.00')
+
+    @property
     def total_amount(self):
         from decimal import Decimal
         sub = Decimal(str(self.subtotal or 0))
         disc_amt = Decimal(str(self.discount_amount or 0))
-        net = sub - disc_amt
-        return max(net, Decimal('0.00'))
+        net = max(sub - disc_amt, Decimal('0.00'))
+        return net
 
     @property
     def total_paid(self):
@@ -447,4 +460,57 @@ class User(db.Model):
 
     def check_password(self, password):
         from werkzeug.security import check_password_hash
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(self.password_hash, password)
+
+
+class PatientFile(db.Model):
+    __tablename__ = "patient_file"
+
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(
+        db.Integer,
+        db.ForeignKey("patient.id"),
+        nullable=False
+    )
+    filename = db.Column(db.String(255), nullable=False)
+    filepath = db.Column(db.String(255), nullable=False)
+    filetype = db.Column(db.String(100))
+    upload_date = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    notes = db.Column(db.Text)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
+class NotificationLog(db.Model):
+    __tablename__ = "notification_log"
+
+    id = db.Column(db.Integer, primary_key=True)
+    appointment_id = db.Column(
+        db.Integer,
+        db.ForeignKey("appointment.id", ondelete="CASCADE"),
+        nullable=False
+    )
+    patient_id = db.Column(
+        db.Integer,
+        db.ForeignKey("patient.id", ondelete="CASCADE"),
+        nullable=False
+    )
+    type = db.Column(db.String(50), nullable=False)
+    channel = db.Column(db.String(20), nullable=False)
+    recipient = db.Column(db.String(100), nullable=False)
+    sent_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    status = db.Column(db.String(20), default="sent", nullable=False)
+    error_message = db.Column(db.Text)
+
+    appointment = db.relationship(
+        "Appointment",
+        backref=db.backref("notifications", cascade="all, delete-orphan")
+    )
+    patient = db.relationship(
+        "Patient",
+        backref=db.backref("notifications", cascade="all, delete-orphan")
+    )
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)

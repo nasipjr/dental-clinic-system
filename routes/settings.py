@@ -17,6 +17,19 @@ def settings_page():
                         "currency_symbol"]:
                 val = request.form.get(key, "").strip()
                 set_setting(key, val)
+
+            # 1b. Update Twilio & SMTP Notification settings
+            for key in ["twilio_account_sid", "twilio_auth_token", "twilio_phone_number", "twilio_whatsapp_number",
+                        "smtp_host", "smtp_port", "smtp_user", "smtp_password", "smtp_from_email"]:
+                val = request.form.get(key, "").strip()
+                set_setting(key, val)
+
+            sms_enabled = "true" if request.form.get("notification_enable_sms") else "false"
+            whatsapp_enabled = "true" if request.form.get("notification_enable_whatsapp") else "false"
+            email_enabled = "true" if request.form.get("notification_enable_email") else "false"
+            set_setting("notification_enable_sms", sms_enabled)
+            set_setting("notification_enable_whatsapp", whatsapp_enabled)
+            set_setting("notification_enable_email", email_enabled)
             
             # Save working days checklist as a comma-separated string
             working_days_list = request.form.getlist("working_days")
@@ -52,6 +65,9 @@ def settings_page():
             current_app.logger.exception("Failed to update system settings")
             flash("Failed to update settings. Please try again.", "danger")
             
+        active_tab = request.form.get("active_tab", "").strip()
+        if active_tab and active_tab.startswith("#"):
+            return redirect(url_for("settings.settings_page") + active_tab)
         return redirect(url_for("settings.settings_page"))
 
     # GET request: load values
@@ -61,14 +77,37 @@ def settings_page():
         
     treatment_prices = get_treatment_prices()
     
-    from models import User
+    from models import User, NotificationLog
     users = User.query.all()
+    notifications = NotificationLog.query.order_by(NotificationLog.sent_at.desc()).limit(100).all()
+
+    # Read backups
+    import os
+    from utils.backup_helper import BACKUP_DIR
+    from datetime import datetime
+    backups_list = []
+    if os.path.exists(BACKUP_DIR):
+        for f in os.listdir(BACKUP_DIR):
+            p = os.path.join(BACKUP_DIR, f)
+            if os.path.isfile(p) and f.startswith('backup_') and (f.endswith('.sql') or f.endswith('.db')):
+                stats = os.stat(p)
+                size_kb = round(stats.st_size / 1024, 2)
+                mtime = datetime.fromtimestamp(stats.st_mtime).strftime('%Y-%m-%d %H:%M:%S')
+                backups_list.append({
+                    'filename': f,
+                    'mtime': mtime,
+                    'size': f"{size_kb} KB"
+                })
+        # Sort backups by date descending (newest first)
+        backups_list.sort(key=lambda x: x['mtime'], reverse=True)
     
     return render_template(
         "settings/settings.html",
         settings=settings_data,
         treatment_prices=treatment_prices,
-        users=users
+        users=users,
+        backups=backups_list,
+        notifications=notifications
     )
 
 
@@ -217,3 +256,60 @@ def edit_user(user_id):
         flash("Failed to update user account.", "danger")
 
     return redirect(url_for("settings.settings_page") + "#tab-users")
+
+
+@settings_bp.route("/settings/backups/create", methods=["POST"])
+@role_required("admin")
+def create_backup():
+    try:
+        from utils.backup_helper import run_database_backup
+        filename = run_database_backup()
+        flash(f"Backup created successfully: {filename}", "success")
+    except Exception as e:
+        current_app.logger.exception("Failed to create database backup")
+        flash(f"Failed to create database backup: {e}", "danger")
+    return redirect(url_for("settings.settings_page") + "#tab-backups")
+
+
+@settings_bp.route("/settings/backups/<filename>/download")
+@role_required("admin")
+def download_backup(filename):
+    import os
+    from flask import send_from_directory, abort
+    from utils.backup_helper import BACKUP_DIR
+    
+    # Secure filename check to prevent directory traversal
+    if '..' in filename or filename.startswith('/') or filename.startswith('\\'):
+        abort(400, "Invalid backup filename.")
+        
+    backup_path = os.path.join(BACKUP_DIR, filename)
+    if os.path.exists(backup_path) and os.path.isfile(backup_path):
+        return send_from_directory(BACKUP_DIR, filename, as_attachment=True)
+    else:
+        flash("Backup file not found.", "danger")
+        return redirect(url_for("settings.settings_page") + "#tab-backups")
+
+
+@settings_bp.route("/settings/backups/<filename>/delete", methods=["POST"])
+@role_required("admin")
+def delete_backup(filename):
+    import os
+    from flask import abort
+    from utils.backup_helper import BACKUP_DIR
+    
+    # Secure filename check to prevent directory traversal
+    if '..' in filename or filename.startswith('/') or filename.startswith('\\'):
+        abort(400, "Invalid backup filename.")
+        
+    backup_path = os.path.join(BACKUP_DIR, filename)
+    if os.path.exists(backup_path) and os.path.isfile(backup_path):
+        try:
+            os.remove(backup_path)
+            flash("Backup file deleted successfully.", "success")
+        except Exception as e:
+            current_app.logger.error(f"Failed to delete backup file: {e}")
+            flash("Failed to delete backup file.", "danger")
+    else:
+        flash("Backup file not found.", "danger")
+        
+    return redirect(url_for("settings.settings_page") + "#tab-backups")

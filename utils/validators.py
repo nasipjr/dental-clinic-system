@@ -258,4 +258,8 @@ def check_appointment_conflict(appointment_date, current_appointment_id=None):
     if current_appointment_id:
         conflict = conflict.filter(Appointment.id != current_appointment_id)
 
-    return conflict.first()
+    return conflict.first()
+
+
+import threading
+booking_lock = threading.Lock()

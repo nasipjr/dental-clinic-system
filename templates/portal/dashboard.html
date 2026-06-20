@@ -255,6 +255,12 @@ document.addEventListener("DOMContentLoaded", function () {
             right: 'timeGridWeek,dayGridMonth'
         },
         events: '/portal/events',
+        eventDataTransform: function(eventData) {
+            if (isArabic && eventData.title === 'Reserved') {
+                eventData.title = 'محجوز';
+            }
+            return eventData;
+        },
         datesSet: function (info) {
             const now = new Date();
             const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -380,13 +386,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const selectOptions = {};
             reasons.forEach(r => {
-                selectOptions[r] = r;
+                let translated = r;
+                if (isArabic && window.arabicTranslations && window.arabicTranslations[r]) {
+                    translated = window.arabicTranslations[r];
+                }
+                selectOptions[r] = translated;
             });
+
+            const formattedDate = clickedDate.toLocaleDateString(isArabic ? 'ar' : undefined);
+            const formattedTime = clickedDate.toLocaleTimeString(isArabic ? 'ar' : undefined, {hour: '2-digit', minute:'2-digit'});
 
             Swal.fire({
                 title: isArabic ? 'طلب حجز موعد جديد' : 'Request Appointment',
                 html: `<p class="mb-3">${isArabic ? 'هل ترغب في طلب حجز موعد بالتاريخ والوقت المحددين؟' : 'Would you like to request a booking at the selected time?'}</p>
-                       <div class="text-primary fw-bold mb-4 fs-5">${clickedDate.toLocaleDateString()} ${clickedDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>`,
+                       <div class="text-primary fw-bold mb-4 fs-5">${formattedDate} ${formattedTime}</div>`,
                 input: 'select',
                 inputOptions: selectOptions,
                 inputPlaceholder: isArabic ? 'اختر سبب الحجز' : 'Select a Reason',
@@ -438,8 +451,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         console.error(err);
                         Swal.fire({
                             icon: 'error',
-                            title: 'Error',
-                            text: 'Failed to request appointment. Please try again.'
+                            title: isArabic ? 'خطأ' : 'Error',
+                            text: isArabic ? 'فشل تقديم الطلب. يرجى المحاولة مرة أخرى.' : 'Failed to request appointment. Please try again.',
+                            confirmButtonColor: '#175cdd'
                         });
                     });
                 }

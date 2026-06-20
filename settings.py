@@ -4,7 +4,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 #gives us Path object for settings.py then gives us the parent directory of settings.py which is the root of our project. This allows us to construct paths to other files in a way that works regardless of where the code is run from.
-BASE_DIR = Path(__file__).resolve().parent
+import sys
+
+if getattr(sys, 'frozen', False):
+    # Path of the folder where the .exe file resides
+    BASE_DIR = Path(sys.executable).parent
+else:
+    BASE_DIR = Path(__file__).resolve().parent
 
 
 def build_database_uri():

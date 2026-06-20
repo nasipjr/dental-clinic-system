@@ -82,6 +82,7 @@
                     {% endif %}
 
                     <form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300">
+                        <input type="hidden" name="invoice_id" value="{{ invoice_id or '' }}">
                         <div class="row gy-4">
 
                             <div class="col-md-12">
@@ -125,9 +126,15 @@
                                         Save Payment
                                     </button>
 
+                                    {% if invoice_id %}
+                                    <a href="{{ url_for('invoices.view_invoice', invoice_id=invoice_id) }}" class="btn-outline-main px-4">
+                                        Cancel
+                                    </a>
+                                    {% else %}
                                     <a href="{{ url_for('payments.payments') }}" class="btn-outline-main px-4">
                                         Cancel
                                     </a>
+                                    {% endif %}
                                 </div>
                             </div>
 
@@ -148,13 +155,23 @@ document.addEventListener('DOMContentLoaded', function () {
     if (patientSelect) {
         patientSelect.addEventListener('change', function () {
             const selectedPatientId = patientSelect.value;
+            const urlParams = new URLSearchParams(window.location.search);
+            const invoiceId = urlParams.get('invoice_id') || '';
 
             if (!selectedPatientId) {
-                window.location.href = "{{ url_for('payments.add_patient_payment') }}";
+                let targetUrl = "{{ url_for('payments.add_patient_payment') }}";
+                if (invoiceId) {
+                    targetUrl += "?invoice_id=" + invoiceId;
+                }
+                window.location.href = targetUrl;
                 return;
             }
 
-            window.location.href = "{{ url_for('payments.add_patient_payment') }}?patient_id=" + selectedPatientId;
+            let targetUrl = "{{ url_for('payments.add_patient_payment') }}?patient_id=" + selectedPatientId;
+            if (invoiceId) {
+                targetUrl += "&invoice_id=" + invoiceId;
+            }
+            window.location.href = targetUrl;
         });
     }
 

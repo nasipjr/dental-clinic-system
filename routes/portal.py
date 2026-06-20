@@ -7,11 +7,53 @@ from utils.settings_helper import get_setting
 
 portal_bp = Blueprint("portal", __name__, url_prefix="/portal")
 
+def flash_message(key, category="danger", **kwargs):
+    lang = request.cookies.get('lang', 'en')
+    translations = {
+        "ar": {
+            "login_required": "يرجى تسجيل الدخول للوصول إلى بوابة المرضى.",
+            "fields_required": "يرجى إدخال اسم المستخدم وكلمة المرور.",
+            "welcome": "مرحباً بك في بوابتك الخاصة، {name}!",
+            "invalid_credentials": "اسم المستخدم أو كلمة المرور غير صالحة.",
+            "registration_disabled": "التسجيل العام معطل. يرجى التواصل مع موظفي العيادة لإنشاء حسابك.",
+            "logged_out": "لقد قمت بتسجيل الخروج من البوابة بنجاح.",
+            "all_fields_required": "جميع الحقول مطلوبة.",
+            "invalid_date_format": "تنسيق تاريخ ووقت الموعد غير صالح.",
+            "past_date": "لا يمكن حجز موعد في الماضي.",
+            "advance_date": "لا يمكن حجز موعد قبل أكثر من 30 يوماً.",
+            "clinic_closed": "العيادة مغلقة في هذا اليوم.",
+            "time_limit": "يجب أن يكون وقت الموعد بين {start} و {end}.",
+            "slot_unavailable": "الوقت المحدد لم يعد متاحاً. يرجى اختيار وقت آخر.",
+            "booking_success": "تم تقديم طلب الموعد بنجاح! بانتظار تأكيد الموظفين.",
+            "booking_failed": "فشل تقديم الطلب. يرجى المحاولة مرة أخرى."
+        },
+        "en": {
+            "login_required": "Please log in to access the patient portal.",
+            "fields_required": "Please enter both username and password.",
+            "welcome": "Welcome to your portal, {name}!",
+            "invalid_credentials": "Invalid username or password.",
+            "registration_disabled": "Public registration is disabled. Please contact the clinic staff to set up your account.",
+            "logged_out": "You have logged out of the portal.",
+            "all_fields_required": "All fields are required.",
+            "invalid_date_format": "Invalid appointment date and time format.",
+            "past_date": "Appointment cannot be booked in the past.",
+            "advance_date": "Appointment cannot be booked more than 30 days in advance.",
+            "clinic_closed": "Clinic is closed on this day.",
+            "time_limit": "Appointment time must be between {start} and {end}.",
+            "slot_unavailable": "Selected slot is no longer available. Please select another time.",
+            "booking_success": "Appointment request submitted successfully! Pending staff confirmation.",
+            "booking_failed": "Failed to submit request. Please try again."
+        }
+    }
+    msg_tpl = translations.get(lang, translations["en"]).get(key, key)
+    flash(msg_tpl.format(**kwargs), category)
+
+
 def patient_login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if "user_id" not in session or session.get("role") != "patient":
-            flash("Please log in to access the patient portal.", "danger")
+            flash_message("login_required", "danger")
             return redirect(url_for("portal.login"))
         return f(*args, **kwargs)
     return decorated_function
@@ -27,7 +69,7 @@ def login():
         password = request.form.get("password", "").strip()
 
         if not username or not password:
-            flash("Please enter both username and password.", "danger")
+            flash_message("fields_required", "danger")
             return render_template("portal/login.html")
 
         user = User.query.filter_by(username=username, role="patient").first()
@@ -36,24 +78,24 @@ def login():
             session["role"] = user.role
             session["patient_id"] = user.patient_id
             session.permanent = True
-            flash(f"Welcome to your portal, {user.first_name or user.username}!", "success")
+            flash_message("welcome", "success", name=(user.first_name or user.username))
             return redirect(url_for("portal.dashboard"))
         else:
-            flash("Invalid username or password.", "danger")
+            flash_message("invalid_credentials", "danger")
 
     return render_template("portal/login.html")
 
 
 @portal_bp.route("/register", methods=["GET", "POST"])
 def register():
-    flash("Public registration is disabled. Please contact the clinic staff to set up your account.", "danger")
+    flash_message("registration_disabled", "danger")
     return redirect(url_for("portal.login"))
 
 
 @portal_bp.route("/logout")
 def logout():
     session.clear()
-    flash("You have logged out of the portal.", "success")
+    flash_message("logged_out", "success")
     return redirect(url_for("portal.login"))
 
 
@@ -87,7 +129,7 @@ def book_appointment():
         reason = request.form.get("reason", "").strip()
 
         if not appt_date_raw or not reason:
-            flash("All fields are required.", "danger")
+            flash_message("all_fields_required", "danger")
             return redirect(url_for("portal.book_appointment"))
 
         try:
@@ -96,7 +138,7 @@ def book_appointment():
             try:
                 appointment_date = datetime.strptime(appt_date_raw, "%Y-%m-%d %H:%M")
             except ValueError:
-                flash("Invalid appointment date and time format.", "danger")
+                flash_message("invalid_date_format", "danger")
                 return redirect(url_for("portal.book_appointment"))
 
         # Time limits check
@@ -104,11 +146,11 @@ def book_appointment():
         max_date = now + timedelta(days=30)
 
         if appointment_date < now:
-            flash("Appointment cannot be booked in the past.", "danger")
+            flash_message("past_date", "danger")
             return redirect(url_for("portal.book_appointment"))
 
         if appointment_date > max_date:
-            flash("Appointment cannot be booked more than 30 days in advance.", "danger")
+            flash_message("advance_date", "danger")
             return redirect(url_for("portal.book_appointment"))
 
         # Working hours and working days checks
@@ -117,7 +159,7 @@ def book_appointment():
         day_str = appointment_date.strftime("%w")
 
         if day_str not in working_days_list:
-            flash("Clinic is closed on this day.", "danger")
+            flash_message("clinic_closed", "danger")
             return redirect(url_for("portal.book_appointment"))
 
         start_str = get_setting("working_hours_start", "09:00")
@@ -137,32 +179,33 @@ def book_appointment():
 
         appt_time = appointment_date.time()
         if appt_time < start_time or appt_time > end_time:
-            flash(f"Appointment time must be between {start_str} and {end_str}.", "danger")
+            flash_message("time_limit", "danger", start=start_str, end=end_str)
             return redirect(url_for("portal.book_appointment"))
 
         # Check conflict
-        from utils.validators import check_appointment_conflict
-        conflict = check_appointment_conflict(appointment_date)
-        if conflict:
-            flash("Selected slot is no longer available. Please select another time.", "danger")
-            return redirect(url_for("portal.book_appointment"))
+        from utils.validators import check_appointment_conflict, booking_lock
+        with booking_lock:
+            conflict = check_appointment_conflict(appointment_date)
+            if conflict:
+                flash_message("slot_unavailable", "danger")
+                return redirect(url_for("portal.book_appointment"))
 
-        try:
-            new_appt = Appointment(
-                patient_id=patient.id,
-                appointment_date=appointment_date,
-                reason=reason,
-                status="Pending" # Pending approval
-            )
-            db.session.add(new_appt)
-            db.session.commit()
-            flash("Appointment request submitted successfully! Pending staff confirmation.", "success")
-            return redirect(url_for("portal.dashboard"))
-        except Exception as e:
-            db.session.rollback()
-            current_app.logger.error(f"Failed to submit appointment request: {e}")
-            flash("Failed to submit request. Please try again.", "danger")
-            return redirect(url_for("portal.book_appointment"))
+            try:
+                new_appt = Appointment(
+                    patient_id=patient.id,
+                    appointment_date=appointment_date,
+                    reason=reason,
+                    status="Pending" # Pending approval
+                )
+                db.session.add(new_appt)
+                db.session.commit()
+                flash_message("booking_success", "success")
+                return redirect(url_for("portal.dashboard"))
+            except Exception as e:
+                db.session.rollback()
+                current_app.logger.error(f"Failed to submit appointment request: {e}")
+                flash_message("booking_failed", "danger")
+                return redirect(url_for("portal.book_appointment"))
 
     # Limits for input
     now = datetime.now()

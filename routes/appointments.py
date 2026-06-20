@@ -6,6 +6,7 @@ from utils.validators import (
     get_appointment_datetime_limits,
     parse_appointment_data,
     check_appointment_conflict,
+    booking_lock,
 )
 from utils.auth_helper import role_required
 
@@ -157,26 +158,27 @@ def add_appointment_direct():
                     prefilled_date=prefilled_date,
                 ), 400
 
-            conflict = check_appointment_conflict(appointment_data["appointment_date"])
-            if conflict:
-                return render_template(
-                    "appointments/add_appointment.html",
-                    patients=patients,
-                    error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %H:%M')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
-                    appointment_min_datetime=appointment_min_datetime,
-                    appointment_max_datetime=appointment_max_datetime,
-                    prefilled_date=prefilled_date,
-                ), 400
+            with booking_lock:
+                conflict = check_appointment_conflict(appointment_data["appointment_date"])
+                if conflict:
+                    return render_template(
+                        "appointments/add_appointment.html",
+                        patients=patients,
+                        error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %H:%M')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
+                        appointment_min_datetime=appointment_min_datetime,
+                        appointment_max_datetime=appointment_max_datetime,
+                        prefilled_date=prefilled_date,
+                    ), 400
 
-            new_appointment = Appointment(
-                patient_id=patient.id,
-                appointment_date=appointment_data["appointment_date"],
-                reason=appointment_data["reason"],
-                status="Scheduled",
-            )
+                new_appointment = Appointment(
+                    patient_id=patient.id,
+                    appointment_date=appointment_data["appointment_date"],
+                    reason=appointment_data["reason"],
+                    status="Scheduled",
+                )
 
-            db.session.add(new_appointment)
-            db.session.commit()
+                db.session.add(new_appointment)
+                db.session.commit()
 
             current_app.logger.info(
                 f"Appointment added successfully | appointment_id={new_appointment.id}, patient_id={patient.id}"
@@ -219,26 +221,27 @@ def add_appointment(patient_id):
                     appointment_max_datetime=appointment_max_datetime,
                 ), 400
 
-            conflict = check_appointment_conflict(appointment_data["appointment_date"])
-            if conflict:
-                return render_template(
-                    "appointments/add_appointment.html",
-                    patient=patient,
-                    error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %H:%M')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
-                    appointment_min_datetime=appointment_min_datetime,
-                    appointment_max_datetime=appointment_max_datetime,
-                ), 400
+            with booking_lock:
+                conflict = check_appointment_conflict(appointment_data["appointment_date"])
+                if conflict:
+                    return render_template(
+                        "appointments/add_appointment.html",
+                        patient=patient,
+                        error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %H:%M')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
+                        appointment_min_datetime=appointment_min_datetime,
+                        appointment_max_datetime=appointment_max_datetime,
+                    ), 400
 
-            new_appointment = Appointment(
-                patient_id=patient.id,
-                appointment_date=appointment_data["appointment_date"],
-                reason=appointment_data["reason"],
-                status="Scheduled",
-            )
+                new_appointment = Appointment(
+                    patient_id=patient.id,
+                    appointment_date=appointment_data["appointment_date"],
+                    reason=appointment_data["reason"],
+                    status="Scheduled",
+                )
 
 
-            db.session.add(new_appointment)
-            db.session.commit()
+                db.session.add(new_appointment)
+                db.session.commit()
 
             current_app.logger.info(
                 f"Appointment added successfully | appointment_id={new_appointment.id}, patient_id={patient.id}"
@@ -296,27 +299,28 @@ def edit_appointment(appointment_id):
                     appointment_max_datetime=appointment_max_datetime,
                 ), 400
 
-            if new_status == "Scheduled":
-                conflict = check_appointment_conflict(
-                    appointment_data["appointment_date"],
-                    current_appointment_id=appointment.id
-                )
-                if conflict:
-                    return render_template(
-                        "appointments/edit_appointment.html",
-                        appointment=appointment,
-                        mode="edit",
-                        error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %H:%M')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
-                        appointment_min_datetime=appointment_min_datetime,
-                        appointment_max_datetime=appointment_max_datetime,
-                    ), 400
+            with booking_lock:
+                if new_status == "Scheduled":
+                    conflict = check_appointment_conflict(
+                        appointment_data["appointment_date"],
+                        current_appointment_id=appointment.id
+                    )
+                    if conflict:
+                        return render_template(
+                            "appointments/edit_appointment.html",
+                            appointment=appointment,
+                            mode="edit",
+                            error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %H:%M')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
+                            appointment_min_datetime=appointment_min_datetime,
+                            appointment_max_datetime=appointment_max_datetime,
+                        ), 400
 
-            appointment.appointment_date = appointment_data["appointment_date"]
-            appointment.reason = appointment_data["reason"]
-            appointment.status = new_status
+                appointment.appointment_date = appointment_data["appointment_date"]
+                appointment.reason = appointment_data["reason"]
+                appointment.status = new_status
 
 
-            db.session.commit()
+                db.session.commit()
 
             current_app.logger.info(
                 f"Appointment updated successfully | appointment_id={appointment.id}"

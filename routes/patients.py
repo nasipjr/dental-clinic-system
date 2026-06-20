@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash
 
-from models import db, Patient, Appointment, Treatment, Payment, Invoice
+from models import db, Patient, Appointment, Treatment, Payment, Invoice, PatientFile
 from utils.validators import parse_patient_data
 from utils.auth_helper import role_required
 
@@ -264,6 +264,8 @@ def patient_detail(patient_id):
         total_remaining_sum = patient.outstanding_amount
         credit_amount = patient.credit_amount
 
+        patient_files = sorted(patient.files, key=lambda f: f.upload_date, reverse=True)
+
         return render_template(
             "patients/patient_detail.html",
             patient=patient,
@@ -271,6 +273,7 @@ def patient_detail(patient_id):
             patient_treatments=patient_treatments,
             patient_payments=payment_context["patient_payments"],
             invoices=invoice_context["invoices"],
+            patient_files=patient_files,
             total_cost_sum=total_cost_sum,
             total_paid_sum=total_paid_sum,
             total_remaining_sum=total_remaining_sum,
@@ -469,6 +472,15 @@ def delete_patient(patient_id):
             ), 403
 
         if request.method == "POST":
+            import os
+            for patient_file in patient.files:
+                disk_path = os.path.join(current_app.static_folder, patient_file.filepath)
+                if os.path.exists(disk_path):
+                    try:
+                        os.remove(disk_path)
+                    except Exception:
+                        current_app.logger.exception(f"Failed to remove file from disk during patient delete: {disk_path}")
+            
             db.session.delete(patient)
             db.session.commit()
 
@@ -564,3 +576,92 @@ def delete_portal_account(patient_id):
         current_app.logger.exception(f"Failed to delete portal account for patient_id={patient_id}")
         flash("Failed to delete portal account.", "danger")
         return redirect(url_for("patients.patient_detail", patient_id=patient_id))
+
+
+@patients_bp.route("/patients/<int:patient_id>/files/upload", methods=["POST"])
+@role_required("admin", "doctor", "receptionist")
+def upload_patient_file(patient_id):
+    import os
+    import uuid
+    from werkzeug.utils import secure_filename
+    
+    patient = Patient.query.get_or_404(patient_id)
+    
+    if "file" not in request.files:
+        flash("No file part", "danger")
+        return redirect(url_for("patients.patient_detail", patient_id=patient_id, tab="files"))
+        
+    file = request.files["file"]
+    notes = request.form.get("notes", "").strip()
+    
+    if file.filename == "":
+        flash("No selected file", "danger")
+        return redirect(url_for("patients.patient_detail", patient_id=patient_id, tab="files"))
+        
+    if file:
+        filename = secure_filename(file.filename)
+        file_ext = os.path.splitext(filename)[1]
+        unique_filename = f"{uuid.uuid4().hex}{file_ext}"
+        
+        upload_dir = os.path.join(current_app.static_folder, "uploads", "patients")
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        filepath = os.path.join(upload_dir, unique_filename)
+        file.save(filepath)
+        
+        relative_path = f"uploads/patients/{unique_filename}"
+        
+        new_file = PatientFile(
+            patient_id=patient_id,
+            filename=filename,
+            filepath=relative_path,
+            filetype=file.content_type,
+            notes=notes
+        )
+        
+        try:
+            db.session.add(new_file)
+            db.session.commit()
+            flash("File uploaded successfully.", "success")
+        except Exception:
+            db.session.rollback()
+            if os.path.exists(filepath):
+                try:
+                    os.remove(filepath)
+                except Exception:
+                    pass
+            current_app.logger.exception("Failed to save PatientFile to database")
+            flash("Failed to save file metadata to database.", "danger")
+            
+        return redirect(url_for("patients.patient_detail", patient_id=patient_id, tab="files"))
+
+
+@patients_bp.route("/patients/<int:patient_id>/files/<int:file_id>/delete", methods=["POST"])
+@role_required("admin", "doctor", "receptionist")
+def delete_patient_file(patient_id, file_id):
+    import os
+    
+    patient = Patient.query.get_or_404(patient_id)
+    patient_file = PatientFile.query.get_or_404(file_id)
+    
+    if patient_file.patient_id != patient.id:
+        flash("Unauthorized operation.", "danger")
+        return redirect(url_for("patients.patient_detail", patient_id=patient_id, tab="files"))
+        
+    disk_path = os.path.join(current_app.static_folder, patient_file.filepath)
+    if os.path.exists(disk_path):
+        try:
+            os.remove(disk_path)
+        except Exception:
+            current_app.logger.exception(f"Failed to remove file from disk: {disk_path}")
+            
+    try:
+        db.session.delete(patient_file)
+        db.session.commit()
+        flash("File deleted successfully.", "success")
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Failed to delete PatientFile from database")
+        flash("Failed to delete file from database.", "danger")
+        
+    return redirect(url_for("patients.patient_detail", patient_id=patient_id, tab="files"))

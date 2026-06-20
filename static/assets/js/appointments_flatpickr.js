@@ -19,26 +19,6 @@ document.addEventListener("DOMContentLoaded", function () {
     fetch(url)
         .then(res => res.json())
         .then(bookedSlots => {
-            // Flatpickr expects bookedSlots to be parsed as Date objects
-            const disabledDates = bookedSlots.map(slotStr => {
-                // Parse 'YYYY-MM-DD HH:MM' into date
-                const parts = slotStr.split(' ');
-                const dateParts = parts[0].split('-');
-                const timeParts = parts[1].split(':');
-                return new Date(
-                    parseInt(dateParts[0]),
-                    parseInt(dateParts[1]) - 1,
-                    parseInt(dateParts[2]),
-                    parseInt(timeParts[0]),
-                    parseInt(timeParts[1])
-                );
-            });
-            
-            // Add closed days disable function
-            disabledDates.push(function(date) {
-                return !workingDaysList.includes(date.getDay());
-            });
-
             flatpickr(appointmentInput, {
                 enableTime: true,
                 dateFormat: "Y-m-d H:i",
@@ -47,7 +27,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 minuteIncrement: 30,
                 minTime: minTimeAttr,
                 maxTime: maxTimeAttr,
-                disable: disabledDates,
+                disable: [
+                    function(date) {
+                        return !workingDaysList.includes(date.getDay());
+                    }
+                ],
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (bookedSlots.includes(dateStr)) {
+                        const currentLang = document.documentElement.getAttribute('lang') || 'en';
+                        const msg = currentLang === 'ar' 
+                            ? "هذا الوقت محجوز بالفعل، يرجى اختيار وقت آخر." 
+                            : "This slot is already reserved. Please select another time.";
+                        alert(msg);
+                        instance.clear();
+                    }
+                },
                 locale: {
                     firstDayOfWeek: 0 // Sunday
                 }
@@ -55,7 +49,6 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .catch(err => {
             console.error("Failed to load booked slots", err);
-            // Initialize flatpickr anyway without booked slots if API fails
             flatpickr(appointmentInput, {
                 enableTime: true,
                 dateFormat: "Y-m-d H:i",

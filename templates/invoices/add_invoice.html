@@ -250,7 +250,7 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const treatmentPrices = {{ treatment_prices | tojson }};
+    const treatmentPrices = {{ dict(treatment_prices.items()) | tojson }};
 
     const itemsBody = document.getElementById("invoice-items-body");
     const addItemButton = document.getElementById("add-item-btn");

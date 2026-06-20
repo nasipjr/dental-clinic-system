@@ -118,6 +118,11 @@
                     </p>
                 </div>
 
+                <div class="patient-info-box text-center d-flex flex-column align-items-center justify-content-center">
+                    <span class="info-label mb-2">Invoice Summary</span>
+                    <canvas id="invoice-qrcode" style="width: 90px; height: 90px;"></canvas>
+                </div>
+
             </div>
             <!-- /Invoice Main Info -->
 
@@ -223,6 +228,7 @@
                                 </form>
                             </td>
                         </tr>
+
                         <tr>
                             <th colspan="5" class="text-end">Invoice Total</th>
                             <th>
@@ -297,7 +303,7 @@
 
 
             <!-- Invoice Actions -->
-            <div class="action-buttons justify-content-center gap-3 mt-4">
+            <div class="action-buttons justify-content-center gap-3 mt-4 d-print-none">
 
                 <a href="{{ url_for('invoices.invoices') }}" class="btn-outline-main px-4">
                     Back to Invoices
@@ -314,10 +320,20 @@
                 {% endif %}
 
                 {% if current_user.role in ('admin', 'receptionist') %}
-                <a href="{{ url_for('payments.add_patient_payment', patient_id=patient.id) }}" class="btn btn-primary px-4">
+                <a href="{{ url_for('payments.add_patient_payment', patient_id=patient.id, invoice_id=invoice.id) }}" class="btn btn-primary px-4">
                     Add Payment
                 </a>
                 {% endif %}
+
+                <button onclick="window.print()" class="btn btn-success px-4 d-inline-flex align-items-center gap-2">
+                    <i class="bi bi-printer"></i>
+                    <span>Print Invoice</span>
+                </button>
+
+                <button id="download-pdf-btn" class="btn btn-danger px-4 d-inline-flex align-items-center gap-2">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    <span>Download PDF</span>
+                </button>
 
             </div>
             <!-- /Invoice Actions -->
@@ -326,4 +342,257 @@
 
     </div>
 </section>
+
+<!-- Print Only Invoice Layout -->
+<div class="d-none d-print-block container mt-4" id="invoice-print-area" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+    <div class="print-header d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h1 class="clinic-name-print mb-1 fw-bold text-main">{{ clinic_name }}</h1>
+            <p class="mb-1"><i class="bi bi-geo-alt"></i> {{ clinic_address }}</p>
+            <p class="mb-1"><i class="bi bi-phone"></i> {{ clinic_phone }}</p>
+            <p class="mb-0"><i class="bi bi-envelope"></i> {{ clinic_email }}</p>
+        </div>
+        <div class="text-end">
+            <h2 class="text-uppercase fw-bold text-primary mb-2">Invoice</h2>
+            <h5 class="text-muted mb-3">Invoice Number: {{ invoice.invoice_number }}</h5>
+            <p class="mb-1"><strong>Date:</strong> {{ invoice.issue_date.strftime('%Y-%m-%d %H:%M') }}</p>
+            <p class="mb-0"><strong>Status:</strong> 
+                {% if invoice.status == 'Paid' %}Paid
+                {% elif invoice.status == 'Partially Paid' %}Partially Paid
+                {% else %}Unpaid{% endif %}
+            </p>
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <!-- Bill To -->
+    <div class="row mb-4">
+        <div class="col-6">
+            <h5 class="text-uppercase text-secondary fw-semibold mb-2">Bill To:</h5>
+            <h4 class="mb-1 fw-bold">{{ patient.first_name }} {{ patient.last_name }}</h4>
+            {% if patient.phone %}<p class="mb-1"><strong>Phone:</strong> {{ patient.phone }}</p>{% endif %}
+            {% if patient.email %}<p class="mb-0"><strong>Email:</strong> {{ patient.email }}</p>{% endif %}
+        </div>
+    </div>
+
+    <!-- Items Table -->
+    <table class="table table-bordered print-table mb-4">
+        <thead class="table-light">
+            <tr>
+                <th style="width: 8%">#</th>
+                <th>Treatment / Procedure</th>
+                <th style="width: 15%">Tooth</th>
+                <th>Notes</th>
+                <th style="width: 20%" class="text-end">Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for treatment in treatments %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td><strong>{{ treatment.procedure_type or 'General Treatment' }}</strong></td>
+                <td>{{ treatment.tooth_number or 'N/A' }}</td>
+                <td>{{ treatment.notes or '' }}</td>
+                <td class="text-end">{{ treatment.total_cost | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4" class="text-end fw-semibold">Subtotal</td>
+                <td class="text-end">{{ invoice.subtotal | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% if invoice.discount_amount > 0 %}
+            <tr>
+                <td colspan="4" class="text-end fw-semibold text-danger">Discount {% if invoice.discount_type == 'percentage' %}({{ "{:,.0f}".format(invoice.discount) }}%){% endif %}</td>
+                <td class="text-end text-danger">- {{ invoice.discount_amount | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% endif %}
+
+            <tr class="table-light">
+                <td colspan="4" class="text-end fw-bold fs-5">Total Amount</td>
+                <td class="text-end fw-bold fs-5">{{ invoice.total_amount | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            <tr>
+                <td colspan="4" class="text-end fw-semibold text-success">Total Paid</td>
+                <td class="text-end text-success">{{ invoice.total_paid | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% if invoice.outstanding_amount > 0 %}
+            <tr class="table-danger-light">
+                <td colspan="4" class="text-end fw-bold text-danger">Remaining Balance Due</td>
+                <td class="text-end fw-bold text-danger">{{ invoice.outstanding_amount | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% endif %}
+        </tfoot>
+    </table>
+
+    <!-- Installments / Payment Allocations History -->
+    {% if invoice.payment_allocations %}
+    <div class="mb-4">
+        <h5 class="text-uppercase text-secondary fw-semibold mb-2">Installment / Payment History</h5>
+        <table class="table table-sm table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Receipt #</th>
+                    <th>Date Paid</th>
+                    <th class="text-end">Amount Paid</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for allocation in invoice.payment_allocations %}
+                <tr>
+                    <td>PAY-{{ allocation.payment.id }}</td>
+                    <td>{{ allocation.payment.payment_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="text-end">{{ allocation.amount | format_price }} {{ currency_symbol }}</td>
+                    <td>{{ allocation.payment.notes or '' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Footer Section with QR Code -->
+    <div class="d-flex justify-content-between align-items-end mt-5 pt-4 border-top">
+        <div class="text-center" style="width: 150px;">
+            <canvas id="print-invoice-qrcode" style="width: 130px; height: 130px;"></canvas>
+            <div class="text-muted small mt-1">Invoice Summary</div>
+        </div>
+        <div class="text-center pe-4">
+            <div class="mb-5 text-muted">Authorized Signature & Seal</div>
+            <div style="border-bottom: 1px solid #000; width: 200px;"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+
+<style>
+@media print {
+    /* Hide screen elements */
+    #header, #footer, .topbar, #scroll-top, .section-title, .action-buttons, .btn, .collapse, .alert, .mobile-nav-toggle, #invoice-detail-section {
+        display: none !important;
+    }
+    
+    body {
+        background-color: #fff !important;
+        color: #000 !important;
+        font-size: 11pt !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    #invoice-print-area {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 10px !important;
+    }
+    
+    /* Style tweaks for print */
+    .table {
+        border-color: #333 !important;
+    }
+    .table th {
+        background-color: #f8f9fa !important;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .table-light {
+        background-color: #f8f9fa !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .text-primary {
+        color: #0d6efd !important;
+    }
+    .text-danger {
+        color: #dc3545 !important;
+    }
+    .text-success {
+        color: #198754 !important;
+    }
+    .table-danger-light {
+        background-color: #fdf2f2 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Download PDF handler
+    const downloadBtn = document.getElementById("download-pdf-btn");
+    if (downloadBtn) {
+        downloadBtn.addEventListener("click", function() {
+            const element = document.getElementById('invoice-print-area');
+            const opt = {
+                margin:       10,
+                filename:     'Invoice_' + '{{ invoice.invoice_number }}' + '.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            // Clone the printable area to avoid mutating the live DOM
+            const clone = element.cloneNode(true);
+            clone.classList.remove('d-none', 'd-print-block');
+            
+            // Apply clean white background style to the clone so it looks like a paper invoice
+            clone.style.padding = '30px';
+            clone.style.background = '#ffffff';
+            clone.style.color = '#333333';
+            clone.style.width = '790px'; // standard width for crisp scaling
+            
+            // Force light theme colors on clone (to prevent dark theme issues)
+            clone.setAttribute('data-bs-theme', 'light');
+            
+            // Temporary container to render properly (offscreen)
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.top = '-9999px';
+            tempDiv.appendChild(clone);
+            document.body.appendChild(tempDiv);
+            
+            // Generate and save
+            html2pdf().set(opt).from(clone).save().then(() => {
+                document.body.removeChild(tempDiv);
+            });
+        });
+    }
+    // QR Code inputs
+    const clinicName = "{{ clinic_name | escape }}";
+    const issueDateISO = "{{ invoice.issue_date.isoformat() }}";
+    const totalAmount = "{{ invoice.total_amount }}";
+    const invoiceNum = "{{ invoice.invoice_number }}";
+    
+    const qrValue = `Clinic: ${clinicName}\nInvoice: ${invoiceNum}\nDate: ${issueDateISO}\nTotal: ${totalAmount} {{ currency_symbol }}`;
+    
+    // Render on-screen QR Code
+    const canvasScreen = document.getElementById("invoice-qrcode");
+    if (canvasScreen) {
+        new QRious({
+            element: canvasScreen,
+            value: qrValue,
+            size: 150
+        });
+    }
+    
+    // Render printable QR Code
+    const canvasPrint = document.getElementById("print-invoice-qrcode");
+    if (canvasPrint) {
+        new QRious({
+            element: canvasPrint,
+            value: qrValue,
+            size: 150
+        });
+    }
+});
+</script>
 {% endblock %}

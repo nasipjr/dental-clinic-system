@@ -92,10 +92,74 @@
                                 </select>
                             </div>
 
+                            <style>
+                            .odontogram-wrapper {
+                                background: var(--surface-color);
+                                border: 1px solid color-mix(in srgb, var(--accent-color), transparent 88%);
+                                border-radius: 16px;
+                                padding: 20px;
+                            }
+                            .tooth-btn {
+                                width: 34px;
+                                height: 34px;
+                                padding: 0 !important;
+                                font-weight: 700;
+                                border-radius: 8px;
+                                font-size: 0.85rem;
+                                display: inline-flex;
+                                align-items: center;
+                                justify-content: center;
+                                transition: all 0.2s ease;
+                                border: 2px solid color-mix(in srgb, var(--accent-color), transparent 85%);
+                                background: transparent;
+                                color: var(--default-color);
+                            }
+                            .tooth-btn:hover {
+                                background: color-mix(in srgb, var(--accent-color), transparent 90%);
+                                border-color: var(--accent-color);
+                                color: var(--accent-color);
+                            }
+                            .tooth-btn.active {
+                                background: var(--accent-color) !important;
+                                border-color: var(--accent-color) !important;
+                                color: #ffffff !important;
+                                box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2);
+                            }
+                            </style>
+
                             <div class="col-md-12">
-                                <label for="tooth_number" class="form-label">Tooth Number</label>
-                                <input type="text" id="tooth_number" name="tooth_number" class="form-control"
-                                    placeholder="Example: 14">
+                                <label for="tooth_number" class="form-label fw-bold">Tooth Number (Select from chart or type)</label>
+                                <div class="odontogram-wrapper mb-3">
+                                    <div class="text-center text-secondary small mb-3">
+                                        <i class="bi bi-info-circle me-1"></i> Click teeth on the chart to select or deselect.
+                                    </div>
+                                    <div class="jaw upper-jaw text-center mb-4">
+                                        <div class="text-uppercase text-secondary fw-semibold small mb-2">Upper Jaw (Maxillary)</div>
+                                        <div class="d-flex justify-content-center align-items-center flex-wrap gap-1">
+                                            {% for i in range(1, 9) %}
+                                            <button type="button" class="tooth-btn" data-tooth="{{ i }}">{{ i }}</button>
+                                            {% endfor %}
+                                            <div style="width: 2px; height: 34px; background: color-mix(in srgb, var(--default-color), transparent 80%); margin: 0 8px;"></div>
+                                            {% for i in range(9, 17) %}
+                                            <button type="button" class="tooth-btn" data-tooth="{{ i }}">{{ i }}</button>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <div class="jaw lower-jaw text-center">
+                                        <div class="text-uppercase text-secondary fw-semibold small mb-2">Lower Jaw (Mandibular)</div>
+                                        <div class="d-flex justify-content-center align-items-center flex-wrap gap-1">
+                                            {% for i in range(32, 24, -1) %}
+                                            <button type="button" class="tooth-btn" data-tooth="{{ i }}">{{ i }}</button>
+                                            {% endfor %}
+                                            <div style="width: 2px; height: 34px; background: color-mix(in srgb, var(--default-color), transparent 80%); margin: 0 8px;"></div>
+                                            {% for i in range(24, 16, -1) %}
+                                            <button type="button" class="tooth-btn" data-tooth="{{ i }}">{{ i }}</button>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="text" id="tooth_number" name="tooth_number" class="form-control settings-input"
+                                    placeholder="e.g. 14, 15">
                             </div>
 
                             <div class="col-12">
@@ -135,27 +199,67 @@
 document.addEventListener('DOMContentLoaded', function () {
     const procedureSelect = document.getElementById('procedure_type');
     const priceDisplay = document.getElementById('procedure_price_display');
+    const toothInput = document.getElementById('tooth_number');
+    const toothButtons = document.querySelectorAll('.tooth-btn');
 
-    if (!procedureSelect || !priceDisplay) {
-        return;
-    }
+    if (procedureSelect && priceDisplay) {
+        const prices = JSON.parse(procedureSelect.dataset.prices || '{}');
 
-    const prices = JSON.parse(procedureSelect.dataset.prices || '{}');
+        function updateProcedurePrice() {
+            const selectedProcedure = procedureSelect.value;
 
-    function updateProcedurePrice() {
-        const selectedProcedure = procedureSelect.value;
+            if (!selectedProcedure || prices[selectedProcedure] === undefined) {
+                priceDisplay.textContent = 'Select a procedure type to show price';
+                return;
+            }
 
-        if (!selectedProcedure || prices[selectedProcedure] === undefined) {
-            priceDisplay.textContent = 'Select a procedure type to show price';
-            return;
+            const priceNum = parseFloat(prices[selectedProcedure]);
+            priceDisplay.textContent = priceNum.toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' {{ currency_symbol }}';
         }
 
-        const priceNum = parseFloat(prices[selectedProcedure]);
-        priceDisplay.textContent = priceNum.toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' {{ currency_symbol }}';
+        procedureSelect.addEventListener('change', updateProcedurePrice);
+        updateProcedurePrice();
     }
 
-    procedureSelect.addEventListener('change', updateProcedurePrice);
-    updateProcedurePrice();
+    if (toothInput && toothButtons.length > 0) {
+        toothButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const toothNum = this.dataset.tooth;
+                
+                let selectedTeeth = toothInput.value.split(',')
+                    .map(t => t.trim())
+                    .filter(t => t !== '');
+                    
+                const index = selectedTeeth.indexOf(toothNum);
+                if (index > -1) {
+                    selectedTeeth.splice(index, 1);
+                    this.classList.remove('active');
+                } else {
+                    selectedTeeth.push(toothNum);
+                    this.classList.add('active');
+                }
+                
+                selectedTeeth.sort((a, b) => parseInt(a) - parseInt(b));
+                toothInput.value = selectedTeeth.join(', ');
+            });
+        });
+
+        toothInput.addEventListener('input', function() {
+            let val = this.value;
+            let typedTeeth = val.split(',')
+                .map(t => t.trim())
+                .filter(t => t !== '');
+                
+            toothButtons.forEach(btn => {
+                if (typedTeeth.includes(btn.dataset.tooth)) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        });
+    }
 });
 </script>
 {% endblock %}

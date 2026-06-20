@@ -140,6 +140,7 @@ def add_patient_payment():
         ).all()
 
         selected_patient_id = request.args.get("patient_id", type=int)
+        invoice_id = request.args.get("invoice_id", type=int)
         selected_patient = None
 
         if selected_patient_id:
@@ -149,6 +150,7 @@ def add_patient_payment():
             patient_id = request.form.get("patient_id", type=int)
             payment_amount_raw = request.form.get("payment_amount", "")
             notes = request.form.get("notes", "").strip()
+            invoice_id = request.form.get("invoice_id", type=int) or invoice_id
 
             patient = Patient.query.get(patient_id)
 
@@ -159,6 +161,7 @@ def add_patient_payment():
                     selected_patient_id=selected_patient_id,
                     selected_patient=selected_patient,
                     error_message="Please select a valid patient.",
+                    invoice_id=invoice_id,
                 ), 400
 
             payment_amount, payment_error = parse_invoice_payment_amount(payment_amount_raw)
@@ -170,6 +173,7 @@ def add_patient_payment():
                     selected_patient_id=patient_id,
                     selected_patient=patient,
                     error_message=payment_error,
+                    invoice_id=invoice_id,
                 ), 400
 
             new_payment = Payment(
@@ -190,6 +194,8 @@ def add_patient_payment():
                 f"payment_id={new_payment.id}, amount={payment_amount}"
             )
 
+            if invoice_id:
+                return redirect(url_for("invoices.view_invoice", invoice_id=invoice_id))
             return redirect(url_for("payments.payments"))
 
         return render_template(
@@ -197,6 +203,7 @@ def add_patient_payment():
             patients=patients,
             selected_patient_id=selected_patient_id,
             selected_patient=selected_patient,
+            invoice_id=invoice_id,
         )
 
     except Exception:

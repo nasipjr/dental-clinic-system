@@ -8,6 +8,7 @@ def get_or_create_invoice_for_appointment(appointment):
     invoice = Invoice(
         appointment_id=appointment.id,
         patient_id=appointment.patient_id,
+        tax_rate=0.0
     )
 
     db.session.add(invoice)

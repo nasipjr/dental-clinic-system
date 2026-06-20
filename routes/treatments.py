@@ -88,7 +88,7 @@ def add_treatment_to_appointment(appointment_id):
                     "treatments/add_treatment.html",
                     appointment=appointment,
                     patient=appointment.patient,
-                    treatment_prices=TREATMENT_PRICES,
+                    treatment_prices=dict(TREATMENT_PRICES),
                     error_message="Invalid treatment procedure type.",
                 ), 400
 
@@ -98,7 +98,7 @@ def add_treatment_to_appointment(appointment_id):
                     "treatments/add_treatment.html",
                     appointment=appointment,
                     patient=appointment.patient,
-                    treatment_prices=TREATMENT_PRICES,
+                    treatment_prices=dict(TREATMENT_PRICES),
                     error_message="Tooth number cannot exceed 50 characters.",
                 ), 400
 
@@ -135,7 +135,7 @@ def add_treatment_to_appointment(appointment_id):
             "treatments/add_treatment.html",
             appointment=appointment,
             patient=appointment.patient,
-            treatment_prices=TREATMENT_PRICES,
+            treatment_prices=dict(TREATMENT_PRICES),
         )
 
     except Exception:
@@ -282,7 +282,7 @@ def edit_treatment(treatment_id):
                     appointment=treatment.appointment,
                     patient=treatment.appointment.patient,
                     mode="edit",
-                    treatment_prices=TREATMENT_PRICES,
+                    treatment_prices=dict(TREATMENT_PRICES),
                     error_message="Invalid treatment procedure type.",
                 ), 400
 
@@ -294,7 +294,7 @@ def edit_treatment(treatment_id):
                     appointment=treatment.appointment,
                     patient=treatment.appointment.patient,
                     mode="edit",
-                    treatment_prices=TREATMENT_PRICES,
+                    treatment_prices=dict(TREATMENT_PRICES),
                     error_message="Tooth number cannot exceed 50 characters.",
                 ), 400
 
@@ -327,7 +327,7 @@ def edit_treatment(treatment_id):
             appointment=treatment.appointment,
             patient=treatment.appointment.patient,
             mode="edit",
-            treatment_prices=TREATMENT_PRICES,
+            treatment_prices=dict(TREATMENT_PRICES),
         )
 
     except Exception:
@@ -355,7 +355,7 @@ def view_treatment(treatment_id):
             appointment=treatment.appointment,
             patient=treatment.appointment.patient,
             mode="view",
-            treatment_prices=TREATMENT_PRICES,
+            treatment_prices=dict(TREATMENT_PRICES),
         )
 
     except Exception:

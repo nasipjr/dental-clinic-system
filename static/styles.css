@@ -1771,6 +1771,12 @@ select.settings-input option {
   border: 1px solid rgba(108, 117, 125, 0.25);
 }
 
+.avatar-patient {
+  background: rgba(111, 66, 193, 0.08);
+  color: #6f42c1;
+  border: 1px solid rgba(111, 66, 193, 0.25);
+}
+
 .role-badge {
   display: inline-block;
   padding: 4px 10px;
@@ -1795,6 +1801,12 @@ select.settings-input option {
   background: rgba(108, 117, 125, 0.08);
   color: #6c757d;
   border: 1px solid rgba(108, 117, 125, 0.25);
+}
+
+.role-patient {
+  background: rgba(111, 66, 193, 0.08);
+  color: #6f42c1;
+  border: 1px solid rgba(111, 66, 193, 0.25);
 }
 
 .active-user-badge {
@@ -2340,6 +2352,34 @@ body.calendar-page.scrolled .header {
   fill: #ffffff !important;
 }
 
+/* Flatpickr Time Picker theme integration for dark mode */
+[data-bs-theme="dark"] .flatpickr-time {
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+  background: #1e293b !important;
+}
+
+[data-bs-theme="dark"] .flatpickr-time input,
+[data-bs-theme="dark"] .flatpickr-time .flatpickr-am-pm,
+[data-bs-theme="dark"] .flatpickr-time .flatpickr-time-separator {
+  color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .flatpickr-time input:hover,
+[data-bs-theme="dark"] .flatpickr-time .flatpickr-am-pm:hover,
+[data-bs-theme="dark"] .flatpickr-time input:focus,
+[data-bs-theme="dark"] .flatpickr-time .flatpickr-am-pm:focus {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-bs-theme="dark"] .flatpickr-time .numInputWrapper span.arrowUp:after {
+  border-bottom-color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .flatpickr-time .numInputWrapper span.arrowDown:after {
+  border-top-color: #ffffff !important;
+}
+
+
 /* Custom dark mode improvements for the dashboard visualizer card and KPI cards */
 [data-bs-theme="dark"] .hero-visual .main-image {
   background: rgba(30, 41, 59, 0.8) !important;
@@ -2470,3 +2510,26 @@ html[lang="ar"] .footer-16 .nav-column h6::after {
 #patient-search-empty .empty-box p {
   color: color-mix(in srgb, var(--default-color), transparent 30%) !important;
 }
+
+/* Ensure phone numbers and numeric IDs/values do not get visually reversed/inverted in RTL (Arabic) mode */
+input[type="tel"],
+input[id*="phone"],
+input[name*="phone"],
+input[id*="whatsapp"],
+input[name*="whatsapp"],
+input[id*="mobile"],
+input[name*="mobile"] {
+  direction: ltr !important;
+  text-align: left;
+}
+
+html[lang="ar"] input[type="tel"],
+html[lang="ar"] input[id*="phone"],
+html[lang="ar"] input[name*="phone"],
+html[lang="ar"] input[id*="whatsapp"],
+html[lang="ar"] input[name*="whatsapp"],
+html[lang="ar"] input[id*="mobile"],
+html[lang="ar"] input[name*="mobile"] {
+  direction: ltr !important;
+  text-align: right !important;
+}

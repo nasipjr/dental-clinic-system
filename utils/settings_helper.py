@@ -24,7 +24,21 @@ DEFAULT_SETTINGS = {
     "working_hours_start": "09:00",
     "working_hours_end": "17:00",
     "working_days": "0,1,2,3,4,6",
-    "treatment_prices": json.dumps(DEFAULT_TREATMENT_PRICES)
+    "treatment_prices": json.dumps(DEFAULT_TREATMENT_PRICES),
+    "notification_enable_sms": "false",
+    "notification_enable_whatsapp": "false",
+    "notification_enable_email": "false",
+    "twilio_account_sid": "",
+    "twilio_auth_token": "",
+    "twilio_phone_number": "",
+    "twilio_whatsapp_number": "",
+    "smtp_host": "smtp.gmail.com",
+    "smtp_port": "587",
+    "smtp_user": "",
+    "smtp_password": "",
+    "smtp_from_email": "",
+    "tax_rate": "15",
+    "clinic_vat_number": ""
 }
 
 from flask import g, has_app_context

@@ -16,7 +16,18 @@ from routes.auth import auth_bp
 from routes.portal import portal_bp
 
 
-app = Flask(__name__)
+import sys
+import os
+
+if getattr(sys, 'frozen', False):
+    base_dir = sys._MEIPASS
+else:
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+
+template_dir = os.path.join(base_dir, 'templates')
+static_dir = os.path.join(base_dir, 'static')
+
+app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 app.config.from_object(Config)
 
 LOG_DIRECTORY = app.config["LOG_DIRECTORY"]
@@ -65,6 +76,22 @@ def check_and_add_discount_column():
         except Exception as e:
             db.session.rollback()
             app.logger.error(f"Failed to add discount_type column: {e}")
+
+
+def check_and_add_tax_rate_column():
+    from sqlalchemy import text
+    try:
+        db.session.execute(text("SELECT tax_rate FROM invoice LIMIT 1"))
+    except Exception:
+        db.session.rollback()
+        try:
+            app.logger.info("Adding tax_rate column to invoice table")
+            db.session.execute(text("ALTER TABLE invoice ADD COLUMN tax_rate DECIMAL(5, 2) NOT NULL DEFAULT 0.00"))
+            db.session.commit()
+            app.logger.info("Successfully added tax_rate column")
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Failed to add tax_rate column: {e}")
 
 
 def check_and_add_patient_id_column():
@@ -132,6 +159,7 @@ with app.app_context():
     db.create_all()
     populate_default_settings()
     check_and_add_discount_column()
+    check_and_add_tax_rate_column()
     check_and_add_patient_id_column()
     check_and_add_plain_password_column()
     ensure_default_admin()
@@ -233,6 +261,7 @@ def inject_settings():
         "clinic_phone": get_setting("clinic_phone", "+963 958 948 727"),
         "clinic_email": get_setting("clinic_email", "kh.nasipdragon@gmail.com"),
         "clinic_address": get_setting("clinic_address", "Damascus, Syria"),
+        "clinic_vat_number": get_setting("clinic_vat_number", ""),
         "current_user": g.current_user if "current_user" in dir(g) else None,
         "operating_hours": hours_formatted,
         "operating_days": days_str,
@@ -277,6 +306,21 @@ if __name__ == "__main__":
             app.logger.info("Database tables created successfully or already exist")
         except Exception:
             app.logger.exception("Failed to create database tables")
+
+        # Start database backup scheduler thread
+        try:
+            from utils.backup_helper import schedule_daily_backups
+            schedule_daily_backups(app)
+            app.logger.info("Database backup scheduler thread started successfully")
+        except Exception as e:
+            app.logger.error(f"Failed to start database backup scheduler: {e}")
+
+        try:
+            from utils.notification_helper import schedule_appointment_reminders
+            schedule_appointment_reminders(app)
+            app.logger.info("Appointment reminders scheduler thread started successfully")
+        except Exception as e:
+            app.logger.error(f"Failed to start appointment reminders scheduler: {e}")
 
     app.logger.info("Flask app is running")
     app.run(debug=True)
