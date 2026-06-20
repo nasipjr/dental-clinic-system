@@ -1,10 +1,11 @@
+{% set current_lang = request.cookies.get('lang', 'en') %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ current_lang }}" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
 
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Login - {{ clinic_name }}</title>
+  <title>{% if current_lang == 'ar' %}تسجيل الدخول - {{ clinic_name }}{% else %}Login - {{ clinic_name }}{% endif %}</title>
   
   <!-- Favicons -->
   <link href="{{ url_for('static', filename='assets/img/favicon.png') }}" rel="icon">
@@ -132,18 +133,41 @@
       font-size: 28px;
       margin-bottom: 20px;
     }
+    
+    .nav-pills .nav-link {
+      background: transparent;
+      border: none;
+      transition: all 0.2s ease;
+    }
+    
+    .nav-pills .nav-link.active {
+      background-color: var(--accent-color) !important;
+      color: #fff !important;
+      box-shadow: 0 4px 12px rgba(23, 92, 221, 0.2);
+    }
+    
+    .nav-pills .nav-link:hover:not(.active) {
+      background: rgba(255, 255, 255, 0.05);
+    }
   </style>
 </head>
 
 <body class="login-layout">
   <div class="login-container">
+    <!-- Language Switcher -->
+    <div class="text-end mb-3">
+      <button class="btn btn-sm btn-outline-light rounded-pill px-3" id="lang-toggle-btn" style="font-size: 13px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);">
+        {% if current_lang == 'ar' %}English{% else %}العربية{% endif %}
+      </button>
+    </div>
+
     <div class="login-card">
       <div class="login-header">
         <div class="login-logo">
           <i class="bi bi-shield-lock"></i>
         </div>
         <h2>{{ clinic_name }}</h2>
-        <p>Clinic Management System Portal</p>
+        <p>{% if current_lang == 'ar' %}بوابة نظام إدارة العيادة{% else %}Clinic Management System Portal{% endif %}</p>
       </div>
 
       {% with messages = get_flashed_messages(with_categories=true) %}
@@ -157,25 +181,77 @@
         {% endif %}
       {% endwith %}
 
-      <form method="POST" class="login-form">
-        <div class="mb-3">
-          <label for="username" class="form-label">Username</label>
-          <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required autofocus>
+      <!-- Tab selectors -->
+      <ul class="nav nav-pills nav-fill mb-4 p-1 bg-white bg-opacity-10 rounded-3" id="loginTabs" role="tablist" style="border: 1px solid rgba(255, 255, 255, 0.1);">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link {% if active_tab == 'staff' %}active{% endif %} text-white rounded-3 py-2 fw-semibold" id="staff-tab" data-bs-toggle="pill" data-bs-target="#staff-pane" type="button" role="tab" style="font-size: 14px;">
+            <i class="bi bi-person-badge me-1"></i> {% if current_lang == 'ar' %}الكادر الطبي{% else %}Clinic Staff{% endif %}
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link {% if active_tab == 'patient' %}active{% endif %} text-white rounded-3 py-2 fw-semibold" id="patient-tab" data-bs-toggle="pill" data-bs-target="#patient-pane" type="button" role="tab" style="font-size: 14px;">
+            <i class="bi bi-people me-1"></i> {% if current_lang == 'ar' %}المرضى{% else %}Patients{% endif %}
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content" id="loginTabsContent">
+        <!-- Clinic Staff Login Pane -->
+        <div class="tab-pane fade {% if active_tab == 'staff' %}show active{% endif %}" id="staff-pane" role="tabpanel" aria-labelledby="staff-tab">
+          <form method="POST" class="login-form">
+            <input type="hidden" name="user_type" value="staff">
+            <div class="mb-3">
+              <label for="staff_username" class="form-label">{% if current_lang == 'ar' %}اسم المستخدم{% else %}Username{% endif %}</label>
+              <input type="text" class="form-control" id="staff_username" name="username" placeholder="{% if current_lang == 'ar' %}أدخل اسم المستخدم للكادر{% else %}Enter staff username{% endif %}" required {% if active_tab == 'staff' %}autofocus{% endif %}>
+            </div>
+
+            <div class="mb-4">
+              <label for="staff_password" class="form-label">{% if current_lang == 'ar' %}كلمة المرور{% else %}Password{% endif %}</label>
+              <input type="password" class="form-control" id="staff_password" name="password" placeholder="{% if current_lang == 'ar' %}أدخل كلمة المرور{% else %}Enter password{% endif %}" required>
+            </div>
+
+            <button type="submit" class="btn btn-login">
+              {% if current_lang == 'ar' %}تسجيل دخول الكادر{% else %}Staff Sign In{% endif %}
+            </button>
+          </form>
         </div>
 
-        <div class="mb-4">
-          <label for="password" class="form-label">Password</label>
-          <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
-        </div>
+        <!-- Patient Login Pane -->
+        <div class="tab-pane fade {% if active_tab == 'patient' %}show active{% endif %}" id="patient-pane" role="tabpanel" aria-labelledby="patient-tab">
+          <form method="POST" class="login-form">
+            <input type="hidden" name="user_type" value="patient">
+            <div class="mb-3">
+              <label for="patient_username" class="form-label">{% if current_lang == 'ar' %}اسم المستخدم{% else %}Username{% endif %}</label>
+              <input type="text" class="form-control" id="patient_username" name="username" placeholder="{% if current_lang == 'ar' %}أدخل اسم المستخدم للمريض{% else %}Enter patient username{% endif %}" required {% if active_tab == 'patient' %}autofocus{% endif %}>
+            </div>
 
-        <button type="submit" class="btn btn-login">
-          Sign In
-        </button>
-      </form>
+            <div class="mb-4">
+              <label for="patient_password" class="form-label">{% if current_lang == 'ar' %}كلمة المرور{% else %}Password{% endif %}</label>
+              <input type="password" class="form-control" id="patient_password" name="password" placeholder="{% if current_lang == 'ar' %}أدخل كلمة المرور{% else %}Enter password{% endif %}" required>
+            </div>
+
+            <button type="submit" class="btn btn-login">
+              {% if current_lang == 'ar' %}تسجيل دخول المرضى{% else %}Patient Sign In{% endif %}
+            </button>
+          </form>
+        </div>
+      </div>
+
     </div>
   </div>
 
   <script src="{{ url_for('static', filename='assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+  <script>
+    const langBtn = document.getElementById('lang-toggle-btn');
+    if (langBtn) {
+      langBtn.addEventListener('click', () => {
+        const currentLang = '{{ current_lang }}';
+        const newLang = currentLang === 'ar' ? 'en' : 'ar';
+        document.cookie = "lang=" + newLang + ";path=/;max-age=31536000";
+        window.location.reload();
+      });
+    }
+  </script>
 </body>
 
 </html>

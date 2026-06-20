@@ -55,35 +55,22 @@ def patient_login_required(f):
         if "user_id" not in session or session.get("role") != "patient":
             flash_message("login_required", "danger")
             return redirect(url_for("portal.login"))
+        
+        # Verify the patient still exists in the database (e.g. in case database was cleared/reseeded)
+        patient_id = session.get("patient_id")
+        patient = Patient.query.get(patient_id)
+        if not patient:
+            session.clear()
+            flash_message("login_required", "danger")
+            return redirect(url_for("portal.login"))
+            
         return f(*args, **kwargs)
     return decorated_function
 
 
 @portal_bp.route("/login", methods=["GET", "POST"])
 def login():
-    if "user_id" in session and session.get("role") == "patient":
-        return redirect(url_for("portal.dashboard"))
-
-    if request.method == "POST":
-        username = request.form.get("username", "").strip()
-        password = request.form.get("password", "").strip()
-
-        if not username or not password:
-            flash_message("fields_required", "danger")
-            return render_template("portal/login.html")
-
-        user = User.query.filter_by(username=username, role="patient").first()
-        if user and user.check_password(password):
-            session["user_id"] = user.id
-            session["role"] = user.role
-            session["patient_id"] = user.patient_id
-            session.permanent = True
-            flash_message("welcome", "success", name=(user.first_name or user.username))
-            return redirect(url_for("portal.dashboard"))
-        else:
-            flash_message("invalid_credentials", "danger")
-
-    return render_template("portal/login.html")
+    return redirect(url_for("auth.login"))
 
 
 @portal_bp.route("/register", methods=["GET", "POST"])
