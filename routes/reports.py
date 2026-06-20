@@ -1,9 +1,10 @@
 from datetime import datetime
 from flask import Blueprint, render_template, current_app
 from sqlalchemy import func
+from sqlalchemy.orm import subqueryload
 from utils.auth_helper import role_required
 
-from models import db, Patient, Appointment, Treatment, Payment, PaymentAllocation
+from models import db, Patient, Appointment, Treatment, Payment, PaymentAllocation, Invoice
 
 reports_bp = Blueprint("reports", __name__)
 
@@ -88,7 +89,10 @@ def reports_dashboard():
         gender_values = [g[1] for g in gender_counts]
 
         # 6. Top Debtors (Outstanding Debt per Patient)
-        all_patients = Patient.query.all()
+        all_patients = Patient.query.options(
+            subqueryload(Patient.invoices).subqueryload(Invoice.appointment).subqueryload(Appointment.treatments),
+            subqueryload(Patient.payments)
+        ).all()
         debtors = [
             {
                 "id": p.id,

@@ -251,7 +251,7 @@ def check_appointment_conflict(appointment_date, current_appointment_id=None):
     from datetime import timedelta
 
     conflict = Appointment.query.filter(
-        Appointment.status == "Scheduled",
+        Appointment.status.in_(["Scheduled", "Pending"]),
         Appointment.appointment_date < appointment_date + timedelta(minutes=30),
         Appointment.appointment_date > appointment_date - timedelta(minutes=30)
     )

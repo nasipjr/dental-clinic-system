@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, render_template, request, redirect, url_for
+from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash
 
 from models import db, Patient, Appointment, Treatment, Payment, Invoice
 from utils.validators import parse_patient_data

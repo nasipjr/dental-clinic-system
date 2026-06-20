@@ -27,16 +27,33 @@ DEFAULT_SETTINGS = {
     "treatment_prices": json.dumps(DEFAULT_TREATMENT_PRICES)
 }
 
+from flask import g, has_app_context
+
 def get_setting(key, default=None):
+    if has_app_context():
+        if not hasattr(g, "system_settings_cache"):
+            g.system_settings_cache = {}
+        if key in g.system_settings_cache:
+            return g.system_settings_cache[key]
+
+    val = None
     try:
         setting = SystemSetting.query.filter_by(key=key).first()
         if setting is not None:
-            return setting.value
+            val = setting.value
     except Exception:
         pass
-    if default is not None:
-        return default
-    return DEFAULT_SETTINGS.get(key, None)
+
+    if val is None:
+        if default is not None:
+            val = default
+        else:
+            val = DEFAULT_SETTINGS.get(key, None)
+
+    if has_app_context():
+        g.system_settings_cache[key] = val
+
+    return val
 
 def set_setting(key, value):
     try:
@@ -47,6 +64,12 @@ def set_setting(key, value):
             setting = SystemSetting(key=key, value=str(value))
             db.session.add(setting)
         db.session.commit()
+
+        if has_app_context():
+            if not hasattr(g, "system_settings_cache"):
+                g.system_settings_cache = {}
+            g.system_settings_cache[key] = str(value)
+
         return True
     except Exception:
         db.session.rollback()

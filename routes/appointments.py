@@ -23,10 +23,14 @@ def auto_cancel_expired_appointments():
                 Appointment.appointment_date < one_hour_ago
             ).all()
             if expired:
+                cancelled_count = 0
                 for appt in expired:
-                    appt.status = "Cancelled"
-                db.session.commit()
-                current_app.logger.info(f"Auto-cancelled {len(expired)} expired appointments.")
+                    if not appt.treatments:
+                        appt.status = "Cancelled"
+                        cancelled_count += 1
+                if cancelled_count > 0:
+                    db.session.commit()
+                    current_app.logger.info(f"Auto-cancelled {cancelled_count} expired appointments.")
         except Exception:
             db.session.rollback()
             current_app.logger.exception("Failed to auto-cancel expired appointments")

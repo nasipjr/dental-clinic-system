@@ -2,7 +2,7 @@ from datetime import datetime, time
 
 from flask import Blueprint, current_app, render_template
 
-from models import Patient, Appointment, Treatment, Payment
+from models import db, Patient, Appointment, Treatment, Payment
 from utils.auth_helper import role_required
 
 
@@ -45,17 +45,21 @@ def home():
             .all()
         )
 
-        all_treatments = Treatment.query.all()
-        all_payments = Payment.query.all()
+        from sqlalchemy import func
+        total_revenue = db.session.query(func.sum(Treatment.total_cost)).scalar() or 0.0
+        total_paid = db.session.query(func.sum(Payment.amount)).scalar() or 0.0
 
-        total_revenue = sum(treatment.total_cost for treatment in all_treatments)
-        total_paid = sum(payment.amount for payment in all_payments)
+        total_revenue = float(total_revenue)
+        total_paid = float(total_paid)
         total_remaining = total_revenue - total_paid
         total_outstanding = max(0.0, total_remaining)
         total_credit = max(0.0, -total_remaining)
 
-        today_payments_sum = sum(payment.amount for payment in all_payments if payment.payment_date >= today_start and payment.payment_date <= today_end)
-        today_revenue_sum = sum(t.total_cost for t in all_treatments if t.treatment_date >= today_start and t.treatment_date <= today_end)
+        today_payments_sum = db.session.query(func.sum(Payment.amount)).filter(Payment.payment_date >= today_start, Payment.payment_date <= today_end).scalar() or 0.0
+        today_revenue_sum = db.session.query(func.sum(Treatment.total_cost)).filter(Treatment.treatment_date >= today_start, Treatment.treatment_date <= today_end).scalar() or 0.0
+
+        today_payments_sum = float(today_payments_sum)
+        today_revenue_sum = float(today_revenue_sum)
 
         pending_appointments = (
             Appointment.query
