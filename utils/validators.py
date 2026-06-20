@@ -249,11 +249,17 @@ def parse_invoice_payment_amount(payment_amount_raw):
 def check_appointment_conflict(appointment_date, current_appointment_id=None):
     from models import Appointment
     from datetime import timedelta
+    from utils.settings_helper import get_setting
+
+    try:
+        duration = int(get_setting("default_appointment_duration", "30"))
+    except ValueError:
+        duration = 30
 
     conflict = Appointment.query.filter(
         Appointment.status.in_(["Scheduled", "Pending"]),
-        Appointment.appointment_date < appointment_date + timedelta(minutes=30),
-        Appointment.appointment_date > appointment_date - timedelta(minutes=30)
+        Appointment.appointment_date < appointment_date + timedelta(minutes=duration),
+        Appointment.appointment_date > appointment_date - timedelta(minutes=duration)
     )
     if current_appointment_id:
         conflict = conflict.filter(Appointment.id != current_appointment_id)

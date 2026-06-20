@@ -31,7 +31,7 @@ CREATE TABLE `appointment` (
   PRIMARY KEY (`id`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `appointment_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -40,7 +40,7 @@ CREATE TABLE `appointment` (
 
 LOCK TABLES `appointment` WRITE;
 /*!40000 ALTER TABLE `appointment` DISABLE KEYS */;
-INSERT INTO `appointment` VALUES (1,1,'2026-06-21 10:00:00','Check-up','Scheduled'),(2,2,'2026-06-22 10:00:00','Cleaning','Scheduled'),(3,3,'2026-06-23 10:00:00','Filling','Scheduled'),(4,4,'2026-06-24 10:00:00','Root Canal','Scheduled'),(5,5,'2026-06-25 10:00:00','Extraction','Scheduled'),(6,6,'2026-06-26 10:00:00','Check-up','Scheduled'),(7,7,'2026-06-27 10:00:00','Cleaning','Scheduled'),(8,8,'2026-06-28 10:00:00','Filling','Scheduled'),(9,9,'2026-06-29 10:00:00','Check-up','Scheduled'),(10,10,'2026-06-30 10:00:00','Follow-up','Scheduled'),(11,1,'2026-06-20 16:00:00','Check-up','Done');
+INSERT INTO `appointment` VALUES (1,1,'2026-06-21 10:00:00','Check-up','Scheduled'),(2,2,'2026-06-22 10:00:00','Cleaning','Scheduled'),(3,3,'2026-06-23 10:00:00','Filling','Scheduled'),(4,4,'2026-06-24 10:00:00','Root Canal','Scheduled'),(5,5,'2026-06-25 10:00:00','Extraction','Scheduled'),(6,6,'2026-06-26 10:00:00','Check-up','Scheduled'),(7,7,'2026-06-27 10:00:00','Cleaning','Scheduled'),(8,8,'2026-06-28 10:00:00','Filling','Scheduled'),(9,9,'2026-06-29 10:00:00','Check-up','Scheduled'),(10,10,'2026-06-30 10:00:00','Follow-up','Scheduled'),(11,1,'2026-06-20 16:00:00','Check-up','Done'),(12,9,'2026-06-24 12:00:00','Extraction','Scheduled'),(13,8,'2026-06-24 11:00:00','Whitening','Scheduled');
 /*!40000 ALTER TABLE `appointment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -341,4 +341,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-20 15:30:59
+-- Dump completed on 2026-06-20 17:37:33
