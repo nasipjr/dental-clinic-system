@@ -219,6 +219,7 @@
               <a href="{{ url_for('dashboard.home') }}"><i class="bi bi-chevron-right me-1 small"></i> Dashboard</a>
               <a href="{{ url_for('patients.patients') }}"><i class="bi bi-chevron-right me-1 small"></i> Patients</a>
               <a href="{{ url_for('appointments.appointments') }}"><i class="bi bi-chevron-right me-1 small"></i> Appointments</a>
+              <a href="{{ url_for('appointments.calendar') }}"><i class="bi bi-chevron-right me-1 small"></i> Calendar</a>
               {% if current_user and current_user.role in ('admin', 'receptionist') %}
               <a href="{{ url_for('invoices.invoices') }}"><i class="bi bi-chevron-right me-1 small"></i> Invoices</a>
               {% endif %}
