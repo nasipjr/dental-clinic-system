@@ -3,6 +3,8 @@ import re
 translations = {
     "Sun": "الأحد",
     "Mon": "الاثنين",
+    "No Patients Found": "لم يتم العثور على مرضى",
+    "You need to add at least one patient to the database before you can schedule an appointment.": "يجب عليك إضافة مريض واحد على الأقل إلى قاعدة البيانات لتتمكن من جدولة موعد.",
     "Tue": "الثلاثاء",
     "Wed": "الأربعاء",
     "Thu": "الخميس",

@@ -31,7 +31,7 @@ CREATE TABLE `appointment` (
   PRIMARY KEY (`id`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `appointment_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -40,7 +40,7 @@ CREATE TABLE `appointment` (
 
 LOCK TABLES `appointment` WRITE;
 /*!40000 ALTER TABLE `appointment` DISABLE KEYS */;
-INSERT INTO `appointment` VALUES (4,4,'2026-06-21 10:00:00','Routine Checkup','Scheduled'),(8,4,'2026-06-20 09:46:00','Manual','Done');
+INSERT INTO `appointment` VALUES (1,1,'2026-06-21 10:00:00','Check-up','Scheduled'),(2,2,'2026-06-22 10:00:00','Cleaning','Scheduled'),(3,3,'2026-06-23 10:00:00','Filling','Scheduled'),(4,4,'2026-06-24 10:00:00','Root Canal','Scheduled'),(5,5,'2026-06-25 10:00:00','Extraction','Scheduled'),(6,6,'2026-06-26 10:00:00','Check-up','Scheduled'),(7,7,'2026-06-27 10:00:00','Cleaning','Scheduled'),(8,8,'2026-06-28 10:00:00','Filling','Scheduled'),(9,9,'2026-06-29 10:00:00','Check-up','Scheduled'),(10,10,'2026-06-30 10:00:00','Follow-up','Scheduled'),(11,1,'2026-06-20 16:00:00','Check-up','Done'),(12,9,'2026-06-24 12:00:00','Extraction','Scheduled'),(13,8,'2026-06-24 11:00:00','Whitening','Scheduled');
 /*!40000 ALTER TABLE `appointment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -58,13 +58,13 @@ CREATE TABLE `invoice` (
   `issue_date` datetime NOT NULL,
   `discount` decimal(10,2) NOT NULL,
   `discount_type` varchar(20) NOT NULL,
-  `tax_rate` decimal(5,2) NOT NULL DEFAULT '0.00',
+  `tax_rate` decimal(5,2) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `appointment_id` (`appointment_id`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `invoice_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointment` (`id`),
   CONSTRAINT `invoice_ibfk_2` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -73,7 +73,7 @@ CREATE TABLE `invoice` (
 
 LOCK TABLES `invoice` WRITE;
 /*!40000 ALTER TABLE `invoice` DISABLE KEYS */;
-INSERT INTO `invoice` VALUES (2,8,4,'2026-06-20 09:46:55',0.00,'value',15.00);
+INSERT INTO `invoice` VALUES (1,11,1,'2026-06-20 15:24:52',0.00,'value',0.00);
 /*!40000 ALTER TABLE `invoice` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -99,7 +99,7 @@ CREATE TABLE `notification_log` (
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `notification_log_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointment` (`id`) ON DELETE CASCADE,
   CONSTRAINT `notification_log_ibfk_2` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -108,7 +108,6 @@ CREATE TABLE `notification_log` (
 
 LOCK TABLES `notification_log` WRITE;
 /*!40000 ALTER TABLE `notification_log` DISABLE KEYS */;
-INSERT INTO `notification_log` VALUES (1,4,4,'sms_24h','sms','+963958948727','2026-06-20 09:29:48','sent',NULL),(2,4,4,'whatsapp_24h','whatsapp','+963958948727','2026-06-20 09:29:48','sent',NULL),(3,4,4,'email_24h','email','testpatient@example.com','2026-06-20 09:29:48','sent',NULL);
 /*!40000 ALTER TABLE `notification_log` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -141,7 +140,7 @@ CREATE TABLE `patient` (
   `emergency_contact` varchar(150) DEFAULT NULL,
   `medicare_number` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -150,7 +149,7 @@ CREATE TABLE `patient` (
 
 LOCK TABLES `patient` WRITE;
 /*!40000 ALTER TABLE `patient` DISABLE KEYS */;
-INSERT INTO `patient` VALUES (4,NULL,'Test','Patient',NULL,'1990-01-01','Male','+963958948727','testpatient@example.com',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(5,'mr','Nasip','Jabbara','Nasip','2002-06-10','Male','0958948727','kh.nasipdragon@gmail.com','Lattakia','Lattakia','Lattakia','017','Syria','شسيشس','سي','سي','Engineer','Ali Ahmad','1122');
+INSERT INTO `patient` VALUES (1,NULL,'أحمد','العلي',NULL,'1990-05-15','Male','+963958948721','ahmed.ali@example.com','المزة','دمشق',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(2,NULL,'فاطمة','الحسن',NULL,'1995-08-20','Female','+963958948722','fatima.hassan@example.com','الشهباء','حلب',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(3,NULL,'محمد','المصري',NULL,'1988-12-10','Male','+963958948723','mohammad.masri@example.com','الإنشاءات','حمص',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(4,NULL,'سارة','الخالد',NULL,'1992-03-05','Female','+963958948724','sara.khaled@example.com','المشروع الأول','اللاذقية',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(5,NULL,'خالد','اليوسف',NULL,'1985-07-25','Male','+963958948725','khaled.youssef@example.com','الشريعة','حماة',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(6,NULL,'نور','الخطيب',NULL,'1998-10-18','Female','+963958948726','nour.khatib@example.com','الكورنيش','طرطوس',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(7,NULL,'يوسف','سليمان',NULL,'1991-01-30','Male','+963958948727','youssef.sleiman@example.com','أبو رمانة','دمشق',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(8,NULL,'منى','عبود',NULL,'1987-09-12','Female','+963958948728','mona.abboud@example.com','طريق قنوات','السويداء',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(9,NULL,'سامر','حنا',NULL,'1983-04-22','Male','+963958948729','samer.hanna@example.com','باب توما','دمشق',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(10,NULL,'رشا','الراعي',NULL,'1994-11-02','Female','+963958948730','rasha.raei@example.com','الحمراء','حمص',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `patient` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -209,7 +208,7 @@ CREATE TABLE `payment` (
 
 LOCK TABLES `payment` WRITE;
 /*!40000 ALTER TABLE `payment` DISABLE KEYS */;
-INSERT INTO `payment` VALUES (1,4,180.00,'2026-06-20 09:46:55','Manual invoice payment for INV-2');
+INSERT INTO `payment` VALUES (1,1,150000.00,'2026-06-20 15:28:15','');
 /*!40000 ALTER TABLE `payment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -239,7 +238,7 @@ CREATE TABLE `payment_allocation` (
 
 LOCK TABLES `payment_allocation` WRITE;
 /*!40000 ALTER TABLE `payment_allocation` DISABLE KEYS */;
-INSERT INTO `payment_allocation` VALUES (1,1,2,180.00);
+INSERT INTO `payment_allocation` VALUES (1,1,1,150000.00);
 /*!40000 ALTER TABLE `payment_allocation` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -265,7 +264,7 @@ CREATE TABLE `system_setting` (
 
 LOCK TABLES `system_setting` WRITE;
 /*!40000 ALTER TABLE `system_setting` DISABLE KEYS */;
-INSERT INTO `system_setting` VALUES (1,'clinic_name','Test Clinic Name'),(2,'clinic_phone','+963 958 948 727'),(3,'clinic_email','test@gmail.com'),(4,'clinic_address','Test Address'),(5,'currency_symbol','$'),(6,'default_appointment_duration','30'),(7,'working_hours_start','09:00'),(8,'working_hours_end','17:00'),(9,'working_days',''),(10,'treatment_prices','{\"Cleaning\": 50000, \"Filling\": 75000}'),(11,'notification_enable_sms','false'),(12,'notification_enable_whatsapp','false'),(13,'notification_enable_email','false'),(14,'twilio_account_sid',''),(15,'twilio_auth_token',''),(16,'twilio_phone_number',''),(17,'twilio_whatsapp_number',''),(18,'smtp_host',''),(19,'smtp_port',''),(20,'smtp_user',''),(21,'smtp_password',''),(22,'smtp_from_email',''),(23,'tax_rate','15'),(24,'clinic_vat_number','300012345600003');
+INSERT INTO `system_setting` VALUES (1,'clinic_name','Clinic'),(2,'clinic_phone','+963 958 948 727'),(3,'clinic_email','kh.nasipdragon@gmail.com'),(4,'clinic_address','Damascus, Syria'),(5,'currency_symbol','S.P'),(6,'default_appointment_duration','30'),(7,'working_hours_start','09:00'),(8,'working_hours_end','17:00'),(9,'working_days','0,1,2,3,4,6'),(10,'treatment_prices','{\"Check-up\": 25000, \"Cleaning\": 50000, \"Filling\": 75000, \"Root Canal\": 150000, \"Extraction\": 80000, \"Crown / Bridge\": 200000, \"Braces / Orthodontics\": 300000, \"Whitening\": 120000, \"Emergency Pain\": 60000, \"Follow-up\": 20000}'),(11,'notification_enable_sms','false'),(12,'notification_enable_whatsapp','false'),(13,'notification_enable_email','false'),(14,'twilio_account_sid',''),(15,'twilio_auth_token',''),(16,'twilio_phone_number',''),(17,'twilio_whatsapp_number',''),(18,'smtp_host','smtp.gmail.com'),(19,'smtp_port','587'),(20,'smtp_user',''),(21,'smtp_password',''),(22,'smtp_from_email',''),(23,'tax_rate','15'),(24,'clinic_vat_number','');
 /*!40000 ALTER TABLE `system_setting` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -287,7 +286,7 @@ CREATE TABLE `treatment` (
   PRIMARY KEY (`id`),
   KEY `appointment_id` (`appointment_id`),
   CONSTRAINT `treatment_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointment` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -296,7 +295,7 @@ CREATE TABLE `treatment` (
 
 LOCK TABLES `treatment` WRITE;
 /*!40000 ALTER TABLE `treatment` DISABLE KEYS */;
-INSERT INTO `treatment` VALUES (5,8,'2026-06-20 09:46:00','Check-up','','',25000.00),(6,8,'2026-06-20 09:46:00','Emergency Pain','','',60000.00),(7,8,'2026-06-20 09:46:00','Braces / Orthodontics','','',300000.00);
+INSERT INTO `treatment` VALUES (1,11,'2026-06-20 16:00:00','Filling','1','',75000.00),(2,11,'2026-06-20 16:00:00','Filling','2','',75000.00);
 /*!40000 ALTER TABLE `treatment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -320,7 +319,7 @@ CREATE TABLE `user` (
   UNIQUE KEY `ix_user_username` (`username`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `user_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -329,7 +328,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1,'admin','scrypt:32768:8:1$0Ahtsb3Ty8i5pbm5$8de50129687f2e473c16efa17eee3ee7825d89a4b7fbbb3e174cb7ad492a3aa866987eb557b18e9ad36c914c574e1deefec5bc9d732cb1da72c56a927fc77a82','admin','Admin','User',NULL,NULL),(5,'doctor','scrypt:32768:8:1$ISSHUaw5o4NvwO8g$5cc3e6038bbfa412e1ef84840d5297b4193bb6c948c5ba9adf743570578c2c911ae552eaddbd12b4950196237d2d5bca7c5b876e2ed90728d694580f0db3e616','doctor','Doctor','Who',NULL,NULL),(6,'receptionist','scrypt:32768:8:1$UJ0XC1WwRgzouMFA$7c7ee6d8040e3169029b9219caa4cb460516a316bd8e1c9ba1ed0ea1e35afb7ebbf42e2259f2a8a06c3ae3a4deb95c9cff8a2dc68ab55fa7ce9a997f65cb7bf7','receptionist','Receptionist','One',NULL,NULL),(7,'testpatient','scrypt:32768:8:1$ALveYqwQKXua1umr$9063473509f497a84fa644df8aa242689841a46ac6a8c4d2d4c0300f636c9a3aaea348ff385e70ed74bfa73e9755f6e71445b96e0811d7d4316230eae450cd20','patient','Test','Patient',4,'password123'),(8,'nasnos','scrypt:32768:8:1$x8Gt26Kv3OTSSqrj$01151fb6ad9f2f16f1c5038ac8cacb2ec1d1b9da2871dd8c394fc185dc2f48cba856cd914278140e760c8614b2c7186675cc3df31846a84f107fe6734b4520cd','patient','Nasip','Jabbara',5,NULL);
+INSERT INTO `user` VALUES (1,'admin','scrypt:32768:8:1$atJj4C9ImjWZMGAA$660215c4e032bf012c87e69184d2e4d22e4e97a8237b3e4748e7b1d35545a3d4e89ce3961ad883c8b286e91288fcc98e909aa7ab829ca91dc6362adda6c97312','admin','Admin','User',NULL,NULL);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -342,4 +341,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-20  9:57:35
+-- Dump completed on 2026-06-20 16:49:48

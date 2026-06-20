@@ -26,6 +26,21 @@
                     </div>
                     {% endif %}
 
+                    {% if not patient and not patients %}
+                    <div class="text-center py-5" data-aos="fade-up" data-aos-delay="300">
+                        <i class="bi bi-people fs-1 text-muted mb-3 d-block"></i>
+                        <h4 class="mb-3">No Patients Found</h4>
+                        <p class="text-muted mb-4">You need to add at least one patient to the database before you can schedule an appointment.</p>
+                        <div class="col-12 text-center">
+                            <a href="{{ url_for('patients.add_patient') }}" class="save-patient-btn text-decoration-none px-4 py-2 d-inline-block">
+                                <i class="bi bi-person-plus me-1"></i> Add Patient
+                            </a>
+                            <a href="{{ url_for('appointments.appointments') }}" class="btn-outline-main ms-2 text-decoration-none px-4 py-2 d-inline-block">
+                                Cancel
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
                     <form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300">
                         {% if patients %}
                         <div class="col-md-12">
@@ -89,9 +104,8 @@
                             </a>
                             {% endif %}
                         </div>
-
-                </div>
-                </form>
+                    </form>
+                    {% endif %}
 
             </div>
         </div>

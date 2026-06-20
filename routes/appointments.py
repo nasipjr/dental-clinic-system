@@ -143,7 +143,14 @@ def add_appointment_direct():
         if request.method == "POST":
             patient_id = request.form.get("patient_id")
             if not patient_id:
-                return "Patient ID is required.", 400
+                return render_template(
+                    "appointments/add_appointment.html",
+                    patients=patients,
+                    error_message="Patient ID is required.",
+                    appointment_min_datetime=appointment_min_datetime,
+                    appointment_max_datetime=appointment_max_datetime,
+                    prefilled_date=prefilled_date,
+                ), 400
 
             patient = Patient.query.get_or_404(patient_id)
             appointment_data, appointment_error = parse_appointment_data(request.form)
