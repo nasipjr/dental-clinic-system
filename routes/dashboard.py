@@ -57,6 +57,14 @@ def home():
         today_payments_sum = sum(payment.amount for payment in all_payments if payment.payment_date >= today_start and payment.payment_date <= today_end)
         today_revenue_sum = sum(t.total_cost for t in all_treatments if t.treatment_date >= today_start and t.treatment_date <= today_end)
 
+        pending_appointments = (
+            Appointment.query
+            .join(Patient)
+            .filter(Appointment.status == "Pending")
+            .order_by(Appointment.appointment_date.asc())
+            .all()
+        )
+
         return render_template(
             "dashboard/index.html",
             total_patients=total_patients,
@@ -73,6 +81,7 @@ def home():
             today_done_appointments=today_done_appointments,
             today_payments_sum=today_payments_sum,
             today_revenue_sum=today_revenue_sum,
+            pending_appointments=pending_appointments,
         )
 
     except Exception:

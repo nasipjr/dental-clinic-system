@@ -412,7 +412,9 @@
     }
 
     /* Day header styling in list view */
-    .fc-list-day {
+    .fc-list-day,
+    .fc-list-day th,
+    .fc-list-day td {
         background: transparent !important;
     }
 
@@ -550,6 +552,16 @@
         const calendar = new FullCalendar.Calendar(calendarEl, {
             locale: currentLang === 'ar' ? 'ar' : 'en',
             direction: currentLang === 'ar' ? 'rtl' : 'ltr',
+            buttonText: {
+                today: currentLang === 'ar' ? 'اليوم' : 'Today',
+                month: currentLang === 'ar' ? 'شهر' : 'Month',
+                week: currentLang === 'ar' ? 'أسبوع' : 'Week',
+                day: currentLang === 'ar' ? 'يوم' : 'Day',
+                list: currentLang === 'ar' ? 'قائمة' : 'List',
+                dayGridMonth: currentLang === 'ar' ? 'شهر' : 'Month',
+                timeGridWeek: currentLang === 'ar' ? 'أسبوع' : 'Week',
+                listMonth: currentLang === 'ar' ? 'قائمة' : 'List'
+            },
             initialView: 'dayGridMonth',
             allDaySlot: false, // Removes the "all-day" slot/row
             slotMinTime: slotMinTime, // Dynamic start visible slots

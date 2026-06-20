@@ -50,6 +50,8 @@ def get_appointments_context():
 
     if status_filter:
         query = query.filter(Appointment.status == status_filter)
+    else:
+        query = query.filter(Appointment.status != "Pending")
 
     sort_columns = {
         "id": Appointment.id,
@@ -91,7 +93,16 @@ def appointments():
     current_app.logger.info("Appointments page opened")
 
     try:
+        tab = request.args.get("tab", "").strip()
         context = get_appointments_context()
+        
+        if tab == "pending":
+            pending_appointments = Appointment.query.filter_by(status="Pending").order_by(Appointment.appointment_date.asc()).all()
+            context["show_pending"] = True
+            context["pending_appointments"] = pending_appointments
+        else:
+            context["show_pending"] = False
+
         return render_template("appointments/appointments.html", **context)
 
     except Exception:
@@ -527,5 +538,59 @@ def delete_all_cancelled():
             message="Failed to delete cancelled appointments.",
             back_url=url_for("appointments.appointments"),
         ), 500
+
+
+@appointments_bp.route("/appointments/pending")
+@role_required("admin", "doctor", "receptionist")
+def pending_appointments():
+    current_app.logger.info("Pending appointments page opened")
+    try:
+        pending = (
+            Appointment.query
+            .join(Patient)
+            .filter(Appointment.status == "Pending")
+            .order_by(Appointment.appointment_date.asc())
+            .all()
+        )
+        return render_template("appointments/pending_appointments.html", pending_appointments=pending)
+    except Exception:
+        current_app.logger.exception("Error while loading pending appointments page")
+        return "Error Loading Pending Appointments Page", 500
+
+
+@appointments_bp.route("/appointments/<int:appointment_id>/confirm", methods=["POST"])
+@role_required("admin", "receptionist")
+def confirm_appointment(appointment_id):
+    current_app.logger.info(f"Confirming appointment request | id={appointment_id}")
+    try:
+        appt = Appointment.query.get_or_404(appointment_id)
+        if appt.status != "Pending":
+            return jsonify({"success": False, "message": "Only pending appointments can be confirmed."}), 400
+        
+        appt.status = "Scheduled"
+        db.session.commit()
+        return jsonify({"success": True, "message": "Appointment confirmed successfully."})
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Failed to confirm appointment request")
+        return jsonify({"success": False, "message": "Internal server error."}), 500
+
+
+@appointments_bp.route("/appointments/<int:appointment_id>/decline", methods=["POST"])
+@role_required("admin", "receptionist")
+def decline_appointment(appointment_id):
+    current_app.logger.info(f"Declining appointment request | id={appointment_id}")
+    try:
+        appt = Appointment.query.get_or_404(appointment_id)
+        if appt.status != "Pending":
+            return jsonify({"success": False, "message": "Only pending appointments can be declined."}), 400
+        
+        appt.status = "Cancelled"
+        db.session.commit()
+        return jsonify({"success": True, "message": "Appointment request declined."})
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Failed to decline appointment request")
+        return jsonify({"success": False, "message": "Internal server error."}), 500
 
 

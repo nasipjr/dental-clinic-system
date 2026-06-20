@@ -31,6 +31,9 @@ def settings_page():
                 for name, price in zip(names, prices):
                     name = name.strip()
                     if name:
+                        if len(name) > 200:
+                            flash("Procedure name cannot exceed 200 characters.", "danger")
+                            return redirect(url_for("settings.settings_page") + "#tab-treatments")
                         try:
                             # Convert price to number
                             price_clean = price.strip().replace(",", "")
@@ -81,7 +84,23 @@ def add_user():
 
     if not username or not password:
         flash("Username and Password are required.", "danger")
-        return redirect(url_for("settings.settings_page"))
+        return redirect(url_for("settings.settings_page") + "#tab-users")
+
+    if len(username) > 80:
+        flash("Username cannot exceed 80 characters.", "danger")
+        return redirect(url_for("settings.settings_page") + "#tab-users")
+
+    if len(password) < 6:
+        flash("Password must be at least 6 characters long.", "danger")
+        return redirect(url_for("settings.settings_page") + "#tab-users")
+
+    if role not in {"admin", "doctor", "receptionist"}:
+        flash("Invalid user role specified.", "danger")
+        return redirect(url_for("settings.settings_page") + "#tab-users")
+
+    if len(first_name) > 100 or len(last_name) > 100:
+        flash("First name and Last name cannot exceed 100 characters.", "danger")
+        return redirect(url_for("settings.settings_page") + "#tab-users")
 
     existing = User.query.filter_by(username=username).first()
     if existing:
@@ -154,6 +173,22 @@ def edit_user(user_id):
 
     if not username:
         flash("Username is required.", "danger")
+        return redirect(url_for("settings.settings_page") + "#tab-users")
+
+    if len(username) > 80:
+        flash("Username cannot exceed 80 characters.", "danger")
+        return redirect(url_for("settings.settings_page") + "#tab-users")
+
+    if password and len(password) < 6:
+        flash("Password must be at least 6 characters long.", "danger")
+        return redirect(url_for("settings.settings_page") + "#tab-users")
+
+    if role and role not in {"admin", "doctor", "receptionist"}:
+        flash("Invalid user role specified.", "danger")
+        return redirect(url_for("settings.settings_page") + "#tab-users")
+
+    if len(first_name) > 100 or len(last_name) > 100:
+        flash("First name and Last name cannot exceed 100 characters.", "danger")
         return redirect(url_for("settings.settings_page") + "#tab-users")
 
     # Check if username is taken by another user

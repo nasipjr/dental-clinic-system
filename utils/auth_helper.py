@@ -20,6 +20,8 @@ def role_required(*roles):
             user_role = session.get('role')
             if user_role not in roles:
                 flash("You do not have permission to access this page.", "danger")
+                if user_role == 'patient':
+                    return redirect(url_for('portal.dashboard'))
                 return redirect(url_for('dashboard.home'))
             return f(*args, **kwargs)
         return decorated_function

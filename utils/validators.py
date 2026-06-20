@@ -33,9 +33,13 @@ def parse_patient_data(form):
 
     if not first_name:
         return None, "First name is required."
+    if len(first_name) > 100:
+        return None, "First name cannot exceed 100 characters."
 
     if not last_name:
         return None, "Last name is required."
+    if len(last_name) > 100:
+        return None, "Last name cannot exceed 100 characters."
 
     if not gender:
         return None, "Gender is required."
@@ -51,26 +55,77 @@ def parse_patient_data(form):
     except ValueError:
         return None, "Date of birth must be a valid date."
 
+    title = (form.get("title") or "").strip()
+    if title and len(title) > 20:
+        return None, "Title cannot exceed 20 characters."
+
+    preferred_first_name = (form.get("preferred_first_name") or "").strip()
+    if preferred_first_name and len(preferred_first_name) > 100:
+        return None, "Preferred first name cannot exceed 100 characters."
+
+    phone = (form.get("phone") or "").strip()
+    if phone and len(phone) > 20:
+        return None, "Phone number cannot exceed 20 characters."
+
+    email = (form.get("email") or "").strip()
+    if email:
+        if len(email) > 120:
+            return None, "Email address cannot exceed 120 characters."
+        if "@" not in email or "." not in email:
+            return None, "Invalid email address format."
+
+    address = (form.get("address") or "").strip()
+    if address and len(address) > 255:
+        return None, "Address cannot exceed 255 characters."
+
+    city = (form.get("city") or "").strip()
+    if city and len(city) > 100:
+        return None, "City cannot exceed 100 characters."
+
+    state = (form.get("state") or "").strip()
+    if state and len(state) > 100:
+        return None, "State cannot exceed 100 characters."
+
+    post_code = (form.get("post_code") or "").strip()
+    if post_code and len(post_code) > 20:
+        return None, "Post code cannot exceed 20 characters."
+
+    country = (form.get("country") or "").strip()
+    if country and len(country) > 100:
+        return None, "Country cannot exceed 100 characters."
+
+    occupation = (form.get("occupation") or "").strip()
+    if occupation and len(occupation) > 150:
+        return None, "Occupation cannot exceed 150 characters."
+
+    emergency_contact = (form.get("emergency_contact") or "").strip()
+    if emergency_contact and len(emergency_contact) > 150:
+        return None, "Emergency contact cannot exceed 150 characters."
+
+    medicare_number = (form.get("medicare_number") or "").strip()
+    if medicare_number and len(medicare_number) > 100:
+        return None, "Medicare number cannot exceed 100 characters."
+
     patient_data = {
-        "title": form.get("title"),
+        "title": title if title else None,
         "first_name": first_name,
         "last_name": last_name,
-        "preferred_first_name": form.get("preferred_first_name"),
+        "preferred_first_name": preferred_first_name if preferred_first_name else None,
         "date_of_birth": date_of_birth,
         "gender": gender,
-        "phone": form.get("phone"),
-        "email": form.get("email"),
-        "address": form.get("address"),
-        "city": form.get("city"),
-        "state": form.get("state"),
-        "post_code": form.get("post_code"),
-        "country": form.get("country"),
+        "phone": phone if phone else None,
+        "email": email if email else None,
+        "address": address if address else None,
+        "city": city if city else None,
+        "state": state if state else None,
+        "post_code": post_code if post_code else None,
+        "country": country if country else None,
         "notes": form.get("notes"),
         "medical_information": form.get("medical_information"),
         "appointment_notes": form.get("appointment_notes"),
-        "occupation": form.get("occupation"),
-        "emergency_contact": form.get("emergency_contact"),
-        "medicare_number": form.get("medicare_number"),
+        "occupation": occupation if occupation else None,
+        "emergency_contact": emergency_contact if emergency_contact else None,
+        "medicare_number": medicare_number if medicare_number else None,
     }
 
     return patient_data, None

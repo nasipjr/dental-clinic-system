@@ -294,6 +294,89 @@
   </section>
   <!-- /Hero Section -->
 
+  <!-- Pending Booking Requests Title -->
+  {% if pending_appointments %}
+  <div class="container section-title" style="margin-top: 80px;" data-aos="fade-up">
+    <h2>Pending Booking Requests</h2>
+    <p>Incoming appointment requests from the patient portal waiting for confirmation.</p>
+  </div>
+  <!-- /Pending Booking Requests Title -->
+
+  <!-- Pending Booking Requests Section -->
+  <section id="pending-appointments-section" class="find-a-doctor section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+      <div class="appointments-table-wrapper table-responsive">
+        <table class="table appointments-table align-middle">
+          <thead>
+            <tr>
+              <th>Date & Time</th>
+              <th>Patient</th>
+              <th>Phone</th>
+              <th>Reason</th>
+              <th>Status</th>
+              {% if current_user.role in ('admin', 'receptionist') %}
+              <th class="text-center">Actions</th>
+              {% endif %}
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for appointment in pending_appointments %}
+            <tr>
+              <td>
+                {{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if appointment.appointment_date else 'No date' }}
+              </td>
+
+              <td>
+                <strong>
+                  {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                </strong>
+              </td>
+
+              <td>
+                {{ appointment.patient.phone or 'No phone number' }}
+              </td>
+
+              <td>
+                {{ appointment.reason or 'No reason provided' }}
+              </td>
+
+              <td>
+                <span class="appointment-status status-pending">
+                  {{ appointment.status }}
+                </span>
+              </td>
+
+              {% if current_user.role in ('admin', 'receptionist') %}
+              <td class="text-center">
+                <div class="d-flex justify-content-center gap-2">
+                  <button type="button"
+                    class="btn btn-sm btn-success quick-action-btn py-1 px-3 fw-bold rounded-pill"
+                    data-action-url="{{ url_for('appointments.confirm_appointment', appointment_id=appointment.id) }}"
+                    data-confirm-msg="Are you sure you want to confirm this booking request?"
+                    title="Confirm Booking">
+                    <i class="bi bi-check-lg"></i> Confirm
+                  </button>
+
+                  <button type="button"
+                    class="btn btn-sm btn-danger quick-action-btn py-1 px-3 fw-bold rounded-pill"
+                    data-action-url="{{ url_for('appointments.decline_appointment', appointment_id=appointment.id) }}"
+                    data-confirm-msg="Are you sure you want to decline this booking request?"
+                    title="Decline Booking">
+                    <i class="bi bi-x-lg"></i> Decline
+                  </button>
+                </div>
+              </td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
   <!-- Today's Scheduled Appointments Title -->
   <div class="container section-title" style="margin-top: 80px;" data-aos="fade-up">
     <h2>Today’s Scheduled Appointments</h2>

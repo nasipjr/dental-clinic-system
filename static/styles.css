@@ -221,6 +221,15 @@
   color: #ff7b88;
 }
 
+.status-pending {
+  background: rgba(255, 193, 7, 0.18);
+  color: #d09600;
+}
+
+[data-bs-theme="dark"] .status-pending {
+  color: #ffd043;
+}
+
 .btn-status {
   display: inline-flex;
   align-items: center;
@@ -2266,10 +2275,47 @@ body.calendar-page.scrolled .header {
 [data-bs-theme="dark"] .card,
 [data-bs-theme="dark"] .settings-nav-card,
 [data-bs-theme="dark"] .settings-content-card,
-[data-bs-theme="dark"] .live-activity-card {
+[data-bs-theme="dark"] .live-activity-card,
+[data-bs-theme="dark"] #add-patient-page .add-patient-wrapper {
   background-color: #1e293b !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25) !important;
+}
+
+[data-bs-theme="dark"] #add-patient-page .add-patient-header h2,
+[data-bs-theme="dark"] #add-patient-form .form-label,
+[data-bs-theme="dark"] #add-patient-page label {
+  color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] #add-patient-page .add-patient-header p {
+  color: #94a3b8 !important;
+}
+
+[data-bs-theme="dark"] #add-patient-form .readonly-status-field {
+  background-color: #0f172a !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #e2e8f0 !important;
+}
+
+/* SweetAlert dark theme integration */
+[data-bs-theme="dark"] .swal2-popup {
+  background-color: #1e293b !important;
+  color: #e2e8f0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35) !important;
+}
+
+[data-bs-theme="dark"] .swal2-title {
+  color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .swal2-html-container {
+  color: #cbd5e1 !important;
+}
+
+[data-bs-theme="dark"] .swal2-loading {
+  background-color: transparent !important;
 }
 
 /* Flatpickr Calendar theme integration for dark mode */
@@ -2390,4 +2436,37 @@ html[lang="ar"] .fc-list-event.event-status-completed {
 html[lang="ar"] .fc-list-event.event-status-cancelled {
   border-left: none !important;
   border-right: 6px solid #e11d48 !important;
+}
+
+/* Prevents fixed header/navbar from blocking hero section content on short/mobile viewports */
+.hero {
+  align-items: stretch !important;
+  padding-top: 140px !important;
+  padding-bottom: 60px !important;
+}
+
+.hero .container {
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+}
+
+/* Adjust footer column lines for RTL (Arabic mode) */
+html[lang="ar"] .footer-16 .nav-column h6::after {
+  left: auto !important;
+  right: 0 !important;
+}
+
+/* Empty box dark theme adjustment */
+#patient-search-empty .empty-box {
+  background: var(--surface-color) !important;
+  border-color: color-mix(in srgb, var(--default-color), transparent 90%) !important;
+  color: var(--default-color) !important;
+}
+
+#patient-search-empty .empty-box h4 {
+  color: var(--heading-color) !important;
+}
+
+#patient-search-empty .empty-box p {
+  color: color-mix(in srgb, var(--default-color), transparent 30%) !important;
 }

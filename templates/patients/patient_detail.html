@@ -39,6 +39,28 @@
                     <span class="info-label">Notes</span>
                     <p>{{ patient.notes or 'No notes available' }}</p>
                 </div>
+
+                <div class="patient-info-box">
+                    <span class="info-label">Patient Portal Access</span>
+                    {% if patient.user %}
+                        <p class="text-success mb-1" style="font-weight: 600;">
+                            <i class="bi bi-shield-check"></i> Enabled
+                        </p>
+                        <small class="text-muted d-block mb-2">Username: <strong>{{ patient.user.username }}</strong></small>
+                        <form method="POST" action="{{ url_for('patients.delete_portal_account', patient_id=patient.id) }}" onsubmit="return confirm('Are you sure you want to revoke portal access for this patient? This will delete their portal login.');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2 fw-semibold" style="font-size: 0.72rem; border-radius: 4px; border-width: 1px;">
+                                <i class="bi bi-shield-x"></i> Revoke Access
+                            </button>
+                        </form>
+                    {% else %}
+                        <p class="text-muted mb-2">
+                            <i class="bi bi-shield-slash"></i> Disabled
+                        </p>
+                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 fw-semibold" style="font-size: 0.72rem; border-radius: 4px; border-width: 1px;" data-bs-toggle="modal" data-bs-target="#createPortalModal">
+                            <i class="bi bi-shield-plus"></i> Enable Access
+                        </button>
+                    {% endif %}
+                </div>
             </div>
 
             <div class="action-buttons mt-4 patient-main-actions">
@@ -201,4 +223,36 @@
         </div>
     </div>
 </section>
+
+<!-- Create Portal Account Modal -->
+<div class="modal fade" id="createPortalModal" tabindex="-1" aria-labelledby="createPortalModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--surface-color); border: 1px solid color-mix(in srgb, var(--accent-color), transparent 85%); border-radius: 20px; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title" id="createPortalModalLabel" style="font-weight: 700; color: var(--heading-color); font-family: var(--heading-font);">Create Portal Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('patients.create_portal_account', patient_id=patient.id) }}">
+                <div class="modal-body py-4">
+                    <p class="text-muted small mb-4">Set up a patient portal account so the patient can log in and view or request appointments.</p>
+                    
+                    <div class="mb-3">
+                        <label for="portal-username" class="form-label fw-semibold" style="color: var(--heading-color); margin-bottom: 6px;">Username</label>
+                        <input type="text" id="portal-username" name="username" class="form-control rounded-3" placeholder="e.g. {{ patient.first_name|lower }}{{ patient.last_name|lower }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="portal-password" class="form-label fw-semibold" style="color: var(--heading-color); margin-bottom: 6px;">Password</label>
+                        <input type="password" id="portal-password" name="password" class="form-control rounded-3" placeholder="At least 6 characters" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 d-flex justify-content-center gap-2 pb-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Create Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

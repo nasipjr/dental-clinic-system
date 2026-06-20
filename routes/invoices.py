@@ -216,6 +216,14 @@ def add_invoice():
                     ), 400
 
                 tooth_number = tooth_numbers[index].strip() if index < len(tooth_numbers) else ""
+                if len(tooth_number) > 50:
+                    return render_template(
+                        "invoices/add_invoice.html",
+                        patients=patients,
+                        treatment_prices=TREATMENT_PRICES,
+                        default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
+                        error_message="Tooth number cannot exceed 50 characters.",
+                    ), 400
                 notes = notes_list[index].strip() if index < len(notes_list) else ""
 
                 invoice_items.append({

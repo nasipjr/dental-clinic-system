@@ -93,6 +93,15 @@ def add_treatment_to_appointment(appointment_id):
                 ), 400
 
             tooth_number = request.form.get("tooth_number", "").strip()
+            if len(tooth_number) > 50:
+                return render_template(
+                    "treatments/add_treatment.html",
+                    appointment=appointment,
+                    patient=appointment.patient,
+                    treatment_prices=TREATMENT_PRICES,
+                    error_message="Tooth number cannot exceed 50 characters.",
+                ), 400
+
             notes = request.form.get("notes", "").strip()
 
             total_cost = TREATMENT_PRICES[procedure_type]
@@ -277,8 +286,20 @@ def edit_treatment(treatment_id):
                     error_message="Invalid treatment procedure type.",
                 ), 400
 
+            tooth_number = request.form.get("tooth_number", "").strip()
+            if len(tooth_number) > 50:
+                return render_template(
+                    "treatments/edit_treatment.html",
+                    treatment=treatment,
+                    appointment=treatment.appointment,
+                    patient=treatment.appointment.patient,
+                    mode="edit",
+                    treatment_prices=TREATMENT_PRICES,
+                    error_message="Tooth number cannot exceed 50 characters.",
+                ), 400
+
             treatment.procedure_type = procedure_type
-            treatment.tooth_number = request.form.get("tooth_number", "").strip()
+            treatment.tooth_number = tooth_number
             treatment.notes = request.form.get("notes", "").strip()
             treatment.total_cost = TREATMENT_PRICES[procedure_type]
 

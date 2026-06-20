@@ -6506,6 +6506,15 @@ section,
   color: #ff7b88;
 }
 
+.status-pending {
+  background: rgba(255, 193, 7, 0.18);
+  color: #d09600;
+}
+
+[data-bs-theme="dark"] .status-pending {
+  color: #ffd043;
+}
+
 .btn-status {
   display: inline-flex;
   align-items: center;

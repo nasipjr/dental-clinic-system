@@ -1,0 +1,453 @@
+{% extends "portal/base.html" %}
+
+{% block content %}
+<div class="row gy-4">
+  <!-- Profile Side Card -->
+  <div class="col-lg-4">
+    <div class="card shadow-sm border-0 rounded-4" style="background: var(--surface-color);">
+      <div class="card-body p-4 text-center">
+        <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle mb-3" style="width: 80px; height: 80px;">
+          <i class="bi bi-person-circle fs-1"></i>
+        </div>
+        <h4 class="fw-bold mb-1">{{ patient.first_name }} {{ patient.last_name }}</h4>
+        <span class="badge bg-light text-dark mb-4 px-3 py-1.5 rounded-pill border border-dark-subtle">{{ patient.gender }}</span>
+        
+        <div class="text-start border-top pt-3">
+          <h6 class="fw-bold text-uppercase text-secondary small mb-3">Your profile details</h6>
+          
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-secondary small">Email:</span>
+            <span class="small fw-semibold">{{ patient.email }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-secondary small">Phone:</span>
+            <span class="small fw-semibold">{{ patient.phone or 'N/A' }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-secondary small">Date of Birth:</span>
+            <span class="small fw-semibold">{{ patient.date_of_birth.strftime('%Y-%m-%d') if patient.date_of_birth else 'N/A' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Appointments Main Panel -->
+  <div class="col-lg-8">
+    <div class="card shadow-sm border-0 rounded-4" style="background: var(--surface-color);">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+          <div>
+            <h4 class="fw-bold mb-1">Appointments</h4>
+            <p class="text-secondary small mb-0">Here is a summary of your appointment history</p>
+          </div>
+          <a href="{{ url_for('portal.book_appointment') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+            <i class="bi bi-calendar-plus me-1"></i> Request a New Appointment
+          </a>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Reason</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for appt in appointments %}
+              <tr>
+                <td class="fw-semibold">
+                  {{ appt.appointment_date.strftime('%Y-%m-%d %I:%M %p') }}
+                </td>
+                <td>{{ appt.reason }}</td>
+                <td>
+                  {% if appt.status == 'Scheduled' %}
+                  <span class="badge bg-success rounded-pill px-3 py-1.5 border border-success-subtle">Scheduled</span>
+                  {% elif appt.status == 'Pending' %}
+                  <span class="badge bg-warning text-dark rounded-pill px-3 py-1.5 border border-warning-subtle">Pending</span>
+                  {% elif appt.status == 'Done' %}
+                  <span class="badge bg-info rounded-pill px-3 py-1.5 border border-info-subtle">Done</span>
+                  {% elif appt.status == 'Cancelled' %}
+                  <span class="badge bg-danger rounded-pill px-3 py-1.5 border border-danger-subtle">Cancelled</span>
+                  {% else %}
+                  <span class="badge bg-secondary rounded-pill px-3 py-1.5">{{ appt.status }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="3" class="text-center py-4 text-secondary">
+                  <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
+                  No appointments found
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FullCalendar & SweetAlert2 Integration -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    .fc-day-disabled {
+        cursor: not-allowed !important;
+        background-color: rgba(100, 116, 139, 0.07) !important;
+    }
+    
+    td.fc-day-past {
+        background-color: rgba(100, 116, 139, 0.07) !important;
+        cursor: not-allowed !important;
+    }
+    
+    .fc {
+        background: var(--surface-color) !important;
+        color: var(--default-color) !important;
+        border-radius: 20px !important;
+        padding: 24px !important;
+        border: 1px solid color-mix(in srgb, var(--accent-color), transparent 85%) !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05) !important;
+        font-family: var(--default-font) !important;
+    }
+    
+    .fc-theme-standard td,
+    .fc-theme-standard th {
+        border: 1px solid color-mix(in srgb, var(--default-color), transparent 85%) !important;
+    }
+    
+    .fc-col-header-cell {
+        background: color-mix(in srgb, var(--default-color), transparent 95%) !important;
+        padding: 14px 0 !important;
+        color: var(--heading-color) !important;
+        font-weight: 700 !important;
+        border-bottom: 2px solid color-mix(in srgb, var(--default-color), transparent 85%) !important;
+    }
+    
+    .fc-col-header-cell-cushion {
+        color: var(--heading-color) !important;
+        text-decoration: none !important;
+        font-size: 0.95rem;
+    }
+    
+    .fc-daygrid-day-number {
+        color: color-mix(in srgb, var(--default-color), transparent 25%) !important;
+        font-weight: 600 !important;
+        padding: 8px 10px !important;
+        text-decoration: none !important;
+        font-size: 0.9rem;
+    }
+    
+    .fc-daygrid-day:not(.fc-day-disabled):not(.fc-day-past) {
+        cursor: pointer !important;
+    }
+    .fc-daygrid-day:not(.fc-day-disabled):not(.fc-day-past):hover {
+        background-color: color-mix(in srgb, var(--accent-color), transparent 94%) !important;
+        transition: background-color 0.2s ease;
+    }
+    
+    .fc-timegrid-col:not(.fc-day-disabled):not(.fc-day-past) {
+        cursor: pointer !important;
+    }
+    
+    .fc-day-today {
+        background: color-mix(in srgb, var(--accent-color), transparent 92%) !important;
+    }
+    
+    .fc-day-today .fc-daygrid-day-number {
+        color: var(--accent-color) !important;
+        font-weight: 800 !important;
+    }
+    
+    .fc-timegrid-slot {
+        height: 3.5rem !important;
+        border-bottom: 1px solid color-mix(in srgb, var(--default-color), transparent 88%) !important;
+    }
+    
+    .fc-timegrid-slot-minor {
+        border-bottom-style: dotted !important;
+    }
+    
+    .fc-timegrid-slot-label-cushion {
+        color: var(--default-color) !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+    }
+</style>
+
+<div class="row mt-5">
+  <div class="col-12">
+    <div class="card shadow-sm border-0 rounded-4" style="background: var(--surface-color);">
+      <div class="card-body p-4">
+        <div class="mb-4">
+          <h4 class="fw-bold mb-1">Appointment Calendar</h4>
+          <p class="text-secondary small mb-0">Select a date and time slot from the calendar below. Blocked slots are marked as "Reserved".</p>
+        </div>
+        
+        <div id="calendar-wrapper">
+          <div id="calendar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const calendarEl = document.getElementById("calendar");
+    if (!calendarEl) return;
+
+    const workingHoursStart = "{{ working_hours_start }}";
+    const workingHoursEnd = "{{ working_hours_end }}";
+    const workingDays = "{{ working_days }}".split(",").map(Number);
+
+    const startParts = workingHoursStart ? workingHoursStart.split(':') : ["09", "00"];
+    const endParts = workingHoursEnd ? workingHoursEnd.split(':') : ["17", "00"];
+    const startHrs = parseInt(startParts[0], 10) || 9;
+    const startMins = parseInt(startParts[1], 10) || 0;
+    const endHrs = parseInt(endParts[0], 10) || 17;
+    const endMins = parseInt(endParts[1], 10) || 0;
+
+    const slotMinTime = `${String(startHrs).padStart(2, '0')}:${String(startMins).padStart(2, '0')}:00`;
+    let maxHrs = endHrs;
+    let maxMins = endMins + 30;
+    if (maxMins >= 60) {
+        maxHrs += 1;
+        maxMins -= 60;
+    }
+    const slotMaxTime = `${String(maxHrs).padStart(2, '0')}:${String(maxMins).padStart(2, '0')}:00`;
+
+    const currentLang = document.documentElement.getAttribute('lang') || 'en';
+    const isArabic = currentLang === 'ar';
+
+    const reasons = {{ reasons | tojson }};
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        locale: currentLang === 'ar' ? 'ar' : 'en',
+        direction: currentLang === 'ar' ? 'rtl' : 'ltr',
+        buttonText: {
+            today: isArabic ? 'اليوم' : 'Today',
+            month: isArabic ? 'شهر' : 'Month',
+            week: isArabic ? 'أسبوع' : 'Week',
+            day: isArabic ? 'يوم' : 'Day',
+            list: isArabic ? 'قائمة' : 'List'
+        },
+        initialView: 'timeGridWeek',
+        allDaySlot: false,
+        slotMinTime: slotMinTime,
+        slotMaxTime: slotMaxTime,
+        eventTimeFormat: {
+            hour: 'numeric',
+            minute: '2-digit',
+            meridiem: 'short',
+            hour12: true
+        },
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'timeGridWeek,dayGridMonth'
+        },
+        events: '/portal/events',
+        datesSet: function (info) {
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const maxDate = new Date(todayStart);
+            maxDate.setDate(maxDate.getDate() + 30);
+            
+            const dateEls = document.querySelectorAll('[data-date]');
+            dateEls.forEach(el => {
+                const dateStr = el.getAttribute('data-date');
+                if (!dateStr) return;
+                
+                const parts = dateStr.split('-');
+                if (parts.length !== 3) return;
+                const date = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+                const dateStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                
+                const dayOfWeek = date.getDay();
+                const isHoliday = !workingDays.includes(dayOfWeek);
+                const isPast = dateStart < todayStart;
+                const isFutureLimit = dateStart > maxDate;
+                
+                if (isHoliday || isPast || isFutureLimit) {
+                    el.classList.add('fc-day-disabled');
+                } else {
+                    el.classList.remove('fc-day-disabled');
+                }
+            });
+        },
+        dateClick: function (info) {
+            const clickedDate = info.date;
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const clickedDateStart = new Date(clickedDate.getFullYear(), clickedDate.getMonth(), clickedDate.getDate());
+            
+            const dayOfWeek = clickedDate.getDay();
+            
+            if (!workingDays.includes(dayOfWeek)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: isArabic ? 'العيادة مغلقة' : 'Clinic Closed',
+                    text: isArabic ? 'لا يمكن حجز مواعيد في أيام العطل الرسمية.' : 'Appointments cannot be booked on holidays.',
+                    confirmButtonColor: '#175cdd'
+                });
+                return;
+            }
+            
+            if (clickedDateStart < todayStart) {
+                Swal.fire({
+                    icon: 'error',
+                    title: isArabic ? 'تاريخ غير صالح' : 'Invalid Date',
+                    text: isArabic ? 'لا يمكن حجز مواعيد في الماضي.' : 'Appointments cannot be booked in the past.',
+                    confirmButtonColor: '#175cdd'
+                });
+                return;
+            }
+            
+            const hasTime = info.dateStr.includes('T') || info.dateStr.includes(' ');
+            if (hasTime && clickedDate < now) {
+                Swal.fire({
+                    icon: 'error',
+                    title: isArabic ? 'وقت غير صالح' : 'Invalid Time',
+                    text: isArabic ? 'الوقت المحدد في الماضي. يرجى اختيار وقت مستقبلي.' : 'Selected time is in the past. Please choose a future time.',
+                    confirmButtonColor: '#175cdd'
+                });
+                return;
+            }
+
+            if (!hasTime) {
+                calendar.changeView('timeGridWeek', info.dateStr);
+                return;
+            }
+
+            const hours = clickedDate.getHours();
+            const minutes = clickedDate.getMinutes();
+            const timeVal = hours * 60 + minutes;
+            const startVal = startHrs * 60 + startMins;
+            const endVal = endHrs * 60 + endMins;
+            if (timeVal < startVal || timeVal > endVal) {
+                Swal.fire({
+                    icon: 'error',
+                    title: isArabic ? 'خارج ساعات العمل' : 'Outside Business Hours',
+                    text: isArabic ? `يجب جدولة المواعيد بين ${workingHoursStart} و ${workingHoursEnd}.` : `Appointments must be scheduled between ${workingHoursStart} and ${workingHoursEnd}.`,
+                    confirmButtonColor: '#175cdd'
+                });
+                return;
+            }
+
+            const maxDate = new Date(todayStart);
+            maxDate.setDate(maxDate.getDate() + 30);
+            maxDate.setHours(23, 59, 59, 999);
+            if (clickedDate > maxDate) {
+                Swal.fire({
+                    icon: 'error',
+                    title: isArabic ? 'تجاوز فترة الحجز' : 'Booking Period Exceeded',
+                    text: isArabic ? 'لا يمكن حجز المواعيد قبل أكثر من 30 يوماً.' : 'Appointments cannot be booked more than 30 days in advance.',
+                    confirmButtonColor: '#175cdd'
+                });
+                return;
+            }
+
+            const events = calendar.getEvents();
+            let isOccupied = false;
+            events.forEach(evt => {
+                if (evt.start && evt.end) {
+                    if (clickedDate >= evt.start && clickedDate < evt.end) {
+                        isOccupied = true;
+                    }
+                }
+            });
+
+            if (isOccupied) {
+                Swal.fire({
+                    icon: 'error',
+                    title: isArabic ? 'موعد محجوز' : 'Reserved Slot',
+                    text: isArabic ? 'هذا الوقت محجوز بالفعل. يرجى اختيار وقت آخر.' : 'This slot is already reserved. Please select another time.',
+                    confirmButtonColor: '#175cdd'
+                });
+                return;
+            }
+
+            const offsetDate = new Date(clickedDate.getTime() - clickedDate.getTimezoneOffset() * 60000);
+            const dateParam = offsetDate.toISOString().substring(0, 16);
+
+            const selectOptions = {};
+            reasons.forEach(r => {
+                selectOptions[r] = r;
+            });
+
+            Swal.fire({
+                title: isArabic ? 'طلب حجز موعد جديد' : 'Request Appointment',
+                html: `<p class="mb-3">${isArabic ? 'هل ترغب في طلب حجز موعد بالتاريخ والوقت المحددين؟' : 'Would you like to request a booking at the selected time?'}</p>
+                       <div class="text-primary fw-bold mb-4 fs-5">${clickedDate.toLocaleDateString()} ${clickedDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>`,
+                input: 'select',
+                inputOptions: selectOptions,
+                inputPlaceholder: isArabic ? 'اختر سبب الحجز' : 'Select a Reason',
+                showCancelButton: true,
+                confirmButtonText: isArabic ? 'تقديم الطلب' : 'Submit Request',
+                cancelButtonText: isArabic ? 'إلغاء' : 'Cancel',
+                confirmButtonColor: '#175cdd',
+                inputValidator: (value) => {
+                    return new Promise((resolve) => {
+                        if (value) {
+                            resolve();
+                        } else {
+                            resolve(isArabic ? 'يجب اختيار سبب الحجز' : 'You must select a reason');
+                        }
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: isArabic ? 'جاري إرسال الطلب...' : 'Submitting Request...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    const formData = new URLSearchParams();
+                    formData.append('appointment_date', dateParam);
+                    formData.append('reason', result.value);
+
+                    fetch("{{ url_for('portal.book_appointment') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: formData.toString()
+                    })
+                    .then(res => {
+                        if (res.redirected) {
+                            window.location.href = res.url;
+                            return;
+                        }
+                        return res.text();
+                    })
+                    .then(html => {
+                        window.location.href = "{{ url_for('portal.dashboard') }}";
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to request appointment. Please try again.'
+                        });
+                    });
+                }
+            });
+        }
+    });
+
+    calendar.render();
+});
+</script>
+{% endblock %}

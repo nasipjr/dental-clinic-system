@@ -55,6 +55,7 @@
                         <span class="appointment-status
                             {% if appointment.status == 'Done' %}status-done
                             {% elif appointment.status == 'Cancelled' %}status-cancelled
+                            {% elif appointment.status == 'Pending' %}status-pending
                             {% else %}status-scheduled{% endif %}">
                             {{ appointment.status }}
                         </span>
@@ -314,6 +315,7 @@
                                     <span class="appointment-status
                                 {% if treatment.appointment.status == 'Done' %}status-done
                                 {% elif treatment.appointment.status == 'Cancelled' %}status-cancelled
+                                {% elif treatment.appointment.status == 'Pending' %}status-pending
                                 {% else %}status-scheduled{% endif %}">
                                         {{ treatment.appointment.status }}
                                     </span>

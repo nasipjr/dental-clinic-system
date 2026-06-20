@@ -15,41 +15,48 @@
     <div class="container" data-aos="fade-up" data-aos-delay="100">
 
         {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-              </div>
-            {% endfor %}
-          {% endif %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show"
+            role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
         {% endwith %}
 
         <div class="row gy-4">
             <!-- Sidebar Tabs Nav -->
             <div class="col-lg-3 col-md-4">
                 <div class="settings-nav-card" id="settings-tabs" role="tablist">
-                    <button class="settings-nav-item active" id="tab-general-btn" data-bs-toggle="pill" data-bs-target="#tab-general" type="button" role="tab">
+                    <button class="settings-nav-item active" id="tab-general-btn" data-bs-toggle="pill"
+                        data-bs-target="#tab-general" type="button" role="tab">
                         <i class="bi bi-building"></i>
                         <span>Clinic Profile</span>
                     </button>
-                    <button class="settings-nav-item" id="tab-calendar-btn" data-bs-toggle="pill" data-bs-target="#tab-calendar" type="button" role="tab">
+                    <button class="settings-nav-item" id="tab-calendar-btn" data-bs-toggle="pill"
+                        data-bs-target="#tab-calendar" type="button" role="tab">
                         <i class="bi bi-calendar-range"></i>
                         <span>Calendar Settings</span>
                     </button>
-                    <button class="settings-nav-item" id="tab-billing-btn" data-bs-toggle="pill" data-bs-target="#tab-billing" type="button" role="tab">
+                    <button class="settings-nav-item" id="tab-billing-btn" data-bs-toggle="pill"
+                        data-bs-target="#tab-billing" type="button" role="tab">
                         <i class="bi bi-wallet2"></i>
                         <span>Billing & Finance</span>
                     </button>
-                    <button class="settings-nav-item" id="tab-treatments-btn" data-bs-toggle="pill" data-bs-target="#tab-treatments" type="button" role="tab">
+                    <button class="settings-nav-item" id="tab-treatments-btn" data-bs-toggle="pill"
+                        data-bs-target="#tab-treatments" type="button" role="tab">
                         <i class="bi bi-clipboard2-pulse"></i>
                         <span>Treatment Pricing</span>
                     </button>
-                    <button class="settings-nav-item" id="tab-users-btn" data-bs-toggle="pill" data-bs-target="#tab-users" type="button" role="tab">
+                    <button class="settings-nav-item" id="tab-users-btn" data-bs-toggle="pill"
+                        data-bs-target="#tab-users" type="button" role="tab">
                         <i class="bi bi-people"></i>
                         <span>User Accounts</span>
                     </button>
-                    <button class="settings-nav-item" id="tab-appearance-btn" data-bs-toggle="pill" data-bs-target="#tab-appearance" type="button" role="tab">
+                    <button class="settings-nav-item" id="tab-appearance-btn" data-bs-toggle="pill"
+                        data-bs-target="#tab-appearance" type="button" role="tab">
                         <i class="bi bi-palette"></i>
                         <span>Theme & Appearance</span>
                     </button>
@@ -61,285 +68,345 @@
                 <form id="main-settings-form" method="POST" action="{{ url_for('settings.settings_page') }}">
                     <div class="tab-content settings-content-card" id="settings-tabs-content">
 
-                    <!-- ═══════════ Clinic Profile Tab ═══════════ -->
-                    <div class="tab-pane fade show active" id="tab-general" role="tabpanel">
-                        <div class="settings-tab-header">
-                            <div class="settings-tab-icon"><i class="bi bi-building"></i></div>
-                            <div>
-                                <h4>Clinic Profile</h4>
-                                <p>Update your clinic's basic information</p>
-                            </div>
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-md-12">
-                                <label for="clinic_name" class="settings-label">Clinic Name</label>
-                                <input type="text" class="form-control settings-input" id="clinic_name" name="clinic_name" value="{{ settings.clinic_name }}" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="clinic_phone" class="settings-label">Phone Number</label>
-                                <input type="text" class="form-control settings-input" id="clinic_phone" name="clinic_phone" value="{{ settings.clinic_phone }}">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="clinic_email" class="settings-label">Email Address</label>
-                                <input type="email" class="form-control settings-input" id="clinic_email" name="clinic_email" value="{{ settings.clinic_email }}">
-                            </div>
-                            <div class="col-md-12">
-                                <label for="clinic_address" class="settings-label">Address</label>
-                                <textarea class="form-control settings-input" id="clinic_address" name="clinic_address" rows="3">{{ settings.clinic_address }}</textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ═══════════ Calendar Settings Tab ═══════════ -->
-                    <div class="tab-pane fade" id="tab-calendar" role="tabpanel">
-                        <div class="settings-tab-header">
-                            <div class="settings-tab-icon"><i class="bi bi-calendar-range"></i></div>
-                            <div>
-                                <h4>Calendar & Appointment Settings</h4>
-                                <p>Configure working hours and default durations</p>
-                            </div>
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="working_hours_start" class="settings-label">Daily Working Hours Start</label>
-                                <input type="time" class="form-control settings-input" id="working_hours_start" name="working_hours_start" value="{{ settings.working_hours_start }}">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="working_hours_end" class="settings-label">Daily Working Hours End</label>
-                                <input type="time" class="form-control settings-input" id="working_hours_end" name="working_hours_end" value="{{ settings.working_hours_end }}">
-                            </div>
-                            <div class="col-md-12">
-                                <label for="default_appointment_duration" class="settings-label">Default Session Duration</label>
-                                <select class="form-select settings-input" id="default_appointment_duration" name="default_appointment_duration">
-                                    <option value="15" {% if settings.default_appointment_duration == '15' %}selected{% endif %}>15 Minutes</option>
-                                    <option value="30" {% if settings.default_appointment_duration == '30' %}selected{% endif %}>30 Minutes</option>
-                                    <option value="45" {% if settings.default_appointment_duration == '45' %}selected{% endif %}>45 Minutes</option>
-                                    <option value="60" {% if settings.default_appointment_duration == '60' %}selected{% endif %}>60 Minutes</option>
-                                </select>
-                            </div>
-                            <div class="col-md-12 mt-3">
-                                <label class="settings-label d-block">Working Days of the Week</label>
-                                {% set working_days_list = settings.working_days.split(',') if settings.working_days else ['0','1','2','3','4','6'] %}
-                                <div class="d-flex flex-wrap gap-3 mt-2">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="working_days" value="0" id="day-sun" {% if '0' in working_days_list %}checked{% endif %}>
-                                        <label class="form-check-label" for="day-sun">Sunday</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="working_days" value="1" id="day-mon" {% if '1' in working_days_list %}checked{% endif %}>
-                                        <label class="form-check-label" for="day-mon">Monday</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="working_days" value="2" id="day-tue" {% if '2' in working_days_list %}checked{% endif %}>
-                                        <label class="form-check-label" for="day-tue">Tuesday</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="working_days" value="3" id="day-wed" {% if '3' in working_days_list %}checked{% endif %}>
-                                        <label class="form-check-label" for="day-wed">Wednesday</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="working_days" value="4" id="day-thu" {% if '4' in working_days_list %}checked{% endif %}>
-                                        <label class="form-check-label" for="day-thu">Thursday</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="working_days" value="5" id="day-fri" {% if '5' in working_days_list %}checked{% endif %}>
-                                        <label class="form-check-label" for="day-fri">Friday</label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="working_days" value="6" id="day-sat" {% if '6' in working_days_list %}checked{% endif %}>
-                                        <label class="form-check-label" for="day-sat">Saturday</label>
-                                    </div>
+                        <!-- ═══════════ Clinic Profile Tab ═══════════ -->
+                        <div class="tab-pane fade show active" id="tab-general" role="tabpanel">
+                            <div class="settings-tab-header">
+                                <div class="settings-tab-icon"><i class="bi bi-building"></i></div>
+                                <div>
+                                    <h4>Clinic Profile</h4>
+                                    <p>Update your clinic's basic information</p>
                                 </div>
-                                <div class="settings-hint mt-2"><i class="bi bi-info-circle me-1"></i>Checked days represent active business days. Unchecked days will be styled as weekends/closed days in the interactive calendar and will prevent scheduling appointments.</div>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label for="clinic_name" class="settings-label">Clinic Name</label>
+                                    <input type="text" class="form-control settings-input" id="clinic_name"
+                                        name="clinic_name" value="{{ settings.clinic_name }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="clinic_phone" class="settings-label">Phone Number</label>
+                                    <input type="text" class="form-control settings-input" id="clinic_phone"
+                                        name="clinic_phone" value="{{ settings.clinic_phone }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="clinic_email" class="settings-label">Email Address</label>
+                                    <input type="email" class="form-control settings-input" id="clinic_email"
+                                        name="clinic_email" value="{{ settings.clinic_email }}">
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="clinic_address" class="settings-label">Address</label>
+                                    <textarea class="form-control settings-input" id="clinic_address"
+                                        name="clinic_address" rows="3">{{ settings.clinic_address }}</textarea>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- ═══════════ Billing & Finance Tab ═══════════ -->
-                    <div class="tab-pane fade" id="tab-billing" role="tabpanel">
-                        <div class="settings-tab-header">
-                            <div class="settings-tab-icon"><i class="bi bi-wallet2"></i></div>
-                            <div>
-                                <h4>Billing & Finance Settings</h4>
-                                <p>Set the currency symbol used across invoices and reports</p>
+                        <!-- ═══════════ Calendar Settings Tab ═══════════ -->
+                        <div class="tab-pane fade" id="tab-calendar" role="tabpanel">
+                            <div class="settings-tab-header">
+                                <div class="settings-tab-icon"><i class="bi bi-calendar-range"></i></div>
+                                <div>
+                                    <h4>Calendar & Appointment Settings</h4>
+                                    <p>Configure working hours and default durations</p>
+                                </div>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="working_hours_start" class="settings-label">Daily Working Hours
+                                        Start</label>
+                                    <input type="time" class="form-control settings-input" id="working_hours_start"
+                                        name="working_hours_start" value="{{ settings.working_hours_start }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="working_hours_end" class="settings-label">Daily Working Hours
+                                        End</label>
+                                    <input type="time" class="form-control settings-input" id="working_hours_end"
+                                        name="working_hours_end" value="{{ settings.working_hours_end }}">
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="default_appointment_duration" class="settings-label">Default Session
+                                        Duration</label>
+                                    <select class="form-select settings-input" id="default_appointment_duration"
+                                        name="default_appointment_duration">
+                                        <option value="15" {% if settings.default_appointment_duration=='15'
+                                            %}selected{% endif %}>15 Minutes</option>
+                                        <option value="30" {% if settings.default_appointment_duration=='30'
+                                            %}selected{% endif %}>30 Minutes</option>
+                                        <option value="45" {% if settings.default_appointment_duration=='45'
+                                            %}selected{% endif %}>45 Minutes</option>
+                                        <option value="60" {% if settings.default_appointment_duration=='60'
+                                            %}selected{% endif %}>60 Minutes</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-12 mt-3">
+                                    <label class="settings-label d-block">Working Days of the Week</label>
+                                    {% set working_days_list = settings.working_days.split(',') if settings.working_days
+                                    else ['0','1','2','3','4','6'] %}
+                                    <div class="d-flex flex-wrap gap-3 mt-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="working_days"
+                                                value="0" id="day-sun" {% if '0' in working_days_list %}checked{% endif
+                                                %}>
+                                            <label class="form-check-label" for="day-sun">Sunday</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="working_days"
+                                                value="1" id="day-mon" {% if '1' in working_days_list %}checked{% endif
+                                                %}>
+                                            <label class="form-check-label" for="day-mon">Monday</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="working_days"
+                                                value="2" id="day-tue" {% if '2' in working_days_list %}checked{% endif
+                                                %}>
+                                            <label class="form-check-label" for="day-tue">Tuesday</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="working_days"
+                                                value="3" id="day-wed" {% if '3' in working_days_list %}checked{% endif
+                                                %}>
+                                            <label class="form-check-label" for="day-wed">Wednesday</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="working_days"
+                                                value="4" id="day-thu" {% if '4' in working_days_list %}checked{% endif
+                                                %}>
+                                            <label class="form-check-label" for="day-thu">Thursday</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="working_days"
+                                                value="5" id="day-fri" {% if '5' in working_days_list %}checked{% endif
+                                                %}>
+                                            <label class="form-check-label" for="day-fri">Friday</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="working_days"
+                                                value="6" id="day-sat" {% if '6' in working_days_list %}checked{% endif
+                                                %}>
+                                            <label class="form-check-label" for="day-sat">Saturday</label>
+                                        </div>
+                                    </div>
+                                    <div class="settings-hint mt-2"><i class="bi bi-info-circle me-1"></i>Checked days
+                                        represent active business days. Unchecked days will be styled as weekends/closed
+                                        days in the interactive calendar and will prevent scheduling appointments.</div>
+                                </div>
                             </div>
                         </div>
-                        <div class="row g-3">
-                            <div class="col-md-12">
-                                <label for="currency_symbol" class="settings-label">Custom Currency Symbol</label>
-                                <input type="text" class="form-control settings-input" id="currency_symbol" name="currency_symbol" value="{{ settings.currency_symbol }}" required placeholder="e.g., $, USD, EUR, SAR">
-                                <div class="settings-hint"><i class="bi bi-info-circle me-1"></i>This symbol will be applied dynamically to all invoices, payments, and report pages.</div>
+
+                        <!-- ═══════════ Billing & Finance Tab ═══════════ -->
+                        <div class="tab-pane fade" id="tab-billing" role="tabpanel">
+                            <div class="settings-tab-header">
+                                <div class="settings-tab-icon"><i class="bi bi-wallet2"></i></div>
+                                <div>
+                                    <h4>Billing & Finance Settings</h4>
+                                    <p>Set the currency symbol used across invoices and reports</p>
+                                </div>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label for="currency_symbol" class="settings-label">Custom Currency Symbol</label>
+                                    <input type="text" class="form-control settings-input" id="currency_symbol"
+                                        name="currency_symbol" value="{{ settings.currency_symbol }}" required
+                                        placeholder="e.g., $, USD, EUR, SAR">
+                                    <div class="settings-hint"><i class="bi bi-info-circle me-1"></i>This symbol will be
+                                        applied dynamically to all invoices, payments, and report pages.</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- ═══════════ Treatment Pricing Tab ═══════════ -->
-                    <div class="tab-pane fade" id="tab-treatments" role="tabpanel">
-                        <div class="settings-tab-header">
-                            <div class="settings-tab-icon"><i class="bi bi-clipboard2-pulse"></i></div>
-                            <div>
-                                <h4>Treatment Services & Prices</h4>
-                                <p>Manage procedure types and their default pricing</p>
+                        <!-- ═══════════ Treatment Pricing Tab ═══════════ -->
+                        <div class="tab-pane fade" id="tab-treatments" role="tabpanel">
+                            <div class="settings-tab-header">
+                                <div class="settings-tab-icon"><i class="bi bi-clipboard2-pulse"></i></div>
+                                <div>
+                                    <h4>Treatment Services & Prices</h4>
+                                    <p>Manage procedure types and their default pricing</p>
+                                </div>
+                                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 ms-auto"
+                                    id="add-procedure-btn">
+                                    <i class="bi bi-plus-circle me-1"></i> Add New Procedure
+                                </button>
                             </div>
-                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 ms-auto" id="add-procedure-btn">
-                                <i class="bi bi-plus-circle me-1"></i> Add New Procedure
-                            </button>
-                        </div>
 
-                        <div class="table-responsive">
-                            <table class="table settings-table" id="procedures-table" style="table-layout: fixed; width: 100%;">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 55%;">Procedure Name</th>
-                                        <th style="width: 30%;">Default Price</th>
-                                        <th style="width: 15%;" class="text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="procedures-list">
-                                    {% for name, price in treatment_prices.items() %}
-                                    <tr class="procedure-row">
-                                        <td>
-                                            <input type="text" name="procedure_names[]" class="form-control settings-input" value="{{ name }}" required placeholder="e.g., Cleaning">
-                                        </td>
-                                        <td>
-                                            <div class="input-group settings-input-group">
-                                                <input type="text" name="procedure_prices[]" class="form-control settings-input" value="{{ price }}" required placeholder="0">
-                                                <span class="input-group-text">{{ currency_symbol }}</span>
-                                            </div>
-                                        </td>
-                                        <td class="text-center">
-                                            <button type="button" class="btn btn-outline-danger btn-sm rounded-circle delete-row-btn" data-tooltip="Delete Procedure" style="width:34px;height:34px;padding:0 !important;">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- ═══════════ User Accounts Tab ═══════════ -->
-                    <div class="tab-pane fade" id="tab-users" role="tabpanel">
-                        <div class="settings-tab-header">
-                            <div class="settings-tab-icon"><i class="bi bi-people"></i></div>
-                            <div>
-                                <h4>User Accounts</h4>
-                                <p>Manage system users, roles, and credentials</p>
-                            </div>
-                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 ms-auto" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                                <i class="bi bi-person-plus me-1"></i> Add New User
-                            </button>
-                        </div>
-
-                        <div class="table-responsive">
-                            <table class="table settings-table">
-                                <thead>
-                                    <tr>
-                                        <th>Username</th>
-                                        <th>Full Name</th>
-                                        <th>Role</th>
-                                        <th class="text-center">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for user in users %}
-                                    <tr>
-                                        <td>
-                                            <div class="user-cell">
-                                                <div class="user-avatar {% if user.role == 'admin' %}avatar-admin{% elif user.role == 'doctor' %}avatar-doctor{% else %}avatar-receptionist{% endif %}">
-                                                    <i class="bi {% if user.role == 'admin' %}bi-shield-lock{% elif user.role == 'doctor' %}bi-heart-pulse{% else %}bi-headset{% endif %}"></i>
+                            <div class="table-responsive">
+                                <table class="table settings-table" id="procedures-table"
+                                    style="table-layout: fixed; width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 55%;">Procedure Name</th>
+                                            <th style="width: 30%;">Default Price</th>
+                                            <th style="width: 15%;" class="text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="procedures-list">
+                                        {% for name, price in treatment_prices.items() %}
+                                        <tr class="procedure-row">
+                                            <td>
+                                                <input type="text" name="procedure_names[]"
+                                                    class="form-control settings-input" value="{{ name }}" required
+                                                    placeholder="e.g., Cleaning">
+                                            </td>
+                                            <td>
+                                                <div class="input-group settings-input-group">
+                                                    <input type="text" name="procedure_prices[]"
+                                                        class="form-control settings-input" value="{{ price }}" required
+                                                        placeholder="0">
+                                                    <span class="input-group-text">{{ currency_symbol }}</span>
                                                 </div>
-                                                <strong>{{ user.username }}</strong>
-                                            </div>
-                                        </td>
-                                        <td>{{ user.first_name or '' }} {{ user.last_name or '' }}</td>
-                                        <td>
-                                            <span class="role-badge {% if user.role == 'admin' %}role-admin{% elif user.role == 'doctor' %}role-doctor{% else %}role-receptionist{% endif %}">
-                                                {{ user.role|capitalize }}
-                                            </span>
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="d-inline-flex align-items-center gap-2">
-                                                <!-- Edit Button -->
-                                                <button type="button" class="table-action-btn edit-btn edit-user-btn"
-                                                    data-user-id="{{ user.id }}"
-                                                    data-username="{{ user.username }}"
-                                                    data-first-name="{{ user.first_name or '' }}"
-                                                    data-last-name="{{ user.last_name or '' }}"
-                                                    data-role="{{ user.role }}"
-                                                    data-tooltip="Edit User"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#editUserModal">
-                                                    <i class="bi bi-pencil-square"></i>
+                                            </td>
+                                            <td class="text-center">
+                                                <button type="button"
+                                                    class="btn btn-outline-danger btn-sm rounded-circle delete-row-btn"
+                                                    data-tooltip="Delete Procedure"
+                                                    style="width:34px;height:34px;padding:0 !important;">
+                                                    <i class="bi bi-trash"></i>
                                                 </button>
-                                                <!-- Delete Button -->
-                                                {% if session.get('user_id') != user.id %}
-                                                 <button type="button" class="table-action-btn delete-table-btn" data-tooltip="Delete User"
-                                                     onclick="if (confirm('Are you sure you want to delete this user?')) { deleteUser('{{ user.id }}'); }">
-                                                     <i class="bi bi-trash"></i>
-                                                 </button>
-                                                {% else %}
-                                                <span class="active-user-badge"><i class="bi bi-check-circle me-1"></i>You</span>
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    
-                    <!-- ═══════════ Theme & Appearance Tab ═══════════ -->
-                    <div class="tab-pane fade" id="tab-appearance" role="tabpanel">
-                        <div class="settings-tab-header">
-                            <div class="settings-tab-icon"><i class="bi bi-palette"></i></div>
-                            <div>
-                                <h4>Theme & Appearance</h4>
-                                <p>Customize the visual theme of the application</p>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-                        <div class="row g-4 pt-3">
-                            <div class="col-md-12">
-                                <label class="settings-label d-block mb-3">System Display Theme</label>
-                                <div class="d-flex gap-3">
-                                    <button type="button" class="btn theme-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2" id="theme-light-btn" onclick="setAppTheme('light')" style="border-radius: 16px; transition: all 0.3s ease;">
-                                        <i class="bi bi-sun-fill fs-2 mb-2 text-warning"></i>
-                                        <strong style="font-size: 1.05rem;">Light Mode</strong>
-                                    </button>
-                                    <button type="button" class="btn theme-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2" id="theme-dark-btn" onclick="setAppTheme('dark')" style="border-radius: 16px; transition: all 0.3s ease;">
-                                        <i class="bi bi-moon-stars-fill fs-2 mb-2 text-primary"></i>
-                                        <strong style="font-size: 1.05rem;">Dark Mode</strong>
+
+                        <!-- ═══════════ User Accounts Tab ═══════════ -->
+                        <div class="tab-pane fade" id="tab-users" role="tabpanel">
+                            <div class="settings-tab-header">
+                                <div class="settings-tab-icon"><i class="bi bi-people"></i></div>
+                                <div>
+                                    <h4>User Accounts</h4>
+                                    <p>Manage system users, roles, and credentials</p>
+                                </div>
+                                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 ms-auto"
+                                    data-bs-toggle="modal" data-bs-target="#addUserModal">
+                                    <i class="bi bi-person-plus me-1"></i> Add New User
+                                </button>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table settings-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Username</th>
+                                            <th>Full Name</th>
+                                            <th>Role</th>
+                                            <th class="text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for user in users %}
+                                        <tr>
+                                            <td>
+                                                <div class="user-cell">
+                                                    <div
+                                                        class="user-avatar {% if user.role == 'admin' %}avatar-admin{% elif user.role == 'doctor' %}avatar-doctor{% else %}avatar-receptionist{% endif %}">
+                                                        <i
+                                                            class="bi {% if user.role == 'admin' %}bi-shield-lock{% elif user.role == 'doctor' %}bi-heart-pulse{% else %}bi-headset{% endif %}"></i>
+                                                    </div>
+                                                    <strong>{{ user.username }}</strong>
+                                                </div>
+                                            </td>
+                                            <td>{{ user.first_name or '' }} {{ user.last_name or '' }}</td>
+                                            <td>
+                                                <span
+                                                    class="role-badge {% if user.role == 'admin' %}role-admin{% elif user.role == 'doctor' %}role-doctor{% else %}role-receptionist{% endif %}">
+                                                    {{ user.role|capitalize }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="d-inline-flex align-items-center gap-2">
+                                                    <!-- Edit Button -->
+                                                    <button type="button"
+                                                        class="table-action-btn edit-btn edit-user-btn"
+                                                        data-user-id="{{ user.id }}" data-username="{{ user.username }}"
+                                                        data-first-name="{{ user.first_name or '' }}"
+                                                        data-last-name="{{ user.last_name or '' }}"
+                                                        data-role="{{ user.role }}" data-tooltip="Edit User"
+                                                        data-bs-toggle="modal" data-bs-target="#editUserModal">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </button>
+                                                    <!-- Delete Button -->
+                                                    {% if session.get('user_id') != user.id %}
+                                                    <button type="button" class="table-action-btn delete-table-btn"
+                                                        data-tooltip="Delete User"
+                                                        onclick="if (confirm('Are you sure you want to delete this user?')) { deleteUser('{{ user.id }}'); }">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                    {% else %}
+                                                    <span class="active-user-badge"><i
+                                                            class="bi bi-check-circle me-1"></i>You</span>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ═══════════ Theme & Appearance Tab ═══════════ -->
+                        <div class="tab-pane fade" id="tab-appearance" role="tabpanel">
+                            <div class="settings-tab-header">
+                                <div class="settings-tab-icon"><i class="bi bi-palette"></i></div>
+                                <div>
+                                    <h4>Theme & Appearance</h4>
+                                    <p>Customize the visual theme of the application</p>
                                 </div>
                             </div>
+                            <div class="row g-4 pt-3">
+                                <div class="col-md-12">
+                                    <label class="settings-label d-block mb-3">System Display Theme</label>
+                                    <div class="d-flex gap-3">
+                                        <button type="button"
+                                            class="btn theme-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"
+                                            id="theme-light-btn" onclick="setAppTheme('light')"
+                                            style="border-radius: 16px; transition: all 0.3s ease;">
+                                            <i class="bi bi-sun-fill fs-2 mb-2 text-warning"></i>
+                                            <strong style="font-size: 1.05rem;">Light Mode</strong>
+                                        </button>
+                                        <button type="button"
+                                            class="btn theme-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"
+                                            id="theme-dark-btn" onclick="setAppTheme('dark')"
+                                            style="border-radius: 16px; transition: all 0.3s ease;">
+                                            <i class="bi bi-moon-stars-fill fs-2 mb-2 text-primary"></i>
+                                            <strong style="font-size: 1.05rem;">Dark Mode</strong>
+                                    </div>
+                                </div>
 
-                            <div class="col-md-12 mt-4 pt-4 border-top" style="border-top-color: rgba(13, 110, 253, 0.08) !important;">
-                                <label class="settings-label d-block mb-3">System Interface Language</label>
-                                <div class="d-flex gap-3">
-                                    <button type="button" class="btn lang-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2" id="lang-en-btn" onclick="setAppLang('en')" style="border-radius: 16px; transition: all 0.3s ease;">
-                                        <span class="fs-2 mb-2">🇬🇧</span>
-                                        <strong style="font-size: 1.05rem;">English</strong>
-                                    </button>
-                                    <button type="button" class="btn lang-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2" id="lang-ar-btn" onclick="setAppLang('ar')" style="border-radius: 16px; transition: all 0.3s ease;">
-                                        <span class="fs-2 mb-2">🇸🇾</span>
-                                        <strong style="font-size: 1.05rem;">العربية</strong>
-                                    </button>
+                                <div class="col-md-12 mt-4 pt-4 border-top"
+                                    style="border-top-color: rgba(13, 110, 253, 0.08) !important;">
+                                    <label class="settings-label d-block mb-3">System Interface Language</label>
+                                    <div class="d-flex gap-3">
+                                        <button type="button"
+                                            class="btn lang-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"
+                                            id="lang-en-btn" onclick="setAppLang('en')"
+                                            style="border-radius: 16px; transition: all 0.3s ease;">
+                                            <span class="fs-2 mb-2">US</span>
+                                            <strong style="font-size: 1.05rem;">English</strong>
+                                        </button>
+                                        <button type="button"
+                                            class="btn lang-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"
+                                            id="lang-ar-btn" onclick="setAppLang('ar')"
+                                            style="border-radius: 16px; transition: all 0.3s ease;">
+                                            <span class="fs-2 mb-2">AR</span>
+                                            <strong style="font-size: 1.05rem;">العربية</strong>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
-                </div>
-
-                <!-- Save Button (only for settings tabs, hidden on Users tab) -->
-                <div class="d-flex justify-content-end mt-4" id="save-settings-btn-wrapper">
-                    <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
-                        <i class="bi bi-check-circle me-1"></i> Save All Settings
-                    </button>
-                </div>
-            </form>
-        </div>
+                    <!-- Save Button (only for settings tabs, hidden on Users tab) -->
+                    <div class="d-flex justify-content-end mt-4" id="save-settings-btn-wrapper">
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+                            <i class="bi bi-check-circle me-1"></i> Save All Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
 
     </div>
@@ -361,20 +428,24 @@
                 <div class="modal-body py-4">
                     <div class="mb-3">
                         <label for="add_username" class="settings-label">Username</label>
-                        <input type="text" class="form-control settings-input" id="add_username" name="username" required placeholder="Enter username">
+                        <input type="text" class="form-control settings-input" id="add_username" name="username"
+                            required placeholder="Enter username">
                     </div>
                     <div class="mb-3">
                         <label for="add_password" class="settings-label">Password</label>
-                        <input type="password" class="form-control settings-input" id="add_password" name="password" required placeholder="Enter password">
+                        <input type="password" class="form-control settings-input" id="add_password" name="password"
+                            required placeholder="Enter password">
                     </div>
                     <div class="row g-2 mb-3">
                         <div class="col-md-6">
                             <label for="add_first_name" class="settings-label">First Name</label>
-                            <input type="text" class="form-control settings-input" id="add_first_name" name="first_name" placeholder="First name">
+                            <input type="text" class="form-control settings-input" id="add_first_name" name="first_name"
+                                placeholder="First name">
                         </div>
                         <div class="col-md-6">
                             <label for="add_last_name" class="settings-label">Last Name</label>
-                            <input type="text" class="form-control settings-input" id="add_last_name" name="last_name" placeholder="Last name">
+                            <input type="text" class="form-control settings-input" id="add_last_name" name="last_name"
+                                placeholder="Last name">
                         </div>
                     </div>
                     <div class="mb-3">
@@ -387,7 +458,8 @@
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-3"
+                        data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary rounded-pill px-4">Create Account</button>
                 </div>
             </form>
@@ -411,20 +483,25 @@
                 <div class="modal-body py-4">
                     <div class="mb-3">
                         <label for="edit_username" class="settings-label">Username</label>
-                        <input type="text" class="form-control settings-input" id="edit_username" name="username" required placeholder="Enter username">
+                        <input type="text" class="form-control settings-input" id="edit_username" name="username"
+                            required placeholder="Enter username">
                     </div>
                     <div class="mb-3">
-                        <label for="edit_password" class="settings-label">New Password <span class="settings-hint-inline">(leave blank to keep current)</span></label>
-                        <input type="password" class="form-control settings-input" id="edit_password" name="password" placeholder="Enter new password (optional)">
+                        <label for="edit_password" class="settings-label">New Password <span
+                                class="settings-hint-inline">(leave blank to keep current)</span></label>
+                        <input type="password" class="form-control settings-input" id="edit_password" name="password"
+                            placeholder="Enter new password (optional)">
                     </div>
                     <div class="row g-2 mb-3">
                         <div class="col-md-6">
                             <label for="edit_first_name" class="settings-label">First Name</label>
-                            <input type="text" class="form-control settings-input" id="edit_first_name" name="first_name" placeholder="First name">
+                            <input type="text" class="form-control settings-input" id="edit_first_name"
+                                name="first_name" placeholder="First name">
                         </div>
                         <div class="col-md-6">
                             <label for="edit_last_name" class="settings-label">Last Name</label>
-                            <input type="text" class="form-control settings-input" id="edit_last_name" name="last_name" placeholder="Last name">
+                            <input type="text" class="form-control settings-input" id="edit_last_name" name="last_name"
+                                placeholder="Last name">
                         </div>
                     </div>
                     <div class="mb-3">
@@ -437,7 +514,8 @@
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-3"
+                        data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary rounded-pill px-4">
                         <i class="bi bi-check-circle me-1"></i> Save Changes
                     </button>
@@ -448,18 +526,18 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    const addBtn = document.getElementById("add-procedure-btn");
-    const tbody = document.getElementById("procedures-list");
-    const currencySymbol = "{{ currency_symbol }}";
-    const saveWrapper = document.getElementById("save-settings-btn-wrapper");
+    document.addEventListener("DOMContentLoaded", function () {
+        const addBtn = document.getElementById("add-procedure-btn");
+        const tbody = document.getElementById("procedures-list");
+        const currencySymbol = "{{ currency_symbol }}";
+        const saveWrapper = document.getElementById("save-settings-btn-wrapper");
 
-    // ── Add new procedure row ──
-    if (addBtn) {
-        addBtn.addEventListener("click", function () {
-            const row = document.createElement("tr");
-            row.className = "procedure-row";
-            row.innerHTML = `
+        // ── Add new procedure row ──
+        if (addBtn) {
+            addBtn.addEventListener("click", function () {
+                const row = document.createElement("tr");
+                row.className = "procedure-row";
+                row.innerHTML = `
                 <td>
                     <input type="text" name="procedure_names[]" class="form-control settings-input" required placeholder="Procedure Name">
                 </td>
@@ -475,160 +553,160 @@ document.addEventListener("DOMContentLoaded", function () {
                     </button>
                 </td>
             `;
-            tbody.appendChild(row);
-            if (typeof window.initCustomTooltips === "function") {
-                window.initCustomTooltips();
+                tbody.appendChild(row);
+                if (typeof window.initCustomTooltips === "function") {
+                    window.initCustomTooltips();
+                }
+            });
+        }
+
+        // ── Delete row from table ──
+        if (tbody) {
+            tbody.addEventListener("click", function (e) {
+                const deleteBtn = e.target.closest(".delete-row-btn");
+                if (deleteBtn) {
+                    deleteBtn.closest("tr").remove();
+                }
+            });
+        }
+
+        // ── Hash-based tab activation ──
+        const hash = window.location.hash;
+        if (hash) {
+            const tabTriggerEl = document.querySelector(`button[data-bs-target="${hash}"]`);
+            if (tabTriggerEl) {
+                const tab = new bootstrap.Tab(tabTriggerEl);
+                tab.show();
             }
-        });
-    }
+        }
 
-    // ── Delete row from table ──
-    if (tbody) {
-        tbody.addEventListener("click", function (e) {
-            const deleteBtn = e.target.closest(".delete-row-btn");
-            if (deleteBtn) {
-                deleteBtn.closest("tr").remove();
+        // ── Toggle Save button visibility based on active tab ──
+        function toggleSaveButton() {
+            const usersTab = document.getElementById("tab-users");
+            const appearanceTab = document.getElementById("tab-appearance");
+            const isUsersActive = usersTab && usersTab.classList.contains("show") && usersTab.classList.contains("active");
+            const isAppearanceActive = appearanceTab && appearanceTab.classList.contains("show") && appearanceTab.classList.contains("active");
+            if (isUsersActive || isAppearanceActive) {
+                saveWrapper.style.display = "none";
+            } else {
+                saveWrapper.style.display = "flex";
             }
+        }
+
+        // ── Theme Selector Logic ──
+        window.setAppTheme = function (theme) {
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('theme', theme);
+            updateThemeButtons(theme);
+        };
+
+        function updateThemeButtons(theme) {
+            const lightBtn = document.getElementById('theme-light-btn');
+            const darkBtn = document.getElementById('theme-dark-btn');
+            if (!lightBtn || !darkBtn) return;
+
+            if (theme === 'dark') {
+                darkBtn.classList.remove('btn-outline-secondary', 'border-secondary-subtle');
+                darkBtn.classList.add('btn-primary', 'border-primary', 'shadow-sm');
+                darkBtn.style.backgroundColor = 'var(--accent-color)';
+                darkBtn.style.color = '#ffffff';
+
+                lightBtn.classList.remove('btn-primary', 'border-primary', 'shadow-sm');
+                lightBtn.classList.add('btn-outline-secondary', 'border-secondary-subtle');
+                lightBtn.style.backgroundColor = 'transparent';
+                lightBtn.style.color = 'var(--default-color)';
+            } else {
+                lightBtn.classList.remove('btn-outline-secondary', 'border-secondary-subtle');
+                lightBtn.classList.add('btn-primary', 'border-primary', 'shadow-sm');
+                lightBtn.style.backgroundColor = 'var(--accent-color)';
+                lightBtn.style.color = '#ffffff';
+
+                darkBtn.classList.remove('btn-primary', 'border-primary', 'shadow-sm');
+                darkBtn.classList.add('btn-outline-secondary', 'border-secondary-subtle');
+                darkBtn.style.backgroundColor = 'transparent';
+                darkBtn.style.color = 'var(--default-color)';
+            }
+        }
+
+        // ── Language Selector Logic ──
+        window.setAppLang = function (lang) {
+            document.cookie = "lang=" + lang + ";path=/;max-age=31536000";
+            localStorage.setItem('lang', lang);
+            updateLangButtons(lang);
+            window.location.reload();
+        };
+
+        function updateLangButtons(lang) {
+            const enBtn = document.getElementById('lang-en-btn');
+            const arBtn = document.getElementById('lang-ar-btn');
+            if (!enBtn || !arBtn) return;
+
+            if (lang === 'ar') {
+                arBtn.classList.remove('btn-outline-secondary', 'border-secondary-subtle');
+                arBtn.classList.add('btn-primary', 'border-primary', 'shadow-sm');
+                arBtn.style.backgroundColor = 'var(--accent-color)';
+                arBtn.style.color = '#ffffff';
+
+                enBtn.classList.remove('btn-primary', 'border-primary', 'shadow-sm');
+                enBtn.classList.add('btn-outline-secondary', 'border-secondary-subtle');
+                enBtn.style.backgroundColor = 'transparent';
+                enBtn.style.color = 'var(--default-color)';
+            } else {
+                enBtn.classList.remove('btn-outline-secondary', 'border-secondary-subtle');
+                enBtn.classList.add('btn-primary', 'border-primary', 'shadow-sm');
+                enBtn.style.backgroundColor = 'var(--accent-color)';
+                enBtn.style.color = '#ffffff';
+
+                arBtn.classList.remove('btn-primary', 'border-primary', 'shadow-sm');
+                arBtn.classList.add('btn-outline-secondary', 'border-secondary-subtle');
+                arBtn.style.backgroundColor = 'transparent';
+                arBtn.style.color = 'var(--default-color)';
+            }
+        }
+
+        // Initialize button states based on current theme and language
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        updateThemeButtons(currentTheme);
+
+        const currentLang = localStorage.getItem('lang') || 'en';
+        updateLangButtons(currentLang);
+
+        // Listen for tab changes
+        document.querySelectorAll('#settings-tabs button[data-bs-toggle="pill"]').forEach(function (btn) {
+            btn.addEventListener("shown.bs.tab", toggleSaveButton);
         });
-    }
+        toggleSaveButton();
 
-    // ── Hash-based tab activation ──
-    const hash = window.location.hash;
-    if (hash) {
-        const tabTriggerEl = document.querySelector(`button[data-bs-target="${hash}"]`);
-        if (tabTriggerEl) {
-            const tab = new bootstrap.Tab(tabTriggerEl);
-            tab.show();
-        }
-    }
+        // ── Delete User JS Form Submission ──
+        window.deleteUser = function (userId) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/settings/users/${userId}/delete`;
+            document.body.appendChild(form);
+            form.submit();
+        };
 
-    // ── Toggle Save button visibility based on active tab ──
-    function toggleSaveButton() {
-        const usersTab = document.getElementById("tab-users");
-        const appearanceTab = document.getElementById("tab-appearance");
-        const isUsersActive = usersTab && usersTab.classList.contains("show") && usersTab.classList.contains("active");
-        const isAppearanceActive = appearanceTab && appearanceTab.classList.contains("show") && appearanceTab.classList.contains("active");
-        if (isUsersActive || isAppearanceActive) {
-            saveWrapper.style.display = "none";
-        } else {
-            saveWrapper.style.display = "flex";
-        }
-    }
+        // ── Edit User Modal population ──
+        document.querySelectorAll(".edit-user-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const userId = this.dataset.userId;
+                const username = this.dataset.username;
+                const firstName = this.dataset.firstName;
+                const lastName = this.dataset.lastName;
+                const role = this.dataset.role;
 
-    // ── Theme Selector Logic ──
-    window.setAppTheme = function(theme) {
-        document.documentElement.setAttribute('data-bs-theme', theme);
-        localStorage.setItem('theme', theme);
-        updateThemeButtons(theme);
-    };
+                document.getElementById("edit_username").value = username;
+                document.getElementById("edit_first_name").value = firstName;
+                document.getElementById("edit_last_name").value = lastName;
+                document.getElementById("edit_password").value = "";
 
-    function updateThemeButtons(theme) {
-        const lightBtn = document.getElementById('theme-light-btn');
-        const darkBtn = document.getElementById('theme-dark-btn');
-        if (!lightBtn || !darkBtn) return;
-        
-        if (theme === 'dark') {
-            darkBtn.classList.remove('btn-outline-secondary', 'border-secondary-subtle');
-            darkBtn.classList.add('btn-primary', 'border-primary', 'shadow-sm');
-            darkBtn.style.backgroundColor = 'var(--accent-color)';
-            darkBtn.style.color = '#ffffff';
-            
-            lightBtn.classList.remove('btn-primary', 'border-primary', 'shadow-sm');
-            lightBtn.classList.add('btn-outline-secondary', 'border-secondary-subtle');
-            lightBtn.style.backgroundColor = 'transparent';
-            lightBtn.style.color = 'var(--default-color)';
-        } else {
-            lightBtn.classList.remove('btn-outline-secondary', 'border-secondary-subtle');
-            lightBtn.classList.add('btn-primary', 'border-primary', 'shadow-sm');
-            lightBtn.style.backgroundColor = 'var(--accent-color)';
-            lightBtn.style.color = '#ffffff';
-            
-            darkBtn.classList.remove('btn-primary', 'border-primary', 'shadow-sm');
-            darkBtn.classList.add('btn-outline-secondary', 'border-secondary-subtle');
-            darkBtn.style.backgroundColor = 'transparent';
-            darkBtn.style.color = 'var(--default-color)';
-        }
-    }
+                const roleSelect = document.getElementById("edit_role");
+                roleSelect.value = role;
 
-    // ── Language Selector Logic ──
-    window.setAppLang = function(lang) {
-        document.cookie = "lang=" + lang + ";path=/;max-age=31536000";
-        localStorage.setItem('lang', lang);
-        updateLangButtons(lang);
-        window.location.reload();
-    };
-
-    function updateLangButtons(lang) {
-        const enBtn = document.getElementById('lang-en-btn');
-        const arBtn = document.getElementById('lang-ar-btn');
-        if (!enBtn || !arBtn) return;
-        
-        if (lang === 'ar') {
-            arBtn.classList.remove('btn-outline-secondary', 'border-secondary-subtle');
-            arBtn.classList.add('btn-primary', 'border-primary', 'shadow-sm');
-            arBtn.style.backgroundColor = 'var(--accent-color)';
-            arBtn.style.color = '#ffffff';
-            
-            enBtn.classList.remove('btn-primary', 'border-primary', 'shadow-sm');
-            enBtn.classList.add('btn-outline-secondary', 'border-secondary-subtle');
-            enBtn.style.backgroundColor = 'transparent';
-            enBtn.style.color = 'var(--default-color)';
-        } else {
-            enBtn.classList.remove('btn-outline-secondary', 'border-secondary-subtle');
-            enBtn.classList.add('btn-primary', 'border-primary', 'shadow-sm');
-            enBtn.style.backgroundColor = 'var(--accent-color)';
-            enBtn.style.color = '#ffffff';
-            
-            arBtn.classList.remove('btn-primary', 'border-primary', 'shadow-sm');
-            arBtn.classList.add('btn-outline-secondary', 'border-secondary-subtle');
-            arBtn.style.backgroundColor = 'transparent';
-            arBtn.style.color = 'var(--default-color)';
-        }
-    }
-
-    // Initialize button states based on current theme and language
-    const currentTheme = localStorage.getItem('theme') || 'light';
-    updateThemeButtons(currentTheme);
-
-    const currentLang = localStorage.getItem('lang') || 'en';
-    updateLangButtons(currentLang);
-
-    // Listen for tab changes
-    document.querySelectorAll('#settings-tabs button[data-bs-toggle="pill"]').forEach(function (btn) {
-        btn.addEventListener("shown.bs.tab", toggleSaveButton);
-    });
-    toggleSaveButton();
-
-    // ── Delete User JS Form Submission ──
-    window.deleteUser = function(userId) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/settings/users/${userId}/delete`;
-        document.body.appendChild(form);
-        form.submit();
-    };
-
-    // ── Edit User Modal population ──
-    document.querySelectorAll(".edit-user-btn").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-            const userId = this.dataset.userId;
-            const username = this.dataset.username;
-            const firstName = this.dataset.firstName;
-            const lastName = this.dataset.lastName;
-            const role = this.dataset.role;
-
-            document.getElementById("edit_username").value = username;
-            document.getElementById("edit_first_name").value = firstName;
-            document.getElementById("edit_last_name").value = lastName;
-            document.getElementById("edit_password").value = "";
-
-            const roleSelect = document.getElementById("edit_role");
-            roleSelect.value = role;
-
-            const form = document.getElementById("editUserForm");
-            form.action = `/settings/users/${userId}/edit`;
+                const form = document.getElementById("editUserForm");
+                form.action = `/settings/users/${userId}/edit`;
+            });
         });
     });
-});
 </script>
 {% endblock %}

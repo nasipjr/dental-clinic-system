@@ -168,12 +168,20 @@ def add_patient():
                 error_message=patient_error,
             ), 400
 
-        new_patient = Patient(**patient_data)
+        try:
+            new_patient = Patient(**patient_data)
 
-        db.session.add(new_patient)
-        db.session.commit()
+            db.session.add(new_patient)
+            db.session.commit()
 
-        return redirect(url_for("patients.patients"))
+            return redirect(url_for("patients.patients"))
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception("Failed to add patient")
+            return render_template(
+                "patients/add_patient.html",
+                error_message="Failed to save patient database record. Please try again.",
+            ), 500
 
     return render_template("patients/add_patient.html")
 
@@ -382,7 +390,7 @@ def patient_treatments_table(patient_id):
 
 
 @patients_bp.route("/patients/<int:patient_id>/edit", methods=["GET", "POST"])
-@role_required("admin", "receptionist")
+@role_required("admin", "doctor", "receptionist")
 def edit_patient(patient_id):
     current_app.logger.info(f"Edit patient page/request | patient_id={patient_id}")
 
@@ -480,3 +488,79 @@ def delete_patient(patient_id):
             message="Failed to delete patient.",
             back_url=url_for("patients.patients"),
         ), 500
+
+
+@patients_bp.route("/patients/<int:patient_id>/portal/create", methods=["POST"])
+@role_required("admin", "receptionist")
+def create_portal_account(patient_id):
+    current_app.logger.info(f"Creating patient portal account for patient_id={patient_id}")
+    try:
+        patient = Patient.query.get_or_404(patient_id)
+        if patient.user:
+            flash("Patient already has a portal account.", "warning")
+            return redirect(url_for("patients.patient_detail", patient_id=patient.id))
+
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
+
+        if not username or not password:
+            flash("Username and password are required.", "danger")
+            return redirect(url_for("patients.patient_detail", patient_id=patient.id))
+
+        if len(username) > 80:
+            flash("Username cannot exceed 80 characters.", "danger")
+            return redirect(url_for("patients.patient_detail", patient_id=patient.id))
+
+        if len(password) < 6:
+            flash("Password must be at least 6 characters.", "danger")
+            return redirect(url_for("patients.patient_detail", patient_id=patient.id))
+
+        from models import User
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            flash("Username already exists. Please choose a different one.", "danger")
+            return redirect(url_for("patients.patient_detail", patient_id=patient.id))
+
+        new_user = User(
+            username=username,
+            role="patient",
+            first_name=patient.first_name,
+            last_name=patient.last_name,
+            patient_id=patient.id,
+            plain_password=password
+        )
+        new_user.set_password(password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash(f"Portal account created successfully for patient: {patient.first_name}. Username: {username}", "success")
+        return redirect(url_for("patients.patient_detail", patient_id=patient.id))
+
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(f"Failed to create portal account for patient_id={patient_id}")
+        flash("Failed to create portal account due to a database error.", "danger")
+        return redirect(url_for("patients.patient_detail", patient_id=patient_id))
+
+
+@patients_bp.route("/patients/<int:patient_id>/portal/delete", methods=["POST"])
+@role_required("admin", "receptionist")
+def delete_portal_account(patient_id):
+    current_app.logger.warning(f"Deleting patient portal account for patient_id={patient_id}")
+    try:
+        patient = Patient.query.get_or_404(patient_id)
+        if not patient.user:
+            flash("Patient does not have a portal account.", "warning")
+            return redirect(url_for("patients.patient_detail", patient_id=patient.id))
+
+        db.session.delete(patient.user)
+        db.session.commit()
+
+        flash("Portal account access deleted successfully.", "success")
+        return redirect(url_for("patients.patient_detail", patient_id=patient.id))
+
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(f"Failed to delete portal account for patient_id={patient_id}")
+        flash("Failed to delete portal account.", "danger")
+        return redirect(url_for("patients.patient_detail", patient_id=patient_id))

@@ -431,9 +431,12 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), default="receptionist", nullable=False)  # 'admin', 'doctor', 'receptionist'
+    role = db.Column(db.String(20), default="receptionist", nullable=False)  # 'admin', 'doctor', 'receptionist', 'patient'
     first_name = db.Column(db.String(100), nullable=True)
     last_name = db.Column(db.String(100), nullable=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey("patient.id"), nullable=True)
+    patient = db.relationship("Patient", backref=db.backref("user", uselist=False))
+    plain_password = db.Column(db.String(255), nullable=True)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

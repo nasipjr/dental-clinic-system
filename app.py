@@ -13,6 +13,7 @@ from routes.invoices import invoices_bp
 from routes.reports import reports_bp
 from routes.settings import settings_bp
 from routes.auth import auth_bp
+from routes.portal import portal_bp
 
 
 app = Flask(__name__)
@@ -66,6 +67,46 @@ def check_and_add_discount_column():
             app.logger.error(f"Failed to add discount_type column: {e}")
 
 
+def check_and_add_patient_id_column():
+    from sqlalchemy import text
+    try:
+        db.session.execute(text("SELECT patient_id FROM user LIMIT 1"))
+    except Exception:
+        db.session.rollback()
+        try:
+            app.logger.info("Adding patient_id column to user table")
+            db.session.execute(text("ALTER TABLE user ADD COLUMN patient_id INT NULL"))
+            db.session.commit()
+            app.logger.info("Successfully added patient_id column to user table")
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Failed to add patient_id column: {e}")
+        try:
+            app.logger.info("Adding foreign key constraint for patient_id on user table")
+            db.session.execute(text("ALTER TABLE user ADD CONSTRAINT fk_user_patient FOREIGN KEY (patient_id) REFERENCES patient(id)"))
+            db.session.commit()
+            app.logger.info("Successfully added foreign key constraint")
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Failed to add foreign key constraint: {e}")
+
+
+def check_and_add_plain_password_column():
+    from sqlalchemy import text
+    try:
+        db.session.execute(text("SELECT plain_password FROM user LIMIT 1"))
+    except Exception:
+        db.session.rollback()
+        try:
+            app.logger.info("Adding plain_password column to user table")
+            db.session.execute(text("ALTER TABLE user ADD COLUMN plain_password VARCHAR(255) NULL"))
+            db.session.commit()
+            app.logger.info("Successfully added plain_password column to user table")
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Failed to add plain_password column: {e}")
+
+
 def ensure_default_admin():
     from models import User
     try:
@@ -91,6 +132,8 @@ with app.app_context():
     db.create_all()
     populate_default_settings()
     check_and_add_discount_column()
+    check_and_add_patient_id_column()
+    check_and_add_plain_password_column()
     ensure_default_admin()
 
 setup_logging(app, LOG_DIRECTORY, LOG_FILE_NAME)
@@ -123,8 +166,8 @@ def load_logged_in_user():
 
 @app.before_request
 def check_login():
-    # Exclude login and static resources
-    if request.endpoint in ("auth.login", "static") or not request.endpoint:
+    # Exclude login, static resources, and patient portal
+    if request.endpoint in ("auth.login", "static") or not request.endpoint or request.endpoint.startswith("portal."):
         return
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
@@ -178,6 +221,12 @@ def inject_settings():
     else:
         closed_str = ", ".join(closed_names)
 
+    from models import Appointment
+    try:
+        pending_count = Appointment.query.filter_by(status="Pending").count()
+    except Exception:
+        pending_count = 0
+
     return {
         "clinic_name": get_setting("clinic_name", "Clinic"),
         "currency_symbol": get_currency_symbol(),
@@ -190,7 +239,8 @@ def inject_settings():
         "operating_closed": closed_str,
         "working_days": wd_str,
         "working_hours_start": start_str,
-        "working_hours_end": end_str
+        "working_hours_end": end_str,
+        "pending_count": pending_count
     }
 
 
@@ -203,6 +253,7 @@ app.register_blueprint(payments_bp)
 app.register_blueprint(invoices_bp)
 app.register_blueprint(reports_bp)
 app.register_blueprint(settings_bp)
+app.register_blueprint(portal_bp)
 
 
 
