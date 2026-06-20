@@ -278,3 +278,75 @@ def portal_events():
     except Exception:
         current_app.logger.exception("Failed to fetch portal calendar events")
         return jsonify([]), 500
+
+
+@portal_bp.route("/appointments/<int:appointment_id>/cancel", methods=["POST"])
+@patient_login_required
+def cancel_appointment(appointment_id):
+    patient_id = session.get("patient_id")
+    appointment = Appointment.query.filter_by(id=appointment_id, patient_id=patient_id).first_or_404()
+    
+    lang = request.cookies.get('lang', 'en')
+    
+    if appointment.status not in ["Scheduled", "Pending"]:
+        deny_msg = {
+            "ar": "لا يمكنك إلغاء المواعيد المكتملة أو الملغاة بالفعل.",
+            "en": "You cannot cancel appointments that are already completed or cancelled."
+        }.get(lang, "You cannot cancel this appointment.")
+        flash(deny_msg, "danger")
+        return redirect(url_for("portal.dashboard"))
+    
+    try:
+        old_status = appointment.status
+        appointment.status = "Cancelled"
+        db.session.commit()
+        
+        current_app.logger.info(f"Appointment {appointment.id} cancelled by patient {patient_id}")
+        
+        success_msg = {
+            "ar": "تم إلغاء الموعد بنجاح وتم إشعار العيادة.",
+            "en": "Appointment cancelled successfully and the clinic has been notified."
+        }.get(lang, "Appointment cancelled successfully.")
+        flash(success_msg, "success")
+        
+        # Send Email Notification to the Clinic/Doctor
+        clinic_email = get_setting("clinic_email", "")
+        if clinic_email:
+            from utils.notification_helper import send_smtp_email
+            patient = appointment.patient
+            formatted_date = appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p')
+            
+            subject = f"Appointment Cancelled - Patient: {patient.first_name} {patient.last_name}"
+            body = (
+                f"Dear Doctor,\n\n"
+                f"This is an automated notification to inform you that the following appointment has been cancelled by the patient:\n\n"
+                f"Patient Name: {patient.first_name} {patient.last_name}\n"
+                f"Phone: {patient.phone or 'N/A'}\n"
+                f"Appointment Date/Time: {formatted_date}\n"
+                f"Reason for appointment: {appointment.reason}\n"
+                f"Previous Status: {old_status}\n\n"
+                f"This time slot is now open and available for booking on the calendar.\n\n"
+                f"Best regards,\nDental Clinic Management System"
+            )
+            
+            import threading
+            app = current_app._get_current_object()
+            def send_email_async(app_context):
+                with app_context:
+                    try:
+                        send_smtp_email(clinic_email, subject, body)
+                    except Exception as ex:
+                        app.logger.error(f"Failed to send cancellation notification email to doctor: {ex}")
+            
+            threading.Thread(target=send_email_async, args=(app.app_context(),), daemon=True).start()
+            
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.exception(f"Failed to cancel appointment {appointment_id}: {e}")
+        error_msg = {
+            "ar": "حدث خطأ أثناء إلغاء الموعد. يرجى المحاولة مرة أخرى.",
+            "en": "An error occurred while cancelling the appointment. Please try again."
+        }.get(lang, "An error occurred.")
+        flash(error_msg, "danger")
+        
+    return redirect(url_for("portal.dashboard"))

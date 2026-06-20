@@ -53,6 +53,7 @@
                 <th>Date</th>
                 <th>Reason</th>
                 <th>Status</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -75,10 +76,21 @@
                   <span class="badge bg-secondary rounded-pill px-3 py-1.5">{{ appt.status }}</span>
                   {% endif %}
                 </td>
+                <td>
+                  {% if appt.status in ('Scheduled', 'Pending') %}
+                  <form action="{{ url_for('portal.cancel_appointment', appointment_id=appt.id) }}" method="POST" class="d-inline" onsubmit="return confirmCancel(event);">
+                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                      Cancel
+                    </button>
+                  </form>
+                  {% else %}
+                  <span class="text-muted small">-</span>
+                  {% endif %}
+                </td>
               </tr>
               {% else %}
               <tr>
-                <td colspan="3" class="text-center py-4 text-secondary">
+                <td colspan="4" class="text-center py-4 text-secondary">
                   <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
                   No appointments found
                 </td>
@@ -200,6 +212,28 @@
 </div>
 
 <script>
+window.confirmCancel = function(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const isArabic = document.documentElement.getAttribute('lang') === 'ar';
+    
+    Swal.fire({
+        title: isArabic ? 'تأكيد إلغاء الموعد' : 'Cancel Appointment',
+        text: isArabic ? 'هل أنت متأكد من رغبتك في إلغاء هذا الموعد؟' : 'Are you sure you want to cancel this appointment?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: isArabic ? 'نعم، إلغاء' : 'Yes, cancel it',
+        cancelButtonText: isArabic ? 'تراجع' : 'No, keep it'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            form.submit();
+        }
+    });
+    return false;
+};
+
 document.addEventListener("DOMContentLoaded", function () {
     const calendarEl = document.getElementById("calendar");
     if (!calendarEl) return;
