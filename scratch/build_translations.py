@@ -444,7 +444,7 @@ translations = {
     "Today's Progress": "تقدم اليوم",
     "Today's Revenue": "إيرادات اليوم",
     "Today's Status": "حالة اليوم",
-    "Today’s": "نظرة عامة على",
+    "Today’s": "",
     "Today’s Scheduled Appointments": "مواعيد اليوم المجدولة",
     "Tooth": "السن",
     "Tooth Number": "رقم السن",
