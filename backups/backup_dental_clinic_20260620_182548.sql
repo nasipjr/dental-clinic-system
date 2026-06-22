@@ -31,7 +31,7 @@ CREATE TABLE `appointment` (
   PRIMARY KEY (`id`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `appointment_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -42,6 +42,35 @@ LOCK TABLES `appointment` WRITE;
 /*!40000 ALTER TABLE `appointment` DISABLE KEYS */;
 INSERT INTO `appointment` VALUES (1,1,'2026-06-21 10:00:00','Check-up','Scheduled'),(2,2,'2026-06-22 10:00:00','Cleaning','Scheduled'),(3,3,'2026-06-23 10:00:00','Filling','Scheduled'),(4,4,'2026-06-24 10:00:00','Root Canal','Scheduled'),(5,5,'2026-06-25 10:00:00','Extraction','Scheduled'),(6,6,'2026-06-26 10:00:00','Check-up','Scheduled'),(7,7,'2026-06-27 10:00:00','Cleaning','Scheduled'),(8,8,'2026-06-28 10:00:00','Filling','Scheduled'),(9,9,'2026-06-29 10:00:00','Check-up','Scheduled'),(10,10,'2026-06-30 10:00:00','Follow-up','Scheduled'),(11,1,'2026-06-20 16:00:00','Check-up','Done'),(12,9,'2026-06-24 12:00:00','Extraction','Scheduled'),(13,8,'2026-06-24 11:00:00','Whitening','Scheduled');
 /*!40000 ALTER TABLE `appointment` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `inventory_item`
+--
+
+DROP TABLE IF EXISTS `inventory_item`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `inventory_item` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `sku` varchar(100) DEFAULT NULL,
+  `quantity` int NOT NULL,
+  `unit_price` decimal(10,2) NOT NULL,
+  `description` text,
+  `last_updated` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `sku` (`sku`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `inventory_item`
+--
+
+LOCK TABLES `inventory_item` WRITE;
+/*!40000 ALTER TABLE `inventory_item` DISABLE KEYS */;
+/*!40000 ALTER TABLE `inventory_item` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -168,6 +197,7 @@ CREATE TABLE `patient_file` (
   `filetype` varchar(100) DEFAULT NULL,
   `upload_date` datetime NOT NULL,
   `notes` text,
+  `category` varchar(100) NOT NULL DEFAULT 'General',
   PRIMARY KEY (`id`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `patient_file_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
@@ -264,7 +294,7 @@ CREATE TABLE `system_setting` (
 
 LOCK TABLES `system_setting` WRITE;
 /*!40000 ALTER TABLE `system_setting` DISABLE KEYS */;
-INSERT INTO `system_setting` VALUES (1,'clinic_name','Clinic'),(2,'clinic_phone','+963 958 948 727'),(3,'clinic_email','kh.nasipdragon@gmail.com'),(4,'clinic_address','Damascus, Syria'),(5,'currency_symbol','S.P'),(6,'default_appointment_duration','30'),(7,'working_hours_start','09:00'),(8,'working_hours_end','17:00'),(9,'working_days','0,1,2,3,4,6'),(10,'treatment_prices','{\"Check-up\": 25000, \"Cleaning\": 50000, \"Filling\": 75000, \"Root Canal\": 150000, \"Extraction\": 80000, \"Crown / Bridge\": 200000, \"Braces / Orthodontics\": 300000, \"Whitening\": 120000, \"Emergency Pain\": 60000, \"Follow-up\": 20000}'),(11,'notification_enable_sms','false'),(12,'notification_enable_whatsapp','false'),(13,'notification_enable_email','false'),(14,'twilio_account_sid',''),(15,'twilio_auth_token',''),(16,'twilio_phone_number',''),(17,'twilio_whatsapp_number',''),(18,'smtp_host','smtp.gmail.com'),(19,'smtp_port','587'),(20,'smtp_user',''),(21,'smtp_password',''),(22,'smtp_from_email',''),(23,'tax_rate','15'),(24,'clinic_vat_number','');
+INSERT INTO `system_setting` VALUES (1,'clinic_name','Clinic'),(2,'clinic_phone','+963 958 948 727'),(3,'clinic_email','kh.nasipdragon@gmail.com'),(4,'clinic_address','Damascus, Syria'),(5,'currency_symbol','S.P'),(6,'default_appointment_duration','50'),(7,'working_hours_start','09:00'),(8,'working_hours_end','17:00'),(9,'working_days','0,1,2,3,4,6'),(10,'treatment_prices','{\"Check-up\": 25000, \"Cleaning\": 50000, \"Filling\": 75000, \"Root Canal\": 150000, \"Extraction\": 80000, \"Crown / Bridge\": 200000, \"Braces / Orthodontics\": 300000, \"Whitening\": 120000, \"Emergency Pain\": 60000, \"Follow-up\": 20000}'),(11,'notification_enable_sms','false'),(12,'notification_enable_whatsapp','false'),(13,'notification_enable_email','false'),(14,'twilio_account_sid',''),(15,'twilio_auth_token',''),(16,'twilio_phone_number',''),(17,'twilio_whatsapp_number',''),(18,'smtp_host','smtp.gmail.com'),(19,'smtp_port','587'),(20,'smtp_user',''),(21,'smtp_password',''),(22,'smtp_from_email',''),(23,'tax_rate','15'),(24,'clinic_vat_number','');
 /*!40000 ALTER TABLE `system_setting` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -341,4 +371,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-20 17:10:11
+-- Dump completed on 2026-06-20 18:25:48

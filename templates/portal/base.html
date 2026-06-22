@@ -100,6 +100,7 @@
   <!-- Scripts -->
   <script src="{{ url_for('static', filename='assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
 
   <script>
     // Theme Toggle Handler
@@ -283,6 +284,8 @@
                 }
             } else if (node.nodeType === Node.ELEMENT_NODE) {
                 if (node.tagName === 'SCRIPT' || node.tagName === 'STYLE') return;
+                // Skip translating flatpickr elements
+                if (node.classList && (node.classList.contains('flatpickr-calendar') || node.classList.contains('flatpickr-am-pm'))) return;
                 
                 const placeholder = node.getAttribute('placeholder');
                 if (placeholder) {

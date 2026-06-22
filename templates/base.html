@@ -320,6 +320,7 @@
   <script src="{{ url_for('static', filename='assets/vendor/purecounter/purecounter_vanilla.js') }}"></script>
   <script src="{{ url_for('static', filename='assets/vendor/swiper/swiper-bundle.min.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
 
   <!-- Main JS File -->
   <script src="{{ url_for('static', filename='assets/js/main.js') }}"></script>
@@ -936,6 +937,8 @@
             } else if (node.nodeType === Node.ELEMENT_NODE) {
                 // Skip translating the script blocks, style blocks, and values inside actual input textareas/selects
                 if (node.tagName === 'SCRIPT' || node.tagName === 'STYLE') return;
+                // Skip translating flatpickr elements
+                if (node.classList && (node.classList.contains('flatpickr-calendar') || node.classList.contains('flatpickr-am-pm'))) return;
                 
                 // Avoid modifying the value attribute of input fields, but placeholders can be translated
                 const placeholder = node.getAttribute('placeholder');

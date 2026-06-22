@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const minTimeAttr = appointmentInput.getAttribute("data-min-time") || "08:00";
     const maxTimeAttr = appointmentInput.getAttribute("data-max-time") || "18:00";
     const workingDaysList = workingDaysAttr.split(",").map(d => parseInt(d.trim(), 10));
+    const currentLang = document.documentElement.getAttribute('lang') || 'en';
 
     // Fetch booked slots
     const currentAppointmentId = typeof appointmentIdForEdit !== 'undefined' ? appointmentIdForEdit : "";
@@ -34,7 +35,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 ],
                 onChange: function(selectedDates, dateStr, instance) {
                     if (bookedSlots.includes(dateStr)) {
-                        const currentLang = document.documentElement.getAttribute('lang') || 'en';
                         const msg = currentLang === 'ar' 
                             ? "هذا الوقت محجوز بالفعل، يرجى اختيار وقت آخر." 
                             : "This slot is already reserved. Please select another time.";
@@ -42,8 +42,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         instance.clear();
                     }
                 },
-                locale: {
-                    firstDayOfWeek: 0 // Sunday
+                locale: currentLang === 'ar' && typeof flatpickr.l10ns.ar !== 'undefined' ? {
+                    ...flatpickr.l10ns.ar,
+                    firstDayOfWeek: 0
+                } : {
+                    firstDayOfWeek: 0
                 }
             });
         })
@@ -62,7 +65,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         return !workingDaysList.includes(date.getDay());
                     }
                 ],
-                locale: {
+                locale: currentLang === 'ar' && typeof flatpickr.l10ns.ar !== 'undefined' ? {
+                    ...flatpickr.l10ns.ar,
+                    firstDayOfWeek: 0
+                } : {
                     firstDayOfWeek: 0
                 }
             });
