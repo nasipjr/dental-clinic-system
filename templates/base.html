@@ -159,6 +159,14 @@
             </li>
             {% endif %}
 
+            {% if current_user.role == 'receptionist' %}
+            <li>
+              <a href="{{ url_for('settings.appearance_settings_page') }}" class="{% if request.path.startswith('/appearance-settings') %}active{% endif %}">
+                Settings
+              </a>
+            </li>
+            {% endif %}
+
             <li class="d-xl-none border-top pt-2 mt-2">
               <span class="nav-link text-muted" style="cursor: default; padding: 10px 14px;">
                 Logged in: <strong>{{ current_user.first_name or current_user.username }}</strong>

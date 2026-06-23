@@ -111,6 +111,13 @@ def settings_page():
     )
 
 
+@settings_bp.route("/appearance-settings")
+@role_required("receptionist")
+def appearance_settings_page():
+    """Appearance-only settings page for the receptionist role."""
+    return render_template("settings/nurse_settings.html")
+
+
 @settings_bp.route("/settings/users/add", methods=["POST"])
 @role_required("admin")
 def add_user():

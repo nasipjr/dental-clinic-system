@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>دليل نظام إدارة عيادة الأسنان</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Fira+Code:wght@400;500&display=swap');
+
+  :root {
+    --primary: #1a56db;
+    --primary-light: #e8f0fe;
+    --accent: #0891b2;
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --dark: #1e293b;
+    --gray: #64748b;
+    --light: #f8fafc;
+    --border: #e2e8f0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Cairo', sans-serif;
+    background: #fff;
+    color: var(--dark);
+    line-height: 1.8;
+    font-size: 14px;
+  }
+
+  /* Cover Page */
+  .cover {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0891b2 100%);
+    color: white;
+    text-align: center;
+    padding: 60px 40px;
+    page-break-after: always;
+  }
+
+  .cover .tooth-icon {
+    font-size: 80px;
+    margin-bottom: 30px;
+    filter: drop-shadow(0 0 30px rgba(8,145,178,0.6));
+  }
+
+  .cover h1 {
+    font-size: 42px;
+    font-weight: 900;
+    margin-bottom: 16px;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+  }
+
+  .cover .subtitle {
+    font-size: 20px;
+    opacity: 0.85;
+    margin-bottom: 40px;
+  }
+
+  .cover .tech-badges {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 50px;
+  }
+
+  .cover .badge {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .cover .meta {
+    opacity: 0.6;
+    font-size: 13px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    padding-top: 20px;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  /* TOC */
+  .toc {
+    padding: 50px 60px;
+    page-break-after: always;
+    background: var(--light);
+  }
+
+  .toc h2 {
+    font-size: 28px;
+    color: var(--primary);
+    margin-bottom: 30px;
+    padding-bottom: 12px;
+    border-bottom: 3px solid var(--primary);
+  }
+
+  .toc ol {
+    list-style: none;
+    counter-reset: toc;
+  }
+
+  .toc li {
+    counter-increment: toc;
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 15px;
+  }
+
+  .toc li::before {
+    content: counter(toc);
+    background: var(--primary);
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    margin-left: 14px;
+    flex-shrink: 0;
+  }
+
+  /* Content */
+  .content {
+    padding: 50px 60px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* Section headings */
+  h1.section-title {
+    font-size: 32px;
+    color: var(--primary);
+    margin: 50px 0 24px;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, var(--primary-light), #fff);
+    border-right: 5px solid var(--primary);
+    border-radius: 0 12px 12px 0;
+    page-break-before: always;
+  }
+
+  h1.section-title:first-child {
+    page-break-before: avoid;
+  }
+
+  h2 {
+    font-size: 22px;
+    color: var(--dark);
+    margin: 36px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  h3 {
+    font-size: 17px;
+    color: var(--accent);
+    margin: 24px 0 12px;
+  }
+
+  p {
+    margin: 12px 0;
+    color: #374151;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 13px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.08);
+  }
+
+  thead tr {
+    background: var(--primary);
+    color: white;
+  }
+
+  thead th {
+    padding: 12px 16px;
+    text-align: right;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr:nth-child(even) {
+    background: var(--light);
+  }
+
+  tbody tr:hover {
+    background: var(--primary-light);
+  }
+
+  tbody td {
+    padding: 11px 16px;
+    vertical-align: top;
+  }
+
+  /* Code blocks */
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 20px 24px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: 'Fira Code', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    border-right: 4px solid var(--accent);
+  }
+
+  code {
+    background: #f1f5f9;
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+  }
+
+  pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+  }
+
+  /* Callout boxes */
+  .callout {
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+    border-right: 4px solid;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .callout.warning {
+    background: #fef3c7;
+    border-color: var(--warning);
+    color: #92400e;
+  }
+
+  .callout.info {
+    background: var(--primary-light);
+    border-color: var(--primary);
+    color: #1e3a8a;
+  }
+
+  .callout.success {
+    background: #d1fae5;
+    border-color: var(--success);
+    color: #064e3b;
+  }
+
+  .callout-icon { font-size: 20px; flex-shrink: 0; }
+
+  /* Feature grid */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .feature-card {
+    background: var(--light);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    border-top: 3px solid var(--primary);
+  }
+
+  .feature-card .icon { font-size: 24px; margin-bottom: 8px; }
+  .feature-card h4 { font-size: 14px; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
+  .feature-card p { font-size: 12px; color: var(--gray); margin: 0; }
+
+  /* Role badges */
+  .role-admin { background: #fee2e2; color: #991b1b; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+  .role-doctor { background: #dbeafe; color: #1e40af; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+  .role-receptionist { background: #d1fae5; color: #065f46; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+  .role-patient { background: #fef3c7; color: #92400e; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+
+  /* Check / Cross */
+  .yes { color: var(--success); font-size: 16px; }
+  .no  { color: #cbd5e1; font-size: 16px; }
+
+  /* ERD diagram */
+  .erd {
+    background: #0f172a;
+    color: #7dd3fc;
+    padding: 24px;
+    border-radius: 12px;
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+    line-height: 2;
+    margin: 20px 0;
+  }
+
+  /* Flow steps */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 20px 0;
+  }
+
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    position: relative;
+    padding-bottom: 24px;
+  }
+
+  .flow-step:last-child { padding-bottom: 0; }
+
+  .flow-step:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    right: 19px;
+    top: 40px;
+    width: 2px;
+    height: calc(100% - 16px);
+    background: var(--border);
+  }
+
+  .flow-num {
+    width: 40px;
+    height: 40px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 16px;
+    flex-shrink: 0;
+    z-index: 1;
+  }
+
+  .flow-body { flex: 1; }
+  .flow-body h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--dark); }
+  .flow-body p { font-size: 13px; color: var(--gray); margin: 0; }
+
+  /* Print styles */
+  @media print {
+    body { font-size: 12px; }
+    .cover { min-height: 100vh; }
+    .no-print { display: none !important; }
+    h1.section-title { page-break-before: always; }
+    table { page-break-inside: avoid; }
+    pre { page-break-inside: avoid; white-space: pre-wrap; }
+    .feature-grid { page-break-inside: avoid; }
+    .flow-step { page-break-inside: avoid; }
+    a { color: inherit; text-decoration: none; }
+  }
+
+  @page {
+    margin: 20mm 15mm;
+    size: A4;
+  }
+
+  /* Print button */
+  .print-btn {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 50px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(26,86,219,0.4);
+    z-index: 1000;
+    transition: all 0.2s;
+  }
+  .print-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(26,86,219,0.5); }
+
+  /* Separator */
+  hr { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+
+  ul, ol { padding-right: 24px; margin: 12px 0; }
+  li { margin: 6px 0; }
+
+  .highlight { background: #fef9c3; padding: 2px 6px; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- Print Button -->
+<button class="print-btn no-print" onclick="window.print()">🖨️ طباعة / حفظ PDF</button>
+
+<!-- ═══════════════ COVER ═══════════════ -->
+<div class="cover">
+  <div class="tooth-icon">🦷</div>
+  <h1>دليل نظام إدارة عيادة الأسنان</h1>
+  <p class="subtitle">الدليل الشامل من الألف للياء</p>
+  <div class="tech-badges">
+    <span class="badge">🐍 Flask 3.1</span>
+    <span class="badge">🗄️ MySQL</span>
+    <span class="badge">🎨 Bootstrap 5</span>
+    <span class="badge">📅 FullCalendar 6</span>
+    <span class="badge">📊 Chart.js</span>
+    <span class="badge">🔔 Twilio</span>
+  </div>
+  <div class="meta">
+    <p>Dental Clinic Management System (DCMS)</p>
+    <p>يونيو 2026 — نسخة كاملة 100%</p>
+  </div>
+</div>
+
+<!-- ═══════════════ TOC ═══════════════ -->
+<div class="toc">
+  <h2>📋 فهرس المحتويات</h2>
+  <ol>
+    <li>نظرة عامة على النظام</li>
+    <li>هيكل المجلدات الكامل</li>
+    <li>التقنيات والمكتبات</li>
+    <li>الضبط والإعداد</li>
+    <li>قاعدة البيانات والنماذج</li>
+    <li>الأدوار والصلاحيات</li>
+    <li>نقاط النهاية — جميع المسارات (47+)</li>
+    <li>طبقة الخدمات (Services)</li>
+    <li>أدوات Utils المساعدة</li>
+    <li>نظام الإعدادات</li>
+    <li>نظام الإشعارات التلقائية</li>
+    <li>النسخ الاحتياطية</li>
+    <li>بوابة المريض</li>
+    <li>واجهة المستخدم والقوالب</li>
+    <li>تدفقات العمل الكاملة</li>
+  </ol>
+</div>
+
+<!-- ═══════════════ CONTENT ═══════════════ -->
+<div class="content">
+
+<!-- Section 1 -->
+<h1 class="section-title">1. نظرة عامة على النظام</h1>
+
+<p>نظام <strong>DCMS</strong> هو تطبيق ويب متكامل مبني على <strong>Flask</strong> لإدارة عيادة أسنان بالكامل. يتيح للطاقم الطبي إدارة المرضى، المواعيد، المعالجات، الفواتير، والمدفوعات من مكان واحد.</p>
+
+<div class="feature-grid">
+  <div class="feature-card"><div class="icon">👤</div><h4>إدارة المرضى</h4><p>ملف شامل: بيانات شخصية، طبية، مالية، ملفات X-ray</p></div>
+  <div class="feature-card"><div class="icon">📅</div><h4>إدارة المواعيد</h4><p>جدولة، تعديل، إلغاء، تقويم تفاعلي</p></div>
+  <div class="feature-card"><div class="icon">🩺</div><h4>جلسات المعالجة</h4><p>تسجيل الإجراءات الطبية لكل موعد</p></div>
+  <div class="feature-card"><div class="icon">🧾</div><h4>الفواتير</h4><p>إنشاء وإدارة مع خصم ثابت أو نسبة مئوية</p></div>
+  <div class="feature-card"><div class="icon">💰</div><h4>المدفوعات</h4><p>توزيع تلقائي FIFO على الفواتير الأقدم</p></div>
+  <div class="feature-card"><div class="icon">📊</div><h4>التقارير</h4><p>رسوم بيانية للإيرادات وإحصائيات شاملة</p></div>
+  <div class="feature-card"><div class="icon">🌐</div><h4>بوابة المريض</h4><p>مدخل خاص للمريض للحجز والمتابعة</p></div>
+  <div class="feature-card"><div class="icon">🔔</div><h4>الإشعارات</h4><p>تذكيرات SMS/WhatsApp/Email تلقائية</p></div>
+  <div class="feature-card"><div class="icon">🌙</div><h4>الوضع الليلي</h4><p>Dark/Light mode محفوظ في localStorage</p></div>
+  <div class="feature-card"><div class="icon">🌍</div><h4>ثنائية اللغة</h4><p>عربي وإنجليزي مع دعم RTL كامل</p></div>
+  <div class="feature-card"><div class="icon">💾</div><h4>النسخ الاحتياطية</h4><p>تلقائية يومية + يدوية (mysqldump)</p></div>
+  <div class="feature-card"><div class="icon">📱</div><h4>PWA</h4><p>قابل للتثبيت كتطبيق عبر service worker</p></div>
+</div>
+
+<!-- Section 2 -->
+<h1 class="section-title">2. هيكل المجلدات الكامل</h1>
+
+<pre>Dental Clinic MS Flask/
+│
+├── app.py                 ← نقطة الدخول الرئيسية
+├── models.py              ← نماذج قاعدة البيانات (10 نماذج)
+├── settings.py            ← Config class (قراءة .env)
+├── desktop_app.py         ← تشغيل كتطبيق سطح مكتب (PyWebView)
+├── requirements.txt       ← المكتبات المطلوبة
+├── .env                   ← متغيرات البيئة السرية
+│
+├── routes/                ← Blueprints — جميع المسارات
+│   ├── auth.py            ← تسجيل دخول/خروج
+│   ├── dashboard.py       ← لوحة التحكم
+│   ├── patients.py        ← إدارة المرضى (14 endpoint)
+│   ├── appointments.py    ← إدارة المواعيد (14 endpoint)
+│   ├── treatments.py      ← المعالجات (7 endpoints)
+│   ├── invoices.py        ← الفواتير (5 endpoints)
+│   ├── payments.py        ← المدفوعات (3 endpoints)
+│   ├── reports.py         ← التقارير (admin فقط)
+│   ├── settings.py        ← الإعدادات + النسخ + المستخدمين
+│   └── portal.py          ← بوابة المريض (8 endpoints)
+│
+├── services/              ← Business Logic
+│   ├── invoice_service.py ← إنشاء/مزامنة/حذف الفواتير
+│   └── payment_service.py ← توزيع المدفوعات FIFO
+│
+├── utils/                 ← أدوات مساعدة
+│   ├── auth_helper.py     ← ديكوراتور الصلاحيات
+│   ├── settings_helper.py ← قراءة/كتابة الإعدادات
+│   ├── constants.py       ← أنواع الإجراءات والأسعار
+│   ├── notification_helper.py ← SMS/WhatsApp/Email
+│   ├── backup_helper.py   ← mysqldump + rotation
+│   ├── validators.py      ← التحقق من صحة النماذج
+│   └── logging_config.py  ← سجلات النظام
+│
+├── templates/             ← قوالب Jinja2 HTML
+│   ├── base.html          ← القالب الأساسي (69KB)
+│   ├── auth/              ← صفحة الدخول
+│   ├── dashboard/         ← لوحة التحكم
+│   ├── patients/          ← 5 قوالب
+│   ├── appointments/      ← 6 قوالب + التقويم
+│   ├── treatments/        ← 3 قوالب
+│   ├── invoices/          ← 3 قوالب
+│   ├── payments/          ← 2 قوالب
+│   ├── reports/           ← التقارير Chart.js
+│   ├── settings/          ← إعدادات Admin + Receptionist
+│   ├── portal/            ← بوابة المريض (5 قوالب)
+│   └── partials/          ← قوالب HTMX الجزئية (8 ملفات)
+│
+├── static/
+│   ├── styles.css         ← CSS البوابة (63.6KB)
+│   ├── manifest.json      ← PWA manifest
+│   ├── service-worker.js  ← PWA service worker
+│   ├── uploads/patients/  ← ملفات X-ray (uuid-named)
+│   └── assets/
+│       ├── css/main.css   ← CSS الإدارة (153KB)
+│       ├── js/            ← JS ملفات
+│       └── vendor/        ← Bootstrap, FontAwesome, AOS...
+│
+├── backups/               ← ملفات النسخ (.sql/.db)
+└── logs/                  ← سجلات النظام (clinic.log)</pre>
+
+<!-- Section 3 -->
+<h1 class="section-title">3. التقنيات والمكتبات</h1>
+
+<h2>Backend</h2>
+<table>
+  <thead><tr><th>المكتبة</th><th>الإصدار</th><th>الغرض</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Flask</strong></td><td>3.1.2</td><td>إطار الويب الرئيسي</td></tr>
+    <tr><td><strong>Flask-SQLAlchemy</strong></td><td>3.1.1</td><td>ORM لقاعدة البيانات</td></tr>
+    <tr><td><strong>PyMySQL</strong></td><td>1.1.2</td><td>MySQL driver</td></tr>
+    <tr><td><strong>python-dotenv</strong></td><td>1.2.2</td><td>تحميل ملف .env</td></tr>
+    <tr><td><strong>Werkzeug</strong></td><td>—</td><td>bcrypt لكلمات المرور</td></tr>
+    <tr><td><strong>Twilio</strong></td><td>—</td><td>SMS/WhatsApp (اختياري)</td></tr>
+    <tr><td><strong>gunicorn</strong></td><td>23.0.0</td><td>WSGI server للإنتاج</td></tr>
+    <tr><td><strong>pywebview</strong></td><td>5.1</td><td>تشغيل كتطبيق سطح مكتب</td></tr>
+    <tr><td><strong>pyinstaller</strong></td><td>6.5.0</td><td>بناء ملف .exe</td></tr>
+  </tbody>
+</table>
+
+<h2>Frontend</h2>
+<table>
+  <thead><tr><th>المكتبة</th><th>الغرض</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Bootstrap 5.3</strong></td><td>إطار CSS + مكونات</td></tr>
+    <tr><td><strong>FullCalendar 6.1.15</strong></td><td>التقويم التفاعلي</td></tr>
+    <tr><td><strong>SweetAlert2 11</strong></td><td>نوافذ حوار</td></tr>
+    <tr><td><strong>Chart.js</strong></td><td>رسوم بيانية التقارير</td></tr>
+    <tr><td><strong>AOS</strong></td><td>تأثيرات الدخول Animate On Scroll</td></tr>
+    <tr><td><strong>Flatpickr</strong></td><td>منتقي التاريخ/الوقت</td></tr>
+    <tr><td><strong>HTMX</strong></td><td>تحديث جزئي للجداول بدون reload</td></tr>
+  </tbody>
+</table>
+
+<!-- Section 4 -->
+<h1 class="section-title">4. الضبط والإعداد</h1>
+
+<h2>ملف .env</h2>
+<pre>FLASK_APP=app.py
+FLASK_ENV=development
+SECRET_KEY=change-this-secret-key
+
+# قاعدة البيانات MySQL
+DB_USER=root
+DB_PASSWORD=1234
+DB_HOST=127.0.0.1
+DB_PORT=3308
+DB_NAME=dental_clinic
+
+# السجلات
+LOG_DIRECTORY=logs
+LOG_FILE_NAME=clinic.log</pre>
+
+<h2>تشغيل التطبيق</h2>
+<pre># تثبيت المكتبات
+pip install -r requirements.txt
+
+# تشغيل وضع التطوير
+python app.py
+# ← يفتح على http://127.0.0.1:5000
+
+# تشغيل كتطبيق سطح مكتب
+python desktop_app.py
+
+# الإنتاج
+gunicorn -w 4 app:app</pre>
+
+<div class="callout warning">
+  <span class="callout-icon">⚠️</span>
+  <div><strong>أول تسجيل دخول:</strong> حساب admin الافتراضي هو <code>admin</code> / <code>admin123</code> — غيّر كلمة المرور فوراً!</div>
+</div>
+
+<h2>تسلسل التهيئة (أول تشغيل)</h2>
+<div class="flow">
+  <div class="flow-step"><div class="flow-num">1</div><div class="flow-body"><h4>db.create_all()</h4><p>إنشاء جميع جداول قاعدة البيانات</p></div></div>
+  <div class="flow-step"><div class="flow-num">2</div><div class="flow-body"><h4>populate_default_settings()</h4><p>تعبئة الإعدادات الافتراضية (اسم العيادة، ساعات العمل...)</p></div></div>
+  <div class="flow-step"><div class="flow-num">3</div><div class="flow-body"><h4>ترحيلات تلقائية (5 دوال)</h4><p>إضافة أعمدة جديدة إن لم تكن موجودة (discount, tax_rate, session_opened_at...)</p></div></div>
+  <div class="flow-step"><div class="flow-num">4</div><div class="flow-body"><h4>ensure_default_admin()</h4><p>إنشاء حساب admin افتراضي إن لم يوجد أي admin</p></div></div>
+  <div class="flow-step"><div class="flow-num">5</div><div class="flow-body"><h4>تشغيل Background Threads</h4><p>خيط التذكيرات (كل 5 دقائق) + خيط النسخ الاحتياطية (كل 24 ساعة)</p></div></div>
+</div>
+
+<!-- Section 5 -->
+<h1 class="section-title">5. قاعدة البيانات والنماذج</h1>
+
+<h2>مخطط العلاقات</h2>
+<div class="erd">Patient ─────────────────────────────────────────┐
+  │                                                 │
+  ├──&lt; Appointment ─────────────────────────────┐   │
+  │       │                                     │   │
+  │       ├──&lt; Treatment                        │   │
+  │       └──── Invoice (1:1) ──&lt; PaymentAlloc &gt;──Payment
+  │                                                 │
+  ├──&lt; Payment ─────────────────────────────────────┘
+  ├──&lt; PatientFile
+  ├──── User (بوابة المريض)
+  └──&lt; NotificationLog
+
+SystemSetting  (مستقل — key/value store)</div>
+
+<h2>📌 Patient — المريض</h2>
+<table>
+  <thead><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr></thead>
+  <tbody>
+    <tr><td>id</td><td>Integer PK</td><td>المعرف الفريد</td></tr>
+    <tr><td>first_name / last_name</td><td>String(100)</td><td><strong>مطلوبان</strong></td></tr>
+    <tr><td>title</td><td>String(20)</td><td>Mr / Mrs / Ms / Miss / Dr</td></tr>
+    <tr><td>date_of_birth</td><td>Date</td><td>تاريخ الميلاد</td></tr>
+    <tr><td>gender</td><td>String(20)</td><td>Male / Female</td></tr>
+    <tr><td>phone / email</td><td>String</td><td>للتواصل والإشعارات</td></tr>
+    <tr><td>address, city, state, post_code, country</td><td>String</td><td>بيانات الموقع</td></tr>
+    <tr><td>notes</td><td>Text</td><td>ملاحظات عامة</td></tr>
+    <tr><td>medical_information</td><td>Text</td><td>أمراض مزمنة، حساسية...</td></tr>
+    <tr><td>occupation / emergency_contact</td><td>String</td><td>معلومات إضافية</td></tr>
+  </tbody>
+</table>
+
+<h2>📌 Appointment — الموعد</h2>
+<table>
+  <thead><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr></thead>
+  <tbody>
+    <tr><td>appointment_date</td><td>DateTime</td><td><strong>مطلوب</strong></td></tr>
+    <tr><td>status</td><td>String(50)</td><td>Scheduled / Done / Cancelled / Pending</td></tr>
+    <tr><td>reason</td><td>String(255)</td><td>سبب الزيارة</td></tr>
+    <tr><td>session_opened_at</td><td>DateTime</td><td>وقت فتح الجلسة (nullable)</td></tr>
+  </tbody>
+</table>
+
+<h2>📌 Treatment — المعالجة</h2>
+<table>
+  <thead><tr><th>الإجراء</th><th>السعر الافتراضي</th></tr></thead>
+  <tbody>
+    <tr><td>Check-up</td><td>25,000</td></tr>
+    <tr><td>Cleaning</td><td>50,000</td></tr>
+    <tr><td>Filling</td><td>75,000</td></tr>
+    <tr><td>Root Canal</td><td>150,000</td></tr>
+    <tr><td>Extraction</td><td>80,000</td></tr>
+    <tr><td>Crown / Bridge</td><td>200,000</td></tr>
+    <tr><td>Braces / Orthodontics</td><td>300,000</td></tr>
+    <tr><td>Whitening</td><td>120,000</td></tr>
+    <tr><td>Emergency Pain</td><td>60,000</td></tr>
+    <tr><td>Follow-up</td><td>20,000</td></tr>
+  </tbody>
+</table>
+
+<h2>📌 Invoice — الفاتورة</h2>
+<p>علاقة <strong>1 إلى 1</strong> مع الموعد. تُنشأ تلقائياً عند إضافة أول معالجة.</p>
+<table>
+  <thead><tr><th>الخاصية</th><th>الوصف</th></tr></thead>
+  <tbody>
+    <tr><td>invoice_number</td><td>→ "INV-{id}"</td></tr>
+    <tr><td>discount_type</td><td>"value" (مبلغ ثابت) أو "percentage" (نسبة %)</td></tr>
+    <tr><td>total_amount</td><td>max(0, subtotal - discount)</td></tr>
+    <tr><td>status</td><td>Unpaid / Partially Paid / Paid / Credit</td></tr>
+  </tbody>
+</table>
+
+<!-- Section 6 -->
+<h1 class="section-title">6. الأدوار والصلاحيات</h1>
+
+<table>
+  <thead>
+    <tr><th>الصلاحية</th><th>Admin</th><th>Doctor</th><th>Receptionist</th><th>Patient</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Dashboard</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">✅</td><td class="no">—</td></tr>
+    <tr><td>عرض/إضافة/تعديل مريض</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">✅</td><td class="no">—</td></tr>
+    <tr><td>حذف مريض</td><td class="yes">✅</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+    <tr><td>إضافة/تعديل موعد</td><td class="yes">✅</td><td class="no">—</td><td class="yes">✅</td><td class="no">—</td></tr>
+    <tr><td>فتح/إنهاء جلسة + معالجات</td><td class="yes">✅</td><td class="yes">✅</td><td class="no">—</td><td class="no">—</td></tr>
+    <tr><td>التقويم</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">✅</td><td class="no">—</td></tr>
+    <tr><td>الفواتير (عرض)</td><td class="yes">✅</td><td class="yes">✅</td><td class="yes">✅</td><td class="no">—</td></tr>
+    <tr><td>إنشاء/تعديل فاتورة</td><td class="yes">✅</td><td class="no">—</td><td class="yes">✅</td><td class="no">—</td></tr>
+    <tr><td>المدفوعات</td><td class="yes">✅</td><td class="no">—</td><td class="yes">✅</td><td class="no">—</td></tr>
+    <tr><td>التقارير</td><td class="yes">✅</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+    <tr><td>الإعدادات الكاملة</td><td class="yes">✅</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+    <tr><td>إعدادات المظهر</td><td class="yes">✅</td><td class="no">—</td><td class="yes">✅</td><td class="no">—</td></tr>
+    <tr><td>بوابة المريض</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">✅</td></tr>
+  </tbody>
+</table>
+
+<!-- Section 7 -->
+<h1 class="section-title">7. نقاط النهاية — جميع المسارات</h1>
+
+<h2>🔐 المصادقة (auth)</h2>
+<table>
+  <thead><tr><th>URL</th><th>طريقة</th><th>الوصف</th></tr></thead>
+  <tbody>
+    <tr><td><code>/login</code></td><td>GET, POST</td><td>صفحة الدخول. يفصل بين الكادر والمرضى</td></tr>
+    <tr><td><code>/logout</code></td><td>GET</td><td>مسح الجلسة وإعادة التوجيه</td></tr>
+  </tbody>
+</table>
+
+<h2>👤 المرضى (patients)</h2>
+<table>
+  <thead><tr><th>URL</th><th>الوصف</th></tr></thead>
+  <tbody>
+    <tr><td><code>/patients</code></td><td>قائمة مع بحث وترتيب وتقسيم صفحات (10/page)</td></tr>
+    <tr><td><code>/patients/add</code></td><td>إضافة مريض جديد</td></tr>
+    <tr><td><code>/patients/&lt;id&gt;</code></td><td>الملف الكامل: مواعيد، فواتير، ملفات، بوابة</td></tr>
+    <tr><td><code>/patients/&lt;id&gt;/edit</code></td><td>تعديل بيانات المريض</td></tr>
+    <tr><td><code>/patients/&lt;id&gt;/delete</code></td><td>حذف (admin فقط — يحجب إن له مواعيد)</td></tr>
+    <tr><td><code>/patients/&lt;id&gt;/portal/create</code></td><td>إنشاء حساب بوابة للمريض</td></tr>
+    <tr><td><code>/patients/&lt;id&gt;/files/upload</code></td><td>رفع ملف طبي (X-ray، PDF...)</td></tr>
+  </tbody>
+</table>
+
+<h2>📅 المواعيد (appointments)</h2>
+<table>
+  <thead><tr><th>URL</th><th>الوصف</th></tr></thead>
+  <tbody>
+    <tr><td><code>/appointments</code></td><td>قائمة كل المواعيد</td></tr>
+    <tr><td><code>/appointments/add</code></td><td>إضافة موعد جديد</td></tr>
+    <tr><td><code>/appointments/&lt;id&gt;/edit</code></td><td>تعديل الموعد</td></tr>
+    <tr><td><code>/appointments/&lt;id&gt;/quick-cancel</code></td><td>JSON — إلغاء سريع</td></tr>
+    <tr><td><code>/appointments/&lt;id&gt;/quick-done</code></td><td>JSON — إنجاز سريع</td></tr>
+    <tr><td><code>/appointments/events</code></td><td>JSON — أحداث FullCalendar ملونة</td></tr>
+    <tr><td><code>/calendar</code></td><td>التقويم التفاعلي الكامل</td></tr>
+    <tr><td><code>/appointments/pending</code></td><td>المواعيد المعلقة (من البوابة)</td></tr>
+    <tr><td><code>/appointments/&lt;id&gt;/confirm</code></td><td>قبول موعد معلق → Scheduled</td></tr>
+    <tr><td><code>/appointments/&lt;id&gt;/decline</code></td><td>رفض موعد معلق → Cancelled</td></tr>
+  </tbody>
+</table>
+
+<h2>🩺 المعالجات (treatments)</h2>
+<table>
+  <thead><tr><th>URL</th><th>الوصف</th></tr></thead>
+  <tbody>
+    <tr><td><code>/appointments/&lt;id&gt;/session</code></td><td>فتح جلسة المعالجة (doctor/admin)</td></tr>
+    <tr><td><code>/appointments/&lt;id&gt;/treatments/add</code></td><td>إضافة معالجة + مزامنة الفاتورة</td></tr>
+    <tr><td><code>/appointments/&lt;id&gt;/end-session</code></td><td>إنهاء الجلسة → Done</td></tr>
+    <tr><td><code>/appointments/&lt;id&gt;/reopen-session</code></td><td>إعادة فتح (تُحجب إن له مدفوعات)</td></tr>
+    <tr><td><code>/treatments/&lt;id&gt;/edit</code></td><td>تعديل معالجة + مزامنة الفاتورة</td></tr>
+    <tr><td><code>/treatments/&lt;id&gt;/delete</code></td><td>حذف + مزامنة الفاتورة</td></tr>
+  </tbody>
+</table>
+
+<h2>🧾 الفواتير (invoices)</h2>
+<table>
+  <thead><tr><th>URL</th><th>الوصف</th></tr></thead>
+  <tbody>
+    <tr><td><code>/invoices</code></td><td>قائمة الفواتير</td></tr>
+    <tr><td><code>/invoices/add</code></td><td>فاتورة يدوية walk-in (بدون موعد مسبق)</td></tr>
+    <tr><td><code>/invoices/&lt;id&gt;</code></td><td>تفاصيل الفاتورة الكاملة</td></tr>
+    <tr><td><code>/invoices/&lt;id&gt;/discount</code></td><td>تعديل الخصم + إعادة توزيع المدفوعات</td></tr>
+  </tbody>
+</table>
+
+<h2>⚙️ الإعدادات (settings)</h2>
+<table>
+  <thead><tr><th>URL</th><th>الصلاحية</th><th>الوصف</th></tr></thead>
+  <tbody>
+    <tr><td><code>/settings</code></td><td>Admin</td><td>الإعدادات الكاملة (8 تبويبات)</td></tr>
+    <tr><td><code>/appearance-settings</code></td><td>Receptionist</td><td>مظهر فقط (ثيم + لغة)</td></tr>
+    <tr><td><code>/settings/users/add</code></td><td>Admin</td><td>إضافة مستخدم</td></tr>
+    <tr><td><code>/settings/backups/create</code></td><td>Admin</td><td>إنشاء نسخة احتياطية</td></tr>
+  </tbody>
+</table>
+
+<h2>🌐 بوابة المريض (portal)</h2>
+<table>
+  <thead><tr><th>URL</th><th>الوصف</th></tr></thead>
+  <tbody>
+    <tr><td><code>/portal/dashboard</code></td><td>لوحة تحكم المريض (مواعيده)</td></tr>
+    <tr><td><code>/portal/book</code></td><td>طلب موعد جديد</td></tr>
+    <tr><td><code>/portal/appointments/&lt;id&gt;/cancel</code></td><td>إلغاء موعد مع التحقق من الملكية</td></tr>
+    <tr><td><code>/portal/events</code></td><td>JSON — أحداث FullCalendar للمريض</td></tr>
+  </tbody>
+</table>
+
+<!-- Section 8 -->
+<h1 class="section-title">8. طبقة الخدمات (Services)</h1>
+
+<h2>invoice_service.py</h2>
+<pre>sync_invoice_for_appointment(appointment)
+# إذا له معالجات → أنشئ/احتفظ بالفاتورة
+# إذا لا معالجات → احذف الفاتورة تلقائياً</pre>
+
+<h2>payment_service.py — خوارزمية FIFO</h2>
+<pre>allocate_patient_payments_to_invoices(patient_id)
+# 1. احذف كل PaymentAllocation الحالية للمريض
+# 2. رتّب الدفعات من الأقدم للأحدث
+# 3. رتّب الفواتير من الأقدم للأحدث
+# 4. لكل دفعة:
+#    لكل فاتورة غير مدفوعة:
+#      خصص ما يكفي لتغطية المستحق
+#      أنشئ PaymentAllocation
+# 5. flush() — لا commit (الـ caller يفعل ذلك)</pre>
+
+<!-- Section 9 -->
+<h1 class="section-title">9. أدوات Utils المساعدة</h1>
+
+<table>
+  <thead><tr><th>الملف</th><th>الوظيفة الرئيسية</th></tr></thead>
+  <tbody>
+    <tr><td>auth_helper.py</td><td><code>@role_required("admin", "doctor")</code> — يحمي كل endpoint</td></tr>
+    <tr><td>settings_helper.py</td><td><code>get_setting(key)</code> مع كاش في g / <code>set_setting(key, val)</code></td></tr>
+    <tr><td>constants.py</td><td>TREATMENT_PRICES و PROCEDURE_TYPES — تُقرأ من DB ديناميكياً</td></tr>
+    <tr><td>validators.py</td><td>parse_patient_data / parse_appointment_data / booking_lock</td></tr>
+    <tr><td>notification_helper.py</td><td>send_twilio_sms / send_whatsapp / send_smtp_email</td></tr>
+    <tr><td>backup_helper.py</td><td>mysqldump + rotation (آخر 10 نسخ فقط)</td></tr>
+    <tr><td>logging_config.py</td><td>FileHandler + StreamHandler (INFO level)</td></tr>
+  </tbody>
+</table>
+
+<!-- Section 10 -->
+<h1 class="section-title">10. نظام الإعدادات</h1>
+
+<h2>الإعدادات الافتراضية الكاملة</h2>
+<table>
+  <thead><tr><th>المفتاح</th><th>القيمة الافتراضية</th></tr></thead>
+  <tbody>
+    <tr><td>clinic_name</td><td>Clinic</td></tr>
+    <tr><td>working_hours_start</td><td>09:00</td></tr>
+    <tr><td>working_hours_end</td><td>17:00</td></tr>
+    <tr><td>working_days</td><td>0,1,2,3,4,6 (أحد-سبت بلا جمعة)</td></tr>
+    <tr><td>default_appointment_duration</td><td>30 دقيقة</td></tr>
+    <tr><td>currency_symbol</td><td>$</td></tr>
+    <tr><td>notification_enable_sms</td><td>false</td></tr>
+    <tr><td>smtp_host</td><td>smtp.gmail.com</td></tr>
+  </tbody>
+</table>
+
+<div class="callout info">
+  <span class="callout-icon">💡</span>
+  <div><strong>ترميز أيام الأسبوع:</strong> 0=أحد، 1=اثنين، 2=ثلاثاء، 3=أربعاء، 4=خميس، 5=جمعة، 6=سبت</div>
+</div>
+
+<!-- Section 11 -->
+<h1 class="section-title">11. نظام الإشعارات التلقائية</h1>
+
+<h2>آلية عمل خيط التذكيرات</h2>
+<pre>كل 5 دقائق ← process_reminders()
+    → تجلب المواعيد الـ Scheduled في الـ 25 ساعة القادمة
+    → لكل موعد:
+        إذا 22-25 ساعة → تذكير "24h" (SMS + WhatsApp + Email)
+        إذا 1.5-2.5 ساعة → تذكير "2h"
+    → يتحقق من NotificationLog (لا يُعيد الإرسال)</pre>
+
+<table>
+  <thead><tr><th>القناة</th><th>المزود</th><th>الشرط</th></tr></thead>
+  <tbody>
+    <tr><td>SMS</td><td>Twilio REST</td><td>phone موجود + enable_sms=true</td></tr>
+    <tr><td>WhatsApp</td><td>Twilio WhatsApp</td><td>phone موجود + enable_whatsapp=true</td></tr>
+    <tr><td>Email</td><td>SMTP Gmail (port 587)</td><td>email موجود + enable_email=true</td></tr>
+  </tbody>
+</table>
+
+<div class="callout success">
+  <span class="callout-icon">✅</span>
+  <div><strong>وضع المحاكاة:</strong> إذا لم تُضبط بيانات Twilio/SMTP، يكتب النظام في السجل <code>[MOCK SMS]</code> بدون إرسال فعلي.</div>
+</div>
+
+<!-- Section 12 -->
+<h1 class="section-title">12. النسخ الاحتياطية</h1>
+
+<table>
+  <thead><tr><th>النوع</th><th>الطريقة</th><th>الدورة</th></tr></thead>
+  <tbody>
+    <tr><td>تلقائية</td><td>mysqldump → .sql</td><td>كل 24 ساعة</td></tr>
+    <tr><td>يدوية</td><td>Settings → Create Backup</td><td>عند الطلب</td></tr>
+  </tbody>
+</table>
+
+<p>يحتفظ النظام بـ <strong>آخر 10 نسخ فقط</strong> — يحذف الأقدم تلقائياً (rotate_backups).</p>
+
+<!-- Section 13 -->
+<h1 class="section-title">13. بوابة المريض</h1>
+
+<h2>إنشاء حساب (من قِبل الكادر)</h2>
+<div class="flow">
+  <div class="flow-step"><div class="flow-num">1</div><div class="flow-body"><h4>ملف المريض</h4><p>القسم Patient Portal Access</p></div></div>
+  <div class="flow-step"><div class="flow-num">2</div><div class="flow-body"><h4>إدخال اسم مستخدم + كلمة مرور</h4><p>كلمة المرور ≥ 6 أحرف</p></div></div>
+  <div class="flow-step"><div class="flow-num">3</div><div class="flow-body"><h4>إنشاء User(role="patient")</h4><p>مرتبط بـ patient_id — يُخزَّن plain_password للعرض للكادر</p></div></div>
+</div>
+
+<h2>قواعد الحجز (من البوابة)</h2>
+<table>
+  <thead><tr><th>القاعدة</th><th>السبب</th></tr></thead>
+  <tbody>
+    <tr><td>❌ لا حجز في الماضي</td><td>التحقق في validators.py</td></tr>
+    <tr><td>❌ لا حجز في أيام الإجازة</td><td>working_days من الإعدادات</td></tr>
+    <tr><td>❌ لا حجز خارج ساعات العمل</td><td>working_hours_start/end</td></tr>
+    <tr><td>❌ لا حجز بعد 30 يوماً</td><td>حد التخطيط المسموح</td></tr>
+    <tr><td>❌ لا حجز في وقت مشغول</td><td>booking_lock + conflict check</td></tr>
+  </tbody>
+</table>
+
+<!-- Section 14 -->
+<h1 class="section-title">14. واجهة المستخدم والقوالب</h1>
+
+<h2>ألوان التقويم حسب حالة الموعد</h2>
+<table>
+  <thead><tr><th>الحالة</th><th>اللون</th></tr></thead>
+  <tbody>
+    <tr><td>Scheduled</td><td>🔵 أزرق</td></tr>
+    <tr><td>Done</td><td>🟢 أخضر</td></tr>
+    <tr><td>Cancelled</td><td>⚫ رمادي</td></tr>
+    <tr><td>Pending</td><td>🟠 برتقالي</td></tr>
+  </tbody>
+</table>
+
+<h2>HTMX للتحديث الجزئي</h2>
+<p>البحث والترتيب في جداول المرضى، المواعيد، الفواتير، والمدفوعات يستخدم <strong>HTMX</strong> بدون إعادة تحميل الصفحة — يجلب الـ <code>/table</code> partials مباشرة.</p>
+
+<!-- Section 15 -->
+<h1 class="section-title">15. تدفقات العمل الكاملة</h1>
+
+<h2>1️⃣ الجلسة الطبية الكاملة</h2>
+<div class="flow">
+  <div class="flow-step"><div class="flow-num">1</div><div class="flow-body"><h4>فتح الجلسة</h4><p>Doctor → Appointments → session_opened_at = now()</p></div></div>
+  <div class="flow-step"><div class="flow-num">2</div><div class="flow-body"><h4>إضافة معالجات</h4><p>اختيار الإجراء + رقم السن + التكلفة → تُنشأ الفاتورة تلقائياً عند أول معالجة</p></div></div>
+  <div class="flow-step"><div class="flow-num">3</div><div class="flow-body"><h4>إنهاء الجلسة</h4><p>End Session → status = "Done"</p></div></div>
+  <div class="flow-step"><div class="flow-num">4</div><div class="flow-body"><h4>استلام الدفعة</h4><p>تسجيل دفعة → توزيع FIFO تلقائي على الفواتير</p></div></div>
+</div>
+
+<h2>2️⃣ حجز موعد من البوابة</h2>
+<div class="flow">
+  <div class="flow-step"><div class="flow-num">1</div><div class="flow-body"><h4>المريض يختار الوقت</h4><p>من تقويم البوابة → يرى الفترات المتاحة فقط</p></div></div>
+  <div class="flow-step"><div class="flow-num">2</div><div class="flow-body"><h4>يرسل الطلب</h4><p>Appointment(status="Pending") — يظهر badge أحمر للكادر</p></div></div>
+  <div class="flow-step"><div class="flow-num">3</div><div class="flow-body"><h4>الكادر يوافق أو يرفض</h4><p>موافقة → Scheduled / رفض → Cancelled</p></div></div>
+</div>
+
+<h2>3️⃣ فاتورة يدوية (Walk-in)</h2>
+<div class="flow">
+  <div class="flow-step"><div class="flow-num">1</div><div class="flow-body"><h4>Invoices → Add Invoice</h4><p>اختيار مريض + تاريخ الزيارة</p></div></div>
+  <div class="flow-step"><div class="flow-num">2</div><div class="flow-body"><h4>إضافة بنود المعالجة</h4><p>صفوف متعددة + خصم اختياري</p></div></div>
+  <div class="flow-step"><div class="flow-num">3</div><div class="flow-body"><h4>اختيار الدفع</h4><p>بلا دفعة / كاملة الآن / مبلغ مخصص</p></div></div>
+  <div class="flow-step"><div class="flow-num">4</div><div class="flow-body"><h4>النظام ينشئ تلقائياً</h4><p>Appointment(Done) + Treatments + Invoice + Payment (اختياري)</p></div></div>
+</div>
+
+<hr>
+<p style="text-align:center; color: var(--gray); font-size: 13px; padding: 20px 0;">
+  🦷 نظام إدارة عيادة الأسنان — الدليل الشامل | يونيو 2026
+</p>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Appearance Settings{% endblock %}
+
+{% block content %}
+</br></br></br></br></br></br></br></br>
+
+<!-- Section Title -->
+<div class="container section-title" data-aos="fade-up">
+    <h2>Appearance Settings</h2>
+    <p>Personalize the visual theme and language of your interface.</p>
+</div>
+
+<section id="nurse-settings-section" class="section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="row justify-content-center">
+            <div class="col-lg-7 col-md-9">
+
+                <!-- Appearance Card -->
+                <div class="settings-content-card p-4 p-md-5">
+
+                    <!-- Header -->
+                    <div class="settings-tab-header mb-4">
+                        <div class="settings-tab-icon"><i class="bi bi-palette"></i></div>
+                        <div>
+                            <h4>Theme &amp; Appearance</h4>
+                            <p>Customize the visual theme of the application</p>
+                        </div>
+                    </div>
+
+                    <!-- Theme Selector -->
+                    <div class="mb-5">
+                        <label class="settings-label d-block mb-3">System Display Theme</label>
+                        <div class="d-flex gap-3">
+                            <button type="button"
+                                class="btn theme-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"
+                                id="theme-light-btn" onclick="setAppTheme('light')"
+                                style="border-radius: 16px; transition: all 0.3s ease;">
+                                <i class="bi bi-sun-fill fs-2 mb-2 text-warning"></i>
+                                <strong style="font-size: 1.05rem;">Light Mode</strong>
+                            </button>
+                            <button type="button"
+                                class="btn theme-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"
+                                id="theme-dark-btn" onclick="setAppTheme('dark')"
+                                style="border-radius: 16px; transition: all 0.3s ease;">
+                                <i class="bi bi-moon-stars-fill fs-2 mb-2 text-primary"></i>
+                                <strong style="font-size: 1.05rem;">Dark Mode</strong>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Language Selector -->
+                    <div class="pt-4 border-top" style="border-top-color: rgba(13, 110, 253, 0.08) !important;">
+                        <label class="settings-label d-block mb-3">System Interface Language</label>
+                        <div class="d-flex gap-3">
+                            <button type="button"
+                                class="btn lang-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"
+                                id="lang-en-btn" onclick="setAppLang('en')"
+                                style="border-radius: 16px; transition: all 0.3s ease;">
+                                <span class="fs-2 mb-2">🇺🇸</span>
+                                <strong style="font-size: 1.05rem;">English</strong>
+                            </button>
+                            <button type="button"
+                                class="btn lang-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"
+                                id="lang-ar-btn" onclick="setAppLang('ar')"
+                                style="border-radius: 16px; transition: all 0.3s ease;">
+                                <span class="fs-2 mb-2">🇸🇦</span>
+                                <strong style="font-size: 1.05rem;">العربية</strong>
+                            </button>
+                        </div>
+                    </div>
+
+                </div><!-- end .settings-content-card -->
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // ── Theme Selector Logic ──
+    window.setAppTheme = function (theme) {
+        document.documentElement.setAttribute('data-bs-theme', theme);
+        localStorage.setItem('theme', theme);
+        updateThemeButtons(theme);
+    };
+
+    function updateThemeButtons(theme) {
+        const lightBtn = document.getElementById('theme-light-btn');
+        const darkBtn  = document.getElementById('theme-dark-btn');
+        if (!lightBtn || !darkBtn) return;
+
+        if (theme === 'dark') {
+            darkBtn.classList.remove('btn-outline-secondary', 'border-secondary-subtle');
+            darkBtn.classList.add('btn-primary', 'border-primary', 'shadow-sm');
+            darkBtn.style.backgroundColor = 'var(--accent-color)';
+            darkBtn.style.color = '#ffffff';
+
+            lightBtn.classList.remove('btn-primary', 'border-primary', 'shadow-sm');
+            lightBtn.classList.add('btn-outline-secondary', 'border-secondary-subtle');
+            lightBtn.style.backgroundColor = 'transparent';
+            lightBtn.style.color = 'var(--default-color)';
+        } else {
+            lightBtn.classList.remove('btn-outline-secondary', 'border-secondary-subtle');
+            lightBtn.classList.add('btn-primary', 'border-primary', 'shadow-sm');
+            lightBtn.style.backgroundColor = 'var(--accent-color)';
+            lightBtn.style.color = '#ffffff';
+
+            darkBtn.classList.remove('btn-primary', 'border-primary', 'shadow-sm');
+            darkBtn.classList.add('btn-outline-secondary', 'border-secondary-subtle');
+            darkBtn.style.backgroundColor = 'transparent';
+            darkBtn.style.color = 'var(--default-color)';
+        }
+    }
+
+    // ── Language Selector Logic ──
+    window.setAppLang = function (lang) {
+        document.cookie = "lang=" + lang + ";path=/;max-age=31536000";
+        localStorage.setItem('lang', lang);
+        updateLangButtons(lang);
+        window.location.reload();
+    };
+
+    function updateLangButtons(lang) {
+        const enBtn = document.getElementById('lang-en-btn');
+        const arBtn = document.getElementById('lang-ar-btn');
+        if (!enBtn || !arBtn) return;
+
+        if (lang === 'ar') {
+            arBtn.classList.remove('btn-outline-secondary', 'border-secondary-subtle');
+            arBtn.classList.add('btn-primary', 'border-primary', 'shadow-sm');
+            arBtn.style.backgroundColor = 'var(--accent-color)';
+            arBtn.style.color = '#ffffff';
+
+            enBtn.classList.remove('btn-primary', 'border-primary', 'shadow-sm');
+            enBtn.classList.add('btn-outline-secondary', 'border-secondary-subtle');
+            enBtn.style.backgroundColor = 'transparent';
+            enBtn.style.color = 'var(--default-color)';
+        } else {
+            enBtn.classList.remove('btn-outline-secondary', 'border-secondary-subtle');
+            enBtn.classList.add('btn-primary', 'border-primary', 'shadow-sm');
+            enBtn.style.backgroundColor = 'var(--accent-color)';
+            enBtn.style.color = '#ffffff';
+
+            arBtn.classList.remove('btn-primary', 'border-primary', 'shadow-sm');
+            arBtn.classList.add('btn-outline-secondary', 'border-secondary-subtle');
+            arBtn.style.backgroundColor = 'transparent';
+            arBtn.style.color = 'var(--default-color)';
+        }
+    }
+
+    // Initialize button states on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        updateThemeButtons(currentTheme);
+
+        const savedLang = localStorage.getItem('lang') || 'en';
+        updateLangButtons(savedLang);
+    });
+</script>
+{% endblock %}
