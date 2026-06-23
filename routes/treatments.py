@@ -18,6 +18,13 @@ def appointment_session(appointment_id):
     try:
         appointment = Appointment.query.get_or_404(appointment_id)
 
+        # Mark the session as opened so the auto-cancel job won't cancel it,
+        # even if more than one hour has passed since the appointment time.
+        if appointment.status == "Scheduled" and appointment.session_opened_at is None:
+            from datetime import datetime
+            appointment.session_opened_at = datetime.now()
+            db.session.commit()
+
         treatments = (
             Treatment.query
             .filter_by(appointment_id=appointment.id)
@@ -61,6 +68,7 @@ def appointment_session(appointment_id):
             message="Failed to open appointment session.",
             back_url=url_for("appointments.appointments"),
         ), 500
+
 
 
 @treatments_bp.route("/appointments/<int:appointment_id>/treatments/add", methods=["GET", "POST"])

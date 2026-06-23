@@ -127,6 +127,7 @@ class Appointment(db.Model):
     appointment_date = db.Column(db.DateTime, nullable=False)
     reason = db.Column(db.String(255))
     status = db.Column(db.String(50), default="Scheduled")
+    session_opened_at = db.Column(db.DateTime, nullable=True)
 
     treatments = db.relationship(
         "Treatment",

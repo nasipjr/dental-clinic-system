@@ -134,6 +134,22 @@ def check_and_add_plain_password_column():
             app.logger.error(f"Failed to add plain_password column: {e}")
 
 
+def check_and_add_session_opened_at_column():
+    from sqlalchemy import text
+    try:
+        db.session.execute(text("SELECT session_opened_at FROM appointment LIMIT 1"))
+    except Exception:
+        db.session.rollback()
+        try:
+            app.logger.info("Adding session_opened_at column to appointment table")
+            db.session.execute(text("ALTER TABLE appointment ADD COLUMN session_opened_at DATETIME NULL"))
+            db.session.commit()
+            app.logger.info("Successfully added session_opened_at column to appointment table")
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Failed to add session_opened_at column: {e}")
+
+
 def ensure_default_admin():
     from models import User
     try:
@@ -162,7 +178,9 @@ with app.app_context():
     check_and_add_tax_rate_column()
     check_and_add_patient_id_column()
     check_and_add_plain_password_column()
+    check_and_add_session_opened_at_column()
     ensure_default_admin()
+
 
 setup_logging(app, LOG_DIRECTORY, LOG_FILE_NAME)
 app.logger.info("Application started successfully")

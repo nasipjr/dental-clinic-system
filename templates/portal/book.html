@@ -191,8 +191,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 
                 if (isHoliday || isPast || isFutureLimit) {
                     el.classList.add('fc-day-disabled');
+                    // Also disable timegrid column for the same date (week view)
+                    document.querySelectorAll(`.fc-timegrid-col[data-date="${dateStr}"]`).forEach(col => {
+                        col.classList.add('fc-day-disabled');
+                    });
                 } else {
                     el.classList.remove('fc-day-disabled');
+                    document.querySelectorAll(`.fc-timegrid-col[data-date="${dateStr}"]`).forEach(col => {
+                        col.classList.remove('fc-day-disabled');
+                    });
                 }
             });
         },

@@ -28,10 +28,11 @@ CREATE TABLE `appointment` (
   `appointment_date` datetime NOT NULL,
   `reason` varchar(255) DEFAULT NULL,
   `status` varchar(50) DEFAULT NULL,
+  `session_opened_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `appointment_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -40,7 +41,7 @@ CREATE TABLE `appointment` (
 
 LOCK TABLES `appointment` WRITE;
 /*!40000 ALTER TABLE `appointment` DISABLE KEYS */;
-INSERT INTO `appointment` VALUES (1,1,'2026-06-21 10:00:00','Check-up','Scheduled'),(2,2,'2026-06-22 10:00:00','Cleaning','Scheduled'),(3,3,'2026-06-23 10:00:00','Filling','Scheduled'),(4,4,'2026-06-24 10:00:00','Root Canal','Scheduled'),(5,5,'2026-06-25 10:00:00','Extraction','Scheduled'),(6,6,'2026-06-26 10:00:00','Check-up','Scheduled'),(7,7,'2026-06-27 10:00:00','Cleaning','Scheduled'),(8,8,'2026-06-28 10:00:00','Filling','Scheduled'),(9,9,'2026-06-29 10:00:00','Check-up','Scheduled'),(10,10,'2026-06-30 10:00:00','Follow-up','Scheduled'),(11,1,'2026-06-20 16:00:00','Check-up','Done'),(12,9,'2026-06-24 12:00:00','Extraction','Scheduled'),(13,8,'2026-06-24 11:00:00','Whitening','Scheduled');
+INSERT INTO `appointment` VALUES (1,1,'2026-06-21 10:00:00','Check-up','Cancelled',NULL),(2,2,'2026-06-22 10:00:00','Cleaning','Cancelled',NULL),(3,3,'2026-06-23 10:00:00','Filling','Scheduled',NULL),(4,4,'2026-06-24 10:00:00','Root Canal','Scheduled',NULL),(5,5,'2026-06-25 10:00:00','Extraction','Scheduled',NULL),(6,6,'2026-06-26 10:00:00','Check-up','Scheduled',NULL),(7,7,'2026-06-27 10:00:00','Cleaning','Scheduled',NULL),(8,8,'2026-06-28 10:00:00','Filling','Scheduled',NULL),(9,9,'2026-06-29 10:00:00','Check-up','Scheduled',NULL),(10,10,'2026-06-30 10:00:00','Follow-up','Scheduled',NULL),(11,1,'2026-06-20 16:00:00','Check-up','Done',NULL),(12,9,'2026-06-24 12:00:00','Extraction','Scheduled',NULL),(13,8,'2026-06-24 11:00:00','Whitening','Scheduled',NULL),(15,8,'2026-06-22 17:10:00','Extraction','Done',NULL),(16,2,'2026-06-22 17:25:00','Emergency Pain','Done',NULL);
 /*!40000 ALTER TABLE `appointment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -64,7 +65,7 @@ CREATE TABLE `invoice` (
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `invoice_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointment` (`id`),
   CONSTRAINT `invoice_ibfk_2` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -73,7 +74,7 @@ CREATE TABLE `invoice` (
 
 LOCK TABLES `invoice` WRITE;
 /*!40000 ALTER TABLE `invoice` DISABLE KEYS */;
-INSERT INTO `invoice` VALUES (1,11,1,'2026-06-20 15:24:52',0.00,'value',0.00);
+INSERT INTO `invoice` VALUES (1,11,1,'2026-06-20 15:24:52',0.00,'value',0.00),(2,15,8,'2026-06-22 17:19:01',0.00,'value',0.00),(3,16,2,'2026-06-22 17:25:56',10.00,'percentage',0.00);
 /*!40000 ALTER TABLE `invoice` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -171,7 +172,7 @@ CREATE TABLE `patient_file` (
   PRIMARY KEY (`id`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `patient_file_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -199,7 +200,7 @@ CREATE TABLE `payment` (
   PRIMARY KEY (`id`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `payment_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -208,7 +209,7 @@ CREATE TABLE `payment` (
 
 LOCK TABLES `payment` WRITE;
 /*!40000 ALTER TABLE `payment` DISABLE KEYS */;
-INSERT INTO `payment` VALUES (1,1,150000.00,'2026-06-20 15:28:15','');
+INSERT INTO `payment` VALUES (1,1,150000.00,'2026-06-20 15:28:15',''),(2,8,160000.00,'2026-06-22 17:21:00','لا يوجد'),(3,2,200000.00,'2026-06-22 17:27:03',''),(4,2,70000.00,'2026-06-22 17:34:43','');
 /*!40000 ALTER TABLE `payment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -229,7 +230,7 @@ CREATE TABLE `payment_allocation` (
   KEY `invoice_id` (`invoice_id`),
   CONSTRAINT `payment_allocation_ibfk_1` FOREIGN KEY (`payment_id`) REFERENCES `payment` (`id`),
   CONSTRAINT `payment_allocation_ibfk_2` FOREIGN KEY (`invoice_id`) REFERENCES `invoice` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -238,7 +239,7 @@ CREATE TABLE `payment_allocation` (
 
 LOCK TABLES `payment_allocation` WRITE;
 /*!40000 ALTER TABLE `payment_allocation` DISABLE KEYS */;
-INSERT INTO `payment_allocation` VALUES (1,1,1,150000.00);
+INSERT INTO `payment_allocation` VALUES (1,1,1,150000.00),(2,2,2,160000.00),(4,3,3,200000.00),(5,4,3,70000.00);
 /*!40000 ALTER TABLE `payment_allocation` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -264,7 +265,7 @@ CREATE TABLE `system_setting` (
 
 LOCK TABLES `system_setting` WRITE;
 /*!40000 ALTER TABLE `system_setting` DISABLE KEYS */;
-INSERT INTO `system_setting` VALUES (1,'clinic_name','Clinic'),(2,'clinic_phone','+963 958 948 727'),(3,'clinic_email','kh.nasipdragon@gmail.com'),(4,'clinic_address','Damascus, Syria'),(5,'currency_symbol','S.P'),(6,'default_appointment_duration','30'),(7,'working_hours_start','09:00'),(8,'working_hours_end','17:00'),(9,'working_days','0,1,2,3,4,6'),(10,'treatment_prices','{\"Check-up\": 25000, \"Cleaning\": 50000, \"Filling\": 75000, \"Root Canal\": 150000, \"Extraction\": 80000, \"Crown / Bridge\": 200000, \"Braces / Orthodontics\": 300000, \"Whitening\": 120000, \"Emergency Pain\": 60000, \"Follow-up\": 20000}'),(11,'notification_enable_sms','false'),(12,'notification_enable_whatsapp','false'),(13,'notification_enable_email','false'),(14,'twilio_account_sid',''),(15,'twilio_auth_token',''),(16,'twilio_phone_number',''),(17,'twilio_whatsapp_number',''),(18,'smtp_host','smtp.gmail.com'),(19,'smtp_port','587'),(20,'smtp_user',''),(21,'smtp_password',''),(22,'smtp_from_email',''),(23,'tax_rate','15'),(24,'clinic_vat_number','');
+INSERT INTO `system_setting` VALUES (1,'clinic_name','Clinic'),(2,'clinic_phone','+963 958 948 727'),(3,'clinic_email','kh.nasipdragon@gmail.com'),(4,'clinic_address','Damascus, Syria'),(5,'currency_symbol','S.P'),(6,'default_appointment_duration','30'),(7,'working_hours_start','09:00'),(8,'working_hours_end','18:00'),(9,'working_days','0,1,2,3,4,6'),(10,'treatment_prices','{\"Check-up\": 25000, \"Cleaning\": 50000, \"Filling\": 75000, \"Root Canal\": 150000, \"Extraction\": 80000, \"Crown / Bridge\": 200000, \"Braces / Orthodontics\": 300000, \"Whitening\": 120000, \"Emergency Pain\": 60000, \"Follow-up\": 20000}'),(11,'notification_enable_sms','false'),(12,'notification_enable_whatsapp','false'),(13,'notification_enable_email','false'),(14,'twilio_account_sid',''),(15,'twilio_auth_token',''),(16,'twilio_phone_number',''),(17,'twilio_whatsapp_number',''),(18,'smtp_host','smtp.gmail.com'),(19,'smtp_port','587'),(20,'smtp_user',''),(21,'smtp_password',''),(22,'smtp_from_email',''),(23,'tax_rate','15'),(24,'clinic_vat_number','');
 /*!40000 ALTER TABLE `system_setting` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -286,7 +287,7 @@ CREATE TABLE `treatment` (
   PRIMARY KEY (`id`),
   KEY `appointment_id` (`appointment_id`),
   CONSTRAINT `treatment_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointment` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -295,7 +296,7 @@ CREATE TABLE `treatment` (
 
 LOCK TABLES `treatment` WRITE;
 /*!40000 ALTER TABLE `treatment` DISABLE KEYS */;
-INSERT INTO `treatment` VALUES (1,11,'2026-06-20 16:00:00','Filling','1','',75000.00),(2,11,'2026-06-20 16:00:00','Filling','2','',75000.00);
+INSERT INTO `treatment` VALUES (1,11,'2026-06-20 16:00:00','Filling','1','',75000.00),(2,11,'2026-06-20 16:00:00','Filling','2','',75000.00),(3,15,'2026-06-22 17:10:00','Extraction','1','تخدير موضعي',80000.00),(4,15,'2026-06-22 17:10:00','Extraction','2','',80000.00),(5,16,'2026-06-22 17:25:00','Root Canal','1','',150000.00),(6,16,'2026-06-22 17:25:00','Root Canal','2','',150000.00);
 /*!40000 ALTER TABLE `treatment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -319,7 +320,7 @@ CREATE TABLE `user` (
   UNIQUE KEY `ix_user_username` (`username`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `user_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -328,7 +329,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1,'admin','scrypt:32768:8:1$atJj4C9ImjWZMGAA$660215c4e032bf012c87e69184d2e4d22e4e97a8237b3e4748e7b1d35545a3d4e89ce3961ad883c8b286e91288fcc98e909aa7ab829ca91dc6362adda6c97312','admin','Admin','User',NULL,NULL);
+INSERT INTO `user` VALUES (1,'admin','scrypt:32768:8:1$atJj4C9ImjWZMGAA$660215c4e032bf012c87e69184d2e4d22e4e97a8237b3e4748e7b1d35545a3d4e89ce3961ad883c8b286e91288fcc98e909aa7ab829ca91dc6362adda6c97312','admin','Admin','User',NULL,NULL),(2,'hiba','scrypt:32768:8:1$h5VJrby7WCgxUyO6$c6685f4b248a4c4675ee3d61b7e9ccafbc9c50a43e330096bac3c4dff9024188c63c69382e650bd92a72e5e178795e80e95e60c8cba59027cce107788975db93','receptionist','Hiba','Ali',NULL,NULL);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -341,4 +342,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-20 17:10:39
+-- Dump completed on 2026-06-23  1:14:32

@@ -21,7 +21,8 @@ def auto_cancel_expired_appointments():
             one_hour_ago = datetime.now() - timedelta(hours=1)
             expired = Appointment.query.filter(
                 Appointment.status == "Scheduled",
-                Appointment.appointment_date < one_hour_ago
+                Appointment.appointment_date < one_hour_ago,
+                Appointment.session_opened_at == None,  # noqa: E711 – skip if session was opened
             ).all()
             if expired:
                 cancelled_count = 0
@@ -35,6 +36,7 @@ def auto_cancel_expired_appointments():
         except Exception:
             db.session.rollback()
             current_app.logger.exception("Failed to auto-cancel expired appointments")
+
 
 
 def get_appointments_context():
