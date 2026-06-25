@@ -585,6 +585,32 @@ translations = {
     "Allocated": "مخصص",
     "View Patient": "عرض ملف المريض",
     "Back to Invoices": "العودة إلى الفواتير",
+    "Pending Requests": "طلبات الحجز المعلقة",
+    "Pending Requests List": "قائمة الطلبات المعلقة",
+    "Confirm": "تأكيد",
+    "Decline": "رفض",
+    "Appointments": "المواعيد",
+    "All": "الكل",
+    "Pending": "معلق",
+    "Canceled": "ملغي",
+    "Confirmed": "مؤكد",
+    "Confirmed and Started": "مؤكد وبدأ",
+    "Completed": "مكتمل",
+    "requests submitted by ": "الطلبات المقدمة من",
+    "Incoming appointment requests from the patient portal waiting for confirmation.": "طلبات المواعيد الواردة من بوابة المرضى التي تنتظر التأكيد",
+    "You have ":"لديك",
+    "open appointment requests.":"طلبات مواعيد مفتوحة",
+    "View Requests": "عرض الطلبات",
+    "Review Requests":"مراجعة الطلبات",
+    "Review patient self-bookings from the portal":"مراجعة حجوزات المرضى الذاتية من البوابة",
+    "You have":"لديك",
+    "pending appointment requests":"طلبات مواعيد معلقة",
+    "Pending Booking Requests":"طلبات الحجز المعلقة",
+    "Confirm or decline appointment requests submitted by patients":"تأكيد أو رفض طلبات المواعيد المقدمة من المرضى",
+    "Booking":"الحجز",
+    
+    
+    
 }
 
 # Load templates/base.html

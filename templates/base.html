@@ -476,7 +476,7 @@
             "Closed": "مغلق",
             "Closed session — read-only mode": "جلسة مغلقة — وضع القراءة فقط",
             "Complete overview of the patient's profile, appointments, treatments, and financial summary": "عرض كامل لملف المريض ومواعيده ومعالجاته والملخص المالي",
-            "Completed": "منجز",
+            "Completed": "مكتمل",
             "Completed Today": "منجز اليوم",
             "Completed appointment sessions will appear here after using End Session": "تظهر جلسات المواعيد المكتملة هنا بعد إنهاء الجلسة",
             "Comprehensive financial and operational analysis for your clinic": "تحليل مالي وتشغيلي شامل لعيادتك",
@@ -607,31 +607,6 @@
             "Manual": "يدوي",
             "Manual / Walk-in Invoice": "فاتورة يدوية / مباشرة",
             "Medical Information": "المعلومات الطبية",
-            "Medical Files": "ملفات طبية",
-            "Medical Files & Clinical Attachments": "ملفات طبية ومرفقات سريرية",
-            "X-Rays, panoramas, & attachments": "الأشعة والبانوراما والمرفقات",
-            "Upload Medical File / X-Ray": "تحميل ملف طبي / أشعة",
-            "Upload File": "تحميل ملف",
-            "Upload First File": "تحميل أول ملف",
-            "No Medical Files Uploaded": "لم يتم تحميل ملفات طبية",
-            "No clinic files, panoramas, X-rays, or attachments have been uploaded for this patient.": "لم يتم تحميل أي ملفات سريرية أو بانوراما أو أشعة أو مرفقات لهذا المريض.",
-            "No description provided.": "لا يوجد وصف.",
-            "View Full": "عرض كامل",
-            "Select an X-ray, panorama image, document, or PDF report to attach to this patient's clinical file.": "اختر صورة أشعة أو بانوراما أو مستنداً أو تقرير PDF لإرفاقه بالملف السريري لهذا المريض.",
-            "Description / Notes": "الوصف / الملاحظات",
-            "Select File": "اختر ملفاً",
-            "Patient Portal Access": "وصول بوابة المريض",
-            "Enabled": "مفعّل",
-            "Disabled": "معطّل",
-            "Revoke Access": "إلغاء الوصول",
-            "Enable Access": "تفعيل الوصول",
-            "No address provided": "لم يُدخل عنوان",
-            "Set up a patient portal account so the patient can log in and view or request appointments.": "أنشئ حساباً في بوابة المريض ليتمكن من تسجيل الدخول وعرض المواعيد أو طلبها.",
-            "Are you sure you want to revoke portal access for this patient? This will delete their portal login.": "هل أنت متأكد من رغبتك في إلغاء وصول بوابة هذا المريض؟ سيؤدي ذلك إلى حذف بيانات تسجيل دخوله.",
-            "e.g. Lower jaw panorama, panoramic x-ray, dental structure...": "مثال: بانوراما الفك السفلي، أشعة بانورامية، بنية الأسنان...",
-            "Create Portal Account": "إنشاء حساب بوابة",
-            "Patient Details": "تفاصيل المريض",
-
             "Medicare Number": "رقم الرعاية الصحية",
             "Miss": "آنسة",
             "Monday": "الاثنين",
@@ -927,7 +902,28 @@
             "No date": "بلا تاريخ",
             "No phone number": "لا يوجد رقم هاتف",
             "No notes": "بلا ملاحظات",
-            "No invoice": "لا توجد فاتورة"
+            "No invoice": "لا توجد فاتورة",
+            "Pending Requests": "طلبات الحجز المعلقة",
+            "Pending Requests List": "قائمة الطلبات المعلقة",
+            "Confirm": "تأكيد",
+            "Decline": "رفض",
+            "All": "الكل",
+            "Pending": "معلق",
+            "Canceled": "ملغي",
+            "Confirmed": "مؤكد",
+            "Confirmed and Started": "مؤكد وبدأ",
+            "requests submitted by ": "الطلبات المقدمة من",
+            "Incoming appointment requests from the patient portal waiting for confirmation.": "طلبات المواعيد الواردة من بوابة المرضى التي تنتظر التأكيد",
+            "You have ": "لديك",
+            "open appointment requests.": "طلبات مواعيد مفتوحة",
+            "View Requests": "عرض الطلبات",
+            "Review Requests": "مراجعة الطلبات",
+            "Review patient self-bookings from the portal": "مراجعة حجوزات المرضى الذاتية من البوابة",
+            "You have": "لديك",
+            "pending appointment requests": "طلبات مواعيد معلقة",
+            "Pending Booking Requests": "طلبات الحجز المعلقة",
+            "Confirm or decline appointment requests submitted by patients": "تأكيد أو رفض طلبات المواعيد المقدمة من المرضى",
+            "Booking": "الحجز"
 };
 
         // Sort keys by length descending to match longer phrases before shorter substrings
@@ -970,8 +966,6 @@
             } else if (node.nodeType === Node.ELEMENT_NODE) {
                 // Skip translating the script blocks, style blocks, and values inside actual input textareas/selects
                 if (node.tagName === 'SCRIPT' || node.tagName === 'STYLE') return;
-                // Skip translating flatpickr elements
-                if (node.classList && (node.classList.contains('flatpickr-calendar') || node.classList.contains('flatpickr-am-pm'))) return;
                 
                 // Avoid modifying the value attribute of input fields, but placeholders can be translated
                 const placeholder = node.getAttribute('placeholder');
