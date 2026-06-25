@@ -64,10 +64,7 @@ def deploy():
     # Touch the WSGI file to trigger a reload on PythonAnywhere
     try:
         wsgi_candidates = [
-            "/var/www/dental_clinic_wsgi.py",
-            # PythonAnywhere names the WSGI file after the username + domain
-            # Add your exact path here if it differs:
-            # "/var/www/yourusername_pythonanywhere_com_wsgi.py",
+            "/var/www/nasipjr_pythonanywhere_com_wsgi.py",
         ]
         for wsgi_path in wsgi_candidates:
             if os.path.exists(wsgi_path):
