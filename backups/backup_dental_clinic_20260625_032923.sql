@@ -41,7 +41,7 @@ CREATE TABLE `appointment` (
 
 LOCK TABLES `appointment` WRITE;
 /*!40000 ALTER TABLE `appointment` DISABLE KEYS */;
-INSERT INTO `appointment` VALUES (1,1,'2026-06-21 10:00:00','Check-up','Cancelled',NULL),(2,2,'2026-06-22 10:00:00','Cleaning','Cancelled',NULL),(3,3,'2026-06-23 10:00:00','Filling','Cancelled',NULL),(4,4,'2026-06-24 10:00:00','Root Canal','Scheduled',NULL),(5,5,'2026-06-25 10:00:00','Extraction','Scheduled',NULL),(6,6,'2026-06-26 10:00:00','Check-up','Scheduled',NULL),(7,7,'2026-06-27 10:00:00','Cleaning','Scheduled',NULL),(8,8,'2026-06-28 10:00:00','Filling','Scheduled',NULL),(9,9,'2026-06-29 10:00:00','Check-up','Scheduled',NULL),(10,10,'2026-06-30 10:00:00','Follow-up','Scheduled',NULL),(11,1,'2026-06-20 16:00:00','Check-up','Done',NULL),(12,9,'2026-06-24 12:00:00','Extraction','Scheduled',NULL),(13,8,'2026-06-24 11:00:00','Whitening','Scheduled',NULL),(15,8,'2026-06-22 17:10:00','Extraction','Done',NULL),(16,2,'2026-06-22 17:25:00','Emergency Pain','Done',NULL),(17,10,'2026-06-27 11:00:00','Root Canal','Pending',NULL);
+INSERT INTO `appointment` VALUES (1,1,'2026-06-21 10:00:00','Check-up','Cancelled',NULL),(2,2,'2026-06-22 10:00:00','Cleaning','Cancelled',NULL),(3,3,'2026-06-23 10:00:00','Filling','Cancelled',NULL),(4,4,'2026-06-24 10:00:00','Root Canal','Cancelled',NULL),(5,5,'2026-06-25 10:00:00','Extraction','Scheduled',NULL),(6,6,'2026-06-26 10:00:00','Check-up','Scheduled',NULL),(7,7,'2026-06-27 10:00:00','Cleaning','Scheduled',NULL),(8,8,'2026-06-28 10:00:00','Filling','Scheduled',NULL),(9,9,'2026-06-29 10:00:00','Check-up','Scheduled',NULL),(10,10,'2026-06-30 10:00:00','Follow-up','Scheduled',NULL),(11,1,'2026-06-20 16:00:00','Check-up','Done',NULL),(12,9,'2026-06-24 12:00:00','Extraction','Cancelled',NULL),(13,8,'2026-06-24 11:00:00','Whitening','Cancelled',NULL),(15,8,'2026-06-22 17:10:00','Extraction','Done',NULL),(16,2,'2026-06-22 17:25:00','Emergency Pain','Done',NULL),(17,10,'2026-06-27 11:00:00','Root Canal','Scheduled',NULL);
 /*!40000 ALTER TABLE `appointment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -342,4 +342,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-24  4:55:17
+-- Dump completed on 2026-06-25  3:29:23
