@@ -78,7 +78,7 @@
                     data-purecounter-duration="2" data-purecounter-separator="true" data-purecounter-formater="de-DE"
                     class="purecounter"></span> {{ currency_symbol }}
                 </h3>
-                <p>Total Invoices</p>
+                <p>Total Invoiceszzzzzzzzzzzzzzzzzzzz</p>
               </div>
 
               <div class="dashboard-stat-card">
@@ -650,7 +650,8 @@
     const financialLabels = isArabic ? ['المدفوعات المسددة', 'الديون المستحقة'] : ['Paid Payments', 'Outstanding Debt'];
 
     // Injecting values from backend
-    const scheduled = {{ scheduled_appointments }};
+    const scheduled = {{ scheduled_appointments }
+  };
   const completed = {{ done_appointments }};
   const total = {{ total_appointments }};
   const cancelled = Math.max(0, total - scheduled - completed);
