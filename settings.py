@@ -39,3 +39,6 @@ class Config:
 
     LOG_DIRECTORY = os.getenv("LOG_DIRECTORY", str(BASE_DIR / "logs"))
     LOG_FILE_NAME = os.getenv("LOG_FILE_NAME", "clinic.log")
+
+    # Auto-deploy via GitHub Webhook
+    DEPLOY_SECRET = os.getenv("DEPLOY_SECRET", "")

@@ -14,6 +14,7 @@ from routes.reports import reports_bp
 from routes.settings import settings_bp
 from routes.auth import auth_bp
 from routes.portal import portal_bp
+from routes.deploy import deploy_bp
 
 
 import sys
@@ -301,6 +302,7 @@ app.register_blueprint(invoices_bp)
 app.register_blueprint(reports_bp)
 app.register_blueprint(settings_bp)
 app.register_blueprint(portal_bp)
+app.register_blueprint(deploy_bp)
 
 
 
