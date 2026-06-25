@@ -638,6 +638,14 @@
   <!-- /Done Today Section -->
 </main>
 
+<!-- Dashboard backend data (formatter-safe via data attributes) -->
+<div id="dashboard-data" style="display:none"
+  data-scheduled="{{ scheduled_appointments }}"
+  data-completed="{{ done_appointments }}"
+  data-total="{{ total_appointments }}"
+  data-paid="{{ total_paid }}"
+  data-debt="{{ total_outstanding }}"></div>
+
 <!-- Include Chart.js and Dashboard Script -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -649,15 +657,14 @@
     const statusLabels = isArabic ? ['مجدول', 'منجز', 'ملغى'] : ['Scheduled', 'Completed', 'Cancelled'];
     const financialLabels = isArabic ? ['المدفوعات المسددة', 'الديون المستحقة'] : ['Paid Payments', 'Outstanding Debt'];
 
-    // Injecting values from backend
-    const scheduled = {{ scheduled_appointments }
-  };
-  const completed = {{ done_appointments }};
-  const total = {{ total_appointments }};
-  const cancelled = Math.max(0, total - scheduled - completed);
-
-  const paid = {{ total_paid }};
-  const debt = {{ total_outstanding }};
+    // Injecting values from backend (read from data attributes to avoid formatter issues)
+    const _dd = document.getElementById('dashboard-data');
+    const scheduled = parseInt(_dd.dataset.scheduled) || 0;
+    const completed = parseInt(_dd.dataset.completed) || 0;
+    const total     = parseInt(_dd.dataset.total)     || 0;
+    const paid      = parseFloat(_dd.dataset.paid)    || 0;
+    const debt      = parseFloat(_dd.dataset.debt)    || 0;
+    const cancelled = Math.max(0, total - scheduled - completed);
 
   let currentChart = null;
 
