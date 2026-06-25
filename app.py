@@ -213,11 +213,13 @@ def load_logged_in_user():
 
 @app.before_request
 def check_login():
-    # Exclude login, static resources, and patient portal
-    if request.endpoint in ("auth.login", "static") or not request.endpoint or request.endpoint.startswith("portal."):
+    # Exclude login, static resources, patient portal, and auto-deploy webhook
+    excluded = ("auth.login", "static", "deploy.deploy")
+    if request.endpoint in excluded or not request.endpoint or request.endpoint.startswith("portal."):
         return
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
+
 
 
 @app.context_processor
