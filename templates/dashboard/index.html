@@ -87,7 +87,7 @@
                     data-purecounter-separator="true" data-purecounter-formater="de-DE" class="purecounter"></span> {{
                   currency_symbol }}
                 </h3>
-                <p>Total Payments</p>
+                <p>Total Paymentszzzzzzzzzzzzz</p>
               </div>
 
               <div class="dashboard-stat-card">
@@ -639,11 +639,8 @@
 </main>
 
 <!-- Dashboard backend data (formatter-safe via data attributes) -->
-<div id="dashboard-data" style="display:none"
-  data-scheduled="{{ scheduled_appointments }}"
-  data-completed="{{ done_appointments }}"
-  data-total="{{ total_appointments }}"
-  data-paid="{{ total_paid }}"
+<div id="dashboard-data" style="display:none" data-scheduled="{{ scheduled_appointments }}"
+  data-completed="{{ done_appointments }}" data-total="{{ total_appointments }}" data-paid="{{ total_paid }}"
   data-debt="{{ total_outstanding }}"></div>
 
 <!-- Include Chart.js and Dashboard Script -->
@@ -661,190 +658,190 @@
     const _dd = document.getElementById('dashboard-data');
     const scheduled = parseInt(_dd.dataset.scheduled) || 0;
     const completed = parseInt(_dd.dataset.completed) || 0;
-    const total     = parseInt(_dd.dataset.total)     || 0;
-    const paid      = parseFloat(_dd.dataset.paid)    || 0;
-    const debt      = parseFloat(_dd.dataset.debt)    || 0;
+    const total = parseInt(_dd.dataset.total) || 0;
+    const paid = parseFloat(_dd.dataset.paid) || 0;
+    const debt = parseFloat(_dd.dataset.debt) || 0;
     const cancelled = Math.max(0, total - scheduled - completed);
 
-  let currentChart = null;
+    let currentChart = null;
 
-  function renderStatusChart() {
-    if (currentChart) currentChart.destroy();
-    currentChart = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: statusLabels,
-        datasets: [{
-          data: [scheduled, completed, cancelled],
-          backgroundColor: [
-            '#175cdd',   // Scheduled - Royal Blue
-            '#10b981',   // Completed - Green
-            '#f43f5e'    // Cancelled - Rose Red
-          ],
-          borderWidth: 0,
-          hoverOffset: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '72%',
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              color: legendColor,
-              font: { weight: '600', size: 11 },
-              padding: 12,
-              usePointStyle: true,
-              pointStyle: 'circle'
-            }
-          },
-          tooltip: {
-            callbacks: {
-              label: function (context) {
-                const unit = isArabic ? ' جلسات' : ' sessions';
-                return ' ' + context.label + ': ' + context.raw + unit;
+    function renderStatusChart() {
+      if (currentChart) currentChart.destroy();
+      currentChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: statusLabels,
+          datasets: [{
+            data: [scheduled, completed, cancelled],
+            backgroundColor: [
+              '#175cdd',   // Scheduled - Royal Blue
+              '#10b981',   // Completed - Green
+              '#f43f5e'    // Cancelled - Rose Red
+            ],
+            borderWidth: 0,
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '72%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: legendColor,
+                font: { weight: '600', size: 11 },
+                padding: 12,
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  const unit = isArabic ? ' جلسات' : ' sessions';
+                  return ' ' + context.label + ': ' + context.raw + unit;
+                }
               }
             }
           }
         }
-      }
-    });
-  }
+      });
+    }
 
-  function renderFinancialsChart() {
-    if (currentChart) currentChart.destroy();
-    currentChart = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: financialLabels,
-        datasets: [{
-          data: [paid, debt],
-          backgroundColor: [
-            '#10b981',   // Paid - Green
-            '#f43f5e'    // Debt - Rose Red
-          ],
-          borderWidth: 0,
-          hoverOffset: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '72%',
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              color: legendColor,
-              font: { weight: '600', size: 11 },
-              padding: 12,
-              usePointStyle: true,
-              pointStyle: 'circle'
-            }
-          },
-          tooltip: {
-            callbacks: {
-              label: function (context) {
-                return ' ' + context.label + ': ' + context.raw.toLocaleString('de-DE') + ' {{ currency_symbol }}';
+    function renderFinancialsChart() {
+      if (currentChart) currentChart.destroy();
+      currentChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: financialLabels,
+          datasets: [{
+            data: [paid, debt],
+            backgroundColor: [
+              '#10b981',   // Paid - Green
+              '#f43f5e'    // Debt - Rose Red
+            ],
+            borderWidth: 0,
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '72%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: legendColor,
+                font: { weight: '600', size: 11 },
+                padding: 12,
+                usePointStyle: true,
+                pointStyle: 'circle'
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  return ' ' + context.label + ': ' + context.raw.toLocaleString('de-DE') + ' {{ currency_symbol }}';
+                }
               }
             }
           }
         }
+      });
+    }
+
+    const btnStatus = document.getElementById('btn-show-status');
+    const btnFinancials = document.getElementById('btn-show-financials');
+    const btnToday = document.getElementById('btn-show-today');
+    const chartCanvas = document.getElementById('dashboardOverviewChart');
+    const todayContainer = document.getElementById('todayStatusContainer');
+
+    function updateClinicStatus() {
+      if (!todayContainer) return;
+      const workingDaysStr = todayContainer.getAttribute('data-working-days') || '0,1,2,3,4,6';
+      const minTimeStr = todayContainer.getAttribute('data-min-time') || '08:00';
+      const maxTimeStr = todayContainer.getAttribute('data-max-time') || '18:00';
+
+      const workingDays = workingDaysStr.split(',').map(Number);
+
+      const now = new Date();
+      const currentDay = now.getDay();
+
+      const dot = document.getElementById('clinicStatusDot');
+      const text = document.getElementById('clinicStatusText');
+
+      if (!dot || !text) return;
+
+      // Check if today is a working day
+      if (!workingDays.includes(currentDay)) {
+        dot.className = 'spinner-grow spinner-grow-sm text-danger';
+        dot.style.animation = 'none';
+        dot.style.background = '#dc3545';
+        text.innerHTML = 'Closed <span class="text-muted fw-normal" style="font-size: 0.7rem;">(Weekend / Day Off)</span>';
+        return;
       }
-    });
-  }
 
-  const btnStatus = document.getElementById('btn-show-status');
-  const btnFinancials = document.getElementById('btn-show-financials');
-  const btnToday = document.getElementById('btn-show-today');
-  const chartCanvas = document.getElementById('dashboardOverviewChart');
-  const todayContainer = document.getElementById('todayStatusContainer');
+      // Check if current time is within hours
+      const [minH, minM] = minTimeStr.split(':').map(Number);
+      const [maxH, maxM] = maxTimeStr.split(':').map(Number);
 
-  function updateClinicStatus() {
-    if (!todayContainer) return;
-    const workingDaysStr = todayContainer.getAttribute('data-working-days') || '0,1,2,3,4,6';
-    const minTimeStr = todayContainer.getAttribute('data-min-time') || '08:00';
-    const maxTimeStr = todayContainer.getAttribute('data-max-time') || '18:00';
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const minMinutes = minH * 60 + minM;
+      const maxMinutes = maxH * 60 + maxM;
 
-    const workingDays = workingDaysStr.split(',').map(Number);
-
-    const now = new Date();
-    const currentDay = now.getDay();
-
-    const dot = document.getElementById('clinicStatusDot');
-    const text = document.getElementById('clinicStatusText');
-
-    if (!dot || !text) return;
-
-    // Check if today is a working day
-    if (!workingDays.includes(currentDay)) {
-      dot.className = 'spinner-grow spinner-grow-sm text-danger';
-      dot.style.animation = 'none';
-      dot.style.background = '#dc3545';
-      text.innerHTML = 'Closed <span class="text-muted fw-normal" style="font-size: 0.7rem;">(Weekend / Day Off)</span>';
-      return;
+      if (currentMinutes >= minMinutes && currentMinutes < maxMinutes) {
+        dot.className = 'spinner-grow spinner-grow-sm text-success';
+        dot.style.animation = 'spinner-grow 1.5s linear infinite';
+        dot.style.background = '#198754';
+        text.innerHTML = 'Open Now <span class="text-muted fw-normal" style="font-size: 0.7rem;">(Operating Hours)</span>';
+      } else {
+        dot.className = 'spinner-grow spinner-grow-sm text-warning';
+        dot.style.animation = 'none';
+        dot.style.background = '#ffc107';
+        text.innerHTML = 'Closed <span class="text-muted fw-normal" style="font-size: 0.7rem;">(Off Hours)</span>';
+      }
     }
 
-    // Check if current time is within hours
-    const [minH, minM] = minTimeStr.split(':').map(Number);
-    const [maxH, maxM] = maxTimeStr.split(':').map(Number);
+    function setActiveTab(activeBtn, inactiveBtn1, inactiveBtn2) {
+      activeBtn.className = 'btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold border-0';
+      activeBtn.style.background = 'var(--accent-color, #0d6efd)';
+      activeBtn.style.color = '#ffffff';
+      activeBtn.style.boxShadow = '0 2px 6px rgba(13, 110, 253, 0.15)';
 
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    const minMinutes = minH * 60 + minM;
-    const maxMinutes = maxH * 60 + maxM;
-
-    if (currentMinutes >= minMinutes && currentMinutes < maxMinutes) {
-      dot.className = 'spinner-grow spinner-grow-sm text-success';
-      dot.style.animation = 'spinner-grow 1.5s linear infinite';
-      dot.style.background = '#198754';
-      text.innerHTML = 'Open Now <span class="text-muted fw-normal" style="font-size: 0.7rem;">(Operating Hours)</span>';
-    } else {
-      dot.className = 'spinner-grow spinner-grow-sm text-warning';
-      dot.style.animation = 'none';
-      dot.style.background = '#ffc107';
-      text.innerHTML = 'Closed <span class="text-muted fw-normal" style="font-size: 0.7rem;">(Off Hours)</span>';
+      [inactiveBtn1, inactiveBtn2].forEach(btn => {
+        btn.className = 'btn btn-outline-secondary btn-sm rounded-pill px-3 py-1 fw-bold border-0 text-secondary';
+        btn.style.background = 'transparent';
+        btn.style.color = '';
+        btn.style.boxShadow = 'none';
+      });
     }
-  }
 
-  function setActiveTab(activeBtn, inactiveBtn1, inactiveBtn2) {
-    activeBtn.className = 'btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold border-0';
-    activeBtn.style.background = 'var(--accent-color, #0d6efd)';
-    activeBtn.style.color = '#ffffff';
-    activeBtn.style.boxShadow = '0 2px 6px rgba(13, 110, 253, 0.15)';
-
-    [inactiveBtn1, inactiveBtn2].forEach(btn => {
-      btn.className = 'btn btn-outline-secondary btn-sm rounded-pill px-3 py-1 fw-bold border-0 text-secondary';
-      btn.style.background = 'transparent';
-      btn.style.color = '';
-      btn.style.boxShadow = 'none';
+    btnStatus.addEventListener('click', function () {
+      setActiveTab(btnStatus, btnFinancials, btnToday);
+      todayContainer.style.display = 'none';
+      chartCanvas.style.display = 'block';
+      renderStatusChart();
     });
-  }
 
-  btnStatus.addEventListener('click', function () {
-    setActiveTab(btnStatus, btnFinancials, btnToday);
-    todayContainer.style.display = 'none';
-    chartCanvas.style.display = 'block';
+    btnFinancials.addEventListener('click', function () {
+      setActiveTab(btnFinancials, btnStatus, btnToday);
+      todayContainer.style.display = 'none';
+      chartCanvas.style.display = 'block';
+      renderFinancialsChart();
+    });
+
+    btnToday.addEventListener('click', function () {
+      setActiveTab(btnToday, btnStatus, btnFinancials);
+      chartCanvas.style.display = 'none';
+      todayContainer.style.display = 'block';
+      updateClinicStatus();
+    });
+
     renderStatusChart();
-  });
-
-  btnFinancials.addEventListener('click', function () {
-    setActiveTab(btnFinancials, btnStatus, btnToday);
-    todayContainer.style.display = 'none';
-    chartCanvas.style.display = 'block';
-    renderFinancialsChart();
-  });
-
-  btnToday.addEventListener('click', function () {
-    setActiveTab(btnToday, btnStatus, btnFinancials);
-    chartCanvas.style.display = 'none';
-    todayContainer.style.display = 'block';
     updateClinicStatus();
   });
-
-  renderStatusChart();
-  updateClinicStatus();
-});
 </script>
 {% endblock %}
