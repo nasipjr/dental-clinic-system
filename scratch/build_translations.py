@@ -608,6 +608,8 @@ translations = {
     "Pending Booking Requests":"طلبات الحجز المعلقة",
     "Confirm or decline appointment requests submitted by patients":"تأكيد أو رفض طلبات المواعيد المقدمة من المرضى",
     "Booking":"الحجز",
+    "All Caught Up!": "حسب اخر تحديث",
+    "There are no pending booking requests from patients.": "لا توجد طلبات حجز معلقة من المرضى."
     
     
     
