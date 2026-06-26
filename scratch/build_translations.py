@@ -610,6 +610,7 @@ translations = {
     "Booking":"الحجز",
     "All Caught Up!": "حسب اخر تحديث",
     "No upcoming appointments.": "لا توجد مواعيد قادمة.",
+    "Reserved": "محجوز",
     
     "There are no pending booking requests from patients.": "لا توجد طلبات حجز معلقة من المرضى."
     
