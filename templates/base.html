@@ -233,6 +233,7 @@
               <a href="{{ url_for('appointments.calendar') }}"><i class="bi bi-chevron-right me-1 small"></i> Calendar</a>
               {% if current_user and current_user.role in ('admin', 'receptionist') %}
               <a href="{{ url_for('invoices.invoices') }}"><i class="bi bi-chevron-right me-1 small"></i> Invoices</a>
+              <a href="{{ url_for('payments.payments') }}"><i class="bi bi-chevron-right me-1 small"></i> Payments</a>
               {% endif %}
             </nav>
           </div>
