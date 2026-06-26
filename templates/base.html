@@ -65,26 +65,29 @@
   <header id="header" class="header fixed-top">
 
     <div class="topbar d-flex align-items-center dark-background">
-      <div class="container d-flex justify-content-center justify-content-md-between">
-        <div class="contact-info d-flex align-items-center">
+      <div class="container d-flex justify-content-between">
+        <div class="contact-info d-none d-md-flex align-items-center">
           <i class="bi bi-envelope d-flex align-items-center"><a
               href="mailto:{{ clinic_email }}">{{ clinic_email }}</a></i>
           <i class="bi bi-phone d-flex align-items-center ms-4"><span>{{ clinic_phone }}</span></i>
         </div>
-        <div class="social-links d-none d-md-flex align-items-center gap-3">
+        <div class="social-links d-flex align-items-center gap-2 gap-md-3 w-100 justify-content-between justify-content-md-end">
           {% if current_user %}
-            <span class="text-white me-2" style="font-size: 13px;">
+            <span class="text-white text-truncate" style="font-size: 13px; max-width: 60vw;">
               <i class="bi bi-person-circle me-1"></i>
-              {{ current_user.first_name or current_user.username }} ({{ current_user.role|capitalize }})
+              <span class="d-none d-sm-inline">{{ current_user.first_name or current_user.username }} ({{ current_user.role|capitalize }})</span>
+              <span class="d-inline d-sm-none">{{ current_user.first_name or current_user.username }}</span>
             </span>
-            <a href="{{ url_for('auth.logout') }}" class="topbar-logout-btn">
-              <i class="bi bi-box-arrow-right me-1"></i>Logout
+            <a href="{{ url_for('auth.logout') }}" class="topbar-logout-btn text-white ms-auto">
+              <i class="bi bi-box-arrow-right me-1"></i><span class="d-none d-sm-inline">Logout</span>
             </a>
           {% else %}
-            <a href="#!" class="twitter"><i class="bi bi-twitter-x"></i></a>
-            <a href="https://www.facebook.com/nasip.jabbara" class="facebook"><i class="bi bi-facebook"></i></a>
-            <a href="https://www.instagram.com/nasip_j/?hl=en" class="instagram"><i class="bi bi-instagram"></i></a>
-            <a href="#!" class="linkedin"><i class="bi bi-linkedin"></i></a>
+            <div class="ms-auto d-flex gap-3">
+              <a href="#!" class="twitter"><i class="bi bi-twitter-x"></i></a>
+              <a href="https://www.facebook.com/nasip.jabbara" class="facebook"><i class="bi bi-facebook"></i></a>
+              <a href="https://www.instagram.com/nasip_j/?hl=en" class="instagram"><i class="bi bi-instagram"></i></a>
+              <a href="#!" class="linkedin"><i class="bi bi-linkedin"></i></a>
+            </div>
           {% endif %}
         </div>
       </div>
