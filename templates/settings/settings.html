@@ -201,6 +201,12 @@
                                         represent active business days. Unchecked days will be styled as weekends/closed
                                         days in the interactive calendar and will prevent scheduling appointments.</div>
                                 </div>
+                                <div class="col-md-12 mt-3">
+                                    <label for="booking_window_days" class="settings-label">Booking Window Days (in advance)</label>
+                                    <input type="number" class="form-control settings-input" id="booking_window_days"
+                                        name="booking_window_days" value="{{ settings.booking_window_days }}" min="1" required>
+                                    <div class="settings-hint mt-2"><i class="bi bi-info-circle me-1"></i>Number of days in advance patients and staff are allowed to book appointments.</div>
+                                </div>
                             </div>
                         </div>
 
@@ -942,6 +948,7 @@
             mainForm.addEventListener("submit", function (event) {
                 const nameInput = document.getElementById("clinic_name");
                 const currencyInput = document.getElementById("currency_symbol");
+                const bookingDaysInput = document.getElementById("booking_window_days");
                 
                 let errors = [];
                 if (nameInput && !nameInput.value.trim()) {
@@ -949,6 +956,12 @@
                 }
                 if (currencyInput && !currencyInput.value.trim()) {
                     errors.push("Currency Symbol is required.");
+                }
+                if (bookingDaysInput) {
+                    const daysVal = parseInt(bookingDaysInput.value, 10);
+                    if (isNaN(daysVal) || daysVal <= 0) {
+                        errors.push("Booking Window Days must be a positive integer.");
+                    }
                 }
                 
                 if (errors.length > 0) {
@@ -958,6 +971,12 @@
                     // Switch to the first tab with an error
                     if (nameInput && !nameInput.value.trim()) {
                         const tabButton = document.getElementById("tab-general-btn");
+                        if (tabButton) {
+                            const tab = new bootstrap.Tab(tabButton);
+                            tab.show();
+                        }
+                    } else if (bookingDaysInput && (isNaN(parseInt(bookingDaysInput.value, 10)) || parseInt(bookingDaysInput.value, 10) <= 0)) {
+                        const tabButton = document.getElementById("tab-calendar-btn");
                         if (tabButton) {
                             const tab = new bootstrap.Tab(tabButton);
                             tab.show();

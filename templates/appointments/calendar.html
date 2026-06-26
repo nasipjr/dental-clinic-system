@@ -568,6 +568,7 @@
         const slotMaxTime = `${String(maxHrs).padStart(2, '0')}:${String(maxMins).padStart(2, '0')}:00`;
 
         const currentLang = document.documentElement.getAttribute('lang') || 'en';
+        const bookingWindowDays = parseInt("{{ booking_window_days }}", 10) || 30;
 
         // Initialize FullCalendar
         const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -662,7 +663,7 @@
 
                 const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                 const maxDate = new Date(todayStart);
-                maxDate.setDate(maxDate.getDate() + 30);
+                maxDate.setDate(maxDate.getDate() + bookingWindowDays);
                 
                 const workingDays = {{ working_days_list | tojson }} || [0, 1, 2, 3, 4, 6];
                 
@@ -753,13 +754,13 @@
                 }
 
                 const maxDate = new Date(todayStart);
-                maxDate.setDate(maxDate.getDate() + 30);
+                maxDate.setDate(maxDate.getDate() + bookingWindowDays);
                 maxDate.setHours(23, 59, 59, 999);
                 if (clickedDate > maxDate) {
                     Swal.fire({
                         icon: 'error',
                         title: currentLang === 'ar' ? 'تجاوز فترة الحجز' : 'Booking Period Exceeded',
-                        text: currentLang === 'ar' ? 'لا يمكن حجز المواعيد قبل أكثر من 30 يوماً.' : 'Appointments cannot be booked more than 30 days in advance.',
+                        text: currentLang === 'ar' ? `لا يمكن حجز المواعيد قبل أكثر من ${bookingWindowDays} يوماً.` : `Appointments cannot be booked more than ${bookingWindowDays} days in advance.`,
                         confirmButtonColor: '#175cdd'
                     });
                     return;
@@ -942,7 +943,7 @@
                     const isPast = slotDate < now;
                     
                     const maxDate = new Date(todayStart);
-                    maxDate.setDate(maxDate.getDate() + 30);
+                    maxDate.setDate(maxDate.getDate() + bookingWindowDays);
                     maxDate.setHours(23, 59, 59, 999);
                     const isFutureLimit = slotDate > maxDate;
                     

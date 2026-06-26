@@ -290,7 +290,8 @@ def inject_settings():
         "working_days": wd_str,
         "working_hours_start": start_str,
         "working_hours_end": end_str,
-        "pending_count": pending_count
+        "pending_count": pending_count,
+        "booking_window_days": get_setting("booking_window_days", "30")
     }
 
 

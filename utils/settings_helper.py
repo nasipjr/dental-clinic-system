@@ -38,7 +38,8 @@ DEFAULT_SETTINGS = {
     "smtp_password": "",
     "smtp_from_email": "",
     "tax_rate": "15",
-    "clinic_vat_number": ""
+    "clinic_vat_number": "",
+    "booking_window_days": "30"
 }
 
 from flask import g, has_app_context

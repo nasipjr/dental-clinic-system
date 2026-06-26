@@ -24,7 +24,11 @@
 
               <div class="badge-item">
                 <i class="bi bi-calendar-check"></i>
-                <span>30-Day Booking Window</span>
+                {% if current_lang == 'ar' %}
+                <span>نافذة حجز {{ booking_window_days }} يوماً</span>
+                {% else %}
+                <span>{{ booking_window_days }}-Day Booking Window</span>
+                {% endif %}
               </div>
             </div>
 

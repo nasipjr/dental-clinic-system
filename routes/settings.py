@@ -14,8 +14,16 @@ def settings_page():
             # 1. Update general, calendar, and billing settings
             for key in ["clinic_name", "clinic_phone", "clinic_email", "clinic_address", 
                         "working_hours_start", "working_hours_end", "default_appointment_duration", 
-                        "currency_symbol"]:
+                        "currency_symbol", "booking_window_days"]:
                 val = request.form.get(key, "").strip()
+                if key == "booking_window_days":
+                    try:
+                        ival = int(val)
+                        if ival <= 0:
+                            raise ValueError
+                    except ValueError:
+                        flash("Booking window days must be a positive integer.", "danger")
+                        return redirect(url_for("settings.settings_page") + "#tab-calendar")
                 set_setting(key, val)
 
             # 1b. Update Twilio & SMTP Notification settings

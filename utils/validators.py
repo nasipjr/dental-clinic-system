@@ -148,9 +148,13 @@ def parse_appointment_data(form):
 
 
     from utils.settings_helper import get_setting
+    try:
+        booking_window_days = int(get_setting("booking_window_days", "30"))
+    except ValueError:
+        booking_window_days = 30
 
     now = datetime.now().replace(second=0, microsecond=0)
-    max_appointment_date = now + timedelta(days=30)
+    max_appointment_date = now + timedelta(days=booking_window_days)
 
     # Load dynamic working days and hours constraints
     working_days = get_setting("working_days", "0,1,2,3,4,6")
@@ -175,7 +179,7 @@ def parse_appointment_data(form):
         return None, "Appointment date and time cannot be in the past."
 
     if appointment_date > max_appointment_date:
-        return None, "Appointment date cannot be more than 30 days from today."
+        return None, f"Appointment date cannot be more than {booking_window_days} days from today."
 
     # Validate dynamic working days of the week (0 = Sunday, 6 = Saturday)
     day_str = appointment_date.strftime("%w")
@@ -200,8 +204,13 @@ def parse_appointment_data(form):
 
 
 def get_appointment_datetime_limits():
+    from utils.settings_helper import get_setting
+    try:
+        booking_window_days = int(get_setting("booking_window_days", "30"))
+    except ValueError:
+        booking_window_days = 30
     now = datetime.now().replace(second=0, microsecond=0)
-    max_appointment_date = now + timedelta(days=30)
+    max_appointment_date = now + timedelta(days=booking_window_days)
 
     return (
         now.strftime("%Y-%m-%dT%H:%M"),

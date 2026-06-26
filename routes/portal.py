@@ -20,7 +20,7 @@ def flash_message(key, category="danger", **kwargs):
             "all_fields_required": "جميع الحقول مطلوبة.",
             "invalid_date_format": "تنسيق تاريخ ووقت الموعد غير صالح.",
             "past_date": "لا يمكن حجز موعد في الماضي.",
-            "advance_date": "لا يمكن حجز موعد قبل أكثر من 30 يوماً.",
+            "advance_date": "لا يمكن حجز موعد قبل أكثر من {days} يوماً.",
             "clinic_closed": "العيادة مغلقة في هذا اليوم.",
             "time_limit": "يجب أن يكون وقت الموعد بين {start} و {end}.",
             "slot_unavailable": "الوقت المحدد لم يعد متاحاً. يرجى اختيار وقت آخر.",
@@ -37,7 +37,7 @@ def flash_message(key, category="danger", **kwargs):
             "all_fields_required": "All fields are required.",
             "invalid_date_format": "Invalid appointment date and time format.",
             "past_date": "Appointment cannot be booked in the past.",
-            "advance_date": "Appointment cannot be booked more than 30 days in advance.",
+            "advance_date": "Appointment cannot be booked more than {days} days in advance.",
             "clinic_closed": "Clinic is closed on this day.",
             "time_limit": "Appointment time must be between {start} and {end}.",
             "slot_unavailable": "Selected slot is no longer available. Please select another time.",
@@ -129,15 +129,19 @@ def book_appointment():
                 return redirect(url_for("portal.book_appointment"))
 
         # Time limits check
+        try:
+            booking_window_days = int(get_setting("booking_window_days", "30"))
+        except ValueError:
+            booking_window_days = 30
         now = datetime.now().replace(second=0, microsecond=0)
-        max_date = now + timedelta(days=30)
+        max_date = now + timedelta(days=booking_window_days)
 
         if appointment_date < now:
             flash_message("past_date", "danger")
             return redirect(url_for("portal.book_appointment"))
 
         if appointment_date > max_date:
-            flash_message("advance_date", "danger")
+            flash_message("advance_date", "danger", days=booking_window_days)
             return redirect(url_for("portal.book_appointment"))
 
         # Working hours and working days checks
@@ -195,8 +199,12 @@ def book_appointment():
                 return redirect(url_for("portal.book_appointment"))
 
     # Limits for input
+    try:
+        booking_window_days = int(get_setting("booking_window_days", "30"))
+    except ValueError:
+        booking_window_days = 30
     now = datetime.now()
-    max_date = now + timedelta(days=30)
+    max_date = now + timedelta(days=booking_window_days)
     min_datetime_str = now.strftime("%Y-%m-%dT%H:%M")
     max_datetime_str = max_date.strftime("%Y-%m-%dT%H:%M")
 
@@ -216,9 +224,13 @@ def book_appointment():
 @patient_login_required
 def booked_slots():
     try:
-        # Get all occupied slots in the next 30 days
+        # Get all occupied slots in the next dynamic days
+        try:
+            booking_window_days = int(get_setting("booking_window_days", "30"))
+        except ValueError:
+            booking_window_days = 30
         now = datetime.now()
-        limit_date = now + timedelta(days=30)
+        limit_date = now + timedelta(days=booking_window_days)
         
         occupied = Appointment.query.filter(
             Appointment.status.in_(["Scheduled", "Pending", "Done"]),
@@ -236,9 +248,13 @@ def booked_slots():
 @patient_login_required
 def portal_events():
     try:
-        # Get all occupied slots in the next 30 days
+        # Get all occupied slots in the next dynamic days
+        try:
+            booking_window_days = int(get_setting("booking_window_days", "30"))
+        except ValueError:
+            booking_window_days = 30
         now = datetime.now()
-        limit_date = now + timedelta(days=30)
+        limit_date = now + timedelta(days=booking_window_days)
         
         occupied = Appointment.query.filter(
             Appointment.status.in_(["Scheduled", "Pending", "Done"]),
