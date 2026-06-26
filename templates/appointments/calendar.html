@@ -120,27 +120,36 @@
     /* Styling for disabled cells in the calendar */
     .fc-day-disabled,
     .fc-day-disabled *,
-    .fc-timegrid-col.fc-day-disabled,
-    .fc-timegrid-col.fc-day-disabled > *,
-    .fc-timegrid-col.fc-day-disabled .fc-timegrid-col-frame {
+    .fc-day-disabled {
         cursor: not-allowed !important;
-    }
-    td.fc-day-disabled {
         background-color: rgba(100, 116, 139, 0.07) !important;
+    }
+    
+    td.fc-day-past {
+        background-color: rgba(100, 116, 139, 0.07) !important;
+        cursor: not-allowed !important;
     }
 
-    /* Target past days globally using FullCalendar classes */
-    td.fc-day-past,
-    .fc-timegrid-col.fc-day-past,
-    .fc-timegrid-col.fc-day-past > *,
-    .fc-timegrid-col.fc-day-past .fc-timegrid-col-frame {
-        background-color: rgba(100, 116, 139, 0.07) !important;
+    /* Pseudo-elements for week view columns to capture hover events */
+    .fc-timegrid-col.fc-day-disabled .fc-timegrid-col-frame::before,
+    .fc-timegrid-col.fc-day-past .fc-timegrid-col-frame::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(100, 116, 139, 0.07);
         cursor: not-allowed !important;
+        pointer-events: auto !important;
+        z-index: 2;
     }
+
     /* Keep pointer cursor on actual events in the past so users know they can click to view details */
     .fc-day-past .fc-event,
     .fc-day-past .fc-event * {
         cursor: pointer !important;
+        z-index: 5 !important;
     }
 
     /* Override FullCalendar scroller and harness overflows to enable window-level sticky headers */
@@ -579,9 +588,27 @@
             eventDisplay: 'block', // Forces events to display as block elements
             contentHeight: 'auto', // Expands the grid cells dynamically without internal scrollbars
             headerToolbar: {
-                left: 'prev,next today',
+                left: window.innerWidth < 768 ? 'prev,next' : 'prev,next today',
                 center: 'title',
-                right: 'dayGridMonth,timeGridWeek,listMonth'
+                right: window.innerWidth < 768 ? 'dayGridMonth,timeGridDay,listMonth' : 'dayGridMonth,timeGridWeek,listMonth'
+            },
+            windowResize: function(arg) {
+                if (window.innerWidth < 768) {
+                    calendar.setOption('headerToolbar', {
+                        left: 'prev,next',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridDay,listMonth'
+                    });
+                    if (calendar.view.type === 'timeGridWeek') {
+                        calendar.changeView('timeGridDay');
+                    }
+                } else {
+                    calendar.setOption('headerToolbar', {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,listMonth'
+                    });
+                }
             },
             events: '/appointments/events',
             eventClassNames: function (arg) {
