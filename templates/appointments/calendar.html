@@ -575,7 +575,7 @@
                 timeGridWeek: currentLang === 'ar' ? 'أسبوع' : 'Week',
                 listMonth: currentLang === 'ar' ? 'قائمة' : 'List'
             },
-            initialView: 'dayGridMonth',
+            initialView: window.innerWidth < 768 ? 'listMonth' : 'dayGridMonth',
             allDaySlot: false, // Removes the "all-day" slot/row
             slotMinTime: slotMinTime, // Dynamic start visible slots
             slotMaxTime: slotMaxTime, // Dynamic end visible slots
@@ -831,131 +831,133 @@
 
         calendar.render();
 
-        // 30-minute slot hover highlight in Week/Day views
-        const hoverHighlight = document.createElement('div');
-        hoverHighlight.className = 'fc-timegrid-hover-highlight';
-        hoverHighlight.style.position = 'absolute';
-        hoverHighlight.style.pointerEvents = 'none';
-        hoverHighlight.style.display = 'none';
-        hoverHighlight.style.backgroundColor = 'color-mix(in srgb, var(--accent-color), transparent 92%)';
-        hoverHighlight.style.zIndex = '5'; // Above columns background, below event cards (z-index 6+)
-        hoverHighlight.style.borderRadius = '4px';
-        hoverHighlight.style.border = '1px solid color-mix(in srgb, var(--accent-color), transparent 75%)';
-        hoverHighlight.style.transition = 'left 0.05s ease, top 0.05s ease, width 0.05s ease, height 0.05s ease';
+        // 30-minute slot hover highlight in Week/Day views (Desktop only to prevent mobile scroll-lag)
+        if (!window.matchMedia("(pointer: coarse)").matches) {
+            const hoverHighlight = document.createElement('div');
+            hoverHighlight.className = 'fc-timegrid-hover-highlight';
+            hoverHighlight.style.position = 'absolute';
+            hoverHighlight.style.pointerEvents = 'none';
+            hoverHighlight.style.display = 'none';
+            hoverHighlight.style.backgroundColor = 'color-mix(in srgb, var(--accent-color), transparent 92%)';
+            hoverHighlight.style.zIndex = '5'; // Above columns background, below event cards (z-index 6+)
+            hoverHighlight.style.borderRadius = '4px';
+            hoverHighlight.style.border = '1px solid color-mix(in srgb, var(--accent-color), transparent 75%)';
+            hoverHighlight.style.transition = 'left 0.05s ease, top 0.05s ease, width 0.05s ease, height 0.05s ease';
 
-        document.addEventListener('mousemove', function (e) {
-            if (!e.target || typeof e.target.closest !== 'function') {
-                return;
-            }
-            const timegridBody = e.target.closest('.fc-timegrid-body');
-            if (!timegridBody) {
-                hoverHighlight.style.display = 'none';
-                return;
-            }
-            
-            if (hoverHighlight.parentElement !== timegridBody) {
-                timegridBody.appendChild(hoverHighlight);
-            }
-            
-            const rect = timegridBody.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            const cols = timegridBody.querySelectorAll('.fc-timegrid-col');
-            let hoveredCol = null;
-            let colLeft = 0;
-            let colWidth = 0;
-            
-            cols.forEach(col => {
-                const colRect = col.getBoundingClientRect();
-                const left = colRect.left - rect.left;
-                if (x >= left && x <= left + colRect.width) {
-                    hoveredCol = col;
-                    colLeft = left;
-                    colWidth = colRect.width;
+            document.addEventListener('mousemove', function (e) {
+                if (!e.target || typeof e.target.closest !== 'function') {
+                    return;
                 }
-            });
-            
-            if (!hoveredCol) {
-                hoverHighlight.style.display = 'none';
-                timegridBody.style.cursor = 'default';
-                return;
-            }
-            
-            const slotLanes = timegridBody.querySelectorAll('.fc-timegrid-slots tr');
-            let hoveredSlotRow = null;
-            let slotTop = 0;
-            let slotHeight = 0;
-            
-            slotLanes.forEach(lane => {
-                const laneRect = lane.getBoundingClientRect();
-                const top = laneRect.top - rect.top;
-                if (y >= top && y <= top + laneRect.height) {
-                    hoveredSlotRow = lane;
-                    slotTop = top;
-                    slotHeight = laneRect.height;
+                const timegridBody = e.target.closest('.fc-timegrid-body');
+                if (!timegridBody) {
+                    hoverHighlight.style.display = 'none';
+                    return;
                 }
-            });
-            
-            if (!hoveredSlotRow) {
-                hoverHighlight.style.display = 'none';
-                timegridBody.style.cursor = 'default';
-                return;
-            }
-            
-            // Check if this specific date/time is disabled or in the past
-            const dateStr = hoveredCol.getAttribute('data-date');
-            const timeStr = hoveredSlotRow.getAttribute('data-time');
-            
-            let isAllowed = true;
-            if (dateStr && timeStr) {
-                const slotDate = new Date(dateStr + 'T' + timeStr);
-                const now = new Date();
-                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
                 
-                const workingDays = {{ working_days_list | tojson }} || [0, 1, 2, 3, 4, 6];
-                const dayOfWeek = slotDate.getDay();
-                const isHoliday = !workingDays.includes(dayOfWeek);
-                const isPast = slotDate < now;
+                if (hoverHighlight.parentElement !== timegridBody) {
+                    timegridBody.appendChild(hoverHighlight);
+                }
                 
-                const maxDate = new Date(todayStart);
-                maxDate.setDate(maxDate.getDate() + 30);
-                maxDate.setHours(23, 59, 59, 999);
-                const isFutureLimit = slotDate > maxDate;
+                const rect = timegridBody.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
                 
-                if (isHoliday || isPast || isFutureLimit) {
+                const cols = timegridBody.querySelectorAll('.fc-timegrid-col');
+                let hoveredCol = null;
+                let colLeft = 0;
+                let colWidth = 0;
+                
+                cols.forEach(col => {
+                    const colRect = col.getBoundingClientRect();
+                    const left = colRect.left - rect.left;
+                    if (x >= left && x <= left + colRect.width) {
+                        hoveredCol = col;
+                        colLeft = left;
+                        colWidth = colRect.width;
+                    }
+                });
+                
+                if (!hoveredCol) {
+                    hoverHighlight.style.display = 'none';
+                    timegridBody.style.cursor = 'default';
+                    return;
+                }
+                
+                const slotLanes = timegridBody.querySelectorAll('.fc-timegrid-slots tr');
+                let hoveredSlotRow = null;
+                let slotTop = 0;
+                let slotHeight = 0;
+                
+                slotLanes.forEach(lane => {
+                    const laneRect = lane.getBoundingClientRect();
+                    const top = laneRect.top - rect.top;
+                    if (y >= top && y <= top + laneRect.height) {
+                        hoveredSlotRow = lane;
+                        slotTop = top;
+                        slotHeight = laneRect.height;
+                    }
+                });
+                
+                if (!hoveredSlotRow) {
+                    hoverHighlight.style.display = 'none';
+                    timegridBody.style.cursor = 'default';
+                    return;
+                }
+                
+                // Check if this specific date/time is disabled or in the past
+                const dateStr = hoveredCol.getAttribute('data-date');
+                const timeStr = hoveredSlotRow.getAttribute('data-time');
+                
+                let isAllowed = true;
+                if (dateStr && timeStr) {
+                    const slotDate = new Date(dateStr + 'T' + timeStr);
+                    const now = new Date();
+                    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    
+                    const workingDays = {{ working_days_list | tojson }} || [0, 1, 2, 3, 4, 6];
+                    const dayOfWeek = slotDate.getDay();
+                    const isHoliday = !workingDays.includes(dayOfWeek);
+                    const isPast = slotDate < now;
+                    
+                    const maxDate = new Date(todayStart);
+                    maxDate.setDate(maxDate.getDate() + 30);
+                    maxDate.setHours(23, 59, 59, 999);
+                    const isFutureLimit = slotDate > maxDate;
+                    
+                    if (isHoliday || isPast || isFutureLimit) {
+                        isAllowed = false;
+                    }
+                } else if (hoveredCol.classList.contains('fc-day-disabled') || hoveredCol.classList.contains('fc-day-past')) {
                     isAllowed = false;
                 }
-            } else if (hoveredCol.classList.contains('fc-day-disabled') || hoveredCol.classList.contains('fc-day-past')) {
-                isAllowed = false;
-            }
-            
-            // If hovering over an event inside the column, pointer should be active
-            const isOverEvent = e.target.closest('.fc-event');
-            
-            if (isOverEvent) {
-                timegridBody.style.cursor = 'pointer';
-                hoverHighlight.style.display = 'none';
-            } else if (!isAllowed) {
-                timegridBody.style.cursor = 'not-allowed';
-                hoverHighlight.style.display = 'none';
-            } else {
-                timegridBody.style.cursor = 'pointer';
                 
-                hoverHighlight.style.left = (colLeft + 2) + 'px';
-                hoverHighlight.style.width = (colWidth - 4) + 'px';
-                hoverHighlight.style.top = (slotTop + 1) + 'px';
-                hoverHighlight.style.height = (slotHeight - 2) + 'px';
-                hoverHighlight.style.display = 'block';
-            }
-        });
+                // If hovering over an event inside the column, pointer should be active
+                const isOverEvent = e.target.closest('.fc-event');
+                
+                if (isOverEvent) {
+                    timegridBody.style.cursor = 'pointer';
+                    hoverHighlight.style.display = 'none';
+                } else if (!isAllowed) {
+                    timegridBody.style.cursor = 'not-allowed';
+                    hoverHighlight.style.display = 'none';
+                } else {
+                    timegridBody.style.cursor = 'pointer';
+                    
+                    hoverHighlight.style.left = (colLeft + 2) + 'px';
+                    hoverHighlight.style.width = (colWidth - 4) + 'px';
+                    hoverHighlight.style.top = (slotTop + 1) + 'px';
+                    hoverHighlight.style.height = (slotHeight - 2) + 'px';
+                    hoverHighlight.style.display = 'block';
+                }
+            });
 
-        document.addEventListener('mouseleave', function (e) {
-            if (e.target && e.target.classList && typeof e.target.classList.contains === 'function' && e.target.classList.contains('fc-timegrid-body')) {
-                hoverHighlight.style.display = 'none';
-                e.target.style.cursor = 'default';
-            }
-        }, true);
+            document.addEventListener('mouseleave', function (e) {
+                if (e.target && e.target.classList && typeof e.target.classList.contains === 'function' && e.target.classList.contains('fc-timegrid-body')) {
+                    hoverHighlight.style.display = 'none';
+                    e.target.style.cursor = 'default';
+                }
+            }, true);
+        }
     });
 </script>
 {% endblock %}

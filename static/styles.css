@@ -2616,6 +2616,14 @@ html[lang="ar"] input[name*="mobile"] {
   .navmenu li.d-xl-none {
     display: none !important;
   }
+
+  @media (max-width: 400px) {
+    .navmenu a,
+    .navmenu a:focus {
+      padding: 5px 10px !important;
+      font-size: 11.5px !important;
+    }
+  }
 }
 
 @media (max-width: 768px) {
@@ -2679,3 +2687,100 @@ html[lang="ar"] input[name*="mobile"] {
         font-size: 1.2rem !important;
     }
 }
+
+
+/* ========================================== */
+/*   F U L L C A L E N D A R   M O B I L E   */
+/* ========================================== */
+@media (max-width: 767px) {
+  /* Reduce excessive padding on the card containing the calendar */
+  .card-body.p-4 {
+    padding: 10px !important;
+  }
+  
+  /* Reduce FullCalendar padding to give maximum horizontal space */
+  .fc {
+    padding: 8px !important;
+    border-radius: 12px !important;
+    font-size: 12px !important; /* Smaller font for mobile grids */
+  }
+
+  /* Make header toolbar compact */
+  .fc .fc-toolbar {
+    flex-direction: column !important;
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* Adjust buttons and spacing */
+  .fc-toolbar-chunk {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+
+  /* Compact title font size */
+  .fc-toolbar-title {
+    font-size: 1.1rem !important;
+    margin: 4px 0 !important;
+    text-align: center !important;
+  }
+
+  /* Re-style next/prev buttons to look like clean, neat circular buttons */
+  .fc .fc-button {
+    min-height: 44px !important; /* Larger touch target height */
+    padding: 8px 16px !important;
+    font-size: 0.9rem !important;
+  }
+
+  .fc-button-primary {
+    padding: 6px 12px !important;
+    font-size: 0.8rem !important;
+    border-radius: 20px !important;
+  }
+
+  .fc-prev-button,
+  .fc-next-button {
+    width: 44px !important; /* Large 44px touch target diameter */
+    height: 44px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .fc-prev-button .fc-icon,
+  .fc-next-button .fc-icon {
+    font-size: 1.25em !important;
+  }
+
+  /* Time Grid Slot Sizing - reduce vertical height on mobile so you can see more slots at once */
+  .fc-timegrid-slot {
+    height: 2.8rem !important; /* Smaller row heights on mobile */
+  }
+  
+  .fc-timegrid-slot-label-cushion,
+  .fc-timegrid-axis-cushion {
+    font-size: 0.75rem !important;
+  }
+
+  /* Event Details inside cells */
+  .fc-v-event .fc-event-main-frame {
+    font-size: 0.7rem !important;
+    padding: 1px 3px !important;
+    line-height: 1.2 !important;
+  }
+}
+
+/* Disable sticky custom tooltips on touch devices (pointer: coarse / hover: none) */
+@media (hover: none) {
+  [data-tooltip]::after,
+  [data-tooltip]::before {
+    display: none !important;
+  }
+}
+
