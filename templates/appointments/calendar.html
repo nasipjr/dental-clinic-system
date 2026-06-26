@@ -152,12 +152,14 @@
         z-index: 5 !important;
     }
 
-    /* Override FullCalendar scroller and harness overflows to enable window-level sticky headers */
-    .fc-view-harness,
-    .fc-scroller,
-    .fc-timegrid,
-    .fc-daygrid {
-        overflow: visible !important;
+    /* Override FullCalendar scroller and harness overflows to enable window-level sticky headers on desktop only */
+    @media (min-width: 768px) {
+        .fc-view-harness,
+        .fc-scroller,
+        .fc-timegrid,
+        .fc-daygrid {
+            overflow: visible !important;
+        }
     }
 
     /* Sticky headers for month and week views, offset dynamically by the fixed navbar states */

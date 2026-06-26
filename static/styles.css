@@ -2774,6 +2774,40 @@ html[lang="ar"] input[name*="mobile"] {
     padding: 1px 3px !important;
     line-height: 1.2 !important;
   }
+
+  /* Enable internal scroll containers on mobile */
+  .fc-view-harness,
+  .fc-scroller,
+  .fc-timegrid,
+  .fc-daygrid {
+    overflow: auto !important;
+  }
+
+  .fc-scroller {
+    overflow-x: auto !important;
+  }
+
+  /* Week view horizontal scroll min-width constraints */
+  .fc-timeGridWeek-view .fc-timegrid-body,
+  .fc-timeGridWeek-view .fc-col-header {
+    min-width: 750px !important;
+  }
+
+  .fc-timeGridWeek-view .fc-timegrid-body table,
+  .fc-timeGridWeek-view .fc-col-header table {
+    width: 100% !important;
+  }
+
+  /* Month view horizontal scroll min-width constraints */
+  .fc-dayGridMonth-view .fc-daygrid-body,
+  .fc-dayGridMonth-view .fc-col-header {
+    min-width: 650px !important;
+  }
+
+  .fc-dayGridMonth-view .fc-daygrid-body table,
+  .fc-dayGridMonth-view .fc-col-header table {
+    width: 100% !important;
+  }
 }
 
 /* Disable sticky custom tooltips on touch devices (pointer: coarse / hover: none) */
