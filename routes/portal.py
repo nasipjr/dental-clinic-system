@@ -256,6 +256,7 @@ def portal_events():
                 "start": start_iso,
                 "end": end_iso,
                 "color": "#6c757d",  # Muted grey color for occupied slot
+                "classNames": ["fc-event-reserved"],
                 "extendedProps": {
                     "status": "Reserved"
                 }

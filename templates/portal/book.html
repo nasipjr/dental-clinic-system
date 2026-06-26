@@ -6,113 +6,23 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<style>
-    /* Styling for disabled cells in the calendar */
-    .fc-day-disabled {
-        cursor: not-allowed !important;
-        background-color: rgba(100, 116, 139, 0.07) !important;
-    }
-    
-    td.fc-day-past {
-        background-color: rgba(100, 116, 139, 0.07) !important;
-        cursor: not-allowed !important;
-    }
-
-    /* Pseudo-elements for week view columns to capture hover events */
-    .fc-timegrid-col.fc-day-disabled .fc-timegrid-col-frame::before,
-    .fc-timegrid-col.fc-day-past .fc-timegrid-col-frame::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(100, 116, 139, 0.07);
-        cursor: not-allowed !important;
-        pointer-events: auto !important;
-        z-index: 2;
-    }
-    
-    /* FullCalendar overrides */
-    .fc {
-        background: var(--surface-color) !important;
-        color: var(--default-color) !important;
-        border-radius: 20px !important;
-        padding: 24px !important;
-        border: 1px solid color-mix(in srgb, var(--accent-color), transparent 85%) !important;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05) !important;
-        font-family: var(--default-font) !important;
-    }
-    
-    .fc-theme-standard td,
-    .fc-theme-standard th {
-        border: 1px solid color-mix(in srgb, var(--default-color), transparent 85%) !important;
-    }
-    
-    .fc-col-header-cell {
-        background: color-mix(in srgb, var(--default-color), transparent 95%) !important;
-        padding: 14px 0 !important;
-        color: var(--heading-color) !important;
-        font-weight: 700 !important;
-        border-bottom: 2px solid color-mix(in srgb, var(--default-color), transparent 85%) !important;
-    }
-    
-    .fc-col-header-cell-cushion {
-        color: var(--heading-color) !important;
-        text-decoration: none !important;
-        font-size: 0.95rem;
-    }
-    
-    .fc-daygrid-day-number {
-        color: color-mix(in srgb, var(--default-color), transparent 25%) !important;
-        font-weight: 600 !important;
-        padding: 8px 10px !important;
-        text-decoration: none !important;
-        font-size: 0.9rem;
-    }
-    
-    .fc-daygrid-day:not(.fc-day-disabled):not(.fc-day-past) {
-        cursor: pointer !important;
-    }
-    .fc-daygrid-day:not(.fc-day-disabled):not(.fc-day-past):hover {
-        background-color: color-mix(in srgb, var(--accent-color), transparent 94%) !important;
-        transition: background-color 0.2s ease;
-    }
-    
-    /* Reserved events show a not-allowed cursor since patients cannot select or modify them */
-    .fc-event,
-    .fc-event * {
-        cursor: not-allowed !important;
-    }
-    
-    .fc-day-today {
-        background: color-mix(in srgb, var(--accent-color), transparent 92%) !important;
-    }
-    
-    .fc-day-today .fc-daygrid-day-number {
-        color: var(--accent-color) !important;
-        font-weight: 800 !important;
-    }
-    
-    .fc-timegrid-slot {
-        height: 3.5rem !important;
-        border-bottom: 1px solid color-mix(in srgb, var(--default-color), transparent 88%) !important;
-    }
-    
-    .fc-timegrid-slot-minor {
-        border-bottom-style: dotted !important;
-    }
-    
-    .fc-timegrid-slot-label-cushion {
-        color: var(--default-color) !important;
-        font-weight: 600 !important;
-        font-size: 0.85rem !important;
-    }
-</style>
-
 <div class="container section-title" data-aos="fade-up">
     <h2>Book an Appointment</h2>
     <p>Select a date and time slot from the calendar below. Blocked slots are marked as "Reserved".</p>
+    <div class="d-flex flex-wrap justify-content-center gap-3 mt-3">
+      <div class="d-flex align-items-center gap-2">
+        <span class="d-inline-block rounded-circle" style="width: 10px; height: 10px; background-color: var(--surface-color); border: 2px solid var(--accent-color);"></span>
+        <span class="small text-secondary">{% if current_lang == 'ar' %}متاح (اضغط للحجز){% else %}Available Slot (Tap to request){% endif %}</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="d-inline-block rounded-pill" style="width: 22px; height: 10px; background: linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.1) 100%); border-left: 3px solid #ef4444;"></span>
+        <span class="small text-secondary">{% if current_lang == 'ar' %}محجوز / غير متاح{% else %}Reserved / Blocked{% endif %}</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="d-inline-block rounded-circle" style="width: 10px; height: 10px; background-color: rgba(100, 116, 139, 0.15);"></span>
+        <span class="small text-secondary">{% if current_lang == 'ar' %}تاريخ ماضٍ / مغلق{% else %}Past / Closed Day{% endif %}</span>
+      </div>
+    </div>
 </div>
 
 <div class="row justify-content-center">
@@ -124,6 +34,12 @@
 </div>
 
 <script>
+window.addEventListener('pageshow', function (event) {
+    if (typeof Swal !== 'undefined') {
+        Swal.close();
+    }
+});
+
 document.addEventListener("DOMContentLoaded", function () {
     const calendarEl = document.getElementById("calendar");
     if (!calendarEl) return;

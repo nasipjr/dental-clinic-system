@@ -2468,9 +2468,9 @@ html[lang="ar"] .fc-list-event.event-status-scheduled {
   border-right: 6px solid #0284c7 !important;
 }
 
-html[lang="ar"] .fc-list-event.event-status-completed {
+html[lang="ar"] .fc-list-event.event-status-done {
   border-left: none !important;
-  border-right: 6px solid #0d9488 !important;
+  border-right: 6px solid #16a34a !important;
 }
 
 html[lang="ar"] .fc-list-event.event-status-cancelled {
@@ -2818,3 +2818,245 @@ html[lang="ar"] input[name*="mobile"] {
   }
 }
 
+
+/* ========================================== */
+/*   P R E M I U M   F U L L C A L E N D A R  */
+/* ========================================== */
+
+/* Main calendar container styling */
+.fc {
+    background: var(--surface-color) !important;
+    color: var(--default-color) !important;
+    border-radius: 20px !important;
+    padding: 24px !important;
+    border: 1px solid color-mix(in srgb, var(--accent-color), transparent 85%) !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05) !important;
+    font-family: var(--default-font) !important;
+    transition: all 0.3s ease;
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+    border: 1px solid color-mix(in srgb, var(--default-color), transparent 88%) !important;
+}
+
+/* Header toolbar title styling */
+.fc .fc-toolbar-title {
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    color: var(--heading-color) !important;
+    letter-spacing: -0.02em;
+    font-family: var(--heading-font), sans-serif;
+}
+
+/* Calendar Button Styling - elegant pill design with subtle hover effects and focus shadows */
+.fc .fc-button {
+    background-color: color-mix(in srgb, var(--surface-color), var(--default-color) 6%) !important;
+    border: 1px solid color-mix(in srgb, var(--default-color), transparent 88%) !important;
+    color: var(--default-color) !important;
+    font-weight: 600 !important;
+    border-radius: 30px !important; /* Fully rounded buttons */
+    padding: 8px 18px !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+}
+
+.fc .fc-button:hover {
+    background-color: color-mix(in srgb, var(--accent-color), transparent 90%) !important;
+    border-color: var(--accent-color) !important;
+    color: var(--accent-color) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--accent-color), transparent 85%) !important;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+    color: var(--contrast-color, #ffffff) !important;
+    box-shadow: 0 4px 15px color-mix(in srgb, var(--accent-color), transparent 60%) !important;
+}
+
+.fc .fc-button-primary:focus,
+.fc .fc-button:focus {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color), transparent 75%) !important;
+}
+
+/* Day header cell styling */
+.fc-col-header-cell {
+    background: color-mix(in srgb, var(--default-color), transparent 97%) !important;
+    border-bottom: 2px solid color-mix(in srgb, var(--default-color), transparent 85%) !important;
+}
+
+.fc-col-header-cell-cushion {
+    color: var(--heading-color) !important;
+    font-weight: 700 !important;
+    padding: 12px 0 !important;
+    display: inline-block;
+    text-decoration: none !important;
+    font-size: 0.95rem;
+}
+
+/* Day grid numbers styling */
+.fc-daygrid-day-number {
+    color: color-mix(in srgb, var(--default-color), transparent 25%) !important;
+    font-weight: 600 !important;
+    padding: 10px 12px !important;
+    text-decoration: none !important;
+    font-size: 0.9rem;
+}
+
+.fc-daygrid-day:not(.fc-day-disabled):not(.fc-day-past) {
+    cursor: pointer !important;
+}
+.fc-daygrid-day:not(.fc-day-disabled):not(.fc-day-past):hover {
+    background-color: color-mix(in srgb, var(--accent-color), transparent 95%) !important;
+    transition: background-color 0.2s ease;
+}
+
+/* Highlight today with dynamic top accent line */
+.fc-day-today {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent-color), transparent 95%) 0%, transparent 100%) !important;
+    position: relative;
+}
+
+.fc-day-today::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: var(--accent-color);
+    z-index: 3;
+}
+
+.fc-day-today .fc-daygrid-day-number {
+    color: var(--accent-color) !important;
+    font-weight: 800 !important;
+}
+
+/* Time slots grid styling */
+.fc-timegrid-slot {
+    height: 4rem !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--default-color), transparent 92%) !important;
+}
+
+.fc-timegrid-slot-minor {
+    border-bottom: 1px dashed color-mix(in srgb, var(--default-color), transparent 96%) !important;
+}
+
+.fc-timegrid-slot-label-cushion {
+    color: color-mix(in srgb, var(--default-color), transparent 30%) !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+}
+
+/* Styling for disabled/past cells in the calendar */
+.fc-day-disabled {
+    cursor: not-allowed !important;
+    background-color: rgba(100, 116, 139, 0.08) !important;
+}
+
+td.fc-day-past {
+    background-color: rgba(100, 116, 139, 0.08) !important;
+    cursor: not-allowed !important;
+}
+
+/* Custom scrollbar for calendar scrollers */
+.fc-scroller::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.fc-scroller::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.fc-scroller::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--default-color), transparent 85%);
+    border-radius: 10px;
+}
+
+.fc-scroller::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--default-color), transparent 70%);
+}
+
+/* ========================================== */
+/*   P R E M I U M   E V E N T S   S T Y L E   */
+/* ========================================== */
+
+/* Reserved events (occupied slots) styling */
+.fc-event-reserved {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.06) 100%) !important;
+    border-left: 4px solid #ef4444 !important;
+    border-top: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.08) !important;
+    color: #ef4444 !important;
+    padding: 5px 8px !important;
+    transition: all 0.25s ease !important;
+}
+
+.fc-event-reserved:hover {
+    transform: scale(1.01);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.15) !important;
+}
+
+.fc-event-reserved .fc-event-main {
+    color: #ef4444 !important;
+    font-weight: 600 !important;
+    padding: 0 !important;
+}
+
+.fc-event-reserved .fc-event-time {
+    color: #ef4444 !important;
+    font-size: 0.72rem !important;
+    opacity: 0.85;
+    font-weight: 600;
+}
+
+.fc-event-reserved .fc-event-title {
+    color: #ef4444 !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Prepend lock icon before the title */
+.fc-event-reserved .fc-event-title::before {
+    content: "\f47f" !important; /* bootstrap-icons lock-fill icon unicode */
+    font-family: "bootstrap-icons" !important;
+    font-size: 0.82rem;
+    font-weight: normal;
+    display: inline-block;
+}
+
+
+/* Pseudo-elements for week view columns to capture hover events on disabled columns */
+.fc-timegrid-col.fc-day-disabled .fc-timegrid-col-frame::before,
+.fc-timegrid-col.fc-day-past .fc-timegrid-col-frame::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(100, 116, 139, 0.07);
+    cursor: not-allowed !important;
+    pointer-events: auto !important;
+    z-index: 2;
+}
+
+/* Keep pointer cursor on actual events in the past */
+.fc-day-past .fc-event,
+.fc-day-past .fc-event * {
+    cursor: pointer !important;
+    z-index: 5 !important;
+}

@@ -42,9 +42,9 @@
             </div>
             <div class="legend-item">
                 <div class="legend-color"
-                    style="background-color: rgba(13, 148, 136, 0.08); border: 1px solid rgba(13, 148, 136, 0.22);">
+                    style="background-color: rgba(22, 163, 74, 0.08); border: 1px solid rgba(22, 163, 74, 0.22);">
                 </div>
-                <span style="color: #0d9488; font-weight: 600;">Completed</span>
+                <span style="color: #16a34a; font-weight: 600;">Completed</span>
             </div>
             <div class="legend-item">
                 <div class="legend-color"
@@ -95,7 +95,7 @@
             </div>
             <div class="modal-footer border-top-0 d-flex justify-content-center gap-2 pb-4">
                 <a href="#" id="modal-session-link" class="btn btn-teal px-4 text-white"
-                    style="background-color: #0d9488; border-color: #0d9488; border-radius: 30px; font-weight: 600;">
+                    style="background-color: #16a34a; border-color: #16a34a; border-radius: 30px; font-weight: 600;">
                     <i class="bi bi-clipboard2-pulse me-1"></i> Open Session
                 </a>
                 <a href="#" id="modal-view-link" class="btn btn-outline-secondary px-4"
@@ -367,12 +367,12 @@
         background-color: #0369a1 !important;
     }
 
-    .event-status-completed {
-        background-color: #0d9488 !important;
+    .event-status-done {
+        background-color: #16a34a !important;
     }
 
-    .event-status-completed:hover {
-        background-color: #0f766e !important;
+    .event-status-done:hover {
+        background-color: #15803d !important;
     }
 
     .event-status-cancelled {
@@ -475,8 +475,8 @@
         border-left: 6px solid #0284c7 !important;
     }
 
-    .fc-list-event.event-status-completed {
-        border-left: 6px solid #0d9488 !important;
+    .fc-list-event.event-status-done {
+        border-left: 6px solid #16a34a !important;
     }
 
     .fc-list-event.event-status-cancelled {
@@ -536,6 +536,12 @@
 </style>
 
 <script>
+    window.addEventListener('pageshow', function (event) {
+        if (typeof Swal !== 'undefined') {
+            Swal.close();
+        }
+    });
+
     document.addEventListener('DOMContentLoaded', function () {
         const calendarEl = document.getElementById('calendar');
 

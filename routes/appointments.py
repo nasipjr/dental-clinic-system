@@ -502,7 +502,7 @@ def appointment_events():
         events = []
         for appt in appointments:
             if appt.status == "Done":
-                color = "#0d9488"
+                color = "#16a34a"
             elif appt.status == "Cancelled":
                 color = "#e11d48"
             else:
