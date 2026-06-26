@@ -205,6 +205,20 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         datesSet: function (info) {
             const now = new Date();
+            const calInstance = info.view.calendar;
+            const currentFocused = calInstance.getDate();
+            
+            // If switching to Day/Week view and it defaults to the 1st of the current month, jump to today's date
+            if ((info.view.type === 'timeGridDay' || info.view.type === 'timeGridWeek') && 
+                currentFocused.getDate() === 1 && 
+                currentFocused.getMonth() === now.getMonth() && 
+                currentFocused.getFullYear() === now.getFullYear()) {
+                setTimeout(() => {
+                    calInstance.gotoDate(now);
+                }, 0);
+                return;
+            }
+
             const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const maxDate = new Date(todayStart);
             maxDate.setDate(maxDate.getDate() + 30);
