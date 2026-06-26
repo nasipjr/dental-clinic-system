@@ -66,12 +66,12 @@
 
     <div class="topbar d-flex align-items-center dark-background">
       <div class="container d-flex justify-content-between">
-        <div class="contact-info d-none d-md-flex align-items-center">
+        <div class="contact-info d-none d-md-flex align-items-center flex-shrink-0 text-nowrap">
           <i class="bi bi-envelope d-flex align-items-center"><a
               href="mailto:{{ clinic_email }}">{{ clinic_email }}</a></i>
           <i class="bi bi-phone d-flex align-items-center ms-4"><span>{{ clinic_phone }}</span></i>
         </div>
-        <div class="social-links d-flex align-items-center gap-2 gap-md-3 w-100 justify-content-between justify-content-md-end">
+        <div class="social-links d-flex align-items-center gap-2 gap-md-3 flex-grow-1 flex-md-grow-0 flex-shrink-0 justify-content-between justify-content-md-end">
           {% if current_user %}
             <span class="text-white text-truncate" style="font-size: 13px; max-width: 60vw;">
               <i class="bi bi-person-circle me-1"></i>
