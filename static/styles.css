@@ -2533,69 +2533,149 @@ html[lang="ar"] input[name*="mobile"] {
   direction: ltr !important;
   text-align: right !important;
 }
- / *    % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %  * / 
- / *   P%P%P%P%P%P%P%P%P%P%P%P%P%P%P%P%P%P%P%P%  M O B I L E   R E S P O N S I V E N E S S   P%P%P%P%P%P%P%P%P%P%P%P%P%P%P%  * / 
- / *    % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %  * / 
- @ m e d i a   ( m a x - w i d t h :   7 6 8 p x )   { 
-     / *   T a b l e s   * / 
-     . a p p o i n t m e n t s - t a b l e - w r a p p e r   { 
-         o v e r f l o w - x :   a u t o ; 
-         - w e b k i t - o v e r f l o w - s c r o l l i n g :   t o u c h ; 
-         p a d d i n g :   1 0 p x ; 
-         b o r d e r - r a d i u s :   1 4 p x ; 
-     } 
-     
-     . t a b l e - r e s p o n s i v e   { 
-         o v e r f l o w - x :   a u t o ; 
-         - w e b k i t - o v e r f l o w - s c r o l l i n g :   t o u c h ; 
-     } 
-     
-     . a p p o i n t m e n t s - t a b l e   t h ,   . a p p o i n t m e n t s - t a b l e   t d   { 
-         w h i t e - s p a c e :   n o w r a p ; 
-         p a d d i n g :   1 2 p x   1 0 p x   ! i m p o r t a n t ; 
-     } 
- 
-     / *   C a r d s   a n d   C o n t a i n e r s   P a d d i n g   * / 
-     . p a t i e n t - d e t a i l - c a r d ,   . d e l e t e - p a t i e n t - c a r d ,   . a p p o i n t m e n t s - f i l t e r - b a r   { 
-         p a d d i n g :   2 0 p x   1 5 p x   ! i m p o r t a n t ; 
-         b o r d e r - r a d i u s :   1 6 p x   ! i m p o r t a n t ; 
-     } 
- 
-     / *   P a t i e n t   d e t a i l   t a b s   w r a p   * / 
-     . p a t i e n t - d e t a i l - t a b s   { 
-         f l e x - d i r e c t i o n :   c o l u m n ; 
-         g a p :   1 0 p x ; 
-     } 
-     
-     . p a t i e n t - d e t a i l - t a b s   . n a v - i t e m   { 
-         m a x - w i d t h :   1 0 0 % ; 
-     } 
- 
-     . p a t i e n t - d e t a i l - t a b s   . n a v - l i n k   . s e c t i o n - t i t l e   { 
-         p a d d i n g :   1 2 p x   1 0 p x ; 
-     } 
- 
-     / *   F i x   F u l l C a l e n d a r   O v e r f l o w   * / 
-     . f c   { 
-         f o n t - s i z e :   1 4 p x   ! i m p o r t a n t ; 
-     } 
-     
-     . f c   . f c - t o o l b a r   { 
-         f l e x - d i r e c t i o n :   c o l u m n   ! i m p o r t a n t ; 
-         g a p :   1 0 p x   ! i m p o r t a n t ; 
-     } 
-     
-     . f c - t o o l b a r - c h u n k   { 
-         d i s p l a y :   f l e x ; 
-         j u s t i f y - c o n t e n t :   c e n t e r ; 
-         w i d t h :   1 0 0 % ; 
-         f l e x - w r a p :   w r a p ; 
-         g a p :   5 p x ; 
-     } 
-     
-     . f c - t o o l b a r - t i t l e   { 
-         f o n t - s i z e :   1 . 2 r e m   ! i m p o r t a n t ; 
-     } 
- } 
-  
- 
+
+/* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+/* P%P%P%P%P%P%P%P%P%P%P%P%P%P%P%P%P%P%P%P% MOBILE RESPONSIVENESS P%P%P%P%P%P%P%P%P%P%P%P%P%P%P% */
+/* %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% */
+
+/* Mobile Navigation Horizontal Scrollable Tabs Bar Overrides */
+@media (max-width: 1199px) {
+  .header .branding .container {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+  
+  .header .logo {
+    margin-bottom: 10px !important;
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+    display: flex;
+  }
+  
+  .navmenu {
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important; /* Hide scrollbar Firefox */
+  }
+  
+  .navmenu::-webkit-scrollbar {
+    display: none !important; /* Hide scrollbar Safari/Chrome */
+  }
+  
+  .navmenu ul {
+    display: flex !important;
+    flex-direction: row !important;
+    position: static !important;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 10px 10px 10px !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    width: max-content !important;
+    gap: 8px !important;
+  }
+  
+  .navmenu li {
+    padding: 0 !important;
+    white-space: nowrap !important;
+  }
+  
+  .navmenu a,
+  .navmenu a:focus {
+    color: color-mix(in srgb, var(--contrast-color, #ffffff), transparent 20%) !important;
+    padding: 6px 14px !important;
+    font-size: 13.5px !important;
+    font-weight: 600 !important;
+    border-radius: 30px !important;
+    background-color: color-mix(in srgb, var(--accent-color), transparent 85%) !important;
+    border: 1px solid color-mix(in srgb, var(--accent-color), transparent 75%) !important;
+    transition: all 0.25s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+  
+  .navmenu a:hover,
+  .navmenu .active,
+  .navmenu .active:focus {
+    color: var(--contrast-color, #ffffff) !important;
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  .mobile-nav-toggle {
+    display: none !important; /* Hide hamburger toggle since tabs are directly visible and scrollable */
+  }
+
+  /* Redundant items hidden */
+  .navmenu li.d-xl-none {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+    /* Tables */
+    .appointments-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 10px;
+        border-radius: 14px;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .appointments-table th, .appointments-table td {
+        white-space: nowrap;
+        padding: 12px 10px !important;
+    }
+
+    /* Cards and Containers Padding */
+    .patient-detail-card, .delete-patient-card, .appointments-filter-bar {
+        padding: 20px 15px !important;
+        border-radius: 16px !important;
+    }
+
+    /* Patient detail tabs wrap */
+    .patient-detail-tabs {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .patient-detail-tabs .nav-item {
+        max-width: 100%;
+    }
+
+    .patient-detail-tabs .nav-link .section-title {
+        padding: 12px 10px;
+    }
+
+    /* Fix FullCalendar Overflow */
+    .fc {
+        font-size: 14px !important;
+    }
+    
+    .fc .fc-toolbar {
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+    
+    .fc-toolbar-chunk {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .fc-toolbar-title {
+        font-size: 1.2rem !important;
+    }
+}
