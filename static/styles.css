@@ -877,6 +877,16 @@
   width: 100%;
 }
 
+.session-actions-grid > :last-child:nth-child(odd) {
+  grid-column: span 2;
+  display: flex;
+  justify-content: center;
+}
+
+.session-actions-grid > :last-child:nth-child(odd) .session-action-btn {
+  max-width: calc(50% - 6px);
+}
+
 .session-action-btn {
   width: 100%;
   min-height: 46px;
@@ -3059,4 +3069,45 @@ td.fc-day-past {
 .fc-day-past .fc-event * {
     cursor: pointer !important;
     z-index: 5 !important;
+}
+
+
+/* Print Media styles for high-contrast white pages with black text */
+@media print {
+    html, body, main, section, div, table, tr, td, th, h1, h2, h3, h4, h5, h6, p, span, strong, small {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+    
+    body {
+        font-size: 12pt !important;
+    }
+
+    #header, #footer, .navbar, .btn, .btn-primary, .btn-outline-main, .sidebar, .no-print, .btn-close, .modal-header .btn-close, .table-action-btn {
+        display: none !important;
+    }
+
+    /* Clean printing borders */
+    .invoice-card, .patient-ledger-card, .table {
+        border: 1px solid #000000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    th {
+        background-color: #f2f2f2 !important;
+        border-bottom: 2px solid #000000 !important;
+    }
+
+    td {
+        border-bottom: 1px solid #dddddd !important;
+    }
+
+    /* Prevent page breaks inside tables */
+    tr {
+        page-break-inside: avoid !important;
+    }
 }

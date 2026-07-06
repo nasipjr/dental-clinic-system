@@ -266,6 +266,47 @@ def patient_detail(patient_id):
 
         patient_files = sorted(patient.files, key=lambda f: f.upload_date, reverse=True)
 
+        # Build Ledger Entries
+        from datetime import datetime
+        ledger_entries = []
+        invoices = Invoice.query.join(Invoice.appointment).filter(
+            Appointment.patient_id == patient.id,
+            Appointment.status != "Cancelled"
+        ).all()
+        for inv in invoices:
+            desc_items = [t.procedure_type for t in inv.appointment.treatments if t.procedure_type]
+            desc_str = ", ".join(desc_items) if desc_items else (inv.appointment.reason or "Dental Session")
+            inv_date = inv.issue_date.date() if isinstance(inv.issue_date, datetime) else inv.issue_date
+            ledger_entries.append({
+                "date": inv_date,
+                "type": "invoice",
+                "ref": inv.invoice_number,
+                "description": desc_str,
+                "debit": float(inv.total_amount),
+                "credit": 0.0,
+            })
+
+        payments = Payment.query.filter_by(patient_id=patient.id).all()
+        for pay in payments:
+            pay_date = pay.payment_date.date() if isinstance(pay.payment_date, datetime) else pay.payment_date
+            ledger_entries.append({
+                "date": pay_date,
+                "type": "payment",
+                "ref": f"PAY-{pay.id:04d}",
+                "description": pay.notes or ("Payment received" if request.cookies.get('lang') != 'ar' else "دفعة نقدية مستلمة"),
+                "debit": 0.0,
+                "credit": float(pay.amount),
+            })
+
+        # Sort chronologically
+        ledger_entries.sort(key=lambda x: (x["date"], 0 if x["type"] == "invoice" else 1))
+
+        # Calculate running balance
+        running_bal = 0.0
+        for entry in ledger_entries:
+            running_bal += entry["debit"] - entry["credit"]
+            entry["balance"] = running_bal
+
         return render_template(
             "patients/patient_detail.html",
             patient=patient,
@@ -287,6 +328,7 @@ def patient_detail(patient_id):
             invoice_sort=invoice_context["invoice_sort"],
             invoice_order=invoice_context["invoice_order"],
             active_tab=active_tab,
+            ledger_entries=ledger_entries
         )
 
     except Exception:
@@ -294,6 +336,71 @@ def patient_detail(patient_id):
             f"Error while loading patient detail | patient_id={patient_id}"
         )
         return "Error Loading PatientsInfo", 500
+
+
+@patients_bp.route("/patients/<int:patient_id>/ledger/print")
+@role_required("admin", "doctor", "receptionist")
+def patient_ledger_print(patient_id):
+    current_app.logger.info(f"Printing patient ledger | patient_id={patient_id}")
+    try:
+        patient = Patient.query.get_or_404(patient_id)
+        
+        from datetime import datetime
+        ledger_entries = []
+        invoices = Invoice.query.join(Invoice.appointment).filter(
+            Appointment.patient_id == patient_id,
+            Appointment.status != "Cancelled"
+        ).all()
+        
+        for inv in invoices:
+            desc_items = [t.procedure_type for t in inv.appointment.treatments if t.procedure_type]
+            desc_str = ", ".join(desc_items) if desc_items else (inv.appointment.reason or "Dental Session")
+            inv_date = inv.issue_date.date() if isinstance(inv.issue_date, datetime) else inv.issue_date
+            ledger_entries.append({
+                "date": inv_date,
+                "type": "invoice",
+                "ref": inv.invoice_number,
+                "description": desc_str,
+                "debit": float(inv.total_amount),
+                "credit": 0.0,
+            })
+            
+        payments = Payment.query.filter_by(patient_id=patient_id).all()
+        for pay in payments:
+            pay_date = pay.payment_date.date() if isinstance(pay.payment_date, datetime) else pay.payment_date
+            ledger_entries.append({
+                "date": pay_date,
+                "type": "payment",
+                "ref": f"PAY-{pay.id:04d}",
+                "description": pay.notes or ("Payment received" if request.cookies.get('lang') != 'ar' else "دفعة نقدية مستلمة"),
+                "debit": 0.0,
+                "credit": float(pay.amount),
+            })
+            
+        ledger_entries.sort(key=lambda x: (x["date"], 0 if x["type"] == "invoice" else 1))
+        
+        running_bal = 0.0
+        for entry in ledger_entries:
+            running_bal += entry["debit"] - entry["credit"]
+            entry["balance"] = running_bal
+            
+        from utils.settings_helper import get_setting
+        clinic_name = get_setting("clinic_name", "Dental Clinic")
+        currency_symbol = get_setting("currency_symbol", "S.P")
+        
+        from datetime import datetime
+        return render_template(
+            "patients/patient_ledger_print.html",
+            patient=patient,
+            entries=ledger_entries,
+            clinic_name=clinic_name,
+            currency_symbol=currency_symbol,
+            now=datetime.now(),
+            current_lang=request.cookies.get('lang', 'en')
+        )
+    except Exception:
+        current_app.logger.exception(f"Failed to print ledger for patient {patient_id}")
+        return "Failed to print ledger", 500
 
 
 @patients_bp.route("/patients/<int:patient_id>/payments-table")

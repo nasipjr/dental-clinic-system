@@ -1,10 +1,10 @@
 from datetime import datetime
-from flask import Blueprint, render_template, current_app
+from flask import Blueprint, render_template, current_app, request, redirect, url_for, flash, Response
 from sqlalchemy import func
 from sqlalchemy.orm import subqueryload
 from utils.auth_helper import role_required
 
-from models import db, Patient, Appointment, Treatment, Payment, PaymentAllocation, Invoice
+from models import db, Patient, Appointment, Treatment, Payment, PaymentAllocation, Invoice, Expense
 
 reports_bp = Blueprint("reports", __name__)
 
@@ -18,10 +18,27 @@ def reports_dashboard():
         # 1. KPI Cards Data
         total_patients = Patient.query.count()
         total_appointments = Appointment.query.count()
-        total_invoiced = float(db.session.query(func.sum(Treatment.total_cost)).scalar() or 0.0)
-        total_payments = float(db.session.query(func.sum(Payment.amount)).scalar() or 0.0)
+        total_invoiced = sum(float(inv.total_amount) for inv in Invoice.query.join(Invoice.appointment).filter(Appointment.status != "Cancelled").all())
+        total_payments = sum(float(pay.amount) for pay in Payment.query.all())
         total_outstanding = max(0.0, total_invoiced - total_payments)
         total_credit = max(0.0, total_payments - total_invoiced)
+
+        # Expenses & Net Profit calculations
+        expenses = Expense.query.order_by(Expense.expense_date.desc(), Expense.id.desc()).all()
+        total_expenses = sum(float(e.amount) for e in expenses)
+        
+        cash_net_profit = total_payments - total_expenses
+        accrual_net_profit = total_invoiced - total_expenses
+
+        expense_categories = {
+            "Materials": 0.0,
+            "Rent": 0.0,
+            "Salaries": 0.0,
+            "Other": 0.0
+        }
+        for e in expenses:
+            cat = e.category if e.category in expense_categories else "Other"
+            expense_categories[cat] += float(e.amount)
 
         # 2. Last 6 Months Income (Billed vs Paid) - DB Agnostic Python Logic
         today = datetime.now()
@@ -44,11 +61,13 @@ def reports_dashboard():
             else:
                 date_end = datetime(year, month + 1, 1)
 
-            billed_month = db.session.query(func.sum(Treatment.total_cost)).filter(
-                Treatment.treatment_date >= date_start,
-                Treatment.treatment_date < date_end
-            ).scalar() or 0.0
-            monthly_billed.append(float(billed_month))
+            invoices_month = Invoice.query.join(Invoice.appointment).filter(
+                Appointment.status != "Cancelled",
+                Invoice.issue_date >= date_start,
+                Invoice.issue_date < date_end
+            ).all()
+            billed_month = sum(float(inv.total_amount) for inv in invoices_month)
+            monthly_billed.append(billed_month)
 
             paid_month = db.session.query(func.sum(Payment.amount)).filter(
                 Payment.payment_date >= date_start,
@@ -125,7 +144,13 @@ def reports_dashboard():
             procedure_values_revenue=procedure_values_revenue,
             gender_labels=gender_labels,
             gender_values=gender_values,
-            top_debtors=top_debtors
+            top_debtors=top_debtors,
+            expenses=expenses,
+            total_expenses=total_expenses,
+            cash_net_profit=cash_net_profit,
+            accrual_net_profit=accrual_net_profit,
+            expense_categories=expense_categories,
+            now=datetime.now()
         )
 
     except Exception:
@@ -135,3 +160,109 @@ def reports_dashboard():
             title="Error",
             message="Failed to load reports dashboard.",
         ), 500
+
+
+@reports_bp.route("/reports/expenses/add", methods=["POST"])
+@role_required("admin")
+def add_expense():
+    current_app.logger.info("Adding clinic expense")
+    try:
+        category = request.form.get("category", "Other").strip()
+        amount_str = request.form.get("amount", "0").strip()
+        expense_date_str = request.form.get("expense_date", "").strip()
+        notes = request.form.get("notes", "").strip()
+
+        try:
+            amount = float(amount_str)
+            if amount <= 0:
+                raise ValueError
+        except ValueError:
+            flash("Amount must be a positive number.", "danger")
+            return redirect(url_for("reports.reports_dashboard") + "#tab-expenses")
+
+        try:
+            expense_date = datetime.strptime(expense_date_str, "%Y-%m-%d").date()
+        except ValueError:
+            expense_date = datetime.now().date()
+
+        new_expense = Expense(
+            category=category,
+            amount=amount,
+            expense_date=expense_date,
+            notes=notes
+        )
+        db.session.add(new_expense)
+        db.session.commit()
+        flash("Expense recorded successfully.", "success")
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Failed to add expense")
+        flash("Failed to record expense.", "danger")
+    return redirect(url_for("reports.reports_dashboard") + "#tab-expenses")
+
+
+@reports_bp.route("/reports/expenses/<int:expense_id>/delete", methods=["POST"])
+@role_required("admin")
+def delete_expense(expense_id):
+    current_app.logger.warning(f"Deleting expense | id={expense_id}")
+    try:
+        expense = Expense.query.get_or_404(expense_id)
+        db.session.delete(expense)
+        db.session.commit()
+        flash("Expense deleted successfully.", "success")
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(f"Failed to delete expense {expense_id}")
+        flash("Failed to delete expense.", "danger")
+    return redirect(url_for("reports.reports_dashboard") + "#tab-expenses")
+
+
+@reports_bp.route("/reports/export/<string:report_type>")
+@role_required("admin")
+def export_report(report_type):
+    import io
+    import csv
+    
+    current_app.logger.info(f"Exporting report | type={report_type}")
+    try:
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        filename = f"{report_type}_report_{datetime.now().strftime('%Y%m%d')}.csv"
+        
+        if report_type == "expenses":
+            writer.writerow(["ID", "Category", "Amount", "Date", "Notes"])
+            expenses = Expense.query.order_by(Expense.expense_date.asc()).all()
+            for e in expenses:
+                writer.writerow([e.id, e.category, e.amount, e.expense_date.strftime("%Y-%m-%d"), e.notes or ""])
+        elif report_type == "income":
+            writer.writerow(["Invoice Number", "Patient Name", "Issue Date", "Subtotal", "Discount", "Total Amount", "Total Paid", "Outstanding", "Status"])
+            invoices = Invoice.query.join(Invoice.appointment).filter(Appointment.status != "Cancelled").all()
+            for inv in invoices:
+                patient_name = f"{inv.patient.first_name} {inv.patient.last_name}"
+                writer.writerow([
+                    inv.invoice_number,
+                    patient_name,
+                    inv.issue_date.strftime("%Y-%m-%d"),
+                    inv.subtotal,
+                    inv.discount_amount,
+                    inv.total_amount,
+                    inv.total_paid,
+                    inv.outstanding_amount,
+                    inv.status
+                ])
+        else:
+            return "Invalid report type", 400
+            
+        output.seek(0)
+        bom = b'\xef\xbb\xbf'
+        content = bom + output.getvalue().encode('utf-8')
+        
+        return Response(
+            content,
+            mimetype="text/csv",
+            headers={"Content-disposition": f"attachment; filename={filename}"}
+        )
+    except Exception:
+        current_app.logger.exception("Failed to export report CSV")
+        return "Internal Server Error", 500

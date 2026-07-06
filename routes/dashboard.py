@@ -25,12 +25,23 @@ def home():
         today_start = datetime.combine(today, time.min)
         today_end = datetime.combine(today, time.max)
 
+        today_appointments = (
+            Appointment.query
+            .filter(Appointment.appointment_date >= today_start)
+            .filter(Appointment.appointment_date <= today_end)
+            .all()
+        )
+        today_checked_in = sum(1 for a in today_appointments if a.status == "Checked In")
+        today_in_chair = sum(1 for a in today_appointments if a.status == "In Chair")
+        today_done = sum(1 for a in today_appointments if a.status == "Done")
+        today_scheduled = sum(1 for a in today_appointments if a.status == "Scheduled")
+
         today_scheduled_appointments = (
             Appointment.query
             .join(Patient)
             .filter(Appointment.appointment_date >= today_start)
             .filter(Appointment.appointment_date <= today_end)
-            .filter(Appointment.status == "Scheduled")
+            .filter(Appointment.status.in_(["Scheduled", "Checked In", "In Chair"]))
             .order_by(Appointment.appointment_date.asc())
             .all()
         )
@@ -45,21 +56,23 @@ def home():
             .all()
         )
 
-        from sqlalchemy import func
-        total_revenue = db.session.query(func.sum(Treatment.total_cost)).scalar() or 0.0
-        total_paid = db.session.query(func.sum(Payment.amount)).scalar() or 0.0
+        from models import Invoice
+        total_revenue = sum(float(inv.total_amount) for inv in Invoice.query.join(Invoice.appointment).filter(Appointment.status != "Cancelled").all())
+        total_paid = sum(float(pay.amount) for pay in Payment.query.all())
 
-        total_revenue = float(total_revenue)
-        total_paid = float(total_paid)
         total_remaining = total_revenue - total_paid
         total_outstanding = max(0.0, total_remaining)
         total_credit = max(0.0, -total_remaining)
 
-        today_payments_sum = db.session.query(func.sum(Payment.amount)).filter(Payment.payment_date >= today_start, Payment.payment_date <= today_end).scalar() or 0.0
-        today_revenue_sum = db.session.query(func.sum(Treatment.total_cost)).filter(Treatment.treatment_date >= today_start, Treatment.treatment_date <= today_end).scalar() or 0.0
-
-        today_payments_sum = float(today_payments_sum)
-        today_revenue_sum = float(today_revenue_sum)
+        today_payments_sum = sum(float(pay.amount) for pay in Payment.query.filter(Payment.payment_date >= today_start, Payment.payment_date <= today_end).all())
+        today_revenue_sum = sum(
+            float(inv.total_amount)
+            for inv in Invoice.query.join(Invoice.appointment).filter(
+                Appointment.status != "Cancelled",
+                Invoice.issue_date >= today_start,
+                Invoice.issue_date <= today_end
+            ).all()
+        )
 
         pending_appointments = (
             Appointment.query
@@ -86,6 +99,10 @@ def home():
             today_payments_sum=today_payments_sum,
             today_revenue_sum=today_revenue_sum,
             pending_appointments=pending_appointments,
+            today_checked_in=today_checked_in,
+            today_in_chair=today_in_chair,
+            today_done=today_done,
+            today_scheduled=today_scheduled
         )
 
     except Exception:

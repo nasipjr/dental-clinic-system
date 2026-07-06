@@ -1,205 +1,516 @@
 {% extends "base.html" %}
 
-{% block title %}Reports Dashboard{% endblock %}
+{% block title %}
+{% if current_lang == 'ar' %}تقارير وتحليلات العيادة{% else %}Reports Dashboard{% endif %}
+{% endblock %}
 
 {% block content %}
 <br><br><br><br><br><br><br>
 
 <!-- Section Title -->
-<div class="container section-title" data-aos="fade-up">
-    <h2>Reports & Statistics</h2>
-    <p>Comprehensive financial and operational analysis for your clinic.</p>
+<div class="container section-title d-print-none" data-aos="fade-up">
+    <h2>{% if current_lang == 'ar' %}التقارير والإحصائيات{% else %}Reports & Statistics{% endif %}</h2>
+    <p>{% if current_lang == 'ar' %}تحليل مالي وتشغيلي شامل ومتقدم لأداء العيادة.{% else %}Comprehensive financial and operational analysis for your clinic.{% endif %}</p>
 </div>
 <!-- End Section Title -->
 
-<section id="reports-dashboard-section" class="find-a-doctor section">
+<section id="reports-dashboard-section" class="find-a-doctor section pt-0" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
     <div class="container" data-aos="fade-up" data-aos-delay="100">
 
-        <!-- KPI Cards Grid -->
-        <div class="row g-4 mb-5">
-            <!-- Total Billed Card -->
-            <div class="col-xl-five col-md-6">
-                <div class="kpi-card billing-card h-100 p-4 border-0 rounded-4 shadow-sm">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="kpi-icon-wrapper rounded-3 bg-primary bg-opacity-10 text-primary p-3">
-                            <i class="bi bi-receipt-cutoff fs-3"></i>
-                        </div>
-                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1">Invoiced</span>
-                    </div>
-                    <h5 class="text-secondary mb-1">Total Invoiced</h5>
-                    <h2 class="mb-0 fw-bold">{{ total_invoiced | format_price }} {{ currency_symbol }}</h2>
-                </div>
+        <!-- Export & Print Actions Bar -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 d-print-none border-bottom pb-3">
+            <div>
+                <h4 class="mb-1 text-main fw-bold">
+                    {% if current_lang == 'ar' %}لوحة القيادة المالية والتحليلية{% else %}BI Reports Dashboard{% endif %}
+                </h4>
+                <p class="text-secondary small mb-0">
+                    {% if current_lang == 'ar' %}قم بتصدير البيانات أو طباعة التقارير بنقرة واحدة.{% else %}Export spreadsheets or print reports instantly.{% endif %}
+                </p>
             </div>
-
-            <!-- Total Paid Card -->
-            <div class="col-xl-five col-md-6">
-                <div class="kpi-card revenue-card h-100 p-4 border-0 rounded-4 shadow-sm">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="kpi-icon-wrapper rounded-3 bg-success bg-opacity-10 text-success p-3">
-                            <i class="bi bi-wallet2 fs-3"></i>
-                        </div>
-                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1">Revenue</span>
-                    </div>
-                    <h5 class="text-secondary mb-1">Total Payments</h5>
-                    <h2 class="mb-0 fw-bold text-success">{{ total_payments | format_price }} {{ currency_symbol }}</h2>
-                </div>
-            </div>
-
-            <!-- Total Outstanding Card -->
-            <div class="col-xl-five col-md-6">
-                <div class="kpi-card debt-card h-100 p-4 border-0 rounded-4 shadow-sm">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="kpi-icon-wrapper rounded-3 bg-danger bg-opacity-10 text-danger p-3">
-                            <i class="bi bi-exclamation-triangle fs-3"></i>
-                        </div>
-                        <span
-                            class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-1">Outstanding</span>
-                    </div>
-                    <h5 class="text-secondary mb-1">Outstanding Debt</h5>
-                    <h2 class="mb-0 fw-bold text-danger">{{ total_outstanding | format_price }} {{ currency_symbol }}</h2>
-                </div>
-            </div>
-
-            <!-- Clinic Credit Card -->
-            <div class="col-xl-five col-md-6">
-                <div class="kpi-card credit-card h-100 p-4 border-0 rounded-4 shadow-sm">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="kpi-icon-wrapper rounded-3 bg-teal bg-opacity-10 text-teal p-3" style="background-color: rgba(13, 148, 136, 0.1); color: #0d9488;">
-                            <i class="bi bi-piggy-bank fs-3"></i>
-                        </div>
-                        <span class="badge bg-teal bg-opacity-10 text-teal rounded-pill px-3 py-1" style="background-color: rgba(13, 148, 136, 0.1); color: #0d9488;">Credit</span>
-                    </div>
-                    <h5 class="text-secondary mb-1">Clinic Credit</h5>
-                    <h2 class="mb-0 fw-bold" style="color: #0d9488;">{{ total_credit | format_price }} {{ currency_symbol }}</h2>
-                </div>
-            </div>
-
-            <!-- Total Patients Card -->
-            <div class="col-xl-five col-md-6">
-                <div class="kpi-card patients-card h-100 p-4 border-0 rounded-4 shadow-sm">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="kpi-icon-wrapper rounded-3 bg-info bg-opacity-10 text-info p-3">
-                            <i class="bi bi-people fs-3"></i>
-                        </div>
-                        <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-1">Patients</span>
-                    </div>
-                    <h5 class="text-secondary mb-1">Total Patients</h5>
-                    <h2 class="mb-0 fw-bold text-info">{{ total_patients }}</h2>
+            
+            <div class="d-flex gap-2">
+                <button onclick="window.print()" class="btn btn-primary rounded-pill px-4 fw-bold">
+                    <i class="bi bi-printer me-1"></i>
+                    {% if current_lang == 'ar' %}طباعة التقرير (PDF){% else %}Print Report (PDF){% endif %}
+                </button>
+                <div class="dropdown">
+                    <button class="btn btn-primary rounded-pill px-4 fw-bold dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-download me-1"></i>
+                        {% if current_lang == 'ar' %}تصدير Excel/CSV{% else %}Export Excel/CSV{% endif %}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2" aria-labelledby="exportDropdown">
+                        <li>
+                            <a class="dropdown-item py-2 fw-semibold rounded-3" href="{{ url_for('reports.export_report', report_type='income') }}">
+                                <i class="bi bi-file-earmark-excel text-success {% if current_lang == 'ar' %}ms-2{% else %}me-2{% endif %}"></i>
+                                {% if current_lang == 'ar' %}تقرير الإيرادات المفوترة{% else %}Export Income Report{% endif %}
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item py-2 fw-semibold rounded-3" href="{{ url_for('reports.export_report', report_type='expenses') }}">
+                                <i class="bi bi-file-earmark-excel text-danger {% if current_lang == 'ar' %}ms-2{% else %}me-2{% endif %}"></i>
+                                {% if current_lang == 'ar' %}تقرير مصاريف العيادة{% else %}Export Expenses Report{% endif %}
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
 
-        <!-- Charts Section -->
-        <div class="row g-4 mb-5">
-            <!-- Monthly Revenue & Billing Chart -->
-            <div class="col-lg-8">
-                <div class="card chart-card border-0 rounded-4 shadow-sm p-4 h-100">
-                    <h4 class="card-title fw-bold mb-4">Monthly Financial Performance (Last 6 Months)</h4>
-                    <div class="chart-container" style="position: relative; height:320px;">
-                        <canvas id="monthlyFinancialsChart"
-                                data-labels='{{ monthly_labels | tojson }}'
-                                data-billed='{{ monthly_billed | tojson }}'
-                                data-paid='{{ monthly_paid | tojson }}'></canvas>
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="d-print-none">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show rounded-4 shadow-sm mb-4" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Tabs Navigation -->
+        <ul class="nav nav-pills justify-content-center mb-5 gap-2 d-print-none" id="reportsTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active rounded-pill px-4 py-2.5 fw-bold" id="analytics-tab" data-bs-toggle="pill" data-bs-target="#tab-analytics" type="button" role="tab">
+                    <i class="bi bi-graph-up-arrow {% if current_lang == 'ar' %}ms-1.5{% else %}me-1.5{% endif %}"></i>
+                    {% if current_lang == 'ar' %}التحليلات والإحصائيات{% else %}General Analytics{% endif %}
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill px-4 py-2.5 fw-bold" id="expenses-tab" data-bs-toggle="pill" data-bs-target="#tab-expenses" type="button" role="tab">
+                    <i class="bi bi-cash-stack {% if current_lang == 'ar' %}ms-1.5{% else %}me-1.5{% endif %}"></i>
+                    {% if current_lang == 'ar' %}تتبع المصاريف وصافي الأرباح{% else %}Expenses & Net Profit{% endif %}
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="reportsTabsContent">
+            
+            <!-- Tab 1: General Analytics -->
+            <div class="tab-pane fade show active" id="tab-analytics" role="tabpanel" aria-labelledby="analytics-tab">
+                
+                <!-- Print Page Title -->
+                <div class="d-none d-print-block mb-4">
+                    <h3 class="fw-bold text-center">{% if current_lang == 'ar' %}تقرير التحليلات والإحصائيات العامة للمعيّنات{% else %}General Analytics & Statistics Report{% endif %}</h3>
+                    <p class="text-muted text-center">{% if current_lang == 'ar' %}تاريخ التصدير:{% else %}Printed Date:{% endif %} {{ now.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+
+                <!-- KPI Cards Grid -->
+                <div class="row g-4 mb-5">
+                    <!-- Total Billed Card -->
+                    <div class="col-xl-five col-md-6">
+                        <div class="kpi-card billing-card h-100 p-4 border-0 rounded-4 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="kpi-icon-wrapper rounded-3 bg-primary bg-opacity-10 text-primary p-3">
+                                    <i class="bi bi-receipt-cutoff fs-3"></i>
+                                </div>
+                                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1">
+                                    {% if current_lang == 'ar' %}مفوتر{% else %}Invoiced{% endif %}
+                                </span>
+                            </div>
+                            <h5 class="text-secondary mb-1">{% if current_lang == 'ar' %}إجمالي المفوتر{% else %}Total Invoiced{% endif %}</h5>
+                            <h2 class="mb-0 fw-bold">{{ total_invoiced | format_price }} {{ currency_symbol }}</h2>
+                        </div>
+                    </div>
+
+                    <!-- Total Paid Card -->
+                    <div class="col-xl-five col-md-6">
+                        <div class="kpi-card revenue-card h-100 p-4 border-0 rounded-4 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="kpi-icon-wrapper rounded-3 bg-success bg-opacity-10 text-success p-3">
+                                    <i class="bi bi-wallet2 fs-3"></i>
+                                </div>
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1">
+                                    {% if current_lang == 'ar' %}المقبوضات{% else %}Revenue{% endif %}
+                                </span>
+                            </div>
+                            <h5 class="text-secondary mb-1">{% if current_lang == 'ar' %}إجمالي المقبوضات{% else %}Total Payments{% endif %}</h5>
+                            <h2 class="mb-0 fw-bold text-success">{{ total_payments | format_price }} {{ currency_symbol }}</h2>
+                        </div>
+                    </div>
+
+                    <!-- Total Outstanding Card -->
+                    <div class="col-xl-five col-md-6">
+                        <div class="kpi-card debt-card h-100 p-4 border-0 rounded-4 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="kpi-icon-wrapper rounded-3 bg-danger bg-opacity-10 text-danger p-3">
+                                    <i class="bi bi-exclamation-triangle fs-3"></i>
+                                </div>
+                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-1">
+                                    {% if current_lang == 'ar' %}ديون مستحقة{% else %}Outstanding{% endif %}
+                                </span>
+                            </div>
+                            <h5 class="text-secondary mb-1">{% if current_lang == 'ar' %}الديون المعلقة{% else %}Outstanding Debt{% endif %}</h5>
+                            <h2 class="mb-0 fw-bold text-danger">{{ total_outstanding | format_price }} {{ currency_symbol }}</h2>
+                        </div>
+                    </div>
+
+                    <!-- Clinic Credit Card -->
+                    <div class="col-xl-five col-md-6">
+                        <div class="kpi-card credit-card h-100 p-4 border-0 rounded-4 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="kpi-icon-wrapper rounded-3 bg-teal bg-opacity-10 text-teal p-3" style="background-color: rgba(13, 148, 136, 0.1); color: #0d9488;">
+                                    <i class="bi bi-piggy-bank fs-3"></i>
+                                </div>
+                                <span class="badge bg-teal bg-opacity-10 text-teal rounded-pill px-3 py-1" style="background-color: rgba(13, 148, 136, 0.1); color: #0d9488;">
+                                    {% if current_lang == 'ar' %}دفعة مقدمة{% else %}Credit{% endif %}
+                                </span>
+                            </div>
+                            <h5 class="text-secondary mb-1">{% if current_lang == 'ar' %}الرصيد الدائن للزبائن{% else %}Clinic Credit{% endif %}</h5>
+                            <h2 class="mb-0 fw-bold" style="color: #0d9488;">{{ total_credit | format_price }} {{ currency_symbol }}</h2>
+                        </div>
+                    </div>
+
+                    <!-- Total Patients Card -->
+                    <div class="col-xl-five col-md-6">
+                        <div class="kpi-card patients-card h-100 p-4 border-0 rounded-4 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="kpi-icon-wrapper rounded-3 bg-info bg-opacity-10 text-info p-3">
+                                    <i class="bi bi-people fs-3"></i>
+                                </div>
+                                <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-1">
+                                    {% if current_lang == 'ar' %}مرضى{% else %}Patients{% endif %}
+                                </span>
+                            </div>
+                            <h5 class="text-secondary mb-1">{% if current_lang == 'ar' %}إجمالي المرضى{% else %}Total Patients{% endif %}</h5>
+                            <h2 class="mb-0 fw-bold text-info">{{ total_patients }}</h2>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Appointment Status Chart -->
-            <div class="col-lg-4">
-                <div class="card chart-card border-0 rounded-4 shadow-sm p-4 h-100">
-                    <h4 class="card-title fw-bold mb-4">Appointment Statuses</h4>
-                    <div class="chart-container d-flex justify-content-center align-items-center"
-                        style="position: relative; height:320px;">
-                        <canvas id="appointmentStatusChart"
-                                data-labels='{{ appointment_status_labels | tojson }}'
-                                data-values='{{ appointment_status_values | tojson }}'></canvas>
+                <!-- Charts Section -->
+                <div class="row g-4 mb-5">
+                    <!-- Monthly Revenue & Billing Chart -->
+                    <div class="col-lg-8">
+                        <div class="card chart-card border-0 rounded-4 shadow-sm p-4 h-100">
+                            <h4 class="card-title fw-bold mb-4">
+                                {% if current_lang == 'ar' %}الأداء المالي الشهري (آخر 6 أشهر){% else %}Monthly Financial Performance (Last 6 Months){% endif %}
+                            </h4>
+                            <div class="chart-container" style="position: relative; height:320px;">
+                                <canvas id="monthlyFinancialsChart"
+                                        data-labels='{{ monthly_labels | tojson }}'
+                                        data-billed='{{ monthly_billed | tojson }}'
+                                        data-paid='{{ monthly_paid | tojson }}'></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Appointment Status Chart -->
+                    <div class="col-lg-4">
+                        <div class="card chart-card border-0 rounded-4 shadow-sm p-4 h-100">
+                            <h4 class="card-title fw-bold mb-4">
+                                {% if current_lang == 'ar' %}حالات المواعيد{% else %}Appointment Statuses{% endif %}
+                            </h4>
+                            <div class="chart-container d-flex justify-content-center align-items-center"
+                                style="position: relative; height:320px;">
+                                <canvas id="appointmentStatusChart"
+                                        data-labels='{{ appointment_status_labels | tojson }}'
+                                        data-values='{{ appointment_status_values | tojson }}'></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="row g-4 mb-5">
-            <!-- Top Procedures Chart -->
-            <div class="col-lg-6">
-                <div class="card chart-card border-0 rounded-4 shadow-sm p-4 h-100">
-                    <h4 class="card-title fw-bold mb-4">Top 5 Procedure Types (by Volume)</h4>
-                    <div class="chart-container" style="position: relative; height:300px;">
-                        <canvas id="topProceduresChart"
-                                data-labels='{{ procedure_labels | tojson }}'
-                                data-counts='{{ procedure_values_counts | tojson }}'></canvas>
+                <div class="row g-4 mb-5">
+                    <!-- Top Procedures Chart -->
+                    <div class="col-lg-6">
+                        <div class="card chart-card border-0 rounded-4 shadow-sm p-4 h-100">
+                            <h4 class="card-title fw-bold mb-4">
+                                {% if current_lang == 'ar' %}أكثر 5 إجراءات علاجية طلباً (بالعدد){% else %}Top 5 Procedure Types (by Volume){% endif %}
+                            </h4>
+                            <div class="chart-container" style="position: relative; height:300px;">
+                                <canvas id="topProceduresChart"
+                                        data-labels='{{ procedure_labels | tojson }}'
+                                        data-counts='{{ procedure_values_counts | tojson }}'></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Patient Demographics (Gender) Chart -->
+                    <div class="col-lg-6">
+                        <div class="card chart-card border-0 rounded-4 shadow-sm p-4 h-100">
+                            <h4 class="card-title fw-bold mb-4">
+                                {% if current_lang == 'ar' %}التوزيع الديمغرافي للمرضى (الجنس){% else %}Patient Gender Demographics{% endif %}
+                            </h4>
+                            <div class="chart-container d-flex justify-content-center align-items-center"
+                                style="position: relative; height:300px;">
+                                <canvas id="genderDemographicsChart"
+                                        data-labels='{{ gender_labels | tojson }}'
+                                        data-values='{{ gender_values | tojson }}'></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Patient Demographics (Gender) Chart -->
-            <div class="col-lg-6">
-                <div class="card chart-card border-0 rounded-4 shadow-sm p-4 h-100">
-                    <h4 class="card-title fw-bold mb-4">Patient Gender Demographics</h4>
-                    <div class="chart-container d-flex justify-content-center align-items-center"
-                        style="position: relative; height:300px;">
-                        <canvas id="genderDemographicsChart"
-                                data-labels='{{ gender_labels | tojson }}'
-                                data-values='{{ gender_values | tojson }}'></canvas>
+                <!-- Top Debtors Table -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card table-card border-0 rounded-4 shadow-sm p-4 mb-5">
+                            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                                <div>
+                                    <h4 class="fw-bold mb-1">
+                                        {% if current_lang == 'ar' %}أكبر المبالغ المعلقة على المرضى{% else %}Top Patient Outstanding Balances{% endif %}
+                                    </h4>
+                                    <p class="text-secondary mb-0">
+                                        {% if current_lang == 'ar' %}تابع المبالغ المستحقة للفواتير غير المدفوعة بالكامل.{% else %}Follow up with patients having outstanding dental invoices.{% endif %}
+                                    </p>
+                                </div>
+                                <i class="bi bi-shield-exclamation text-danger fs-2 d-print-none"></i>
+                            </div>
+
+                            {% if top_debtors %}
+                            <div class="table-responsive">
+                                <table class="table align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>{% if current_lang == 'ar' %}اسم المريض{% else %}Patient Name{% endif %}</th>
+                                            <th>{% if current_lang == 'ar' %}رقم الهاتف{% else %}Phone{% endif %}</th>
+                                            <th class="text-end">{% if current_lang == 'ar' %}إجمالي الفواتير{% else %}Total Billed{% endif %}</th>
+                                            <th class="text-end">{% if current_lang == 'ar' %}إجمالي المدفوع{% else %}Total Paid{% endif %}</th>
+                                            <th class="text-end text-danger">{% if current_lang == 'ar' %}المبلغ المتبقي{% else %}Outstanding Balance{% endif %}</th>
+                                            <th class="text-center d-print-none">{% if current_lang == 'ar' %}الإجراء{% else %}Action{% endif %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for debtor in top_debtors %}
+                                        <tr>
+                                            <td>
+                                                <strong class="text-body">{{ debtor.name }}</strong>
+                                            </td>
+                                            <td>{{ debtor.phone }}</td>
+                                            <td class="text-end">{{ debtor.total_billed | format_price }} {{ currency_symbol }}</td>
+                                            <td class="text-end text-success">{{ debtor.total_paid | format_price }} {{ currency_symbol }}</td>
+                                            <td class="text-end">
+                                                <strong class="text-danger">
+                                                    {{ debtor.outstanding | format_price }} {{ currency_symbol }}
+                                                </strong>
+                                            </td>
+                                            <td class="text-center d-print-none">
+                                                <a href="{{ url_for('patients.patient_detail', patient_id=debtor.id) }}"
+                                                    class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                    {% if current_lang == 'ar' %}ملف المريض{% else %}Patient Details{% endif %}
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-4">
+                                <i class="bi bi-check-circle-fill text-success fs-1"></i>
+                                <h5 class="mt-3">
+                                    {% if current_lang == 'ar' %}لا يوجد أي مستحقات معلقة على المرضى!{% else %}All clear! No patients have outstanding balances.{% endif %}
+                                </h5>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Top Debtors Table -->
-        <div class="row">
-            <div class="col-12">
-                <div class="card table-card border-0 rounded-4 shadow-sm p-4 mb-5">
-                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                        <div>
-                            <h4 class="fw-bold mb-1">Top Patient Outstanding Balances</h4>
-                            <p class="text-secondary mb-0">Follow up with patients having outstanding dental invoices.
+            </div>
+
+            <!-- Tab 2: Expenses & Net Profit -->
+            <div class="tab-pane fade" id="tab-expenses" role="tabpanel" aria-labelledby="expenses-tab">
+                
+                <!-- Print Page Title -->
+                <div class="d-none d-print-block mb-4">
+                    <h3 class="fw-bold text-center">{% if current_lang == 'ar' %}تقرير مصاريف العيادة وصافي الأرباح{% else %}Clinic Expenses & Profitability Report{% endif %}</h3>
+                    <p class="text-muted text-center">{% if current_lang == 'ar' %}تاريخ التصدير:{% else %}Printed Date:{% endif %} {{ now.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+
+                <!-- KPI Cards Grid for Expenses & Profit -->
+                <div class="row g-4 mb-5">
+                    <!-- Total Revenue Received Card -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="kpi-card revenue-card h-100 p-4 border-0 rounded-4 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="kpi-icon-wrapper rounded-3 bg-success bg-opacity-10 text-success p-3">
+                                    <i class="bi bi-wallet2 fs-3"></i>
+                                </div>
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1">
+                                    {% if current_lang == 'ar' %}مقبوضات نقدية{% else %}Cash Inflow{% endif %}
+                                </span>
+                            </div>
+                            <h5 class="text-secondary mb-1">{% if current_lang == 'ar' %}إجمالي المقبوضات{% else %}Total Revenue{% endif %}</h5>
+                            <h2 class="mb-0 fw-bold text-success">{{ total_payments | format_price }} {{ currency_symbol }}</h2>
+                        </div>
+                    </div>
+
+                    <!-- Total Expenses Card -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="kpi-card debt-card h-100 p-4 border-0 rounded-4 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="kpi-icon-wrapper rounded-3 bg-danger bg-opacity-10 text-danger p-3">
+                                    <i class="bi bi-cart-x fs-3"></i>
+                                </div>
+                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-1">
+                                    {% if current_lang == 'ar' %}مصاريف{% else %}Expenses{% endif %}
+                                </span>
+                            </div>
+                            <h5 class="text-secondary mb-1">{% if current_lang == 'ar' %}إجمالي المصاريف{% else %}Total Expenses{% endif %}</h5>
+                            <h2 class="mb-0 fw-bold text-danger">{{ total_expenses | format_price }} {{ currency_symbol }}</h2>
+                        </div>
+                    </div>
+
+                    <!-- Cash Net Profit Card -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="kpi-card credit-card h-100 p-4 border-0 rounded-4 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="kpi-icon-wrapper rounded-3 p-3 {% if cash_net_profit >= 0 %}bg-success bg-opacity-10 text-success{% else %}bg-danger bg-opacity-10 text-danger{% endif %}">
+                                    <i class="bi bi-currency-exchange fs-3"></i>
+                                </div>
+                                <span class="badge {% if cash_net_profit >= 0 %}bg-success bg-opacity-10 text-success{% else %}bg-danger bg-opacity-10 text-danger{% endif %} rounded-pill px-3 py-1">
+                                    {% if current_lang == 'ar' %}نقدي{% else %}Cash-based{% endif %}
+                                </span>
+                            </div>
+                            <h5 class="text-secondary mb-1">{% if current_lang == 'ar' %}صافي الأرباح النقدية{% else %}Net Profit (Cash Flow){% endif %}</h5>
+                            <h2 class="mb-0 fw-bold {% if cash_net_profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                <span dir="ltr">{{ cash_net_profit | format_price }} {{ currency_symbol }}</span>
+                            </h2>
+                        </div>
+                    </div>
+
+                    <!-- Accrual Net Profit Card -->
+                    <div class="col-lg-3 col-md-6">
+                        <div class="kpi-card billing-card h-100 p-4 border-0 rounded-4 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="kpi-icon-wrapper rounded-3 p-3 {% if accrual_net_profit >= 0 %}bg-primary bg-opacity-10 text-primary{% else %}bg-danger bg-opacity-10 text-danger{% endif %}">
+                                    <i class="bi bi-bank fs-3"></i>
+                                </div>
+                                <span class="badge {% if accrual_net_profit >= 0 %}bg-primary bg-opacity-10 text-primary{% else %}bg-danger bg-opacity-10 text-danger{% endif %} rounded-pill px-3 py-1">
+                                    {% if current_lang == 'ar' %}محاسبي{% else %}Accrual-based{% endif %}
+                                </span>
+                            </div>
+                            <h5 class="text-secondary mb-1">{% if current_lang == 'ar' %}صافي الأرباح المحاسبية{% else %}Net Profit (Accrual){% endif %}</h5>
+                            <h2 class="mb-0 fw-bold {% if accrual_net_profit >= 0 %}text-primary{% else %}text-danger{% endif %}">
+                                <span dir="ltr">{{ accrual_net_profit | format_price }} {{ currency_symbol }}</span>
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Expenses Record Card -->
+                    <div class="col-lg-8">
+                        <div class="card table-card border-0 rounded-4 shadow-sm p-4 h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                                <div>
+                                    <h4 class="fw-bold mb-1">{% if current_lang == 'ar' %}سجل مصاريف العيادة{% else %}Clinic Expenses Log{% endif %}</h4>
+                                    <p class="text-secondary mb-0">{% if current_lang == 'ar' %}إدارة وتتبع المصاريف والمدفوعات التشغيلية.{% else %}Overview of all running expenditures and operational costs.{% endif %}</p>
+                                </div>
+                            </div>
+
+                            {% if expenses %}
+                            <div class="table-responsive">
+                                <table class="table align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>{% if current_lang == 'ar' %}الفئة{% else %}Category{% endif %}</th>
+                                            <th class="text-end">{% if current_lang == 'ar' %}المبلغ{% else %}Amount{% endif %}</th>
+                                            <th class="text-center">{% if current_lang == 'ar' %}التاريخ{% else %}Date{% endif %}</th>
+                                            <th>{% if current_lang == 'ar' %}ملاحظات{% else %}Notes{% endif %}</th>
+                                            <th class="text-center d-print-none">{% if current_lang == 'ar' %}الإجراء{% else %}Action{% endif %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for e in expenses %}
+                                        <tr>
+                                            <td>
+                                                {% if e.category == 'Materials' %}
+                                                    <span class="badge bg-info bg-opacity-10 text-info px-3 py-1.5 rounded-pill fw-semibold">
+                                                        {% if current_lang == 'ar' %}مواد طبية{% else %}Medical Materials{% endif %}
+                                                    </span>
+                                                {% elif e.category == 'Rent' %}
+                                                    <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-1.5 rounded-pill fw-semibold">
+                                                        {% if current_lang == 'ar' %}إيجار{% else %}Rent{% endif %}
+                                                    </span>
+                                                {% elif e.category == 'Salaries' %}
+                                                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1.5 rounded-pill fw-semibold">
+                                                        {% if current_lang == 'ar' %}رواتب الموظفين{% else %}Salaries{% endif %}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-1.5 rounded-pill fw-semibold">
+                                                        {% if current_lang == 'ar' %}أخرى{% else %}Other{% endif %}
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end fw-bold text-danger">{{ e.amount | format_price }} {{ currency_symbol }}</td>
+                                            <td class="text-center text-secondary small">{{ e.expense_date.strftime('%Y-%m-%d') }}</td>
+                                            <td class="text-secondary small">{{ e.notes or '-' }}</td>
+                                            <td class="text-center d-print-none">
+                                                <form method="POST" action="{{ url_for('reports.delete_expense', expense_id=e.id) }}" onsubmit="return confirm('{% if current_lang == 'ar' %}هل أنت متأكد من حذف هذا المصروف؟{% else %}Are you sure you want to delete this expense?{% endif %}')" style="display:inline;">
+                                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Delete">
+                                                        <i class="bi bi-trash fs-5"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-journal-x text-muted fs-1 opacity-50 mb-3 d-block"></i>
+                                <h5>{% if current_lang == 'ar' %}لم يتم تسجيل أي مصاريف حتى الآن.{% else %}No expenses recorded yet.{% endif %}</h5>
+                                <p class="text-muted small">{% if current_lang == 'ar' %}استخدم النموذج الجانبي لتسجيل أول مصروف للعيادة.{% else %}Use the form in the sidebar to log clinic expenditures.{% endif %}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Add Expense Card (Sidebar) -->
+                    <div class="col-lg-4 d-print-none expense-form-card">
+                        <div class="card p-4 border-0 rounded-4 shadow-sm h-100" style="background: rgba(0,0,0,0.015); border: 1px dashed color-mix(in srgb, var(--accent-color), transparent 80%) !important;">
+                            <h4 class="fw-bold mb-3 text-main"><i class="bi bi-plus-circle me-1.5"></i>{% if current_lang == 'ar' %}إضافة مصروف جديد{% else %}Log New Expense{% endif %}</h4>
+                            <p class="text-secondary small mb-4">
+                                {% if current_lang == 'ar' %}قم بتسجيل الفواتير، الإيجار، الرواتب أو المواد الطبية لحساب الأرباح الصافية بدقة.{% else %}Enter clinic expenditures here to track exact net profit margins.{% endif %}
                             </p>
-                        </div>
-                        <i class="bi bi-shield-exclamation text-danger fs-2"></i>
-                    </div>
 
-                    {% if top_debtors %}
-                    <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Patient Name</th>
-                                    <th>Phone</th>
-                                    <th class="text-end">Total Billed</th>
-                                    <th class="text-end">Total Paid</th>
-                                    <th class="text-end text-danger">Outstanding Balance</th>
-                                    <th class="text-center">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for debtor in top_debtors %}
-                                <tr>
-                                    <td>
-                                        <strong class="text-body">{{ debtor.name }}</strong>
-                                    </td>
-                                    <td>{{ debtor.phone }}</td>
-                                    <td class="text-end">{{ debtor.total_billed | format_price }} {{ currency_symbol }}</td>
-                                    <td class="text-end text-success">{{ debtor.total_paid | format_price }} {{ currency_symbol }}</td>
-                                    <td class="text-end"><strong class="text-danger">{{
-                                            debtor.outstanding | format_price }} {{ currency_symbol }}</strong></td>
-                                    <td class="text-center">
-                                        <a href="{{ url_for('patients.patient_detail', patient_id=debtor.id) }}"
-                                            class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                            Patient Details
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                            <form method="POST" action="{{ url_for('reports.add_expense') }}">
+                                <div class="mb-3">
+                                    <label for="expense-category" class="form-label fw-semibold text-secondary small">{% if current_lang == 'ar' %}فئة المصروف{% else %}Category{% endif %}</label>
+                                    <select name="category" id="expense-category" class="form-select rounded-3 border-secondary-subtle" required>
+                                        <option value="Materials">{% if current_lang == 'ar' %}مواد طبية (Materials){% else %}Medical Materials{% endif %}</option>
+                                        <option value="Rent">{% if current_lang == 'ar' %}إيجار العيادة (Rent){% else %}Rent{% endif %}</option>
+                                        <option value="Salaries">{% if current_lang == 'ar' %}رواتب وأجور (Salaries){% else %}Salaries{% endif %}</option>
+                                        <option value="Other" selected>{% if current_lang == 'ar' %}أخرى (Other){% else %}Other / General{% endif %}</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="expense-amount" class="form-label fw-semibold text-secondary small">{% if current_lang == 'ar' %}قيمة المصروف (المبلغ){% else %}Amount{% endif %}</label>
+                                    <div class="input-group">
+                                        <input type="number" step="0.01" name="amount" id="expense-amount" class="form-control rounded-start-3" placeholder="0.00" required>
+                                        <span class="input-group-text rounded-end-3 bg-secondary-subtle text-secondary small">{{ currency_symbol }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="expense-date" class="form-label fw-semibold text-secondary small">{% if current_lang == 'ar' %}تاريخ المصروف{% else %}Expense Date{% endif %}</label>
+                                    <input type="date" name="expense_date" id="expense-date" class="form-control rounded-3" value="{{ now.strftime('%Y-%m-%d') }}" required>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="expense-notes" class="form-label fw-semibold text-secondary small">{% if current_lang == 'ar' %}ملاحظات وتفاصيل{% else %}Notes{% endif %}</label>
+                                    <textarea name="notes" id="expense-notes" class="form-control rounded-3" rows="3" placeholder="{% if current_lang == 'ar' %}اكتب تفاصيل الفاتورة أو الجهة المصروفة إليها...{% else %}Enter details like supplier, invoice number, salary receiver...{% endif %}"></textarea>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary rounded-pill py-2.5 fw-bold">
+                                        <i class="bi bi-check-lg {% if current_lang == 'ar' %}ms-1{% else %}me-1{% endif %}"></i>
+                                        {% if current_lang == 'ar' %}حفظ المصروف{% else %}Log Expense{% endif %}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-check-circle-fill text-success fs-1"></i>
-                        <h5 class="mt-3">All clear! No patients have outstanding balances.</h5>
-                    </div>
-                    {% endif %}
                 </div>
+
             </div>
         </div>
 
@@ -218,200 +529,225 @@
 
         // 1. Monthly Financials (Bar Chart)
         const monthlyCanvas = document.getElementById('monthlyFinancialsChart');
-        const monthlyLabels = JSON.parse(monthlyCanvas.getAttribute('data-labels'));
-        const monthlyBilled = JSON.parse(monthlyCanvas.getAttribute('data-billed'));
-        const monthlyPaid = JSON.parse(monthlyCanvas.getAttribute('data-paid'));
+        if (monthlyCanvas) {
+            const monthlyLabels = JSON.parse(monthlyCanvas.getAttribute('data-labels'));
+            const monthlyBilled = JSON.parse(monthlyCanvas.getAttribute('data-billed'));
+            const monthlyPaid = JSON.parse(monthlyCanvas.getAttribute('data-paid'));
 
-        // Translate English months if Arabic
-        const monthsAr = {
-            "Jan": "كانون الثاني", "Feb": "شباط", "Mar": "آذار",
-            "Apr": "نيسان", "May": "أيار", "Jun": "حزيران",
-            "Jul": "تموز", "Aug": "آب", "Sep": "أيلول",
-            "Oct": "تشرين الأول", "Nov": "تشرين الثاني", "Dec": "كانون الأول"
-        };
-        const monthlyLabelsMapped = monthlyLabels.map(l => {
-            const trimmed = l.trim();
-            return isArabic && monthsAr[trimmed] ? monthsAr[trimmed] : l;
-        });
-
-        const monthlyCtx = monthlyCanvas.getContext('2d');
-        new Chart(monthlyCtx, {
-            type: 'bar',
-            data: {
-                labels: monthlyLabelsMapped,
-                datasets: [
-                    {
-                        label: isArabic ? 'المبلغ المفوتر' : 'Invoiced Amount',
-                        data: monthlyBilled,
-                        backgroundColor: 'rgba(13, 110, 253, 0.75)',
-                        borderColor: 'rgb(13, 110, 253)',
-                        borderWidth: 1,
-                        borderRadius: 6
-                    },
-                    {
-                        label: isArabic ? 'المدفوعات المستلمة' : 'Payments Received',
-                        data: monthlyPaid,
-                        backgroundColor: 'rgba(25, 135, 84, 0.75)',
-                        borderColor: 'rgb(25, 135, 84)',
-                        borderWidth: 1,
-                        borderRadius: 6
+            // Translate English months if Arabic
+            const monthsAr = {
+                "January": "كانون الثاني", "February": "شباط", "March": "آذار",
+                "April": "نيسان", "May": "أيار", "June": "حزيران",
+                "July": "تموز", "August": "آب", "September": "أيلول",
+                "October": "تشرين الأول", "November": "تشرين الثاني", "December": "كانون الأول"
+            };
+            const monthlyLabelsMapped = monthlyLabels.map(l => {
+                const parts = l.split(' ');
+                if (parts.length === 2) {
+                    const monthEng = parts[0];
+                    const year = parts[1];
+                    if (monthsAr[monthEng]) {
+                        return monthsAr[monthEng] + ' ' + year;
                     }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: gridColor },
-                        ticks: {
-                            color: textColor,
-                            callback: function (value) { return value.toLocaleString('de-DE') + ' {{ currency_symbol }}'; }
+                }
+                return l;
+            });
+
+            const monthlyCtx = monthlyCanvas.getContext('2d');
+            new Chart(monthlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: monthlyLabelsMapped,
+                    datasets: [
+                        {
+                            label: isArabic ? 'المبلغ المفوتر' : 'Invoiced Amount',
+                            data: monthlyBilled,
+                            backgroundColor: 'rgba(13, 110, 253, 0.75)',
+                            borderColor: 'rgb(13, 110, 253)',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        },
+                        {
+                            label: isArabic ? 'المدفوعات المستلمة' : 'Payments Received',
+                            data: monthlyPaid,
+                            backgroundColor: 'rgba(25, 135, 84, 0.75)',
+                            borderColor: 'rgb(25, 135, 84)',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: gridColor },
+                            ticks: {
+                                color: textColor,
+                                callback: function (value) { return value.toLocaleString('de-DE') + ' {{ currency_symbol }}'; }
+                            }
+                        },
+                        x: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor }
                         }
                     },
-                    x: {
-                        grid: { color: gridColor },
-                        ticks: { color: textColor }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: { color: textColor }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function (context) {
-                                return context.dataset.label + ': ' + context.raw.toLocaleString('de-DE') + ' {{ currency_symbol }}';
+                    plugins: {
+                        legend: {
+                            labels: { color: textColor }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return context.dataset.label + ': ' + context.raw.toLocaleString('de-DE') + ' {{ currency_symbol }}';
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
 
         // 2. Appointment Status (Doughnut Chart)
         const statusCanvas = document.getElementById('appointmentStatusChart');
-        const statusLabels = JSON.parse(statusCanvas.getAttribute('data-labels'));
-        const statusValues = JSON.parse(statusCanvas.getAttribute('data-values'));
+        if (statusCanvas) {
+            const statusLabels = JSON.parse(statusCanvas.getAttribute('data-labels'));
+            const statusValues = JSON.parse(statusCanvas.getAttribute('data-values'));
 
-        const statusLabelsMapped = statusLabels.map(l => {
-            if (l === 'Scheduled') return isArabic ? 'مجدول' : 'Scheduled';
-            if (l === 'Done') return isArabic ? 'منجز' : 'Done';
-            if (l === 'Cancelled') return isArabic ? 'ملغى' : 'Cancelled';
-            return l;
-        });
+            const statusLabelsMapped = statusLabels.map(l => {
+                if (l === 'Scheduled') return isArabic ? 'مجدول' : 'Scheduled';
+                if (l === 'Done') return isArabic ? 'منجز' : 'Done';
+                if (l === 'Cancelled') return isArabic ? 'ملغى' : 'Cancelled';
+                return l;
+            });
 
-        const statusCtx = statusCanvas.getContext('2d');
-        new Chart(statusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: statusLabelsMapped,
-                datasets: [{
-                    data: statusValues,
-                    backgroundColor: [
-                        'rgba(13, 110, 253, 0.8)',   // Scheduled - Blue
-                        'rgba(25, 135, 84, 0.8)',    // Done - Green
-                        'rgba(220, 53, 69, 0.8)'     // Cancelled - Red
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { color: textColor }
+            const statusCtx = statusCanvas.getContext('2d');
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabelsMapped,
+                    datasets: [{
+                        data: statusValues,
+                        backgroundColor: [
+                            'rgba(13, 110, 253, 0.8)',   // Scheduled - Blue
+                            'rgba(25, 135, 84, 0.8)',    // Done - Green
+                            'rgba(220, 53, 69, 0.8)'     // Cancelled - Red
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: textColor }
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
 
         // 3. Top Procedures (Horizontal Bar Chart)
         const proceduresCanvas = document.getElementById('topProceduresChart');
-        const proceduresLabels = JSON.parse(proceduresCanvas.getAttribute('data-labels'));
-        const proceduresCounts = JSON.parse(proceduresCanvas.getAttribute('data-counts'));
+        if (proceduresCanvas) {
+            const proceduresLabels = JSON.parse(proceduresCanvas.getAttribute('data-labels'));
+            const proceduresCounts = JSON.parse(proceduresCanvas.getAttribute('data-counts'));
 
-        const proceduresCtx = proceduresCanvas.getContext('2d');
-        new Chart(proceduresCtx, {
-            type: 'bar',
-            data: {
-                labels: proceduresLabels,
-                datasets: [{
-                    label: isArabic ? 'عدد الإجراءات المعالجة' : 'Procedure Count',
-                    data: proceduresCounts,
-                    backgroundColor: 'rgba(13, 202, 240, 0.8)',
-                    borderColor: 'rgb(13, 202, 240)',
-                    borderWidth: 1,
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        grid: { color: gridColor },
-                        ticks: {
-                            color: textColor,
-                            stepSize: 1
+            const proceduresCtx = proceduresCanvas.getContext('2d');
+            new Chart(proceduresCtx, {
+                type: 'bar',
+                data: {
+                    labels: proceduresLabels,
+                    datasets: [{
+                        label: isArabic ? 'عدد الإجراءات المعالجة' : 'Procedure Count',
+                        data: proceduresCounts,
+                        backgroundColor: 'rgba(13, 202, 240, 0.8)',
+                        borderColor: 'rgb(13, 202, 240)',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: gridColor },
+                            ticks: {
+                                color: textColor,
+                                stepSize: 1
+                            }
+                        },
+                        y: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor }
                         }
                     },
-                    y: {
-                        grid: { color: gridColor },
-                        ticks: { color: textColor }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: { color: textColor }
+                    plugins: {
+                        legend: {
+                            labels: { color: textColor }
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
 
         // 4. Gender Demographics (Pie Chart)
         const genderCanvas = document.getElementById('genderDemographicsChart');
-        const genderLabels = JSON.parse(genderCanvas.getAttribute('data-labels'));
-        const genderValues = JSON.parse(genderCanvas.getAttribute('data-values'));
+        if (genderCanvas) {
+            const genderLabels = JSON.parse(genderCanvas.getAttribute('data-labels'));
+            const genderValues = JSON.parse(genderCanvas.getAttribute('data-values'));
 
-        const genderLabelsMapped = genderLabels.map(g => {
-            if (g === 'Male') return isArabic ? 'ذكر' : 'Male';
-            if (g === 'Female') return isArabic ? 'أنثى' : 'Female';
-            if (g === 'Not specified') return isArabic ? 'غير محدد' : 'Not specified';
-            return g;
-        });
+            const genderLabelsMapped = genderLabels.map(g => {
+                if (g === 'Male') return isArabic ? 'ذكر' : 'Male';
+                if (g === 'Female') return isArabic ? 'أنثى' : 'Female';
+                if (g === 'Not specified') return isArabic ? 'غير محدد' : 'Not specified';
+                return g;
+            });
 
-        const genderCtx = genderCanvas.getContext('2d');
-        new Chart(genderCtx, {
-            type: 'pie',
-            data: {
-                labels: genderLabelsMapped,
-                datasets: [{
-                    data: genderValues,
-                    backgroundColor: [
-                        'rgba(13, 110, 253, 0.75)',  // Male - Blue
-                        'rgba(244, 63, 94, 0.75)',   // Female - Pink
-                        'rgba(108, 117, 125, 0.75)'  // Not specified
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { color: textColor }
+            const genderCtx = genderCanvas.getContext('2d');
+            new Chart(genderCtx, {
+                type: 'pie',
+                data: {
+                    labels: genderLabelsMapped,
+                    datasets: [{
+                        data: genderValues,
+                        backgroundColor: [
+                            'rgba(13, 110, 253, 0.75)',  // Male - Blue
+                            'rgba(244, 63, 94, 0.75)',   // Female - Pink
+                            'rgba(108, 117, 125, 0.75)'  // Not specified
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: textColor }
+                        }
                     }
                 }
+            });
+        }
+
+        // Handle URL hash to open the correct tab directly
+        const hash = window.location.hash;
+        if (hash) {
+            const triggerEl = document.querySelector(`button[data-bs-target="${hash}"]`);
+            if (triggerEl) {
+                const tab = new bootstrap.Tab(triggerEl);
+                tab.show();
             }
-        });
+        }
     });
 </script>
 
@@ -454,10 +790,45 @@
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;
     }
 
-    /* Outstanding amounts color enhancements */
-    .credit-amount {
-        color: #198754;
-        font-weight: 600;
+    /* Print styles */
+    @media print {
+        #header, #footer, .topbar, #scroll-top, .section-title, .nav-pills, .btn, .dropdown, .expense-form-card, .d-print-none {
+            display: none !important;
+        }
+        
+        body {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            font-size: 11pt !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* Render BOTH tabs full contents on printed paper! */
+        .tab-content > .tab-pane {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        
+        .card, .kpi-card, .table-card {
+            border: 1px solid #dee2e6 !important;
+            box-shadow: none !important;
+            background: #ffffff !important;
+            margin-bottom: 25px !important;
+            page-break-inside: avoid !important;
+        }
+        
+        .table {
+            border-color: #333333 !important;
+        }
+        
+        .table th {
+            background-color: #f8f9fa !important;
+            color: #000000 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
     }
 </style>
 {% endblock %}

@@ -610,4 +610,91 @@ def decline_appointment(appointment_id):
         current_app.logger.exception("Failed to decline appointment request")
         return jsonify({"success": False, "message": "Internal server error."}), 500
 
+
+@appointments_bp.route("/appointments/<int:appointment_id>/reschedule", methods=["POST"])
+@role_required("admin", "doctor", "receptionist")
+def reschedule_appointment(appointment_id):
+    current_app.logger.info(f"Rescheduling appointment request | id={appointment_id}")
+    try:
+        appt = Appointment.query.get_or_404(appointment_id)
+        if appt.status != "Scheduled":
+            return jsonify({"success": False, "message": "Only scheduled appointments can be rescheduled."}), 400
+        
+        data = request.get_json() or {}
+        new_start_str = data.get("start")
+        if not new_start_str:
+            return jsonify({"success": False, "message": "Missing start time parameter."}), 400
+            
+        try:
+            if "+" in new_start_str:
+                new_start_str = new_start_str.split("+")[0]
+            elif "Z" in new_start_str:
+                new_start_str = new_start_str.replace("Z", "")
+            
+            if "T" in new_start_str:
+                new_date = datetime.fromisoformat(new_start_str)
+            else:
+                new_date = datetime.strptime(new_start_str, "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            return jsonify({"success": False, "message": "Invalid date format."}), 400
+            
+        # Check conflicts
+        conflict = check_appointment_conflict(new_date, appt.id)
+        if conflict:
+            lang = request.cookies.get('lang', 'en')
+            msg = "هذا الوقت محجوز مسبقاً لموعد آخر." if lang == 'ar' else "This time slot is already booked for another appointment."
+            return jsonify({"success": False, "message": msg}), 409
+            
+        appt.appointment_date = new_date
+        db.session.commit()
+        
+        return jsonify({"success": True, "message": "Appointment rescheduled successfully."})
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Failed to reschedule appointment")
+        return jsonify({"success": False, "message": "Failed to reschedule appointment."}), 500
+
+
+@appointments_bp.route("/appointments/<int:appointment_id>/update-status", methods=["POST"])
+@role_required("admin", "doctor", "receptionist")
+def update_appointment_status(appointment_id):
+    current_app.logger.info(f"Updating appointment status | id={appointment_id}")
+    try:
+        appt = Appointment.query.get_or_404(appointment_id)
+        data = request.get_json() or {}
+        new_status = data.get("status")
+        
+        valid_statuses = ["Scheduled", "Checked In", "In Chair", "Done", "Cancelled"]
+        if new_status not in valid_statuses:
+            return jsonify({"success": False, "message": "Invalid status."}), 400
+            
+        # Business logic: Maximum 1 patient in the chair at a time for today
+        if new_status == "In Chair":
+            from datetime import datetime, time
+            today = datetime.now().date()
+            today_start = datetime.combine(today, time.min)
+            today_end = datetime.combine(today, time.max)
+            
+            existing_in_chair = (
+                Appointment.query
+                .filter(Appointment.appointment_date >= today_start)
+                .filter(Appointment.appointment_date <= today_end)
+                .filter(Appointment.status == "In Chair")
+                .filter(Appointment.id != appointment_id)
+                .first()
+            )
+            if existing_in_chair:
+                lang = request.cookies.get('lang', 'en')
+                msg = "لا يمكن وضع المريض على الكرسي لوجود مريض آخر قيد العلاج حالياً." if lang == 'ar' else "Cannot seat patient because another patient is currently in the dental chair."
+                return jsonify({"success": False, "message": msg}), 400
+
+        appt.status = new_status
+        db.session.commit()
+        
+        return jsonify({"success": True, "message": "Status updated successfully.", "new_status": new_status})
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Failed to update appointment status")
+        return jsonify({"success": False, "message": "Failed to update status."}), 500
+
 

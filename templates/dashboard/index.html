@@ -433,29 +433,69 @@
   </section>
   {% endif %}
 
-  <!-- Today's Scheduled Appointments Title -->
+    <!-- Today's Scheduled Appointments Title -->
   <div class="container section-title" style="margin-top: 80px;" data-aos="fade-up">
-    <h2>Today’s Scheduled Appointments</h2>
-    <p>Appointments scheduled for today and still waiting to be completed.</p>
+    <h2>{% if current_lang == 'ar' %}لوحة متابعة حركة المرضى اليومية{% else %}Today’s Patient Flow & Workspace{% endif %}</h2>
+    <p>{% if current_lang == 'ar' %}تتبع تدفق وحركة المرضى في العيادة وتحديث حالتهم مباشرة.{% else %}Track patient flow, check-ins, and seating status in real-time.{% endif %}</p>
   </div>
   <!-- /Today's Scheduled Appointments Title -->
 
+  <!-- Flow Metrics Bar -->
+  <div class="container mb-5" data-aos="fade-up">
+    <div class="row g-3">
+      <!-- Metric 4: Scheduled / Remaining -->
+      <div class="col-md-3 col-sm-6">
+        <div class="p-4 border-0 rounded-4 shadow-sm text-center bg-primary bg-opacity-10 text-primary h-100" style="border: 1px solid rgba(13, 110, 253, 0.15) !important;">
+          <i class="bi bi-calendar-event-fill fs-2 mb-2 d-block"></i>
+          <h6 class="mb-1 fw-bold">{% if current_lang == 'ar' %}بانتظار الحضور{% else %}Scheduled{% endif %}</h6>
+          <h2 class="mb-0 fw-extrabold" id="metric-scheduled">{{ today_scheduled }}</h2>
+        </div>
+      </div>
+
+      <!-- Metric 1: Checked In / Waiting -->
+      <div class="col-md-3 col-sm-6">
+        <div class="p-4 border-0 rounded-4 shadow-sm text-center bg-warning bg-opacity-10 text-warning h-100" style="border: 1px solid rgba(255, 193, 7, 0.15) !important;">
+          <i class="bi bi-person-fill-down fs-2 mb-2 d-block"></i>
+          <h6 class="mb-1 fw-bold">{% if current_lang == 'ar' %}في الانتظار{% else %}Waiting{% endif %}</h6>
+          <h2 class="mb-0 fw-extrabold" id="metric-checked-in">{{ today_checked_in }}</h2>
+        </div>
+      </div>
+      
+      <!-- Metric 2: In Chair -->
+      <div class="col-md-3 col-sm-6">
+        <div class="p-4 border-0 rounded-4 shadow-sm text-center bg-info bg-opacity-10 text-info h-100" style="border: 1px solid rgba(13, 202, 240, 0.15) !important;">
+          <i class="bi bi-heart-pulse-fill fs-2 mb-2 d-block"></i>
+          <h6 class="mb-1 fw-bold">{% if current_lang == 'ar' %}على الكرسي{% else %}In Chair{% endif %}</h6>
+          <h2 class="mb-0 fw-extrabold" id="metric-in-chair">{{ today_in_chair }}</h2>
+        </div>
+      </div>
+
+      <!-- Metric 3: Done -->
+      <div class="col-md-3 col-sm-6">
+        <div class="p-4 border-0 rounded-4 shadow-sm text-center bg-success bg-opacity-10 text-success h-100" style="border: 1px solid rgba(25, 135, 84, 0.15) !important;">
+          <i class="bi bi-check-circle-fill fs-2 mb-2 d-block"></i>
+          <h6 class="mb-1 fw-bold">{% if current_lang == 'ar' %}تم الإنجاز{% else %}Completed Today{% endif %}</h6>
+          <h2 class="mb-0 fw-extrabold" id="metric-done">{{ today_done }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Today's Scheduled Appointments Section -->
-  <section id="today-scheduled-appointments-section" class="find-a-doctor section">
+  <section id="today-scheduled-appointments-section" class="find-a-doctor section pt-0">
     <div class="container" data-aos="fade-up" data-aos-delay="100">
 
       {% if today_scheduled_appointments %}
       <div class="appointments-table-wrapper table-responsive">
-        <table class="table appointments-table align-middle">
+        <table class="table appointments-table align-middle" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
           <thead>
             <tr>
-              <th>Time</th>
-              <th>Patient</th>
-              <th>Phone</th>
-              <th>Reason</th>
-              <th>Status</th>
-              <th class="text-center">Actions</th>
+              <th>{% if current_lang == 'ar' %}الوقت{% else %}Time{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}رقم الهاتف{% else %}Phone{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}السبب{% else %}Reason{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+              <th class="text-center" style="min-width: 260px;">{% if current_lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
             </tr>
           </thead>
 
@@ -481,23 +521,77 @@
               </td>
 
               <td>
-                <span class="appointment-status status-scheduled">
-                  {{ appointment.status }}
-                </span>
+                {% if appointment.status == 'Scheduled' %}
+                  <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2.5 py-1.5 fw-semibold">
+                    {% if current_lang == 'ar' %}مجدول{% else %}Scheduled{% endif %}
+                  </span>
+                {% elif appointment.status == 'Checked In' %}
+                  <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-2.5 py-1.5 fw-semibold">
+                    {% if current_lang == 'ar' %}في الانتظار{% else %}Checked In{% endif %}
+                  </span>
+                {% elif appointment.status == 'In Chair' %}
+                  <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-2.5 py-1.5 fw-semibold">
+                    {% if current_lang == 'ar' %}على الكرسي{% else %}In Chair{% endif %}
+                  </span>
+                {% elif appointment.status == 'Done' %}
+                  <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2.5 py-1.5 fw-semibold">
+                    {% if current_lang == 'ar' %}تم الإنجاز{% else %}Done{% endif %}
+                  </span>
+                {% elif appointment.status == 'Cancelled' %}
+                  <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2.5 py-1.5 fw-semibold">
+                    {% if current_lang == 'ar' %}ملغى{% else %}Cancelled{% endif %}
+                  </span>
+                {% else %}
+                  <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-2.5 py-1.5 fw-semibold">
+                    {{ appointment.status }}
+                  </span>
+                {% endif %}
               </td>
 
               <td class="text-center">
-                <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}"
-                  class="table-action-btn view-btn" title="View Appointment">
-                  <i class="bi bi-eye"></i>
-                </a>
-
-                {% if current_user.role in ('admin', 'doctor') %}
-                <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
-                  class="table-action-btn session-btn" title="Open Session">
-                  <i class="bi bi-clipboard2-pulse"></i>
-                </a>
-                {% endif %}
+                <div class="d-flex align-items-center justify-content-center gap-2">
+                    <!-- Flow Quick Action Buttons -->
+                    <div id="flow-actions-{{ appointment.id }}" class="d-flex gap-1.5">
+                        {% if appointment.status == 'Scheduled' %}
+                            <button onclick="changeFlowStatus({{ appointment.id }}, 'Checked In')" class="btn btn-sm btn-warning text-white rounded-pill px-3 py-1 fw-bold">
+                                <i class="bi bi-person-check-fill me-1"></i>{% if current_lang == 'ar' %}وصول المريض{% else %}Check In{% endif %}
+                            </button>
+                            <button onclick="changeFlowStatus({{ appointment.id }}, 'Cancelled')" class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1 fw-bold">
+                                {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                            </button>
+                        {% elif appointment.status == 'Checked In' %}
+                            <button onclick="changeFlowStatus({{ appointment.id }}, 'In Chair')" class="btn btn-sm btn-info text-white rounded-pill px-3 py-1 fw-bold">
+                                <i class="bi bi-heart-pulse-fill me-1"></i>{% if current_lang == 'ar' %}على الكرسي{% else %}Seat Patient{% endif %}
+                            </button>
+                            <button onclick="changeFlowStatus({{ appointment.id }}, 'Scheduled')" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 fw-bold">
+                                {% if current_lang == 'ar' %}تراجع{% else %}Revert{% endif %}
+                            </button>
+                        {% elif appointment.status == 'In Chair' %}
+                            {% if current_user.role in ('admin', 'doctor') %}
+                                <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}" class="btn btn-sm btn-success rounded-pill px-3 py-1 fw-bold">
+                                    <i class="bi bi-clipboard2-pulse-fill me-1"></i>{% if current_lang == 'ar' %}ابدأ الجلسة{% else %}Start Session{% endif %}
+                                </a>
+                            {% else %}
+                                <span class="badge bg-info bg-opacity-10 text-info fw-bold py-1.5 px-3 rounded-pill">{% if current_lang == 'ar' %}في الجلسة{% else %}In Session{% endif %}</span>
+                            {% endif %}
+                            <button onclick="changeFlowStatus({{ appointment.id }}, 'Checked In')" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 fw-bold">
+                                {% if current_lang == 'ar' %}تراجع{% else %}Revert{% endif %}
+                            </button>
+                        {% elif appointment.status == 'Done' %}
+                            <span class="text-success fw-bold"><i class="bi bi-check-circle me-1"></i>{% if current_lang == 'ar' %}تم الإنجاز{% else %}Completed{% endif %}</span>
+                        {% elif appointment.status == 'Cancelled' %}
+                            <span class="text-muted fw-bold"><i class="bi bi-x-circle me-1"></i>{% if current_lang == 'ar' %}تم الإلغاء{% else %}Cancelled{% endif %}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Standard Actions -->
+                    <div class="d-flex gap-1 border-start ps-2">
+                        <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}"
+                          class="table-action-btn view-btn" title="{% if current_lang == 'ar' %}عرض الموعد{% else %}View Appointment{% endif %}">
+                          <i class="bi bi-eye"></i>
+                        </a>
+                    </div>
+                </div>
               </td>
             </tr>
             {% endfor %}
@@ -647,6 +741,7 @@
 
 <!-- Include Chart.js and Dashboard Script -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const ctx = document.getElementById('dashboardOverviewChart').getContext('2d');
@@ -841,6 +936,53 @@
       todayContainer.style.display = 'block';
       updateClinicStatus();
     });
+
+    window.changeFlowStatus = function(apptId, newStatus) {
+      const url = `/appointments/${apptId}/update-status`;
+      
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+      });
+      
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Toast.fire({
+            icon: 'success',
+            title: "{% if current_lang == 'ar' %}تم تحديث حالة المريض بنجاح!{% else %}Patient status updated successfully!{% endif %}"
+          });
+          
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: data.message || 'Failed to update status.'
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error updating status:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Network error or server failed.'
+        });
+      });
+    };
 
     renderStatusChart();
     updateClinicStatus();

@@ -574,6 +574,9 @@
         const calendar = new FullCalendar.Calendar(calendarEl, {
             locale: currentLang === 'ar' ? 'ar' : 'en',
             direction: currentLang === 'ar' ? 'rtl' : 'ltr',
+            editable: true,
+            eventStartEditable: true,
+            eventDurationEditable: false,
             buttonText: {
                 today: currentLang === 'ar' ? 'اليوم' : 'Today',
                 month: currentLang === 'ar' ? 'شهر' : 'Month',
@@ -849,6 +852,77 @@
                 // Show bootstrap modal
                 const myModal = new bootstrap.Modal(document.getElementById('eventModal'));
                 myModal.show();
+            },
+            eventDrop: function(info) {
+                const status = info.event.extendedProps.status;
+                if (status !== 'Scheduled') {
+                    info.revert();
+                    Swal.fire({
+                        icon: 'error',
+                        title: currentLang === 'ar' ? 'غير مسموح' : 'Not Allowed',
+                        text: currentLang === 'ar' ? 'يمكنك فقط سحب وتعديل المواعيد المجدولة.' : 'You can only reschedule scheduled appointments.',
+                        confirmButtonColor: '#175cdd'
+                    });
+                    return;
+                }
+                
+                // Confirm rescheduling
+                Swal.fire({
+                    title: currentLang === 'ar' ? 'تعديل توقيت الموعد؟' : 'Reschedule Appointment?',
+                    text: currentLang === 'ar' 
+                        ? `هل أنت متأكد من نقل موعد المريض إلى ${info.event.start.toLocaleString([], {hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric'})}؟`
+                        : `Are you sure you want to reschedule this appointment to ${info.event.start.toLocaleString()}?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: currentLang === 'ar' ? 'نعم، انقل الموعد' : 'Yes, reschedule',
+                    cancelButtonText: currentLang === 'ar' ? 'إلغاء' : 'Cancel',
+                    confirmButtonColor: '#175cdd',
+                    cancelButtonColor: '#64748b'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Call Reschedule API
+                        fetch(`/appointments/${info.event.id}/reschedule`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                start: info.event.start.toISOString()
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: currentLang === 'ar' ? 'تم النقل بنجاح!' : 'Rescheduled!',
+                                    text: data.message,
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                            } else {
+                                info.revert();
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: currentLang === 'ar' ? 'خطأ' : 'Error',
+                                    text: data.message,
+                                    confirmButtonColor: '#175cdd'
+                                });
+                            }
+                        })
+                        .catch(err => {
+                            info.revert();
+                            Swal.fire({
+                                icon: 'error',
+                                title: currentLang === 'ar' ? 'خطأ' : 'Error',
+                                text: currentLang === 'ar' ? 'حدث خطأ أثناء الاتصال بالخادم.' : 'An error occurred while contacting the server.',
+                                confirmButtonColor: '#175cdd'
+                            });
+                        });
+                    } else {
+                        info.revert();
+                    }
+                });
             }
         });
 

@@ -330,11 +330,6 @@
                     <span>Print Invoice</span>
                 </button>
 
-                <button id="download-pdf-btn" class="btn btn-danger px-4 d-inline-flex align-items-center gap-2">
-                    <i class="bi bi-file-earmark-pdf"></i>
-                    <span>Download PDF</span>
-                </button>
-
             </div>
             <!-- /Invoice Actions -->
 
@@ -472,13 +467,19 @@
 <style>
 @media print {
     /* Hide screen elements */
-    #header, #footer, .topbar, #scroll-top, .section-title, .action-buttons, .btn, .collapse, .alert, .mobile-nav-toggle, #invoice-detail-section {
+    #header, #footer, .topbar, #scroll-top, .section-title, .action-buttons, .btn, .collapse, .alert, .mobile-nav-toggle, #invoice-detail-section, br {
         display: none !important;
     }
     
+    html, body, #main, #invoice-print-area, #invoice-print-area * {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+    
     body {
-        background-color: #fff !important;
-        color: #000 !important;
         font-size: 11pt !important;
         margin: 0 !important;
         padding: 0 !important;
@@ -523,49 +524,9 @@
 }
 </style>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // Download PDF handler
-    const downloadBtn = document.getElementById("download-pdf-btn");
-    if (downloadBtn) {
-        downloadBtn.addEventListener("click", function() {
-            const element = document.getElementById('invoice-print-area');
-            const opt = {
-                margin:       10,
-                filename:     'Invoice_' + '{{ invoice.invoice_number }}' + '.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            
-            // Clone the printable area to avoid mutating the live DOM
-            const clone = element.cloneNode(true);
-            clone.classList.remove('d-none', 'd-print-block');
-            
-            // Apply clean white background style to the clone so it looks like a paper invoice
-            clone.style.padding = '30px';
-            clone.style.background = '#ffffff';
-            clone.style.color = '#333333';
-            clone.style.width = '790px'; // standard width for crisp scaling
-            
-            // Force light theme colors on clone (to prevent dark theme issues)
-            clone.setAttribute('data-bs-theme', 'light');
-            
-            // Temporary container to render properly (offscreen)
-            const tempDiv = document.createElement('div');
-            tempDiv.style.position = 'absolute';
-            tempDiv.style.left = '-9999px';
-            tempDiv.style.top = '-9999px';
-            tempDiv.appendChild(clone);
-            document.body.appendChild(tempDiv);
-            
-            // Generate and save
-            html2pdf().set(opt).from(clone).save().then(() => {
-                document.body.removeChild(tempDiv);
-            });
-        });
-    }
     // QR Code inputs
     const clinicName = "{{ clinic_name | escape }}";
     const issueDateISO = "{{ invoice.issue_date.isoformat() }}";

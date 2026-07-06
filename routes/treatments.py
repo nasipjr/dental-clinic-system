@@ -20,7 +20,7 @@ def appointment_session(appointment_id):
 
         # Mark the session as opened so the auto-cancel job won't cancel it,
         # even if more than one hour has passed since the appointment time.
-        if appointment.status == "Scheduled" and appointment.session_opened_at is None:
+        if appointment.status in ("Scheduled", "Checked In", "In Chair") and appointment.session_opened_at is None:
             from datetime import datetime
             appointment.session_opened_at = datetime.now()
             db.session.commit()
@@ -56,6 +56,7 @@ def appointment_session(appointment_id):
             total_remaining_sum=total_remaining_sum,
             credit_amount=credit_amount,
             previous_treatments=previous_treatments,
+            treatment_prices=dict(TREATMENT_PRICES),
         )
 
     except Exception:
@@ -79,7 +80,7 @@ def add_treatment_to_appointment(appointment_id):
     try:
         appointment = Appointment.query.get_or_404(appointment_id)
 
-        if appointment.status != "Scheduled":
+        if appointment.status not in ("Scheduled", "Checked In", "In Chair"):
             return render_template(
                 "error_message.html",
                 title="Action Not Allowed",
@@ -112,7 +113,10 @@ def add_treatment_to_appointment(appointment_id):
 
             notes = request.form.get("notes", "").strip()
 
-            total_cost = TREATMENT_PRICES[procedure_type]
+            # Calculate cost multiplied by the number of teeth selected
+            teeth_list = [t.strip() for t in tooth_number.split(',') if t.strip()]
+            num_teeth = len(teeth_list) if teeth_list else 1
+            total_cost = TREATMENT_PRICES[procedure_type] * num_teeth
 
             new_treatment = Treatment(
                 appointment_id=appointment.id,
@@ -167,7 +171,7 @@ def end_appointment_session(appointment_id):
     try:
         appointment = Appointment.query.get_or_404(appointment_id)
 
-        if appointment.status != "Scheduled":
+        if appointment.status not in ("Scheduled", "Checked In", "In Chair"):
             return render_template(
                 "error_message.html",
                 title="Action Not Allowed",
@@ -267,7 +271,7 @@ def edit_treatment(treatment_id):
     try:
         treatment = Treatment.query.get_or_404(treatment_id)
 
-        if treatment.appointment.status != "Scheduled" and request.method == "POST":
+        if treatment.appointment.status not in ("Scheduled", "Checked In", "In Chair") and request.method == "POST":
             return render_template(
                 "error_message.html",
                 title="Action Not Allowed",
@@ -309,7 +313,11 @@ def edit_treatment(treatment_id):
             treatment.procedure_type = procedure_type
             treatment.tooth_number = tooth_number
             treatment.notes = request.form.get("notes", "").strip()
-            treatment.total_cost = TREATMENT_PRICES[procedure_type]
+            
+            # Calculate cost multiplied by the number of teeth selected
+            teeth_list = [t.strip() for t in tooth_number.split(',') if t.strip()]
+            num_teeth = len(teeth_list) if teeth_list else 1
+            treatment.total_cost = TREATMENT_PRICES[procedure_type] * num_teeth
 
             db.session.flush()
 
@@ -387,7 +395,7 @@ def delete_treatment(treatment_id):
         appointment_id = treatment.appointment_id
         patient_id = treatment.appointment.patient_id
 
-        if treatment.appointment.status != "Scheduled":
+        if treatment.appointment.status not in ("Scheduled", "Checked In", "In Chair"):
             return render_template(
                 "error_message.html",
                 title="Action Not Allowed",

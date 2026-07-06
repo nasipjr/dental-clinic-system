@@ -7,8 +7,8 @@
 
 <!-- Section Title -->
 <div class="container section-title" data-aos="fade-up">
-    <h2>Patient Details</h2>
-    <p>Complete overview of the patient's profile, appointments, treatments, and financial summary</p>
+    <h2>{% if current_lang == 'ar' %}تفاصيل المريض{% else %}Patient Details{% endif %}</h2>
+    <p>{% if current_lang == 'ar' %}نظرة شاملة على ملف المريض، مواعيده، علاجاته، وملخصه المالي{% else %}Complete overview of the patient's profile, appointments, treatments, and financial summary{% endif %}</p>
 </div>
 
 <!-- Patient Overview -->
@@ -25,39 +25,39 @@
 
                 <div class="doctor-details">
                     <h4>{{ patient.first_name }} {{ patient.last_name }}</h4>
-                    <span class="specialty-tag">{{ patient.phone or 'No phone number' }}</span>
+                    <span class="specialty-tag">{{ patient.phone or ('No phone number' if current_lang != 'ar' else 'لا يوجد رقم هاتف') }}</span>
                 </div>
             </div>
 
             <div class="patient-info-grid mt-4">
                 <div class="patient-info-box">
-                    <span class="info-label">Address</span>
-                    <p>{{ patient.address or 'No address provided' }}</p>
+                    <span class="info-label">{% if current_lang == 'ar' %}العنوان{% else %}Address{% endif %}</span>
+                    <p>{{ patient.address or ('No address provided' if current_lang != 'ar' else 'لا يوجد عنوان مسجل') }}</p>
                 </div>
 
                 <div class="patient-info-box">
-                    <span class="info-label">Notes</span>
-                    <p>{{ patient.notes or 'No notes available' }}</p>
+                    <span class="info-label">{% if current_lang == 'ar' %}ملاحظات{% else %}Notes{% endif %}</span>
+                    <p>{{ patient.notes or ('No notes available' if current_lang != 'ar' else 'لا توجد ملاحظات') }}</p>
                 </div>
 
                 <div class="patient-info-box">
-                    <span class="info-label">Patient Portal Access</span>
+                    <span class="info-label">{% if current_lang == 'ar' %}بوابة المريض الرقمية{% else %}Patient Portal Access{% endif %}</span>
                     {% if patient.user %}
                         <p class="text-success mb-1" style="font-weight: 600;">
-                            <i class="bi bi-shield-check"></i> Enabled
+                            <i class="bi bi-shield-check"></i> {% if current_lang == 'ar' %}نشط{% else %}Enabled{% endif %}
                         </p>
-                        <small class="text-muted d-block mb-2">Username: <strong>{{ patient.user.username }}</strong></small>
-                        <form method="POST" action="{{ url_for('patients.delete_portal_account', patient_id=patient.id) }}" onsubmit="return confirm('Are you sure you want to revoke portal access for this patient? This will delete their portal login.');">
+                        <small class="text-muted d-block mb-2">{% if current_lang == 'ar' %}اسم المستخدم{% else %}Username{% endif %}: <strong>{{ patient.user.username }}</strong></small>
+                        <form method="POST" action="{{ url_for('patients.delete_portal_account', patient_id=patient.id) }}" onsubmit="return confirm('{% if current_lang == 'ar' %}هل أنت متأكد من إلغاء تفعيل البوابة لهذا المريض؟ سيتم حذف حساب الدخول الخاص به.{% else %}Are you sure you want to revoke portal access for this patient? This will delete their portal login.{% endif %}');">
                             <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2 fw-semibold" style="font-size: 0.72rem; border-radius: 4px; border-width: 1px;">
-                                <i class="bi bi-shield-x"></i> Revoke Access
+                                <i class="bi bi-shield-x"></i> {% if current_lang == 'ar' %}إلغاء الصلاحية{% else %}Revoke Access{% endif %}
                             </button>
                         </form>
                     {% else %}
                         <p class="text-muted mb-2">
-                            <i class="bi bi-shield-slash"></i> Disabled
+                            <i class="bi bi-shield-slash"></i> {% if current_lang == 'ar' %}معطل{% else %}Disabled{% endif %}
                         </p>
                         <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 fw-semibold" style="font-size: 0.72rem; border-radius: 4px; border-width: 1px;" data-bs-toggle="modal" data-bs-target="#createPortalModal">
-                            <i class="bi bi-shield-plus"></i> Enable Access
+                            <i class="bi bi-shield-plus"></i> {% if current_lang == 'ar' %}تفعيل البوابة{% else %}Enable Access{% endif %}
                         </button>
                     {% endif %}
                 </div>
@@ -66,20 +66,20 @@
             <div class="action-buttons mt-4 patient-main-actions">
                 {% if current_user.role in ('admin', 'receptionist') %}
                 <a href="{{ url_for('patients.edit_patient', patient_id=patient.id) }}" class="btn-primary">
-                    Edit Patient
+                    {% if current_lang == 'ar' %}تعديل البيانات{% else %}Edit Patient{% endif %}
                 </a>
                 {% endif %}
 
                 {% if current_user.role in ('admin', 'receptionist') %}
                 <a href="{{ url_for('appointments.add_appointment', patient_id=patient.id) }}" class="btn-outline-main">
-                    Add Appointment
+                    {% if current_lang == 'ar' %}حجز موعد جديد{% else %}Add Appointment{% endif %}
                 </a>
                 {% endif %}
 
                 {% if current_user.role == 'admin' and not patient_appointments %}
                 <div class="patient-delete-action">
                     <a href="{{ url_for('patients.delete_patient', patient_id=patient.id) }}" class="btn-delete-soft">
-                        Delete Patient
+                        {% if current_lang == 'ar' %}حذف المريض{% else %}Delete Patient{% endif %}
                     </a>
                 </div>
                 {% endif %}
@@ -101,8 +101,8 @@
                     id="appointments-tab-btn" data-bs-toggle="tab" data-bs-target="#appointments-tab" type="button"
                     role="tab">
                     <div class="section-title small-section-title mb-0">
-                        <h2>Appointments</h2>
-                        <p>All appointments related to this patient</p>
+                        <h2>{% if current_lang == 'ar' %}المواعيد{% else %}Appointments{% endif %}</h2>
+                        <p>{% if current_lang == 'ar' %}جميع مواعيد وحجوزات المريض{% else %}All appointments related to this patient{% endif %}</p>
                     </div>
                 </button>
             </li>
@@ -111,8 +111,8 @@
                 <button class="nav-link {% if active_tab == 'treatments' %}active{% endif %}" id="treatments-tab-btn"
                     data-bs-toggle="tab" data-bs-target="#treatments-tab" type="button" role="tab">
                     <div class="section-title small-section-title mb-0">
-                        <h2>Treatments</h2>
-                        <p>All recorded treatments across this patient's appointments</p>
+                        <h2>{% if current_lang == 'ar' %}العلاجات{% else %}Treatments{% endif %}</h2>
+                        <p>{% if current_lang == 'ar' %}جميع الإجراءات والعلاجات السريرية{% else %}All recorded treatments across this patient's appointments{% endif %}</p>
                     </div>
                 </button>
             </li>
@@ -121,8 +121,8 @@
                 <button class="nav-link {% if active_tab == 'financial' %}active{% endif %}" id="financial-tab-btn"
                     data-bs-toggle="tab" data-bs-target="#financial-tab" type="button" role="tab">
                     <div class="section-title small-section-title mb-0">
-                        <h2>Financial Summary</h2>
-                        <p>Quick overview of this patient's financial balance</p>
+                        <h2>{% if current_lang == 'ar' %}الملخص المالي{% else %}Financial Summary{% endif %}</h2>
+                        <p>{% if current_lang == 'ar' %}نظرة عامة سريعة على الرصيد المالي للمريض{% else %}Quick overview of this patient's financial balance{% endif %}</p>
                     </div>
                 </button>
             </li>
@@ -131,8 +131,8 @@
                 <button class="nav-link {% if active_tab == 'files' %}active{% endif %}" id="files-tab-btn"
                     data-bs-toggle="tab" data-bs-target="#files-tab" type="button" role="tab">
                     <div class="section-title small-section-title mb-0">
-                        <h2>Medical Files</h2>
-                        <p>X-Rays, panoramas, & attachments</p>
+                        <h2>{% if current_lang == 'ar' %}الملفات الطبية{% else %}Medical Files{% endif %}</h2>
+                        <p>{% if current_lang == 'ar' %}صور الأشعة، البانوراما، والمرفقات العلاجية{% else %}X-Rays, panoramas, & attachments{% endif %}</p>
                     </div>
                 </button>
             </li>
@@ -171,7 +171,7 @@
                         <div class="financial-icon">
                             <i class="bi bi-cash-stack"></i>
                         </div>
-                        <h4>Total Invoices</h4>
+                        <h4>{% if current_lang == 'ar' %}إجمالي المفوتر{% else %}Total Invoiced{% endif %}</h4>
                         <p>{{ total_cost_sum | format_price }} {{ currency_symbol }}</p>
                     </div>
 
@@ -179,7 +179,7 @@
                         <div class="financial-icon">
                             <i class="bi bi-wallet2"></i>
                         </div>
-                        <h4>Total Payments</h4>
+                        <h4>{% if current_lang == 'ar' %}إجمالي المسدد{% else %}Total Paid{% endif %}</h4>
                         <p>{{ total_paid_sum | format_price }} {{ currency_symbol }}</p>
                     </div>
 
@@ -191,41 +191,148 @@
                         </div>
 
                         {% if credit_amount > 0 %}
-                        <h4>Patient Credit</h4>
+                        <h4>{% if current_lang == 'ar' %}رصيد زائد للمريض{% else %}Patient Credit{% endif %}</h4>
                         <p>
                             <span class="credit-amount">
                                 {{ credit_amount | format_price }} {{ currency_symbol }}
-                                <span class="credit-badge">Credit</span>
+                                <span class="credit-badge">{% if current_lang == 'ar' %}رصيد{% else %}Credit{% endif %}</span>
                             </span>
                         </p>
-                        <span class="financial-card-note">This patient has an overpayment credit.</span>
+                        <span class="financial-card-note">{% if current_lang == 'ar' %}هذا المريض لديه دفعات زائدة متوفرة كفائض رصيد.{% else %}This patient has an overpayment credit.{% endif %}</span>
                         {% elif total_remaining_sum > 0 %}
-                        <h4>Outstanding Amount</h4>
+                        <h4>{% if current_lang == 'ar' %}المستحقات غير المدفوعة{% else %}Outstanding Amount{% endif %}</h4>
                         <p>{{ total_remaining_sum | format_price }} {{ currency_symbol }}</p>
-                        <span class="financial-card-note">This patient has an outstanding balance.</span>
+                        <span class="financial-card-note">{% if current_lang == 'ar' %}هذا المريض يترتب عليه رصيد مستحق للدفع للعيادة.{% else %}This patient has an outstanding balance.{% endif %}</span>
                         {% else %}
-                        <h4>Outstanding Amount</h4>
+                        <h4>{% if current_lang == 'ar' %}المستحقات غير المدفوعة{% else %}Outstanding Amount{% endif %}</h4>
                         <p>0 {{ currency_symbol }}</p>
-                        <span class="financial-card-note">All invoices are fully paid.</span>
+                        <span class="financial-card-note">{% if current_lang == 'ar' %}جميع الفواتير والخدمات مسواة ومدفوعة بالكامل.{% else %}All invoices are fully paid.{% endif %}</span>
                         {% endif %}
                     </div>
                 </div>
 
-                <div class="financial-details-stack mt-5">
-
-                    <!-- Patient Payments Table -->
-                    <div id="patient-payments-container">
-                        {% include "partials/_patient_payments_table.html" %}
+                <div class="financial-details-stack mt-5" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 d-print-none">
+                        <h4 class="fw-bold mb-0 text-main" style="color: var(--nav-hover-color, #3fbbc0); font-family: var(--heading-font);">
+                            {% if current_lang == 'ar' %}تفاصيل الحسابات والمعاملات{% else %}Financial Transactions & Ledger{% endif %}
+                        </h4>
+                        <a href="{{ url_for('patients.patient_ledger_print', patient_id=patient.id) }}" target="_blank" class="btn btn-outline-primary rounded-pill px-4 fw-bold">
+                            <i class="bi bi-printer me-1"></i>
+                            {% if current_lang == 'ar' %}طباعة كشف الحساب (Ledger){% else %}Print Statement (Ledger){% endif %}
+                        </a>
                     </div>
-                    <!-- /Patient Payments Table -->
 
+                    <!-- Inner sub-navigation for financial detail views -->
+                    <ul class="nav nav-tabs border-bottom mb-4 d-print-none" id="financialSubTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-bold" id="sub-ledger-tab-btn" data-bs-toggle="tab" data-bs-target="#sub-ledger-tab" type="button" role="tab">
+                                <i class="bi bi-journal-text me-1.5 text-info"></i>
+                                {% if current_lang == 'ar' %}دفتر الأستاذ (الحساب التراكمي){% else %}Chronological Ledger{% endif %}
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold" id="sub-invoices-tab-btn" data-bs-toggle="tab" data-bs-target="#sub-invoices-tab" type="button" role="tab">
+                                <i class="bi bi-receipt me-1.5 text-info"></i>
+                                {% if current_lang == 'ar' %}الفواتير الصادرة{% else %}Invoices{% endif %}
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold" id="sub-payments-tab-btn" data-bs-toggle="tab" data-bs-target="#sub-payments-tab" type="button" role="tab">
+                                <i class="bi bi-cash me-1.5 text-info"></i>
+                                {% if current_lang == 'ar' %}المدفوعات المستلمة{% else %}Payments{% endif %}
+                            </button>
+                        </li>
+                    </ul>
 
-                    <!-- Patient Invoices Table -->
-                    <div id="patient-invoices-container">
-                        {% include "partials/_patient_invoices_table.html" %}
+                    <div class="tab-content" id="financialSubTabsContent">
+                        <!-- Sub Tab 1: Reconciled Ledger -->
+                        <div class="tab-pane fade show active" id="sub-ledger-tab" role="tabpanel">
+                            {% if ledger_entries %}
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 120px;">{% if current_lang == 'ar' %}التاريخ{% else %}Date{% endif %}</th>
+                                            <th style="width: 120px;">{% if current_lang == 'ar' %}الرقم المرجعي{% else %}Ref Number{% endif %}</th>
+                                            <th>{% if current_lang == 'ar' %}التفاصيل والبيان{% else %}Description{% endif %}</th>
+                                            <th class="text-end" style="width: 140px;">{% if current_lang == 'ar' %}مترتب (مدين / Charges){% else %}Charges (Debit){% endif %}</th>
+                                            <th class="text-end" style="width: 140px;">{% if current_lang == 'ar' %}مسدد (دائن / Payments){% else %}Payments (Credit){% endif %}</th>
+                                            <th class="text-end" style="width: 160px;">{% if current_lang == 'ar' %}الرصيد التراكمي{% else %}Running Balance{% endif %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for entry in ledger_entries %}
+                                        <tr>
+                                            <td>{{ entry.date.strftime('%Y-%m-%d') }}</td>
+                                            <td>
+                                                {% if entry.type == 'invoice' %}
+                                                    <a href="{{ url_for('invoices.view_invoice', invoice_id=entry.ref) }}" class="fw-bold text-primary">{{ entry.ref }}</a>
+                                                {% else %}
+                                                    <strong class="text-secondary">{{ entry.ref }}</strong>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if entry.type == 'invoice' %}
+                                                    <span class="badge bg-secondary bg-opacity-10 text-secondary-emphasis px-2.5 py-1.5 rounded-pill fw-semibold text-sm">
+                                                        {% if current_lang == 'ar' %}فاتورة{% else %}Invoice{% endif %}
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-success bg-opacity-10 text-success-emphasis px-2.5 py-1.5 rounded-pill fw-semibold text-sm">
+                                                        {% if current_lang == 'ar' %}دفعة{% else %}Payment{% endif %}
+                                                    </span>
+                                                {% endif %}
+                                                {{ entry.description }}
+                                            </td>
+                                            <td class="text-end text-danger fw-semibold">
+                                                {% if entry.debit > 0 %}
+                                                    <span dir="ltr">{{ entry.debit | format_price }} {{ currency_symbol }}</span>
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end text-success fw-semibold">
+                                                {% if entry.credit > 0 %}
+                                                    <span dir="ltr">{{ entry.credit | format_price }} {{ currency_symbol }}</span>
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-end fw-bold">
+                                                <span dir="ltr" class="{% if entry.balance > 0 %}text-danger{% elif entry.balance < 0 %}text-success{% endif %}">
+                                                    {{ entry.balance | format_price }} {{ currency_symbol }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-wallet2 text-muted fs-1 opacity-50 mb-3 d-block"></i>
+                                <h5>{% if current_lang == 'ar' %}لا يوجد أي معاملات مالية مسجلة بعد.{% else %}No financial transactions recorded yet.{% endif %}</h5>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Sub Tab 2: Invoices -->
+                        <div class="tab-pane fade" id="sub-invoices-tab" role="tabpanel">
+                            <!-- Patient Invoices Table -->
+                            <div id="patient-invoices-container">
+                                {% include "partials/_patient_invoices_table.html" %}
+                            </div>
+                            <!-- /Patient Invoices Table -->
+                        </div>
+                        
+                        <!-- Sub Tab 3: Payments -->
+                        <div class="tab-pane fade" id="sub-payments-tab" role="tabpanel">
+                            <!-- Patient Payments Table -->
+                            <div id="patient-payments-container">
+                                {% include "partials/_patient_payments_table.html" %}
+                            </div>
+                            <!-- /Patient Payments Table -->
+                        </div>
                     </div>
-                    <!-- /Patient Invoices Table -->
-
                 </div>
 
             </div>
@@ -234,11 +341,22 @@
             <div class="tab-pane fade {% if active_tab == 'files' %}show active{% endif %}" id="files-tab"
                 role="tabpanel">
 
-                <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
-                    <h3 class="fw-bold mb-0 text-main" style="color: var(--nav-hover-color, #3fbbc0); font-family: var(--heading-font);">Medical Files & Clinical Attachments</h3>
-                    <button type="button" class="btn btn-outline-primary rounded-pill px-4 fw-semibold" style="border-width: 1.5px;" data-bs-toggle="modal" data-bs-target="#uploadFileModal">
-                        <i class="bi bi-cloud-upload"></i> Upload File
-                    </button>
+                <div class="d-flex justify-content-between align-items-center mb-4 mt-3 flex-wrap gap-2">
+                    <h3 class="fw-bold mb-0 text-main" style="color: var(--nav-hover-color, #3fbbc0); font-family: var(--heading-font);">
+                        {% if current_lang == 'ar' %}الملفات الطبية والمرفقات العلاجية{% else %}Medical Files & Clinical Attachments{% endif %}
+                    </h3>
+                    <div class="d-flex gap-2">
+                        {% if patient_files %}
+                        <button type="button" class="btn btn-outline-info rounded-pill px-4 fw-semibold text-info" style="border-width: 1.5px; background-color: rgba(13, 202, 240, 0.12);" data-bs-toggle="modal" data-bs-target="#xrayModal">
+                            <i class="bi bi-images me-1"></i> 
+                            {% if current_lang == 'ar' %}استوديو الأشعة والمقارنة{% else %}X-Ray Studio & Compare{% endif %}
+                        </button>
+                        {% endif %}
+                        <button type="button" class="btn btn-outline-primary rounded-pill px-4 fw-semibold" style="border-width: 1.5px;" data-bs-toggle="modal" data-bs-target="#uploadFileModal">
+                            <i class="bi bi-cloud-upload"></i> 
+                            {% if current_lang == 'ar' %}رفع ملف{% else %}Upload File{% endif %}
+                        </button>
+                    </div>
                 </div>
 
                 {% if patient_files %}
@@ -384,6 +502,226 @@
     </div>
 </div>
 
+<!-- X-Ray Viewer & Compare Modal -->
+<div class="modal fade" id="xrayModal" tabindex="-1" aria-labelledby="xrayModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 overflow-hidden" style="background: var(--surface-color); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);">
+            <div class="modal-header border-bottom-0 pb-2 px-4 pt-4 d-flex justify-content-between align-items-center">
+                <div class="w-100 {% if current_lang == 'ar' %}text-end{% endif %}">
+                    <h5 class="modal-title fw-bold" id="xrayModalLabel" style="font-size: 1.35rem; color: var(--heading-color); font-family: var(--heading-font);">
+                        <i class="bi bi-images text-info {% if current_lang == 'ar' %}ms-2{% else %}me-2{% endif %}"></i>
+                        {% if current_lang == 'ar' %}استوديو الأشعة والمقارنة{% else %}X-Ray Studio & Compare{% endif %}
+                    </h5>
+                    <p class="text-muted small mb-0">
+                        {% if current_lang == 'ar' %}تكبير، تدوير، تعديل السطوع والتباين، أو مقارنة صور أشعة المريض جنباً إلى جنب.{% else %}Zoom, rotate, adjust brightness & contrast, or compare radiography images side-by-side.{% endif %}
+                    </p>
+                </div>
+                <button type="button" class="btn-close {% if current_lang == 'ar' %}ms-0 me-auto{% endif %}" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body p-0" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+                <!-- Tabs Navigation -->
+                <ul class="nav nav-tabs px-4 pt-2 border-bottom" id="xrayStudioTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active fw-semibold px-4 py-2.5" id="xray-viewer-tab" data-bs-toggle="tab" data-bs-target="#xray-viewer-pane" type="button" role="tab" style="font-size: 0.9rem;">
+                            <i class="bi bi-sliders {% if current_lang == 'ar' %}ms-1.5{% else %}me-1.5{% endif %} text-info"></i> 
+                            {% if current_lang == 'ar' %}معدّل الصور التفاعلي{% else %}Interactive Adjuster{% endif %}
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-semibold px-4 py-2.5" id="xray-compare-tab" data-bs-toggle="tab" data-bs-target="#xray-compare-pane" type="button" role="tab" style="font-size: 0.9rem;">
+                            <i class="bi bi-distribute-vertical {% if current_lang == 'ar' %}ms-1.5{% else %}me-1.5{% endif %} text-info"></i> 
+                            {% if current_lang == 'ar' %}مقارنة قبل / بعد{% else %}Before / After Slider{% endif %}
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="xrayStudioContent">
+                    <!-- Tab 1: Interactive Viewer/Adjuster -->
+                    <div class="tab-pane fade show active p-4" id="xray-viewer-pane" role="tabpanel">
+                        <div class="row g-4">
+                            <!-- Sidebar controls -->
+                            <div class="col-lg-4">
+                                <div class="p-3 rounded-4 shadow-xs border h-100" style="background: rgba(0,0,0,0.02);">
+                                    <div class="mb-3">
+                                        <label for="select-xray-image" class="form-label fw-bold text-secondary small">
+                                            {% if current_lang == 'ar' %}اختر صورة الأشعة{% else %}Select X-Ray Image{% endif %}
+                                        </label>
+                                        <select id="select-xray-image" class="form-select rounded-3 border-secondary-subtle">
+                                            <option value="">{% if current_lang == 'ar' %}-- اختر صورة --{% else %}-- Choose an Image --{% endif %}</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <hr class="my-3 opacity-50">
+                                    
+                                    <h6 class="fw-bold mb-3 text-dark small text-uppercase tracking-wider">
+                                        <i class="bi bi-sliders2-vertical {% if current_lang == 'ar' %}ms-1{% else %}me-1{% endif %}"></i> 
+                                        {% if current_lang == 'ar' %}التعديلات والتحسينات{% else %}Adjustments{% endif %}
+                                    </h6>
+                                    
+                                    <!-- Zoom -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="small fw-semibold text-secondary">{% if current_lang == 'ar' %}التكبير{% else %}Zoom{% endif %}</span>
+                                            <span class="small fw-bold text-primary" id="zoom-val">100%</span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <button class="btn btn-sm btn-outline-secondary py-0 px-2" id="btn-zoom-out" type="button"><i class="bi bi-dash"></i></button>
+                                            <input type="range" class="form-range flex-grow-1" id="slider-zoom" min="50" max="300" value="100">
+                                            <button class="btn btn-sm btn-outline-secondary py-0 px-2" id="btn-zoom-in" type="button"><i class="bi bi-plus"></i></button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Rotation -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="small fw-semibold text-secondary">{% if current_lang == 'ar' %}الدوران{% else %}Rotation{% endif %}</span>
+                                            <span class="small fw-bold text-primary" id="rotate-val">0°</span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <button class="btn btn-sm btn-outline-secondary py-0 px-2" id="btn-rotate-left" type="button"><i class="bi bi-arrow-counterclockwise"></i></button>
+                                            <input type="range" class="form-range flex-grow-1" id="slider-rotate" min="-180" max="180" value="0">
+                                            <button class="btn btn-sm btn-outline-secondary py-0 px-2" id="btn-rotate-right" type="button"><i class="bi bi-arrow-clockwise"></i></button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Brightness -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="small fw-semibold text-secondary">{% if current_lang == 'ar' %}السطوع{% else %}Brightness{% endif %}</span>
+                                            <span class="small fw-bold text-primary" id="brightness-val">100%</span>
+                                        </div>
+                                        <input type="range" class="form-range" id="slider-brightness" min="30" max="200" value="100">
+                                    </div>
+                                    
+                                    <!-- Contrast -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="small fw-semibold text-secondary">{% if current_lang == 'ar' %}التباين{% else %}Contrast{% endif %}</span>
+                                            <span class="small fw-bold text-primary" id="contrast-val">100%</span>
+                                        </div>
+                                        <input type="range" class="form-range" id="slider-contrast" min="30" max="200" value="100">
+                                    </div>
+                                    
+                                    <!-- Invert colors -->
+                                    <div class="mb-4 d-flex justify-content-between align-items-center">
+                                        <span class="small fw-semibold text-secondary">{% if current_lang == 'ar' %}عكس الألوان (الوضع السلبي){% else %}Invert Colors (Negative view){% endif %}</span>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="switch-invert">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Reset and actions -->
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-secondary rounded-pill py-2 text-sm fw-semibold" id="btn-reset-adjuster">
+                                            <i class="bi bi-arrow-clockwise me-1"></i> 
+                                            {% if current_lang == 'ar' %}إعادة تعيين الإعدادات{% else %}Reset Settings{% endif %}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Viewer canvas -->
+                            <div class="col-lg-8">
+                                <div class="viewer-canvas-wrapper d-flex align-items-center justify-content-center border rounded-4 position-relative bg-dark" style="height: 460px; overflow: hidden; box-shadow: inset 0 4px 20px rgba(0,0,0,0.5);">
+                                    <div class="no-image-placeholder text-center text-secondary p-4">
+                                        <i class="bi bi-image fs-1 opacity-50 mb-3 d-block text-white"></i>
+                                        <h6 class="text-white fw-bold">
+                                            {% if current_lang == 'ar' %}لم يتم اختيار صورة{% else %}No Image Selected{% endif %}
+                                        </h6>
+                                        <p class="small opacity-75 mb-0">
+                                            {% if current_lang == 'ar' %}اختر صورة أشعة من القائمة المنسدلة في الجانب للبدء بالتحسين.{% else %}Choose an image from the sidebar dropdown to start adjustments.{% endif %}
+                                        </p>
+                                    </div>
+                                    
+                                    <!-- The actual image wrapper -->
+                                    <div class="image-viewport position-absolute w-100 h-100 d-none d-flex align-items-center justify-content-center" style="cursor: grab;">
+                                        <img id="viewer-img" class="img-fluid object-fit-contain transition-transform-filters" alt="Radiography Image" style="max-height: 94%; max-width: 94%; pointer-events: none; user-select: none;">
+                                    </div>
+                                    
+                                    <!-- Controls Overlay -->
+                                    <div class="position-absolute bottom-0 start-0 w-100 p-3 d-none d-flex justify-content-between align-items-center text-white" id="viewer-overlay" style="background: linear-gradient(transparent, rgba(0,0,0,0.8));">
+                                        <span class="small fw-bold" id="overlay-filename"></span>
+                                        <span class="small bg-dark bg-opacity-70 px-2.5 py-1 rounded-pill" id="overlay-date"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 2: Before/After Slider -->
+                    <div class="tab-pane fade p-4" id="xray-compare-pane" role="tabpanel">
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <label for="compare-select-before" class="form-label fw-bold text-secondary small">
+                                    {% if current_lang == 'ar' %}الصورة السابقة - قبل (يسار){% else %}Before Image (Left){% endif %}
+                                </label>
+                                <select id="compare-select-before" class="form-select rounded-3 border-secondary-subtle">
+                                    <option value="">{% if current_lang == 'ar' %}-- اختر صورة --{% else %}-- Choose Image --{% endif %}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="compare-select-after" class="form-label fw-bold text-secondary small">
+                                    {% if current_lang == 'ar' %}الصورة اللاحقة - بعد (يمين){% else %}After Image (Right){% endif %}
+                                </label>
+                                <select id="compare-select-after" class="form-select rounded-3 border-secondary-subtle">
+                                    <option value="">{% if current_lang == 'ar' %}-- اختر صورة --{% else %}-- Choose Image --{% endif %}</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Slider Comparison Display -->
+                        <div class="comparison-display-wrapper border rounded-4 bg-dark overflow-hidden position-relative mx-auto shadow-lg" style="max-width: 800px; height: 460px; box-shadow: inset 0 4px 20px rgba(0,0,0,0.5);">
+                            <div class="compare-placeholder text-center text-secondary position-absolute top-50 start-50 translate-middle">
+                                <i class="bi bi-distribute-vertical fs-1 opacity-50 mb-3 d-block text-white"></i>
+                                <h6 class="text-white fw-bold">
+                                    {% if current_lang == 'ar' %}اختر الصور للمقارنة{% else %}Select Comparison Images{% endif %}
+                                </h6>
+                                <p class="small opacity-75 mb-0">
+                                    {% if current_lang == 'ar' %}اختر كلاً من الصورتين (قبل وبعد العلاج) لبدء المقارنة التفاعلية.{% else %}Choose both "Before" and "After" images to start comparison.{% endif %}
+                                </p>
+                            </div>
+                            
+                            <!-- The Comparison Slider Container -->
+                            <div id="slider-comparison-container" class="w-100 h-100 position-relative d-none" style="user-select: none;">
+                                <!-- After Image (Background) -->
+                                <img id="compare-img-after" alt="After image" />
+                                
+                                <!-- Before Image (Foreground, clipped) -->
+                                <img id="compare-img-before" alt="Before image" />
+                                
+                                <!-- Slider Input overlay -->
+                                <input type="range" min="0" max="100" value="50" class="position-absolute top-50 start-50 translate-middle w-100 h-100 opacity-0 compare-slider-input" id="compare-range-slider" style="z-index: 30; cursor: ew-resize;">
+                                
+                                <!-- Divider Line / Drag Indicator -->
+                                <div id="compare-divider" class="position-absolute top-0 h-100 bg-white" style="left: 50%; width: 2px; transform: translateX(-50%); z-index: 20; pointer-events: none; box-shadow: 0 0 10px rgba(0,0,0,0.5);">
+                                    <div class="position-absolute top-50 start-50 translate-middle bg-white rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 36px; height: 36px; border: 2px solid var(--primary-color);">
+                                        <i class="bi bi-arrows-expand text-primary" style="transform: rotate(90deg); font-size: 0.95rem;"></i>
+                                    </div>
+                                </div>
+                                
+                                <!-- Labels Overlay -->
+                                <span class="position-absolute bottom-3 {% if current_lang == 'ar' %}end-3{% else %}start-3{% endif %} badge bg-dark bg-opacity-70 px-3 py-2 text-uppercase fw-semibold" style="z-index: 25; font-size: 0.75rem; pointer-events: none;">
+                                    {% if current_lang == 'ar' %}قبل{% else %}Before{% endif %}
+                                </span>
+                                <span class="position-absolute bottom-3 {% if current_lang == 'ar' %}start-3{% else %}end-3{% endif %} badge bg-dark bg-opacity-70 px-3 py-2 text-uppercase fw-semibold" style="z-index: 25; font-size: 0.75rem; pointer-events: none;">
+                                    {% if current_lang == 'ar' %}بعد{% else %}After{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer border-top-0 d-flex justify-content-center pb-4">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-5 fw-bold" data-bs-dismiss="modal">
+                    {% if current_lang == 'ar' %}إغلاق الاستوديو{% else %}Close Studio{% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 .patient-file-card {
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
@@ -401,6 +739,56 @@
 .patient-detail-tabs .nav-link {
     cursor: pointer;
 }
+
+/* Image manipulation helper styles */
+.transition-transform-filters {
+    transition: filter 0.15s ease-out, transform 0.15s ease-out;
+}
+
+/* Compare Slider Input styling for overlay */
+.compare-slider-input {
+    margin: 0;
+    padding: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+}
+.compare-slider-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 40px;
+    height: 460px;
+    background: transparent;
+    cursor: ew-resize;
+}
+.compare-slider-input::-moz-range-thumb {
+    width: 40px;
+    height: 460px;
+    background: transparent;
+    cursor: ew-resize;
+    border: none;
+}
+
+#compare-img-before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+    clip-path: inset(0 var(--clip-percent, 50%) 0 0);
+    z-index: 10;
+}
+#compare-img-after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+    z-index: 5;
+}
 </style>
 
 <script>
@@ -415,6 +803,282 @@ document.addEventListener("DOMContentLoaded", function() {
             window.history.replaceState(null, '', url.toString());
         });
     });
+
+    // Populate patient images array from Jinja context
+    const patientImages = [
+        {% for file in patient_files %}
+            {% if file.filetype and file.filetype.startswith('image/') %}
+                {
+                    id: {{ file.id }},
+                    filename: {{ file.filename | tojson }},
+                    url: {{ url_for('static', filename=file.filepath) | tojson }},
+                    notes: {{ (file.notes or '') | tojson }},
+                    date: {{ file.upload_date.strftime('%Y-%m-%d %I:%M %p') | tojson }}
+                },
+            {% endif %}
+        {% endfor %}
+    ];
+
+    // Populate dropdowns
+    const selectXray = document.getElementById('select-xray-image');
+    const selectBefore = document.getElementById('compare-select-before');
+    const selectAfter = document.getElementById('compare-select-after');
+    
+    if (selectXray && selectBefore && selectAfter) {
+        patientImages.forEach(img => {
+            const opt1 = document.createElement('option');
+            opt1.value = img.url;
+            opt1.dataset.filename = img.filename;
+            opt1.dataset.date = img.date;
+            opt1.textContent = `${img.filename} (${img.date})`;
+            selectXray.appendChild(opt1);
+            
+            const opt2 = document.createElement('option');
+            opt2.value = img.url;
+            opt2.textContent = `${img.filename} (${img.date})`;
+            selectBefore.appendChild(opt2);
+            
+            const opt3 = document.createElement('option');
+            opt3.value = img.url;
+            opt3.textContent = `${img.filename} (${img.date})`;
+            selectAfter.appendChild(opt3);
+        });
+    }
+
+    // Tab 1: Interactive Adjuster
+    const viewerImg = document.getElementById('viewer-img');
+    const placeholder = document.querySelector('.no-image-placeholder');
+    const viewport = document.querySelector('.image-viewport');
+    const overlay = document.getElementById('viewer-overlay');
+    const overlayFilename = document.getElementById('overlay-filename');
+    const overlayDate = document.getElementById('overlay-date');
+    
+    // Sliders & Controls
+    const sliderZoom = document.getElementById('slider-zoom');
+    const zoomVal = document.getElementById('zoom-val');
+    const btnZoomIn = document.getElementById('btn-zoom-in');
+    const btnZoomOut = document.getElementById('btn-zoom-out');
+    
+    const sliderRotate = document.getElementById('slider-rotate');
+    const rotateVal = document.getElementById('rotate-val');
+    const btnRotateLeft = document.getElementById('btn-rotate-left');
+    const btnRotateRight = document.getElementById('btn-rotate-right');
+    
+    const sliderBrightness = document.getElementById('slider-brightness');
+    const brightnessVal = document.getElementById('brightness-val');
+    
+    const sliderContrast = document.getElementById('slider-contrast');
+    const contrastVal = document.getElementById('contrast-val');
+    
+    const switchInvert = document.getElementById('switch-invert');
+    const btnReset = document.getElementById('btn-reset-adjuster');
+
+    let zoom = 100;
+    let rotation = 0;
+    let brightness = 100;
+    let contrast = 100;
+    let invert = false;
+    let panX = 0;
+    let panY = 0;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+
+    function applyTransforms() {
+        if (!viewerImg) return;
+        const scale = zoom / 100;
+        const invertStr = invert ? 'invert(1)' : 'invert(0)';
+        viewerImg.style.filter = `brightness(${brightness}%) contrast(${contrast}%) ${invertStr}`;
+        viewerImg.style.transform = `translate(${panX}px, ${panY}px) scale(${scale}) rotate(${rotation}deg)`;
+    }
+
+    function updateLabels() {
+        if (zoomVal) zoomVal.textContent = zoom + '%';
+        if (rotateVal) rotateVal.textContent = rotation + '°';
+        if (brightnessVal) brightnessVal.textContent = brightness + '%';
+        if (contrastVal) contrastVal.textContent = contrast + '%';
+    }
+
+    function resetAdjustments() {
+        zoom = 100;
+        rotation = 0;
+        brightness = 100;
+        contrast = 100;
+        invert = false;
+        panX = 0;
+        panY = 0;
+        
+        if (sliderZoom) sliderZoom.value = 100;
+        if (sliderRotate) sliderRotate.value = 0;
+        if (sliderBrightness) sliderBrightness.value = 100;
+        if (sliderContrast) sliderContrast.value = 100;
+        if (switchInvert) switchInvert.checked = false;
+        
+        updateLabels();
+        applyTransforms();
+    }
+
+    if (selectXray) {
+        selectXray.addEventListener('change', function() {
+            const url = this.value;
+            if (!url) {
+                if (placeholder) placeholder.classList.remove('d-none');
+                if (viewport) viewport.classList.add('d-none');
+                if (overlay) overlay.classList.add('d-none');
+                return;
+            }
+            
+            const selectedOpt = this.options[this.selectedIndex];
+            if (placeholder) placeholder.classList.add('d-none');
+            if (viewport) viewport.classList.remove('d-none');
+            if (overlay) {
+                overlay.classList.remove('d-none');
+                overlayFilename.textContent = selectedOpt.dataset.filename;
+                overlayDate.textContent = selectedOpt.dataset.date;
+            }
+            
+            viewerImg.src = url;
+            resetAdjustments();
+        });
+    }
+
+    if (sliderZoom) {
+        sliderZoom.addEventListener('input', function() {
+            zoom = parseInt(this.value);
+            updateLabels();
+            applyTransforms();
+        });
+    }
+    if (sliderRotate) {
+        sliderRotate.addEventListener('input', function() {
+            rotation = parseInt(this.value);
+            updateLabels();
+            applyTransforms();
+        });
+    }
+    if (sliderBrightness) {
+        sliderBrightness.addEventListener('input', function() {
+            brightness = parseInt(this.value);
+            updateLabels();
+            applyTransforms();
+        });
+    }
+    if (sliderContrast) {
+        sliderContrast.addEventListener('input', function() {
+            contrast = parseInt(this.value);
+            updateLabels();
+            applyTransforms();
+        });
+    }
+    if (switchInvert) {
+        switchInvert.addEventListener('change', function() {
+            invert = this.checked;
+            applyTransforms();
+        });
+    }
+    if (btnReset) {
+        btnReset.addEventListener('click', resetAdjustments);
+    }
+
+    if (btnZoomIn) {
+        btnZoomIn.addEventListener('click', function() {
+            zoom = Math.min(300, zoom + 10);
+            if (sliderZoom) sliderZoom.value = zoom;
+            updateLabels();
+            applyTransforms();
+        });
+    }
+    if (btnZoomOut) {
+        btnZoomOut.addEventListener('click', function() {
+            zoom = Math.max(50, zoom - 10);
+            if (sliderZoom) sliderZoom.value = zoom;
+            updateLabels();
+            applyTransforms();
+        });
+    }
+
+    if (btnRotateLeft) {
+        btnRotateLeft.addEventListener('click', function() {
+            rotation = Math.max(-180, rotation - 15);
+            if (sliderRotate) sliderRotate.value = rotation;
+            updateLabels();
+            applyTransforms();
+        });
+    }
+    if (btnRotateRight) {
+        btnRotateRight.addEventListener('click', function() {
+            rotation = Math.min(180, rotation + 15);
+            if (sliderRotate) sliderRotate.value = rotation;
+            updateLabels();
+            applyTransforms();
+        });
+    }
+
+    if (viewport) {
+        viewport.addEventListener('mousedown', function(e) {
+            if (!selectXray.value) return;
+            isDragging = true;
+            viewport.style.cursor = 'grabbing';
+            startX = e.clientX - panX;
+            startY = e.clientY - panY;
+        });
+
+        window.addEventListener('mouseup', function() {
+            isDragging = false;
+            if (viewport) viewport.style.cursor = 'grab';
+        });
+
+        viewport.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            panX = e.clientX - startX;
+            panY = e.clientY - startY;
+            applyTransforms();
+        });
+    }
+
+    // Tab 2: Comparison Slider
+    const beforeImg = document.getElementById('compare-img-before');
+    const afterImg = document.getElementById('compare-img-after');
+    const comparePlaceholder = document.querySelector('.compare-placeholder');
+    const compareContainer = document.getElementById('slider-comparison-container');
+    const compareSlider = document.getElementById('compare-range-slider');
+    
+    function updateComparisonView() {
+        const beforeUrl = selectBefore.value;
+        const afterUrl = selectAfter.value;
+        
+        if (!beforeUrl || !afterUrl) {
+            if (comparePlaceholder) comparePlaceholder.classList.remove('d-none');
+            if (compareContainer) compareContainer.classList.add('d-none');
+            return;
+        }
+        
+        if (comparePlaceholder) comparePlaceholder.classList.add('d-none');
+        if (compareContainer) compareContainer.classList.remove('d-none');
+        
+        beforeImg.src = beforeUrl;
+        afterImg.src = afterUrl;
+        
+        if (compareSlider) {
+            compareSlider.value = 50;
+            compareContainer.style.setProperty('--clip-percent', '50%');
+            const divider = document.getElementById('compare-divider');
+            if (divider) divider.style.left = '50%';
+        }
+    }
+    
+    if (selectBefore) selectBefore.addEventListener('change', updateComparisonView);
+    if (selectAfter) selectAfter.addEventListener('change', updateComparisonView);
+    
+    if (compareSlider) {
+        compareSlider.addEventListener('input', function() {
+            const val = this.value;
+            const clipRight = 100 - val;
+            compareContainer.style.setProperty('--clip-percent', `${clipRight}%`);
+            const divider = document.getElementById('compare-divider');
+            if (divider) divider.style.left = `${val}%`;
+        });
+    }
 });
 </script>
 

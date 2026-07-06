@@ -514,4 +514,17 @@ class NotificationLog(db.Model):
     )
 
     def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
+class Expense(db.Model):
+    __tablename__ = "expense"
+
+    id = db.Column(db.Integer, primary_key=True)
+    category = db.Column(db.String(100), nullable=False)  # e.g., "Materials", "Rent", "Salaries", "Other"
+    amount = db.Column(db.Float, nullable=False)
+    expense_date = db.Column(db.Date, default=datetime.now, nullable=False)
+    notes = db.Column(db.Text)
+
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)

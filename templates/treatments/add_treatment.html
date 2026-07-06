@@ -5,6 +5,35 @@
 {% block content %}
 <br><br><br><br><br><br>
 
+{% macro render_tooth_svg(i, is_lower) %}
+    {% set i = i | int %}
+    {% if i in [1, 2, 3, 14, 15, 16, 17, 18, 19, 30, 31, 32] %}
+        <!-- Molar -->
+        <svg viewBox="0 0 20 30" width="18" height="26" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
+            <path d="M 2 7 C 2 3, 18 3, 18 7 C 18 13, 16 17, 15 23 C 14 26, 11 28, 10 28 C 9 28, 6 26, 5 23 C 4 13, 2 7, 2 7 Z" fill="none" stroke="currentColor" stroke-width="1.5" />
+            <path d="M 5 7 Q 10 10 15 7" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4" />
+            <path d="M 10 8 L 10 18" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3" />
+        </svg>
+    {% elif i in [4, 5, 12, 13, 20, 21, 28, 29] %}
+        <!-- Premolar -->
+        <svg viewBox="0 0 20 30" width="16" height="24" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
+            <path d="M 3 8 C 3 4, 17 4, 17 8 C 17 13, 15 17, 14 23 C 13 26, 11 28, 10 28 C 9 28, 7 26, 6 23 C 5 13, 3 8, 3 8 Z" fill="none" stroke="currentColor" stroke-width="1.5" />
+            <path d="M 6 8 Q 10 11 14 8" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4" />
+        </svg>
+    {% elif i in [6, 11, 22, 27] %}
+        <!-- Canine -->
+        <svg viewBox="0 0 20 30" width="14" height="22" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
+            <path d="M 10 2 C 11 2, 16 5, 16 8 C 16 13, 14 17, 13 23 C 12 26, 11 28, 10 28 C 9 28, 8 26, 7 23 C 6 13, 4 8, 4 8 C 4 5, 9 2, 10 2 Z" fill="none" stroke="currentColor" stroke-width="1.5" />
+            <path d="M 6 8 Q 10 11 14 8" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4" />
+        </svg>
+    {% else %}
+        <!-- Incisor -->
+        <svg viewBox="0 0 20 30" width="13" height="20" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
+            <path d="M 4 6 C 4 4, 16 4, 16 6 L 14 22 C 14 25, 12 28, 10 28 C 8 28, 6 25, 6 22 Z" fill="none" stroke="currentColor" stroke-width="1.5" />
+        </svg>
+    {% endif %}
+{% endmacro %}
+
 <section id="add-patient-page" class="section">
     <div class="container" data-aos="fade-up">
         <div class="row justify-content-center">
@@ -92,75 +121,186 @@
                                 </select>
                             </div>
 
+                            {% set fdi_map = {
+                                1: 18, 2: 17, 3: 16, 4: 15, 5: 14, 6: 13, 7: 12, 8: 11,
+                                9: 21, 10: 22, 11: 23, 12: 24, 13: 25, 14: 26, 15: 27, 16: 28,
+                                17: 38, 18: 37, 19: 36, 20: 35, 21: 34, 22: 33, 23: 32, 24: 31,
+                                25: 41, 26: 42, 27: 43, 28: 44, 29: 45, 30: 46, 31: 47, 32: 48
+                            } %}
                             <style>
-                            .odontogram-wrapper {
-                                background: var(--surface-color);
-                                border: 1px solid color-mix(in srgb, var(--accent-color), transparent 88%);
-                                border-radius: 16px;
-                                padding: 20px;
-                            }
-                            .tooth-btn {
-                                width: 34px;
-                                height: 34px;
-                                padding: 0 !important;
-                                font-weight: 700;
-                                border-radius: 8px;
-                                font-size: 0.85rem;
-                                display: inline-flex;
-                                align-items: center;
-                                justify-content: center;
-                                transition: all 0.2s ease;
-                                border: 2px solid color-mix(in srgb, var(--accent-color), transparent 85%);
-                                background: transparent;
-                                color: var(--default-color);
-                            }
-                            .tooth-btn:hover {
-                                background: color-mix(in srgb, var(--accent-color), transparent 90%);
-                                border-color: var(--accent-color);
-                                color: var(--accent-color);
-                            }
-                            .tooth-btn.active {
-                                background: var(--accent-color) !important;
-                                border-color: var(--accent-color) !important;
-                                color: #ffffff !important;
-                                box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2);
-                            }
-                            </style>
+                             .odontogram-wrapper {
+                                 background: var(--surface-color);
+                                 border: 1px solid color-mix(in srgb, var(--accent-color), transparent 88%);
+                                 border-radius: 16px;
+                                 padding: 20px;
+                             }
+                             .jaw-arch-container {
+                                 position: relative;
+                                 width: 100%;
+                                 height: 250px;
+                                 margin: 0 auto;
+                             }
+                             .jaw-bg-line {
+                                 position: absolute;
+                                 width: 100%;
+                                 height: 100%;
+                                 top: 0;
+                                 left: 0;
+                                 z-index: 1;
+                                 pointer-events: none;
+                             }
+                             .tooth-select-btn {
+                                 position: absolute;
+                                 z-index: 2;
+                                 display: flex;
+                                 flex-direction: column;
+                                 align-items: center;
+                                 padding: 6px 4px;
+                                 border-radius: 8px;
+                                 border: 1px solid transparent;
+                                 transition: all 0.2s ease;
+                                 cursor: pointer;
+                                 background: transparent;
+                                 color: var(--default-color);
+                                 min-width: 42px;
+                             }
+                             .tooth-select-btn:hover:not(:disabled) {
+                                 transform: translate(-50%, -50%) scale(1.1) rotate(var(--rot, 0deg)) !important;
+                                 background: color-mix(in srgb, var(--accent-color), transparent 93%);
+                                 border-color: color-mix(in srgb, var(--accent-color), transparent 80%);
+                             }
+                             .tooth-select-btn.active {
+                                 background: color-mix(in srgb, #198754, transparent 94%) !important;
+                                 border-color: #198754 !important;
+                                 box-shadow: 0 4px 10px rgba(25, 135, 84, 0.15);
+                             }
+                             .tooth-select-btn.active .tooth-svg {
+                                 color: #198754 !important;
+                                 fill: color-mix(in srgb, #198754, transparent 80%) !important;
+                             }
+                             .tooth-svg-container {
+                                 margin: 2px 0;
+                             }
+                             .tooth-svg {
+                                 color: var(--default-color);
+                                 transition: all 0.2s ease;
+                             }
+                             .tooth-svg.rotate-180 {
+                                 transform: rotate(180deg);
+                             }
+                             .tooth-label-top {
+                                 font-size: 0.8rem;
+                                 font-weight: 700;
+                             }
+                             .tooth-label-fdi {
+                                 font-size: 0.65rem;
+                             }
+                             @media (max-width: 576px) {
+                                 .jaw-arch-container {
+                                     height: 200px;
+                                 }
+                                 .tooth-select-btn {
+                                     min-width: 32px !important;
+                                     padding: 4px 2px !important;
+                                 }
+                                 .tooth-svg {
+                                     width: 16px !important;
+                                     height: 24px !important;
+                                 }
+                                 .tooth-label-top {
+                                     font-size: 0.7rem !important;
+                                 }
+                                 .tooth-label-fdi {
+                                     font-size: 0.55rem !important;
+                                 }
+                             }
+                             </style>
 
-                            <div class="col-md-12">
-                                <label for="tooth_number" class="form-label fw-bold">Tooth Number (Select from chart or type)</label>
-                                <div class="odontogram-wrapper mb-3">
-                                    <div class="text-center text-secondary small mb-3">
-                                        <i class="bi bi-info-circle me-1"></i> Click teeth on the chart to select or deselect.
-                                    </div>
-                                    <div class="jaw upper-jaw text-center mb-4">
-                                        <div class="text-uppercase text-secondary fw-semibold small mb-2">Upper Jaw (Maxillary)</div>
-                                        <div class="d-flex justify-content-center align-items-center flex-wrap gap-1">
-                                            {% for i in range(1, 9) %}
-                                            <button type="button" class="tooth-btn" data-tooth="{{ i }}">{{ i }}</button>
-                                            {% endfor %}
-                                            <div style="width: 2px; height: 34px; background: color-mix(in srgb, var(--default-color), transparent 80%); margin: 0 8px;"></div>
-                                            {% for i in range(9, 17) %}
-                                            <button type="button" class="tooth-btn" data-tooth="{{ i }}">{{ i }}</button>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                    <div class="jaw lower-jaw text-center">
-                                        <div class="text-uppercase text-secondary fw-semibold small mb-2">Lower Jaw (Mandibular)</div>
-                                        <div class="d-flex justify-content-center align-items-center flex-wrap gap-1">
-                                            {% for i in range(32, 24, -1) %}
-                                            <button type="button" class="tooth-btn" data-tooth="{{ i }}">{{ i }}</button>
-                                            {% endfor %}
-                                            <div style="width: 2px; height: 34px; background: color-mix(in srgb, var(--default-color), transparent 80%); margin: 0 8px;"></div>
-                                            {% for i in range(24, 16, -1) %}
-                                            <button type="button" class="tooth-btn" data-tooth="{{ i }}">{{ i }}</button>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                </div>
-                                <input type="text" id="tooth_number" name="tooth_number" class="form-control settings-input"
-                                    placeholder="e.g. 14, 15">
-                            </div>
+                             <div class="col-md-12">
+                                 <label for="tooth_number" class="form-label fw-bold">Tooth Number (Select from chart or type)</label>
+                                 <div class="odontogram-wrapper mb-3">
+                                     <div class="text-center text-secondary small mb-3">
+                                         <i class="bi bi-info-circle me-1"></i> Click teeth on the chart to select or deselect.
+                                     </div>
+                                     
+                                     {% set upper_positions = {
+                                         1:  {'x': '6%',  'y': '85%', 'r': '-65deg'},
+                                         2:  {'x': '9%',  'y': '68%', 'r': '-55deg'},
+                                         3:  {'x': '13%', 'y': '52%', 'r': '-45deg'},
+                                         4:  {'x': '18%', 'y': '38%', 'r': '-35deg'},
+                                         5:  {'x': '24%', 'y': '26%', 'r': '-25deg'},
+                                         6:  {'x': '31%', 'y': '17%', 'r': '-15deg'},
+                                         7:  {'x': '39%', 'y': '11%', 'r': '-5deg'},
+                                         8:  {'x': '47%', 'y': '9%',  'r': '-2deg'},
+                                         9:  {'x': '53%', 'y': '9%',  'r': '2deg'},
+                                         10: {'x': '61%', 'y': '11%', 'r': '5deg'},
+                                         11: {'x': '69%', 'y': '17%', 'r': '15deg'},
+                                         12: {'x': '76%', 'y': '26%', 'r': '25deg'},
+                                         13: {'x': '82%', 'y': '38%', 'r': '35deg'},
+                                         14: {'x': '87%', 'y': '52%', 'r': '45deg'},
+                                         15: {'x': '91%', 'y': '68%', 'r': '55deg'},
+                                         16: {'x': '94%', 'y': '85%', 'r': '65deg'}
+                                     } %}
+
+                                     {% set lower_positions = {
+                                         32: {'x': '6%',  'y': '15%', 'r': '65deg'},
+                                         31: {'x': '9%',  'y': '32%', 'r': '55deg'},
+                                         30: {'x': '13%', 'y': '48%', 'r': '45deg'},
+                                         29: {'x': '18%', 'y': '62%', 'r': '35deg'},
+                                         28: {'x': '24%', 'y': '74%', 'r': '25deg'},
+                                         27: {'x': '31%', 'y': '83%', 'r': '15deg'},
+                                         26: {'x': '39%', 'y': '89%', 'r': '5deg'},
+                                         25: {'x': '47%', 'y': '91%', 'r': '2deg'},
+                                         24: {'x': '53%', 'y': '91%', 'r': '-2deg'},
+                                         23: {'x': '61%', 'y': '89%', 'r': '-5deg'},
+                                         22: {'x': '69%', 'y': '83%', 'r': '-15deg'},
+                                         21: {'x': '76%', 'y': '74%', 'r': '-25deg'},
+                                         20: {'x': '82%', 'y': '62%', 'r': '-35deg'},
+                                         19: {'x': '87%', 'y': '48%', 'r': '-45deg'},
+                                         18: {'x': '91%', 'y': '32%', 'r': '-55deg'},
+                                         17: {'x': '94%', 'y': '15%', 'r': '-65deg'}
+                                     } %}
+
+                                     <div class="jaw upper-jaw text-center mb-4" style="max-width: 600px; margin: 0 auto;">
+                                         <div class="text-uppercase text-secondary fw-semibold small mb-2">Upper Jaw (Maxillary)</div>
+                                         <div class="jaw-arch-container">
+                                             <svg class="jaw-bg-line" viewBox="0 0 100 50">
+                                                 <path d="M 6 45 C 6 10, 94 10, 94 45" fill="none" stroke="color-mix(in srgb, var(--accent-color), transparent 88%)" stroke-width="4" stroke-linecap="round" />
+                                             </svg>
+                                             {% for i in range(1, 17) %}
+                                             {% set pos = upper_positions[i] %}
+                                             <button type="button" class="tooth-select-btn tooth-btn" data-tooth="{{ i }}" style="left: {{ pos.x }}; top: {{ pos.y }}; --rot: {{ pos.r }}; transform: translate(-50%, -50%) rotate({{ pos.r }});">
+                                                 <span class="tooth-label-top">{{ i }}</span>
+                                                 <div class="tooth-svg-container">
+                                                     {{ render_tooth_svg(i, false) }}
+                                                 </div>
+                                                 <span class="tooth-label-fdi text-muted">({{ fdi_map[i] }})</span>
+                                             </button>
+                                             {% endfor %}
+                                         </div>
+                                     </div>
+                                     <div class="jaw lower-jaw text-center" style="max-width: 600px; margin: 0 auto;">
+                                         <div class="text-uppercase text-secondary fw-semibold small mb-2">Lower Jaw (Mandibular)</div>
+                                         <div class="jaw-arch-container">
+                                             <svg class="jaw-bg-line" viewBox="0 0 100 50">
+                                                 <path d="M 6 5 C 6 40, 94 40, 94 5" fill="none" stroke="color-mix(in srgb, var(--accent-color), transparent 88%)" stroke-width="4" stroke-linecap="round" />
+                                             </svg>
+                                             {% for i in [32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17] %}
+                                             {% set pos = lower_positions[i] %}
+                                             <button type="button" class="tooth-select-btn tooth-btn" data-tooth="{{ i }}" style="left: {{ pos.x }}; top: {{ pos.y }}; --rot: {{ pos.r }}; transform: translate(-50%, -50%) rotate({{ pos.r }});">
+                                                 <span class="tooth-label-top">{{ i }}</span>
+                                                 <div class="tooth-svg-container">
+                                                     {{ render_tooth_svg(i, true) }}
+                                                 </div>
+                                                 <span class="tooth-label-fdi text-muted">({{ fdi_map[i] }})</span>
+                                             </button>
+                                             {% endfor %}
+                                         </div>
+                                     </div>
+                                 </div>
+                                 <input type="text" id="tooth_number" name="tooth_number" class="form-control settings-input"
+                                     placeholder="e.g. 14, 15">
+                             </div></div>
 
                             <div class="col-12">
                                 <label for="notes" class="form-label">Notes</label>
@@ -209,16 +349,43 @@ document.addEventListener('DOMContentLoaded', function () {
             const selectedProcedure = procedureSelect.value;
 
             if (!selectedProcedure || prices[selectedProcedure] === undefined) {
-                priceDisplay.textContent = 'Select a procedure type to show price';
+                priceDisplay.textContent = document.documentElement.lang === 'ar' ? 'اختر نوع الإجراء لعرض السعر' : 'Select a procedure type to show price';
                 return;
             }
 
-            const priceNum = parseFloat(prices[selectedProcedure]);
-            priceDisplay.textContent = priceNum.toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' {{ currency_symbol }}';
+            let teethCount = 1;
+            if (toothInput) {
+                const teethList = toothInput.value.split(',')
+                    .map(t => t.trim())
+                    .filter(t => t !== '');
+                if (teethList.length > 0) {
+                    teethCount = teethList.length;
+                }
+            }
+
+            const basePrice = parseFloat(prices[selectedProcedure]);
+            const totalPrice = basePrice * teethCount;
+            
+            const isAr = document.documentElement.lang === 'ar';
+            const toothLabel = isAr ? 'أسنان' : 'teeth';
+            const totalLabel = isAr ? 'المجموع' : 'Total';
+            
+            let displayVal = totalPrice.toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' {{ currency_symbol }}';
+            if (teethCount > 1) {
+                displayVal += ` (${totalLabel} لـ ${teethCount} ${toothLabel})`;
+            }
+            priceDisplay.textContent = displayVal;
         }
 
         procedureSelect.addEventListener('change', updateProcedurePrice);
+        
+        if (toothInput) {
+            toothInput.addEventListener('input', updateProcedurePrice);
+        }
+
+        // Initialize price display
         updateProcedurePrice();
+        window.updateProcedurePrice = updateProcedurePrice; // expose helper
     }
 
     if (toothInput && toothButtons.length > 0) {
@@ -242,6 +409,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 
                 selectedTeeth.sort((a, b) => parseInt(a) - parseInt(b));
                 toothInput.value = selectedTeeth.join(', ');
+                
+                if (window.updateProcedurePrice) {
+                    window.updateProcedurePrice();
+                }
             });
         });
 
