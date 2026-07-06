@@ -41,7 +41,7 @@ CREATE TABLE `appointment` (
 
 LOCK TABLES `appointment` WRITE;
 /*!40000 ALTER TABLE `appointment` DISABLE KEYS */;
-INSERT INTO `appointment` VALUES (1,1,'2026-06-21 10:00:00','Check-up','Cancelled',NULL),(2,2,'2026-06-22 10:00:00','Cleaning','Cancelled',NULL),(3,3,'2026-06-23 10:00:00','Filling','Cancelled',NULL),(4,4,'2026-06-24 10:00:00','Root Canal','Cancelled',NULL),(5,5,'2026-06-25 10:00:00','Extraction','Cancelled',NULL),(6,6,'2026-06-26 10:00:00','Check-up','Cancelled',NULL),(7,7,'2026-06-27 10:00:00','Cleaning','Cancelled',NULL),(8,8,'2026-06-28 10:00:00','Filling','Cancelled',NULL),(9,9,'2026-06-29 10:00:00','Check-up','Cancelled',NULL),(10,10,'2026-06-30 10:00:00','Follow-up','Cancelled',NULL),(11,1,'2026-06-20 16:00:00','Check-up','Done',NULL),(12,9,'2026-06-24 12:00:00','Extraction','Cancelled',NULL),(13,8,'2026-06-24 11:00:00','Whitening','Cancelled',NULL),(15,8,'2026-06-22 17:10:00','Extraction','Done',NULL),(16,2,'2026-06-22 17:25:00','Emergency Pain','Done',NULL),(17,10,'2026-06-27 11:00:00','Root Canal','Cancelled',NULL),(18,1,'2026-07-07 16:00:00','Check-up','Done','2026-07-06 05:43:00'),(19,10,'2026-07-06 12:00:00','Extraction','Done','2026-07-06 06:54:58'),(20,9,'2026-07-06 12:00:00','Crown / Bridge','Done','2026-07-06 07:05:06'),(21,3,'2026-07-06 12:00:00','Whitening','In Chair',NULL),(22,6,'2026-07-06 13:00:00','Emergency Pain','Checked In','2026-07-06 07:09:06');
+INSERT INTO `appointment` VALUES (1,1,'2026-06-21 10:00:00','Check-up','Cancelled',NULL),(2,2,'2026-06-22 10:00:00','Cleaning','Cancelled',NULL),(3,3,'2026-06-23 10:00:00','Filling','Cancelled',NULL),(4,4,'2026-06-24 10:00:00','Root Canal','Cancelled',NULL),(5,5,'2026-06-25 10:00:00','Extraction','Cancelled',NULL),(6,6,'2026-06-26 10:00:00','Check-up','Cancelled',NULL),(7,7,'2026-06-27 10:00:00','Cleaning','Cancelled',NULL),(8,8,'2026-06-28 10:00:00','Filling','Cancelled',NULL),(9,9,'2026-06-29 10:00:00','Check-up','Cancelled',NULL),(10,10,'2026-06-30 10:00:00','Follow-up','Cancelled',NULL),(11,1,'2026-06-20 16:00:00','Check-up','Done',NULL),(12,9,'2026-06-24 12:00:00','Extraction','Cancelled',NULL),(13,8,'2026-06-24 11:00:00','Whitening','Cancelled',NULL),(15,8,'2026-06-22 17:10:00','Extraction','Done',NULL),(16,2,'2026-06-22 17:25:00','Emergency Pain','Done',NULL),(17,10,'2026-06-27 11:00:00','Root Canal','Cancelled',NULL),(18,1,'2026-07-07 16:00:00','Check-up','Done','2026-07-06 05:43:00'),(19,10,'2026-07-06 12:00:00','Extraction','Done','2026-07-06 06:54:58'),(20,9,'2026-07-06 12:00:00','Crown / Bridge','Done','2026-07-06 07:05:06'),(21,3,'2026-07-06 12:00:00','Whitening','Cancelled',NULL),(22,6,'2026-07-06 13:00:00','Emergency Pain','Scheduled','2026-07-06 07:09:06');
 /*!40000 ALTER TABLE `appointment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -70,6 +70,38 @@ LOCK TABLES `expense` WRITE;
 /*!40000 ALTER TABLE `expense` DISABLE KEYS */;
 INSERT INTO `expense` VALUES (1,'Rent',1000000,'2026-07-06','rent');
 /*!40000 ALTER TABLE `expense` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `installment`
+--
+
+DROP TABLE IF EXISTS `installment`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `installment` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `treatment_plan_id` int NOT NULL,
+  `amount` float NOT NULL,
+  `due_date` date NOT NULL,
+  `status` varchar(50) NOT NULL,
+  `payment_id` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `treatment_plan_id` (`treatment_plan_id`),
+  KEY `payment_id` (`payment_id`),
+  CONSTRAINT `installment_ibfk_1` FOREIGN KEY (`treatment_plan_id`) REFERENCES `treatment_plan` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `installment_ibfk_2` FOREIGN KEY (`payment_id`) REFERENCES `payment` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `installment`
+--
+
+LOCK TABLES `installment` WRITE;
+/*!40000 ALTER TABLE `installment` DISABLE KEYS */;
+INSERT INTO `installment` VALUES (1,3,200000,'2026-07-06','Pending',NULL),(2,3,200000,'2026-08-06','Pending',NULL),(3,3,200000,'2026-09-06','Pending',NULL),(4,3,200000,'2026-10-06','Pending',NULL),(5,3,200000,'2026-11-06','Pending',NULL);
+/*!40000 ALTER TABLE `installment` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -329,6 +361,36 @@ INSERT INTO `treatment` VALUES (1,11,'2026-06-20 16:00:00','Filling','1','',7500
 UNLOCK TABLES;
 
 --
+-- Table structure for table `treatment_plan`
+--
+
+DROP TABLE IF EXISTS `treatment_plan`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `treatment_plan` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `patient_id` int NOT NULL,
+  `title` varchar(150) NOT NULL,
+  `total_cost` float NOT NULL,
+  `status` varchar(50) NOT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `patient_id` (`patient_id`),
+  CONSTRAINT `treatment_plan_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `treatment_plan`
+--
+
+LOCK TABLES `treatment_plan` WRITE;
+/*!40000 ALTER TABLE `treatment_plan` DISABLE KEYS */;
+INSERT INTO `treatment_plan` VALUES (3,10,'نخور',1000000,'Active','2026-07-06 20:55:32');
+/*!40000 ALTER TABLE `treatment_plan` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `user`
 --
 
@@ -370,4 +432,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-06  7:17:12
+-- Dump completed on 2026-07-06 20:55:59

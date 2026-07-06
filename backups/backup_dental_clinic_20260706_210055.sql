@@ -73,6 +73,38 @@ INSERT INTO `expense` VALUES (1,'Rent',1000000,'2026-07-06','rent');
 UNLOCK TABLES;
 
 --
+-- Table structure for table `installment`
+--
+
+DROP TABLE IF EXISTS `installment`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `installment` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `treatment_plan_id` int NOT NULL,
+  `amount` float NOT NULL,
+  `due_date` date NOT NULL,
+  `status` varchar(50) NOT NULL,
+  `payment_id` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `treatment_plan_id` (`treatment_plan_id`),
+  KEY `payment_id` (`payment_id`),
+  CONSTRAINT `installment_ibfk_1` FOREIGN KEY (`treatment_plan_id`) REFERENCES `treatment_plan` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `installment_ibfk_2` FOREIGN KEY (`payment_id`) REFERENCES `payment` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `installment`
+--
+
+LOCK TABLES `installment` WRITE;
+/*!40000 ALTER TABLE `installment` DISABLE KEYS */;
+INSERT INTO `installment` VALUES (1,3,200000,'2026-07-06','Paid',7),(2,3,200000,'2026-08-06','Paid',8),(3,3,200000,'2026-09-06','Pending',NULL),(4,3,200000,'2026-10-06','Pending',NULL),(5,3,200000,'2026-11-06','Pending',NULL);
+/*!40000 ALTER TABLE `installment` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `invoice`
 --
 
@@ -228,7 +260,7 @@ CREATE TABLE `payment` (
   PRIMARY KEY (`id`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `payment_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -237,7 +269,7 @@ CREATE TABLE `payment` (
 
 LOCK TABLES `payment` WRITE;
 /*!40000 ALTER TABLE `payment` DISABLE KEYS */;
-INSERT INTO `payment` VALUES (1,1,150000.00,'2026-06-20 15:28:15',''),(2,8,160000.00,'2026-06-22 17:21:00','لا يوجد'),(3,2,200000.00,'2026-06-22 17:27:03',''),(4,2,70000.00,'2026-06-22 17:34:43',''),(5,9,400000.00,'2026-07-06 07:10:59',''),(6,10,100000.00,'2026-07-06 07:12:51','');
+INSERT INTO `payment` VALUES (1,1,150000.00,'2026-06-20 15:28:15',''),(2,8,160000.00,'2026-06-22 17:21:00','لا يوجد'),(3,2,200000.00,'2026-06-22 17:27:03',''),(4,2,70000.00,'2026-06-22 17:34:43',''),(5,9,400000.00,'2026-07-06 07:10:59',''),(6,10,100000.00,'2026-07-06 07:12:51',''),(7,10,200000.00,'2026-07-06 20:56:47','Settle installment for: نخور'),(8,10,200000.00,'2026-07-06 20:57:55','Settle installment for: نخور');
 /*!40000 ALTER TABLE `payment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -258,7 +290,7 @@ CREATE TABLE `payment_allocation` (
   KEY `invoice_id` (`invoice_id`),
   CONSTRAINT `payment_allocation_ibfk_1` FOREIGN KEY (`payment_id`) REFERENCES `payment` (`id`),
   CONSTRAINT `payment_allocation_ibfk_2` FOREIGN KEY (`invoice_id`) REFERENCES `invoice` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -267,7 +299,7 @@ CREATE TABLE `payment_allocation` (
 
 LOCK TABLES `payment_allocation` WRITE;
 /*!40000 ALTER TABLE `payment_allocation` DISABLE KEYS */;
-INSERT INTO `payment_allocation` VALUES (2,2,2,160000.00),(4,3,3,200000.00),(5,4,3,70000.00),(7,1,1,150000.00),(8,5,6,400000.00),(9,6,5,100000.00);
+INSERT INTO `payment_allocation` VALUES (2,2,2,160000.00),(4,3,3,200000.00),(5,4,3,70000.00),(7,1,1,150000.00),(8,5,6,400000.00),(11,6,5,100000.00);
 /*!40000 ALTER TABLE `payment_allocation` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -329,6 +361,36 @@ INSERT INTO `treatment` VALUES (1,11,'2026-06-20 16:00:00','Filling','1','',7500
 UNLOCK TABLES;
 
 --
+-- Table structure for table `treatment_plan`
+--
+
+DROP TABLE IF EXISTS `treatment_plan`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `treatment_plan` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `patient_id` int NOT NULL,
+  `title` varchar(150) NOT NULL,
+  `total_cost` float NOT NULL,
+  `status` varchar(50) NOT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `patient_id` (`patient_id`),
+  CONSTRAINT `treatment_plan_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `treatment_plan`
+--
+
+LOCK TABLES `treatment_plan` WRITE;
+/*!40000 ALTER TABLE `treatment_plan` DISABLE KEYS */;
+INSERT INTO `treatment_plan` VALUES (3,10,'نخور',1000000,'Active','2026-07-06 20:55:32');
+/*!40000 ALTER TABLE `treatment_plan` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `user`
 --
 
@@ -370,4 +432,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-06 20:00:42
+-- Dump completed on 2026-07-06 21:00:55
