@@ -90,6 +90,7 @@
                 </th>
 
                 <th>Notes</th>
+                <th class="text-center">Actions</th>
             </tr>
         </thead>
 
@@ -97,7 +98,7 @@
             {% for payment in patient_payments %}
             <tr>
                 <td>
-                    <strong>PAY-{{ payment.id }}</strong>
+                    <a href="{{ url_for('payments.view_payment', payment_id=payment.id) }}" class="fw-bold text-primary">PAY-{{ payment.id }}</a>
                 </td>
 
                 <td>
@@ -133,6 +134,15 @@
 
                 <td>
                     {{ payment.notes or 'No notes available' }}
+                </td>
+                <td class="text-center">
+                    <div class="appointments-actions">
+                        <a href="{{ url_for('payments.view_payment', payment_id=payment.id) }}"
+                           class="table-action-btn view-btn"
+                           title="View Payment Details">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </div>
                 </td>
             </tr>
             {% endfor %}

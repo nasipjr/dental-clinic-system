@@ -267,7 +267,13 @@ def patient_detail(patient_id):
         patient_files = sorted(patient.files, key=lambda f: f.upload_date, reverse=True)
 
         # Build Ledger Entries
-        from datetime import datetime
+        def to_date_only(d):
+            if d is None:
+                return None
+            if hasattr(d, "hour") and hasattr(d, "date") and callable(d.date):
+                return d.date()
+            return d
+
         ledger_entries = []
         invoices = Invoice.query.join(Invoice.appointment).filter(
             Appointment.patient_id == patient.id,
@@ -276,8 +282,9 @@ def patient_detail(patient_id):
         for inv in invoices:
             desc_items = [t.procedure_type for t in inv.appointment.treatments if t.procedure_type]
             desc_str = ", ".join(desc_items) if desc_items else (inv.appointment.reason or "Dental Session")
-            inv_date = inv.issue_date.date() if isinstance(inv.issue_date, datetime) else inv.issue_date
+            inv_date = to_date_only(inv.issue_date)
             ledger_entries.append({
+                "id": inv.id,
                 "date": inv_date,
                 "type": "invoice",
                 "ref": inv.invoice_number,
@@ -288,8 +295,9 @@ def patient_detail(patient_id):
 
         payments = Payment.query.filter_by(patient_id=patient.id).all()
         for pay in payments:
-            pay_date = pay.payment_date.date() if isinstance(pay.payment_date, datetime) else pay.payment_date
+            pay_date = to_date_only(pay.payment_date)
             ledger_entries.append({
+                "id": pay.id,
                 "date": pay_date,
                 "type": "payment",
                 "ref": f"PAY-{pay.id:04d}",
@@ -345,7 +353,13 @@ def patient_ledger_print(patient_id):
     try:
         patient = Patient.query.get_or_404(patient_id)
         
-        from datetime import datetime
+        def to_date_only(d):
+            if d is None:
+                return None
+            if hasattr(d, "hour") and hasattr(d, "date") and callable(d.date):
+                return d.date()
+            return d
+
         ledger_entries = []
         invoices = Invoice.query.join(Invoice.appointment).filter(
             Appointment.patient_id == patient_id,
@@ -355,8 +369,9 @@ def patient_ledger_print(patient_id):
         for inv in invoices:
             desc_items = [t.procedure_type for t in inv.appointment.treatments if t.procedure_type]
             desc_str = ", ".join(desc_items) if desc_items else (inv.appointment.reason or "Dental Session")
-            inv_date = inv.issue_date.date() if isinstance(inv.issue_date, datetime) else inv.issue_date
+            inv_date = to_date_only(inv.issue_date)
             ledger_entries.append({
+                "id": inv.id,
                 "date": inv_date,
                 "type": "invoice",
                 "ref": inv.invoice_number,
@@ -367,8 +382,9 @@ def patient_ledger_print(patient_id):
             
         payments = Payment.query.filter_by(patient_id=patient_id).all()
         for pay in payments:
-            pay_date = pay.payment_date.date() if isinstance(pay.payment_date, datetime) else pay.payment_date
+            pay_date = to_date_only(pay.payment_date)
             ledger_entries.append({
+                "id": pay.id,
                 "date": pay_date,
                 "type": "payment",
                 "ref": f"PAY-{pay.id:04d}",

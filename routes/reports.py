@@ -126,6 +126,67 @@ def reports_dashboard():
         ]
         top_debtors = sorted(debtors, key=lambda x: x["outstanding"], reverse=True)[:5]
 
+        # Available years for filtering
+        first_invoice = Invoice.query.order_by(Invoice.issue_date.asc()).first()
+        first_payment = Payment.query.order_by(Payment.payment_date.asc()).first()
+        first_expense = Expense.query.order_by(Expense.expense_date.asc()).first()
+        
+        years_with_data = {today.year}
+        if first_invoice:
+            years_with_data.add(first_invoice.issue_date.year)
+        if first_payment:
+            years_with_data.add(first_payment.payment_date.year)
+        if first_expense:
+            years_with_data.add(first_expense.expense_date.year)
+            
+        available_years = sorted(list(years_with_data), reverse=True)
+        selected_year = request.args.get("year", default=today.year, type=int)
+
+        # 7. Monthly Financial Summary for the Selected Calendar Year (January to December)
+        monthly_summary = []
+        for month in range(1, 13):
+            date_start = datetime(selected_year, month, 1)
+            if month == 12:
+                date_end = datetime(selected_year + 1, 1, 1)
+            else:
+                date_end = datetime(selected_year, month + 1, 1)
+
+            # Total Invoiced (Billed)
+            invoices_m = Invoice.query.join(Invoice.appointment).filter(
+                Appointment.status != "Cancelled",
+                Invoice.issue_date >= date_start,
+                Invoice.issue_date < date_end
+            ).all()
+            billed_m = sum(float(inv.total_amount) for inv in invoices_m)
+
+            # Total Payments (Paid)
+            paid_m = db.session.query(func.sum(Payment.amount)).filter(
+                Payment.payment_date >= date_start,
+                Payment.payment_date < date_end
+            ).scalar() or 0.0
+            paid_m = float(paid_m)
+
+            # Total Expenses
+            expenses_m = db.session.query(func.sum(Expense.amount)).filter(
+                Expense.expense_date >= date_start.date(),
+                Expense.expense_date < date_end.date()
+            ).scalar() or 0.0
+            expenses_m = float(expenses_m)
+
+            # Cash Net Profit
+            net_profit_m = paid_m - expenses_m
+            # Accrual Net Profit
+            accrual_profit_m = billed_m - expenses_m
+
+            monthly_summary.append({
+                "month_label": date_start.strftime("%B %Y"),
+                "billed": billed_m,
+                "paid": paid_m,
+                "expenses": expenses_m,
+                "net_profit": net_profit_m,
+                "accrual_profit": accrual_profit_m
+            })
+
         return render_template(
             "reports/reports.html",
             total_patients=total_patients,
@@ -150,6 +211,9 @@ def reports_dashboard():
             cash_net_profit=cash_net_profit,
             accrual_net_profit=accrual_net_profit,
             expense_categories=expense_categories,
+            monthly_summary=monthly_summary,
+            available_years=available_years,
+            selected_year=selected_year,
             now=datetime.now()
         )
 
@@ -266,3 +330,95 @@ def export_report(report_type):
     except Exception:
         current_app.logger.exception("Failed to export report CSV")
         return "Internal Server Error", 500
+
+
+@reports_bp.route("/reports/financial-calendar-data")
+@role_required("admin")
+def financial_calendar_data():
+    try:
+        year_str = request.args.get("year")
+        month_str = request.args.get("month")
+        
+        today = datetime.now()
+        year = int(year_str) if year_str else today.year
+        month = int(month_str) if month_str else today.month
+        
+        import calendar as py_calendar
+        _, num_days = py_calendar.monthrange(year, month)
+        
+        start_date = datetime(year, month, 1, 0, 0, 0)
+        end_date = datetime(year, month, num_days, 23, 59, 59)
+        
+        invoices = Invoice.query.join(Invoice.appointment).filter(
+            Appointment.status != "Cancelled",
+            Invoice.issue_date >= start_date,
+            Invoice.issue_date <= end_date
+        ).all()
+        
+        payments = Payment.query.filter(
+            Payment.payment_date >= start_date,
+            Payment.payment_date <= end_date
+        ).all()
+        
+        expenses = Expense.query.filter(
+            Expense.expense_date >= start_date.date(),
+            Expense.expense_date <= end_date.date()
+        ).all()
+        
+        day_data = {}
+        for day in range(1, num_days + 1):
+            day_data[day] = {
+                "billed": 0.0,
+                "paid": 0.0,
+                "expenses": 0.0,
+                "net_profit": 0.0,
+                "invoices": [],
+                "payments": [],
+                "expenses_list": []
+            }
+            
+        for inv in invoices:
+            day = inv.issue_date.day
+            amount = float(inv.total_amount)
+            day_data[day]["billed"] += amount
+            day_data[day]["invoices"].append({
+                "id": inv.id,
+                "invoice_number": inv.invoice_number,
+                "patient_name": f"{inv.patient.first_name} {inv.patient.last_name}",
+                "total_amount": amount
+            })
+            
+        for pay in payments:
+            day = pay.payment_date.day
+            amount = float(pay.amount)
+            day_data[day]["paid"] += amount
+            day_data[day]["payments"].append({
+                "id": pay.id,
+                "patient_name": f"{pay.patient.first_name} {pay.patient.last_name}",
+                "amount": amount,
+                "notes": pay.notes or ""
+            })
+            
+        for exp in expenses:
+            day = exp.expense_date.day
+            amount = float(exp.amount)
+            day_data[day]["expenses"] += amount
+            day_data[day]["expenses_list"].append({
+                "id": exp.id,
+                "category": exp.category,
+                "amount": amount,
+                "notes": exp.notes or ""
+            })
+            
+        for day in range(1, num_days + 1):
+            day_data[day]["net_profit"] = day_data[day]["paid"] - day_data[day]["expenses"]
+            
+        return {
+            "year": year,
+            "month": month,
+            "days_in_month": num_days,
+            "day_data": day_data
+        }
+    except Exception:
+        current_app.logger.exception("Failed to load financial calendar data")
+        return {"error": "Failed to load financial calendar data"}, 500

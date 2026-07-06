@@ -84,6 +84,12 @@
                     {% if current_lang == 'ar' %}تتبع المصاريف وصافي الأرباح{% else %}Expenses & Net Profit{% endif %}
                 </button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-pill px-4 py-2.5 fw-bold" id="monthly-summary-tab" data-bs-toggle="pill" data-bs-target="#tab-monthly-summary" type="button" role="tab">
+                    <i class="bi bi-calendar-range {% if current_lang == 'ar' %}ms-1.5{% else %}me-1.5{% endif %}"></i>
+                    {% if current_lang == 'ar' %}الخلاصة المالية الشهرية{% else %}Monthly Financial Summary{% endif %}
+                </button>
+            </li>
         </ul>
 
         <!-- Tab Content -->
@@ -512,10 +518,231 @@
                 </div>
 
             </div>
+
+            <!-- Tab 3: Monthly Financial Summary -->
+            <div class="tab-pane fade" id="tab-monthly-summary" role="tabpanel" aria-labelledby="monthly-summary-tab">
+                
+                <!-- Print Page Title -->
+                <div class="d-none d-print-block mb-4">
+                    <h3 class="fw-bold text-center">{% if current_lang == 'ar' %}تقرير الخلاصة المالية الشهرية{% else %}Monthly Financial Summary Report{% endif %}</h3>
+                    <p class="text-muted text-center">{% if current_lang == 'ar' %}تاريخ التصدير:{% else %}Printed Date:{% endif %} {{ now.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+
+                <!-- Interactive Daily Financial Calendar -->
+                <div class="card border-0 rounded-4 shadow-sm p-4 mb-5 d-print-none" id="monthly-calendar-wrapper">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                        <div>
+                            <h4 class="fw-bold mb-1">
+                                {% if current_lang == 'ar' %}التقويم المالي اليومي{% else %}Daily Financial Calendar{% endif %}
+                            </h4>
+                            <p class="text-secondary mb-0 small">
+                                {% if current_lang == 'ar' %}تصفح الأيام للوقوف على المفوتر، المقبوضات، والمصاريف اليومية بالتفصيل.{% else %}Browse days to review daily billing, collections, and expense lists.{% endif %}
+                            </p>
+                        </div>
+                        
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-circle" id="cal-prev-month-btn">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            <h5 class="fw-bold mb-0 text-main px-2" id="calendar-month-display" style="min-width: 140px; text-align: center;"></h5>
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-circle" id="cal-next-month-btn">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Grid Wrapper -->
+                    <div class="calendar-grid-container mb-2">
+                        <!-- Days of Week Headers -->
+                        <div class="calendar-week-headers mb-2">
+                            <div>{% if current_lang == 'ar' %}الأحد{% else %}Sun{% endif %}</div>
+                            <div>{% if current_lang == 'ar' %}الاثنين{% else %}Mon{% endif %}</div>
+                            <div>{% if current_lang == 'ar' %}الثلاثاء{% else %}Tue{% endif %}</div>
+                            <div>{% if current_lang == 'ar' %}الأربعاء{% else %}Wed{% endif %}</div>
+                            <div>{% if current_lang == 'ar' %}الخميس{% else %}Thu{% endif %}</div>
+                            <div>{% if current_lang == 'ar' %}الجمعة{% else %}Fri{% endif %}</div>
+                            <div>{% if current_lang == 'ar' %}السبت{% else %}Sat{% endif %}</div>
+                        </div>
+                        
+                        <!-- Days Cells Grid -->
+                        <div class="calendar-days-grid" id="calendar-days-container">
+                            <!-- Populated dynamically via Javascript -->
+                        </div>
+                    </div>
+
+                    <!-- Calendar Footer: Legend & Monthly Totals -->
+                    <div class="border-top pt-3 mt-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                        <!-- Legend -->
+                        <div class="d-flex gap-3 small text-secondary flex-wrap">
+                            <div class="d-flex align-items-center gap-1.5">
+                                <span class="d-inline-block rounded-circle" style="width: 10px; height: 10px; background-color: var(--primary-color);"></span>
+                                <span>{% if current_lang == 'ar' %}مفوتر{% else %}Billed{% endif %}</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-1.5">
+                                <span class="d-inline-block rounded-circle" style="width: 10px; height: 10px; background-color: var(--success-color);"></span>
+                                <span>{% if current_lang == 'ar' %}مقبوض{% else %}Paid{% endif %}</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-1.5">
+                                <span class="d-inline-block rounded-circle" style="width: 10px; height: 10px; background-color: var(--danger-color);"></span>
+                                <span>{% if current_lang == 'ar' %}مصاريف{% else %}Expenses{% endif %}</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-1.5">
+                                <span class="d-inline-block" style="width: 15px; height: 4px; border-top: 3px solid #198754;"></span>
+                                <span>{% if current_lang == 'ar' %}صافي ربح{% else %}Net Profit{% endif %}</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-1.5">
+                                <span class="d-inline-block" style="width: 15px; height: 4px; border-top: 3px solid #dc3545;"></span>
+                                <span>{% if current_lang == 'ar' %}صافي خسارة{% else %}Net Loss{% endif %}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Month Totals Summary -->
+                        <div class="d-flex gap-3 align-items-center flex-wrap" id="calendar-month-totals">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Explanatory Table Card -->
+                <div class="card table-card border-0 rounded-4 shadow-sm p-4 mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                        <div>
+                            <h4 class="fw-bold mb-1">
+                                {% if current_lang == 'ar' %}الجدول التوضيحي المالي{% else %}Explanatory Financial Table{% endif %}
+                            </h4>
+                            <p class="text-secondary mb-0 small">
+                                {% if current_lang == 'ar' %}مقارنة المبالغ المفوترة والمحصلة والمصاريف وصافي الربح شهرياً بالتفصيل.{% else %}Detailed month-by-month table comparing billed, paid, expenses, and net profit margins.{% endif %}
+                            </p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 d-print-none">
+                            <label for="table-year-select" class="form-label mb-0 fw-semibold text-secondary small">
+                                {% if current_lang == 'ar' %}السنة:{% else %}Year:{% endif %}
+                            </label>
+                            <select id="table-year-select" class="form-select form-select-sm rounded-3" style="width: 100px;" onchange="location.href='{{ url_for('reports.reports_dashboard') }}?year=' + this.value + '#tab-monthly-summary'">
+                                {% for yr in available_years %}
+                                <option value="{{ yr }}" {% if yr == selected_year %}selected{% endif %}>{{ yr }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    {% if monthly_summary %}
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>{% if current_lang == 'ar' %}الشهر{% else %}Month{% endif %}</th>
+                                    <th class="text-end">{% if current_lang == 'ar' %}إجمالي المفوتر{% else %}Total Billed{% endif %}</th>
+                                    <th class="text-end">{% if current_lang == 'ar' %}إجمالي المقبوضات{% else %}Total Paid{% endif %}</th>
+                                    <th class="text-end text-danger">{% if current_lang == 'ar' %}المصاريف{% else %}Expenses{% endif %}</th>
+                                    <th class="text-end">{% if current_lang == 'ar' %}صافي الأرباح (نقدي){% else %}Net Profit (Cash){% endif %}</th>
+                                    <th class="text-end">{% if current_lang == 'ar' %}صافي الأرباح (تراكمي/مفوتر){% else %}Net Profit (Accrual){% endif %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in monthly_summary %}
+                                <tr>
+                                    <td>
+                                        <strong class="text-body">{{ item.month_label }}</strong>
+                                    </td>
+                                    <td class="text-end fw-semibold">{{ item.billed | format_price }} {{ currency_symbol }}</td>
+                                    <td class="text-end text-success fw-semibold">{{ item.paid | format_price }} {{ currency_symbol }}</td>
+                                    <td class="text-end text-danger fw-semibold">{{ item.expenses | format_price }} {{ currency_symbol }}</td>
+                                    <td class="text-end">
+                                        <strong class="{% if item.net_profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                            {{ item.net_profit | format_price }} {{ currency_symbol }}
+                                        </strong>
+                                    </td>
+                                    <td class="text-end">
+                                        <strong class="{% if item.accrual_profit >= 0 %}text-primary{% else %}text-danger{% endif %}">
+                                            {{ item.accrual_profit | format_price }} {{ currency_symbol }}
+                                        </strong>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-file-earmark-break text-muted fs-1 opacity-50 mb-3 d-block"></i>
+                        <p>{% if current_lang == 'ar' %}لا توجد بيانات خلاصة مالية بعد.{% else %}No financial summary data available yet.{% endif %}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
         </div>
 
     </div>
 </section>
+
+<!-- Day details Modal -->
+<div class="modal fade d-print-none" id="dayDetailsModal" tabindex="-1" aria-labelledby="dayDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold text-main" id="dayDetailsModalLabel">
+                    {% if current_lang == 'ar' %}تفاصيل الحركات المالية ليوم{% else %}Financial Details for{% endif %} 
+                    <span id="modal-day-title" class="text-primary"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-3">
+                <!-- Daily Totals Summary Banner -->
+                <div class="row g-2 mb-4 text-center" id="modal-day-summary-banner">
+                    <!-- Populated dynamically via Javascript -->
+                </div>
+
+                <div class="row g-3">
+                    <!-- Issued Invoices -->
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-4 border h-100" style="background-color: var(--surface-color);">
+                            <h6 class="fw-bold mb-3 text-secondary d-flex align-items-center gap-2">
+                                <i class="bi bi-receipt text-primary"></i>
+                                <span>{% if current_lang == 'ar' %}الفواتير الصادرة{% else %}Issued Invoices{% endif %}</span>
+                            </h6>
+                            <div id="modal-invoices-list" class="modal-data-scroll" style="max-height: 250px; overflow-y: auto;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Received Payments -->
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-4 border h-100" style="background-color: var(--surface-color);">
+                            <h6 class="fw-bold mb-3 text-secondary d-flex align-items-center gap-2">
+                                <i class="bi bi-wallet2 text-success"></i>
+                                <span>{% if current_lang == 'ar' %}المقبوضات (المدفوعات){% else %}Payments Received{% endif %}</span>
+                            </h6>
+                            <div id="modal-payments-list" class="modal-data-scroll" style="max-height: 250px; overflow-y: auto;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Logged Expenses -->
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-4 border h-100" style="background-color: var(--surface-color);">
+                            <h6 class="fw-bold mb-3 text-secondary d-flex align-items-center gap-2">
+                                <i class="bi bi-cash-stack text-danger"></i>
+                                <span>{% if current_lang == 'ar' %}المصاريف المدفوعة{% else %}Expenses Logged{% endif %}</span>
+                            </h6>
+                            <div id="modal-expenses-list" class="modal-data-scroll" style="max-height: 250px; overflow-y: auto;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                    {% if current_lang == 'ar' %}إغلاق{% else %}Close{% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Include Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -739,6 +966,272 @@
             });
         }
 
+        // ── Daily Financial Calendar Logic ──
+        const currencySymbol = "{{ currency_symbol }}";
+        const invoiceUrlTemplate = "{{ url_for('invoices.view_invoice', invoice_id=0) }}";
+        const paymentUrlTemplate = "{{ url_for('payments.view_payment', payment_id=0) }}";
+        let currentCalYear = {{ selected_year }};
+        let currentCalMonth = new Date().getFullYear() === currentCalYear ? (new Date().getMonth() + 1) : 1; // 1-12
+
+        function formatPrice(val) {
+            return Number(val).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function openDayDetailsModal(year, month, day, dayInfo) {
+            const dateStr = `${day}/${month}/${year}`;
+            document.getElementById("modal-day-title").innerText = dateStr;
+            
+            // Populate Daily Summary Banner
+            const summaryBanner = document.getElementById("modal-day-summary-banner");
+            if (summaryBanner) {
+                const netColorClass = dayInfo.net_profit >= 0 ? "text-success" : "text-danger";
+                summaryBanner.innerHTML = `
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 border rounded-3" style="background-color: var(--surface-color);">
+                            <small class="text-secondary d-block">${isArabic ? 'إجمالي المفوتر' : 'Total Billed'}</small>
+                            <strong class="text-primary">${formatPrice(dayInfo.billed)} ${currencySymbol}</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 border rounded-3" style="background-color: var(--surface-color);">
+                            <small class="text-secondary d-block">${isArabic ? 'إجمالي المقبوض' : 'Total Paid'}</small>
+                            <strong class="text-success">+${formatPrice(dayInfo.paid)} ${currencySymbol}</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 border rounded-3" style="background-color: var(--surface-color);">
+                            <small class="text-secondary d-block">${isArabic ? 'المصاريف' : 'Expenses'}</small>
+                            <strong class="text-danger">-${formatPrice(dayInfo.expenses)} ${currencySymbol}</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 border rounded-3" style="background-color: var(--surface-color);">
+                            <small class="text-secondary d-block">${isArabic ? 'صافي الربح' : 'Net Profit'}</small>
+                            <strong class="${netColorClass}">${formatPrice(dayInfo.net_profit)} ${currencySymbol}</strong>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Populate Invoices
+            const invoicesList = document.getElementById("modal-invoices-list");
+            invoicesList.innerHTML = "";
+            if (dayInfo.invoices.length > 0) {
+                dayInfo.invoices.forEach(inv => {
+                    const invoiceUrl = invoiceUrlTemplate.replace('0', inv.id);
+                    invoicesList.innerHTML += `
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <div>
+                                <a href="${invoiceUrl}" class="fw-bold text-primary">${inv.invoice_number}</a><br>
+                                <span class="text-secondary small">${inv.patient_name}</span>
+                            </div>
+                            <span class="fw-bold">${formatPrice(inv.total_amount)} ${currencySymbol}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                invoicesList.innerHTML = `<div class="text-muted small py-2 text-center">${isArabic ? 'لا توجد فواتير صادرة' : 'No invoices issued.'}</div>`;
+            }
+            
+            // Populate Payments
+            const paymentsList = document.getElementById("modal-payments-list");
+            paymentsList.innerHTML = "";
+            if (dayInfo.payments.length > 0) {
+                dayInfo.payments.forEach(pay => {
+                    const paymentUrl = paymentUrlTemplate.replace('0', pay.id);
+                    paymentsList.innerHTML += `
+                        <div class="d-flex justify-content-between align-items-start py-2 border-bottom">
+                            <div>
+                                <a href="${paymentUrl}" class="fw-bold text-success">PAY-${pay.id.toString().padStart(4, '0')}</a><br>
+                                <span class="text-secondary small">${pay.patient_name}</span>
+                                ${pay.notes ? `<br><small class="text-muted">${pay.notes}</small>` : ''}
+                            </div>
+                            <span class="fw-bold text-success">+${formatPrice(pay.amount)} ${currencySymbol}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                paymentsList.innerHTML = `<div class="text-muted small py-2 text-center">${isArabic ? 'لا توجد مقبوضات مستلمة' : 'No payments received.'}</div>`;
+            }
+            
+            // Populate Expenses
+            const expensesList = document.getElementById("modal-expenses-list");
+            expensesList.innerHTML = "";
+            if (dayInfo.expenses_list.length > 0) {
+                dayInfo.expenses_list.forEach(exp => {
+                    expensesList.innerHTML += `
+                        <div class="d-flex justify-content-between align-items-start py-2 border-bottom">
+                            <div>
+                                <span class="fw-bold text-danger">${exp.category}</span>
+                                ${exp.notes ? `<br><small class="text-muted">${exp.notes}</small>` : ''}
+                            </div>
+                            <span class="fw-bold text-danger">-${formatPrice(exp.amount)} ${currencySymbol}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                expensesList.innerHTML = `<div class="text-muted small py-2 text-center">${isArabic ? 'لا توجد مصاريف مدفوعة' : 'No expenses logged.'}</div>`;
+            }
+            
+            const modal = new bootstrap.Modal(document.getElementById("dayDetailsModal"));
+            modal.show();
+            
+            if (typeof translateDOM === 'function' && isArabic) {
+                translateDOM(document.getElementById("dayDetailsModal"));
+            }
+        }
+
+        function generateFinancialCalendar(year, month) {
+            const container = document.getElementById("calendar-days-container");
+            if (!container) return;
+            
+            container.innerHTML = `<div class="w-100 text-center py-5" style="grid-column: span 7;"><div class="spinner-border text-primary" role="status"></div></div>`;
+            
+            fetch(`/reports/financial-calendar-data?year=${year}&month=${month}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        container.innerHTML = `<div class="alert alert-danger text-center" style="grid-column: span 7;">${data.error}</div>`;
+                        return;
+                    }
+                    
+                    container.innerHTML = "";
+                    
+                    const firstDayIndex = new Date(year, month - 1, 1).getDay();
+                    const daysInMonth = data.days_in_month;
+                    
+                    for (let i = 0; i < firstDayIndex; i++) {
+                        const emptyCell = document.createElement("div");
+                        emptyCell.className = "calendar-day-cell empty-cell";
+                        container.appendChild(emptyCell);
+                    }
+                    
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const dayInfo = data.day_data[day];
+                        const cell = document.createElement("div");
+                        cell.className = "calendar-day-cell card p-2 rounded-3";
+                        
+                        if (dayInfo.paid > 0 || dayInfo.expenses > 0 || dayInfo.billed > 0) {
+                            const netColor = dayInfo.net_profit >= 0 ? "#198754" : "#dc3545";
+                            cell.style.borderTop = `3px solid ${netColor}`;
+                            cell.onclick = () => openDayDetailsModal(year, month, day, dayInfo);
+                        } else {
+                            cell.style.cursor = "default";
+                            cell.style.pointerEvents = "none";
+                        }
+                        
+                        let statsHtml = "";
+                        if (dayInfo.paid > 0 || dayInfo.expenses > 0 || dayInfo.billed > 0) {
+                            statsHtml = `
+                                <div class="cal-day-stats mt-1 text-start" style="font-size: 0.68rem; line-height: 1.25;">
+                                    ${dayInfo.billed > 0 ? `<div class="text-secondary d-flex justify-content-between"><span>${isArabic ? 'مفوتر:' : 'Billed:'}</span><strong>${formatPrice(dayInfo.billed)}</strong></div>` : ''}
+                                    ${dayInfo.paid > 0 ? `<div class="text-success d-flex justify-content-between"><span>${isArabic ? 'مقبوض:' : 'Paid:'}</span><strong>+${formatPrice(dayInfo.paid)}</strong></div>` : ''}
+                                    ${dayInfo.expenses > 0 ? `<div class="text-danger d-flex justify-content-between"><span>${isArabic ? 'مصروف:' : 'Exp:'}</span><strong>-${formatPrice(dayInfo.expenses)}</strong></div>` : ''}
+                                    ${(dayInfo.paid > 0 || dayInfo.expenses > 0) ? `
+                                        <div class="border-top my-1"></div>
+                                        <div class="d-flex justify-content-between font-bold ${dayInfo.net_profit >= 0 ? 'text-success' : 'text-danger'}">
+                                            <span>${isArabic ? 'صافي:' : 'Net:'}</span><strong>${formatPrice(dayInfo.net_profit)}</strong>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `;
+                        }
+                        
+                        cell.innerHTML = `
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold cal-day-number">${day}</span>
+                                ${(dayInfo.invoices.length > 0 || dayInfo.payments.length > 0 || dayInfo.expenses_list.length > 0) ? `
+                                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-circle p-1" style="font-size: 0.62rem; min-width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center;">
+                                        ${dayInfo.invoices.length + dayInfo.payments.length + dayInfo.expenses_list.length}
+                                    </span>
+                                ` : ''}
+                            </div>
+                            ${statsHtml}
+                        `;
+                        
+                        container.appendChild(cell);
+                    }
+                    
+                    // Calculate month-wide totals
+                    let monthBilled = 0;
+                    let monthPaid = 0;
+                    let monthExpenses = 0;
+                    
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const dayInfo = data.day_data[day];
+                        monthBilled += dayInfo.billed;
+                        monthPaid += dayInfo.paid;
+                        monthExpenses += dayInfo.expenses;
+                    }
+                    const monthNet = monthPaid - monthExpenses;
+                    const netColorClass = monthNet >= 0 ? "text-success" : "text-danger";
+                    
+                    const totalsContainer = document.getElementById("calendar-month-totals");
+                    if (totalsContainer) {
+                        totalsContainer.innerHTML = `
+                            <div class="small">
+                                <span class="text-secondary">${isArabic ? 'مفوتر الشهر:' : 'Month Billed:'}</span> 
+                                <strong class="text-primary">${formatPrice(monthBilled)} ${currencySymbol}</strong>
+                            </div>
+                            <div class="small">
+                                <span class="text-secondary">${isArabic ? 'مقبوض الشهر:' : 'Month Paid:'}</span> 
+                                <strong class="text-success">+${formatPrice(monthPaid)} ${currencySymbol}</strong>
+                            </div>
+                            <div class="small">
+                                <span class="text-secondary">${isArabic ? 'مصاريف الشهر:' : 'Month Expenses:'}</span> 
+                                <strong class="text-danger">-${formatPrice(monthExpenses)} ${currencySymbol}</strong>
+                            </div>
+                            <div class="small border-start ps-3">
+                                <span class="text-secondary font-bold">${isArabic ? 'صافي الشهر:' : 'Month Net:'}</span> 
+                                <strong class="font-bold ${netColorClass}">${formatPrice(monthNet)} ${currencySymbol}</strong>
+                            </div>
+                        `;
+                    }
+
+                    const monthNames = [
+                        "January", "February", "March", "April", "May", "June",
+                        "July", "August", "September", "October", "November", "December"
+                    ];
+                    const monthTitle = `${monthNames[month - 1]} ${year}`;
+                    document.getElementById("calendar-month-display").innerText = monthTitle;
+                    
+                    if (typeof translateDOM === 'function' && isArabic) {
+                        translateDOM(document.getElementById("monthly-calendar-wrapper"));
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    container.innerHTML = `<div class="alert alert-danger text-center" style="grid-column: span 7;">Failed to load calendar data.</div>`;
+                });
+        }
+
+        // Initialize Calendar and Nav listeners
+        const prevBtn = document.getElementById("cal-prev-month-btn");
+        const nextBtn = document.getElementById("cal-next-month-btn");
+        
+        if (prevBtn && nextBtn) {
+            prevBtn.onclick = () => {
+                currentCalMonth--;
+                if (currentCalMonth <= 0) {
+                    currentCalMonth = 12;
+                    currentCalYear--;
+                }
+                generateFinancialCalendar(currentCalYear, currentCalMonth);
+            };
+            
+            nextBtn.onclick = () => {
+                currentCalMonth++;
+                if (currentCalMonth > 12) {
+                    currentCalMonth = 1;
+                    currentCalYear++;
+                }
+                generateFinancialCalendar(currentCalYear, currentCalMonth);
+            };
+            
+            // Run on load
+            generateFinancialCalendar(currentCalYear, currentCalMonth);
+        }
+
         // Handle URL hash to open the correct tab directly
         const hash = window.location.hash;
         if (hash) {
@@ -782,12 +1275,82 @@
     .table-card {
         background: var(--surface-color);
         border: 1px solid color-mix(in srgb, var(--default-color), transparent 92%) !important;
-        transition: box-shadow 0.25s ease;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
     .chart-card:hover,
     .table-card:hover {
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06) !important;
+    }
+
+    /* Daily Calendar Grid Styles */
+    .calendar-grid-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .calendar-week-headers {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        text-align: center;
+        font-weight: bold;
+        color: var(--text-muted-color, #6c757d);
+        border-bottom: 2px solid color-mix(in srgb, var(--default-color), transparent 92%);
+        padding-bottom: 10px;
+    }
+    
+    .calendar-days-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 10px;
+        min-height: 400px;
+    }
+    
+    .calendar-day-cell {
+        background: var(--surface-color);
+        border: 1px solid color-mix(in srgb, var(--default-color), transparent 92%) !important;
+        min-height: 100px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+    
+    .calendar-day-cell:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08) !important;
+        background-color: color-mix(in srgb, var(--surface-color), var(--primary-color) 4%);
+    }
+    
+    .calendar-day-cell.empty-cell {
+        background: transparent;
+        border: none !important;
+        cursor: default;
+        pointer-events: none;
+    }
+    
+    .cal-day-number {
+        font-size: 1.1rem;
+        color: var(--default-color);
+    }
+    
+    .cal-day-stats {
+        margin-top: 4px;
+    }
+
+    /* Direction-specific overrides for RTL layout */
+    [dir="rtl"] .calendar-days-grid {
+        direction: rtl;
+    }
+    [dir="rtl"] .calendar-week-headers {
+        direction: rtl;
+    }
+    [dir="rtl"] #cal-prev-month-btn i,
+    [dir="rtl"] #cal-next-month-btn i {
+        display: inline-block;
+        transform: rotate(180deg);
     }
 
     /* Print styles */

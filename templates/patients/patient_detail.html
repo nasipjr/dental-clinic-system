@@ -266,9 +266,9 @@
                                             <td>{{ entry.date.strftime('%Y-%m-%d') }}</td>
                                             <td>
                                                 {% if entry.type == 'invoice' %}
-                                                    <a href="{{ url_for('invoices.view_invoice', invoice_id=entry.ref) }}" class="fw-bold text-primary">{{ entry.ref }}</a>
+                                                    <a href="{{ url_for('invoices.view_invoice', invoice_id=entry.id) }}" class="fw-bold text-primary">{{ entry.ref }}</a>
                                                 {% else %}
-                                                    <strong class="text-secondary">{{ entry.ref }}</strong>
+                                                    <a href="{{ url_for('payments.view_payment', payment_id=entry.id) }}" class="fw-bold text-success">{{ entry.ref }}</a>
                                                 {% endif %}
                                             </td>
                                             <td>

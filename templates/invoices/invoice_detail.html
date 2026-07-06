@@ -266,7 +266,7 @@
                         {% for allocation in invoice.payment_allocations %}
                         <tr>
                             <td>
-                                <strong>PAY-{{ allocation.payment.id }}</strong>
+                                <a href="{{ url_for('payments.view_payment', payment_id=allocation.payment.id) }}" class="fw-bold text-success">PAY-{{ allocation.payment.id }}</a>
                             </td>
 
                             <td>

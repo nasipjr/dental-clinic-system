@@ -215,3 +215,28 @@ def add_patient_payment():
             message="Failed to add payment.",
             back_url=url_for("payments.payments"),
         ), 500
+
+
+@payments_bp.route("/payments/<int:payment_id>")
+@role_required("admin", "receptionist")
+def view_payment(payment_id):
+    current_app.logger.info(f"Payment detail page opened | payment_id={payment_id}")
+    try:
+        payment = Payment.query.get_or_404(payment_id)
+        return render_template(
+            "payments/payment_detail.html",
+            payment=payment,
+            patient=payment.patient,
+            allocations=payment.allocations,
+            current_lang=request.cookies.get('lang', 'en')
+        )
+    except Exception:
+        current_app.logger.exception(
+            f"Failed to load payment detail | payment_id={payment_id}"
+        )
+        return render_template(
+            "error_message.html",
+            title="Error",
+            message="Failed to load payment details.",
+            back_url=url_for("payments.payments"),
+        ), 500

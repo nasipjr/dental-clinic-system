@@ -97,7 +97,7 @@
             {% for payment in payments %}
             <tr>
                 <td>
-                    <strong>PAY-{{ payment.id }}</strong>
+                    <a href="{{ url_for('payments.view_payment', payment_id=payment.id) }}" class="fw-bold text-primary">PAY-{{ payment.id }}</a>
                 </td>
 
                 <td>
@@ -145,6 +145,12 @@
 
                 <td class="text-center">
                     <div class="appointments-actions">
+
+                        <a href="{{ url_for('payments.view_payment', payment_id=payment.id) }}"
+                           class="table-action-btn view-btn"
+                           title="View Payment Details">
+                            <i class="bi bi-eye"></i>
+                        </a>
 
                         <a href="{{ url_for('patients.patient_detail', patient_id=payment.patient_id) }}"
                            class="table-action-btn view-btn"

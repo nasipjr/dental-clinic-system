@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}{% if current_lang == 'ar' %}تفاصيل الدفعة{% else %}Payment Details{% endif %}{% endblock %}
+
+{% block content %}
+<br><br><br><br><br><br><br>
+
+<!-- Section Title -->
+<div class="container section-title" data-aos="fade-up">
+    <h2>{% if current_lang == 'ar' %}تفاصيل الدفعة{% else %}Payment Details{% endif %}</h2>
+    <p>{% if current_lang == 'ar' %}عرض تفاصيل الدفعة والفواتير التي تم تسويتها بها{% else %}Detailed payment view with invoice allocations and remaining credit.{% endif %}</p>
+</div>
+
+<section id="payment-detail-section" class="section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+        <div class="add-patient-wrapper">
+            <div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
+                <h2>{% if current_lang == 'ar' %}وصل الدفعة{% else %}Payment{% endif %} PAY-{{ payment.id }}</h2>
+                <p>{% if current_lang == 'ar' %}تاريخ التسجيل:{% else %}Recorded on{% endif %} {{ payment.payment_date.strftime('%Y-%m-%d %H:%M') if payment.payment_date else 'No date' }}</p>
+            </div>
+
+            <!-- Payment Main Info -->
+            <div class="patient-info-grid mb-4">
+                <div class="patient-info-box">
+                    <span class="info-label">{% if current_lang == 'ar' %}الرقم المرجعي{% else %}Payment Number{% endif %}</span>
+                    <p>PAY-{{ payment.id }}</p>
+                </div>
+
+                <div class="patient-info-box">
+                    <span class="info-label">{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</span>
+                    <p>
+                        <a href="{{ url_for('patients.patient_detail', patient_id=patient.id) }}" class="fw-bold text-primary">
+                            {{ patient.first_name }} {{ patient.last_name }}
+                        </a>
+                        <br>
+                        <small>{{ patient.phone or ('No phone number' if current_lang != 'ar' else 'لا يوجد رقم هاتف') }}</small>
+                    </p>
+                </div>
+
+                <div class="patient-info-box">
+                    <span class="info-label">{% if current_lang == 'ar' %}تاريخ الدفع{% else %}Date Recorded{% endif %}</span>
+                    <p>
+                        {{ payment.payment_date.strftime('%Y-%m-%d %H:%M') if payment.payment_date else 'No date' }}
+                    </p>
+                </div>
+
+                <div class="patient-info-box">
+                    <span class="info-label">{% if current_lang == 'ar' %}قيمة الدفعة{% else %}Payment Amount{% endif %}</span>
+                    <p class="text-success fw-bold">{{ payment.amount | format_price }} {{ currency_symbol }}</p>
+                </div>
+
+                <div class="patient-info-box">
+                    <span class="info-label">{% if current_lang == 'ar' %}المبلغ المخصص{% else %}Allocated Amount{% endif %}</span>
+                    <p class="text-info fw-bold">{{ payment.allocated_amount | format_price }} {{ currency_symbol }}</p>
+                </div>
+
+                <div class="patient-info-box">
+                    <span class="info-label">{% if current_lang == 'ar' %}الرصيد الدائن المتبقي{% else %}Unallocated Credit{% endif %}</span>
+                    <p class="text-warning fw-bold">{{ payment.unallocated_amount | format_price }} {{ currency_symbol }}</p>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="patient-info-box w-100 mb-4 p-3 border rounded-3" style="background-color: var(--surface-color, #fff);">
+                <span class="info-label text-muted d-block mb-1">{% if current_lang == 'ar' %}ملاحظات / بيان{% else %}Notes / Description{% endif %}</span>
+                <p class="mb-0">{{ payment.notes or ('No notes available' if current_lang != 'ar' else 'لا توجد ملاحظات') }}</p>
+            </div>
+
+            <!-- Invoice Allocations -->
+            <div class="container section-title" style="margin-top: 35px; margin-bottom: 20px;" data-aos="fade-up">
+                <h3>{% if current_lang == 'ar' %}التخصيص على الفواتير{% else %}Allocations to Invoices{% endif %}</h3>
+                <p>{% if current_lang == 'ar' %}الفواتير التي تمت تسويتها جزئياً أو كلياً بهذه الدفعة{% else %}Invoices partially or fully settled by this payment.{% endif %}</p>
+            </div>
+
+            {% if payment.allocations %}
+            <div class="appointments-table-wrapper table-responsive mb-4">
+                <table class="table appointments-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>{% if current_lang == 'ar' %}رقم الفاتورة{% else %}Invoice Number{% endif %}</th>
+                            <th>{% if current_lang == 'ar' %}تاريخ الفاتورة{% else %}Invoice Date{% endif %}</th>
+                            <th class="text-end">{% if current_lang == 'ar' %}قيمة الفاتورة{% else %}Invoice Total{% endif %}</th>
+                            <th class="text-end">{% if current_lang == 'ar' %}المبلغ المقتطع{% else %}Amount Allocated{% endif %}</th>
+                            <th class="text-center">{% if current_lang == 'ar' %}الإجراء{% else %}Actions{% endif %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for allocation in payment.allocations %}
+                        <tr>
+                            <td>
+                                <strong>{{ allocation.invoice.invoice_number }}</strong>
+                            </td>
+                            <td>
+                                {{ allocation.invoice.issue_date.strftime('%Y-%m-%d %H:%M') if allocation.invoice.issue_date else 'No date' }}
+                            </td>
+                            <td class="text-end fw-bold">
+                                {{ allocation.invoice.total_amount | format_price }} {{ currency_symbol }}
+                            </td>
+                            <td class="text-end text-success fw-bold">
+                                {{ allocation.amount | format_price }} {{ currency_symbol }}
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ url_for('invoices.view_invoice', invoice_id=allocation.invoice_id) }}"
+                                   class="table-action-btn view-btn" title="{% if current_lang == 'ar' %}عرض الفاتورة{% else %}View Invoice{% endif %}">
+                                    <i class="bi bi-receipt"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state-card text-center py-4 mb-4">
+                <i class="bi bi-file-earmark-break text-muted fs-1 opacity-50 mb-3 d-block"></i>
+                <p>{% if current_lang == 'ar' %}لم يتم تخصيص هذه الدفعة لأي فاتورة بعد (محفوظة كرصيد مالي للمريض).{% else %}This payment has not been allocated to any invoice yet (stored as patient credit).{% endif %}</p>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="action-buttons justify-content-center gap-3 mt-4 d-print-none">
+                <a href="{{ url_for('payments.payments') }}" class="btn-outline-main px-4">
+                    {% if current_lang == 'ar' %}العودة للمدفوعات{% else %}Back to Payments{% endif %}
+                </a>
+                <a href="{{ url_for('patients.patient_detail', patient_id=patient.id) }}" class="btn-outline-main px-4">
+                    {% if current_lang == 'ar' %}ملف المريض{% else %}View Patient File{% endif %}
+                </a>
+                <button onclick="window.print()" class="btn btn-success px-4 d-inline-flex align-items-center gap-2">
+                    <i class="bi bi-printer"></i>
+                    <span>{% if current_lang == 'ar' %}طباعة الوصل{% else %}Print Receipt{% endif %}</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Print Layout for Payment Receipt -->
+<div class="d-none d-print-block container mt-4" id="payment-print-area" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+    <div class="print-header d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h1 class="clinic-name-print mb-1 fw-bold text-main">{{ clinic_name }}</h1>
+            <p class="mb-1"><i class="bi bi-geo-alt"></i> {{ clinic_address }}</p>
+            <p class="mb-1"><i class="bi bi-phone"></i> {{ clinic_phone }}</p>
+            <p class="mb-0"><i class="bi bi-envelope"></i> {{ clinic_email }}</p>
+        </div>
+        <div class="text-end">
+            <h2 class="text-uppercase fw-bold text-success mb-2">{% if current_lang == 'ar' %}سند قبض نقدية{% else %}Payment Receipt{% endif %}</h2>
+            <h5 class="text-muted mb-3">{% if current_lang == 'ar' %}رقم السند{% else %}Receipt Number{% endif %}: PAY-{{ payment.id }}</h5>
+            <p class="mb-1"><strong>{% if current_lang == 'ar' %}التاريخ{% else %}Date{% endif %}:</strong> {{ payment.payment_date.strftime('%Y-%m-%d %H:%M') if payment.payment_date else '' }}</p>
+            <p class="mb-0"><strong>{% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}:</strong> {% if current_lang == 'ar' %}مقبول{% else %}Success{% endif %}</p>
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <!-- Received From -->
+    <div class="row mb-4">
+        <div class="col-6">
+            <h5 class="text-uppercase text-secondary fw-semibold mb-2">{% if current_lang == 'ar' %}مستلم من المريض:{% else %}Received From:{% endif %}</h5>
+            <h4 class="mb-1 fw-bold">{{ patient.first_name }} {{ patient.last_name }}</h4>
+            {% if patient.phone %}<p class="mb-1"><strong>{% if current_lang == 'ar' %}الهاتف{% else %}Phone{% endif %}:</strong> {{ patient.phone }}</p>{% endif %}
+        </div>
+        <div class="col-6 text-end">
+            <h5 class="text-uppercase text-secondary fw-semibold mb-2">{% if current_lang == 'ar' %}المبلغ المدفوع:{% else %}Amount Paid:{% endif %}</h5>
+            <h2 class="text-success fw-bold">{{ payment.amount | format_price }} {{ currency_symbol }}</h2>
+        </div>
+    </div>
+
+    <!-- Allocations Print Table -->
+    {% if payment.allocations %}
+    <div class="mb-4">
+        <h5 class="text-uppercase text-secondary fw-semibold mb-2">{% if current_lang == 'ar' %}تسوية الفواتير{% else %}Allocated to Invoices{% endif %}</h5>
+        <table class="table table-bordered print-table">
+            <thead class="table-light">
+                <tr>
+                    <th>{% if current_lang == 'ar' %}رقم الفاتورة{% else %}Invoice Number{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}تاريخ الفاتورة{% else %}Invoice Date{% endif %}</th>
+                    <th class="text-end">{% if current_lang == 'ar' %}قيمة الفاتورة{% else %}Invoice Amount{% endif %}</th>
+                    <th class="text-end">{% if current_lang == 'ar' %}المبلغ المخصص للمدفوع{% else %}Amount Settled{% endif %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for allocation in payment.allocations %}
+                <tr>
+                    <td><strong>{{ allocation.invoice.invoice_number }}</strong></td>
+                    <td>{{ allocation.invoice.issue_date.strftime('%Y-%m-%d') }}</td>
+                    <td class="text-end">{{ allocation.invoice.total_amount | format_price }} {{ currency_symbol }}</td>
+                    <td class="text-end text-success fw-bold">{{ allocation.amount | format_price }} {{ currency_symbol }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Unallocated Credit -->
+    <div class="row justify-content-end mb-4">
+        <div class="col-6 text-end">
+            <p class="mb-1"><strong>{% if current_lang == 'ar' %}إجمالي المخصص{% else %}Total Allocated{% endif %}:</strong> {{ payment.allocated_amount | format_price }} {{ currency_symbol }}</p>
+            <p class="mb-0 fs-5 text-warning"><strong>{% if current_lang == 'ar' %}الرصيد المتبقي (غير مخصص){% else %}Unallocated Credit{% endif %}:</strong> {{ payment.unallocated_amount | format_price }} {{ currency_symbol }}</p>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <div class="d-flex justify-content-between align-items-end mt-5 pt-4 border-top">
+        <div class="text-center" style="width: 150px;">
+        </div>
+        <div class="text-center pe-4">
+            <div class="mb-5 text-muted">{% if current_lang == 'ar' %}توقيع وخاتم المسؤول{% else %}Authorized Signature & Seal{% endif %}</div>
+            <div style="border-bottom: 1px solid #000; width: 200px;"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    /* Hide screen elements */
+    #header, #footer, .topbar, #scroll-top, .section-title, .action-buttons, .btn, .collapse, .alert, .mobile-nav-toggle, #payment-detail-section, br {
+        display: none !important;
+    }
+    
+    html, body, #main, #payment-print-area, #payment-print-area * {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+    
+    body {
+        font-size: 11pt !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    #payment-print-area {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 10px !important;
+    }
+    
+    .table {
+        border-color: #333 !important;
+    }
+    .table th {
+        background-color: #f8f9fa !important;
+        color: #000 !important;
+    }
+}
+</style>
+{% endblock %}
