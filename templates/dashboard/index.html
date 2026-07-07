@@ -579,7 +579,16 @@
                     </div>
                     
                     <!-- Standard Actions -->
-                    <div class="d-flex gap-1 border-start ps-2">
+                    <div class="d-flex gap-1 border-start ps-2 align-items-center">
+                        {% if appointment.status not in ('Done', 'Cancelled') %}
+                        <button type="button"
+                          class="table-action-btn border-0 bg-transparent p-0 me-1"
+                          onclick="sendWhatsAppReminder('{{ appointment.patient.phone or '' }}', '{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}', '{{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if appointment.appointment_date else '' }}', '{{ clinic_name }}')"
+                          title="{% if current_lang == 'ar' %}تذكير عبر واتساب{% else %}Send WhatsApp Reminder{% endif %}"
+                          style="color: #25D366 !important; font-size: 1.15rem;">
+                          <i class="bi bi-whatsapp"></i>
+                        </button>
+                        {% endif %}
                         <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}"
                           class="table-action-btn view-btn" title="{% if current_lang == 'ar' %}عرض الموعد{% else %}View Appointment{% endif %}">
                           <i class="bi bi-eye"></i>

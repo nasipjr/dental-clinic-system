@@ -120,13 +120,6 @@
                             <i class="bi bi-x-circle text-danger"></i>
                         </button>
 
-                        <button type="button"
-                            class="table-action-btn quick-action-btn border-0 bg-transparent p-0"
-                            data-action-url="{{ url_for('appointments.quick_done', appointment_id=appointment.id) }}"
-                            data-confirm-msg="Are you sure you want to mark this appointment as Done without treatments?"
-                            title="Quick Complete">
-                            <i class="bi bi-check-circle text-success"></i>
-                        </button>
                         {% endif %}
 
                         {% if appointment.status != 'Done' %}
