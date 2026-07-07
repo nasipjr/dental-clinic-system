@@ -212,6 +212,12 @@ def reports_dashboard():
             accrual_net_profit=accrual_net_profit,
             expense_categories=expense_categories,
             monthly_summary=monthly_summary,
+            summary_labels=[item["month_label"] for item in monthly_summary],
+            summary_billed=[item["billed"] for item in monthly_summary],
+            summary_paid=[item["paid"] for item in monthly_summary],
+            summary_expenses=[item["expenses"] for item in monthly_summary],
+            summary_net_profit=[item["net_profit"] for item in monthly_summary],
+            summary_accrual_profit=[item["accrual_profit"] for item in monthly_summary],
             available_years=available_years,
             selected_year=selected_year,
             now=datetime.now()

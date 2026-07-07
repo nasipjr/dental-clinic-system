@@ -603,6 +603,57 @@
                     </div>
                 </div>
 
+                <!-- Year Financial Chart Card -->
+                <div class="card chart-card border-0 rounded-4 shadow-sm p-4 mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                        <div>
+                            <h4 class="fw-bold mb-1">
+                                {% if current_lang == 'ar' %}التحليلات المالية التفاعلية (أداء السنة {{ selected_year }}){% else %}Interactive Financial Analytics (Year {{ selected_year }} Performance){% endif %}
+                            </h4>
+                            <p class="text-secondary mb-0 small">
+                                {% if current_lang == 'ar' %}رسم بياني تفاعلي للمقارنة بين المفوتر، المقبوضات، المصاريف، وصافي الأرباح شهرياً.{% else %}Interactive month-by-month chart comparing billed, paid, expenses, and net profit margins.{% endif %}
+                            </p>
+                        </div>
+                        
+                        <!-- Interactive Controls -->
+                        <div class="d-flex align-items-center gap-3 flex-wrap d-print-none">
+                            <!-- View filter buttons -->
+                            <div class="btn-group btn-group-sm rounded-pill p-1 bg-light-subtle border" role="group" id="chart-view-filter">
+                                <button type="button" class="btn btn-primary rounded-pill px-3 active" data-view="all">
+                                    {% if current_lang == 'ar' %}الكل{% else %}All{% endif %}
+                                </button>
+                                <button type="button" class="btn rounded-pill px-3 text-secondary" data-view="income-expense">
+                                    {% if current_lang == 'ar' %}الدخل والمصاريف{% else %}Income & Expenses{% endif %}
+                                </button>
+                                <button type="button" class="btn rounded-pill px-3 text-secondary" data-view="profits">
+                                    {% if current_lang == 'ar' %}صافي الأرباح{% else %}Net Profits{% endif %}
+                                </button>
+                            </div>
+
+                            <!-- Chart style selector -->
+                            <div class="btn-group btn-group-sm rounded-pill p-1 bg-light-subtle border" role="group" id="chart-style-filter">
+                                <button type="button" class="btn btn-primary rounded-pill px-2.5 active" data-style="bar" title="{% if current_lang == 'ar' %}مخطط أعمدة ومؤشرات{% else %}Bar Combo Chart{% endif %}">
+                                    <i class="bi bi-bar-chart-line-fill"></i>
+                                </button>
+                                <button type="button" class="btn rounded-pill px-2.5 text-secondary" data-style="line" title="{% if current_lang == 'ar' %}مخطط خطي كامل{% else %}Line Chart{% endif %}">
+                                    <i class="bi bi-graph-up"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart Container -->
+                    <div class="chart-container" style="position: relative; height: 420px;">
+                        <canvas id="yearFinancialsChart"
+                                data-labels='{{ summary_labels | tojson }}'
+                                data-billed='{{ summary_billed | tojson }}'
+                                data-paid='{{ summary_paid | tojson }}'
+                                data-expenses='{{ summary_expenses | tojson }}'
+                                data-net-profit='{{ summary_net_profit | tojson }}'
+                                data-accrual-profit='{{ summary_accrual_profit | tojson }}'></canvas>
+                    </div>
+                </div>
+
                 <!-- Explanatory Table Card -->
                 <div class="card table-card border-0 rounded-4 shadow-sm p-4 mb-5">
                     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
@@ -963,6 +1014,217 @@
                         }
                     }
                 }
+            });
+        }
+
+        // 5. Year Financials Chart (Combo Bar/Line Chart with Filters and Styles)
+        const yearCanvas = document.getElementById('yearFinancialsChart');
+        if (yearCanvas) {
+            const yearLabels = JSON.parse(yearCanvas.getAttribute('data-labels'));
+            const yearBilled = JSON.parse(yearCanvas.getAttribute('data-billed'));
+            const yearPaid = JSON.parse(yearCanvas.getAttribute('data-paid'));
+            const yearExpenses = JSON.parse(yearCanvas.getAttribute('data-expenses'));
+            const yearNetProfit = JSON.parse(yearCanvas.getAttribute('data-net-profit'));
+            const yearAccrualProfit = JSON.parse(yearCanvas.getAttribute('data-accrual-profit'));
+
+            // Map month names to Arabic if language is Arabic
+            const monthsAr = {
+                "January": "كانون الثاني", "February": "شباط", "March": "آذار",
+                "April": "نيسان", "May": "أيار", "June": "حزيران",
+                "July": "تموز", "August": "آب", "September": "أيلول",
+                "October": "تشرين الأول", "November": "تشرين الثاني", "December": "كانون الأول"
+            };
+
+            const yearLabelsMapped = yearLabels.map(l => {
+                const parts = l.split(' ');
+                if (parts.length === 2) {
+                    const monthEng = parts[0];
+                    const year = parts[1];
+                    if (monthsAr[monthEng]) {
+                        return monthsAr[monthEng] + ' ' + year;
+                    }
+                }
+                return l;
+            });
+
+            // Set up configurations for the datasets
+            const datasetsConfig = {
+                billed: {
+                    label: isArabic ? 'إجمالي المفوتر (تراكمي)' : 'Total Billed (Accrual)',
+                    data: yearBilled,
+                    backgroundColor: 'rgba(13, 110, 253, 0.65)',
+                    borderColor: 'rgb(13, 110, 253)',
+                    borderWidth: 1.5,
+                    borderRadius: 5,
+                    type: 'bar',
+                    order: 3
+                },
+                paid: {
+                    label: isArabic ? 'إجمالي المقبوضات (نقدي)' : 'Total Paid (Cash)',
+                    data: yearPaid,
+                    backgroundColor: 'rgba(25, 135, 84, 0.65)',
+                    borderColor: 'rgb(25, 135, 84)',
+                    borderWidth: 1.5,
+                    borderRadius: 5,
+                    type: 'bar',
+                    order: 3
+                },
+                expenses: {
+                    label: isArabic ? 'المصاريف' : 'Expenses',
+                    data: yearExpenses,
+                    backgroundColor: 'rgba(220, 53, 69, 0.65)',
+                    borderColor: 'rgb(220, 53, 69)',
+                    borderWidth: 1.5,
+                    borderRadius: 5,
+                    type: 'bar',
+                    order: 3
+                },
+                netProfit: {
+                    label: isArabic ? 'صافي الربح (نقدي)' : 'Net Profit (Cash)',
+                    data: yearNetProfit,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 3,
+                    fill: false,
+                    tension: 0.35,
+                    type: 'line',
+                    pointBackgroundColor: '#10b981',
+                    pointHoverRadius: 7,
+                    order: 1
+                },
+                accrualProfit: {
+                    label: isArabic ? 'صافي الربح (تراكمي)' : 'Net Profit (Accrual)',
+                    data: yearAccrualProfit,
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    borderWidth: 3,
+                    fill: false,
+                    tension: 0.35,
+                    type: 'line',
+                    pointBackgroundColor: '#8b5cf6',
+                    pointHoverRadius: 7,
+                    order: 2
+                }
+            };
+
+            const yearCtx = yearCanvas.getContext('2d');
+            let currentChartStyle = 'bar'; // 'bar' for combo, 'line' for all lines
+
+            function getDatasets(style, view) {
+                const list = [];
+                
+                // Add datasets based on the view mode
+                if (view === 'all' || view === 'income-expense') {
+                    const b = {...datasetsConfig.billed};
+                    const p = {...datasetsConfig.paid};
+                    const e = {...datasetsConfig.expenses};
+                    if (style === 'line') {
+                        b.type = 'line';
+                        b.fill = false;
+                        p.type = 'line';
+                        p.fill = false;
+                        e.type = 'line';
+                        e.fill = false;
+                    } else {
+                        b.type = 'bar';
+                        p.type = 'bar';
+                        e.type = 'bar';
+                    }
+                    list.push(b, p, e);
+                }
+
+                if (view === 'all' || view === 'profits') {
+                    const np = {...datasetsConfig.netProfit};
+                    const ap = {...datasetsConfig.accrualProfit};
+                    if (style === 'line') {
+                        np.type = 'line';
+                        ap.type = 'line';
+                    } else {
+                        np.type = 'line';
+                        ap.type = 'line';
+                    }
+                    list.push(np, ap);
+                }
+
+                return list;
+            }
+
+            let activeView = 'all';
+            let yearChart = new Chart(yearCtx, {
+                type: 'bar', // default type, can contain line datasets (combo)
+                data: {
+                    labels: yearLabelsMapped,
+                    datasets: getDatasets(currentChartStyle, activeView)
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: gridColor },
+                            ticks: {
+                                color: textColor,
+                                callback: function (value) { return value.toLocaleString('de-DE') + ' {{ currency_symbol }}'; }
+                            }
+                        },
+                        x: {
+                            grid: { color: gridColor },
+                            ticks: { color: textColor }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: textColor },
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return context.dataset.label + ': ' + context.raw.toLocaleString('de-DE') + ' {{ currency_symbol }}';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // View Filtering Event Listeners
+            const viewButtons = document.querySelectorAll('#chart-view-filter button');
+            viewButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    viewButtons.forEach(b => {
+                        b.classList.remove('btn-primary', 'active');
+                        b.classList.add('text-secondary');
+                    });
+                    this.classList.add('btn-primary', 'active');
+                    this.classList.remove('text-secondary');
+
+                    activeView = this.getAttribute('data-view');
+                    yearChart.data.datasets = getDatasets(currentChartStyle, activeView);
+                    yearChart.update();
+                });
+            });
+
+            // Style Filtering Event Listeners
+            const styleButtons = document.querySelectorAll('#chart-style-filter button');
+            styleButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    styleButtons.forEach(b => {
+                        b.classList.remove('btn-primary', 'active');
+                        b.classList.add('text-secondary');
+                    });
+                    this.classList.add('btn-primary', 'active');
+                    this.classList.remove('text-secondary');
+
+                    currentChartStyle = this.getAttribute('data-style');
+                    yearChart.data.datasets = getDatasets(currentChartStyle, activeView);
+                    yearChart.update();
+                });
             });
         }
 
