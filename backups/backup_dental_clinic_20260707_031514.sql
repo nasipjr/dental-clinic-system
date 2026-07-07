@@ -41,7 +41,7 @@ CREATE TABLE `appointment` (
 
 LOCK TABLES `appointment` WRITE;
 /*!40000 ALTER TABLE `appointment` DISABLE KEYS */;
-INSERT INTO `appointment` VALUES (1,1,'2026-06-21 10:00:00','Check-up','Cancelled',NULL),(2,2,'2026-06-22 10:00:00','Cleaning','Cancelled',NULL),(3,3,'2026-06-23 10:00:00','Filling','Cancelled',NULL),(4,4,'2026-06-24 10:00:00','Root Canal','Cancelled',NULL),(5,5,'2026-06-25 10:00:00','Extraction','Cancelled',NULL),(6,6,'2026-06-26 10:00:00','Check-up','Cancelled',NULL),(7,7,'2026-06-27 10:00:00','Cleaning','Cancelled',NULL),(8,8,'2026-06-28 10:00:00','Filling','Cancelled',NULL),(9,9,'2026-06-29 10:00:00','Check-up','Cancelled',NULL),(10,10,'2026-06-30 10:00:00','Follow-up','Cancelled',NULL),(11,1,'2026-06-20 16:00:00','Check-up','Done',NULL),(12,9,'2026-06-24 12:00:00','Extraction','Cancelled',NULL),(13,8,'2026-06-24 11:00:00','Whitening','Cancelled',NULL),(15,8,'2026-06-22 17:10:00','Extraction','Done',NULL),(16,2,'2026-06-22 17:25:00','Emergency Pain','Done',NULL),(17,10,'2026-06-27 11:00:00','Root Canal','Cancelled',NULL),(18,1,'2026-07-07 16:00:00','Check-up','Done','2026-07-06 05:43:00'),(19,10,'2026-07-06 12:00:00','Extraction','Done','2026-07-06 06:54:58'),(20,9,'2026-07-06 12:00:00','Crown / Bridge','Done','2026-07-06 07:05:06'),(21,3,'2026-07-06 12:00:00','Whitening','Cancelled',NULL),(22,6,'2026-07-06 13:00:00','Emergency Pain','Scheduled','2026-07-06 07:09:06');
+INSERT INTO `appointment` VALUES (1,1,'2026-06-21 10:00:00','Check-up','Cancelled',NULL),(2,2,'2026-06-22 10:00:00','Cleaning','Cancelled',NULL),(3,3,'2026-06-23 10:00:00','Filling','Cancelled',NULL),(4,4,'2026-06-24 10:00:00','Root Canal','Cancelled',NULL),(5,5,'2026-06-25 10:00:00','Extraction','Cancelled',NULL),(6,6,'2026-06-26 10:00:00','Check-up','Cancelled',NULL),(7,7,'2026-06-27 10:00:00','Cleaning','Cancelled',NULL),(8,8,'2026-06-28 10:00:00','Filling','Cancelled',NULL),(9,9,'2026-06-29 10:00:00','Check-up','Cancelled',NULL),(10,10,'2026-06-30 10:00:00','Follow-up','Cancelled',NULL),(11,1,'2026-06-20 16:00:00','Check-up','Done',NULL),(12,9,'2026-06-24 12:00:00','Extraction','Cancelled',NULL),(13,8,'2026-06-24 11:00:00','Whitening','Cancelled',NULL),(15,8,'2026-06-22 17:10:00','Extraction','Done',NULL),(16,2,'2026-06-22 17:25:00','Emergency Pain','Done',NULL),(17,10,'2026-06-27 11:00:00','Root Canal','Cancelled',NULL),(18,1,'2026-07-07 16:00:00','Check-up','Done','2026-07-06 05:43:00'),(19,10,'2026-07-06 12:00:00','Extraction','Done','2026-07-06 06:54:58'),(20,9,'2026-07-06 12:00:00','Crown / Bridge','Done','2026-07-06 07:05:06'),(21,3,'2026-07-06 12:00:00','Whitening','Cancelled',NULL),(22,6,'2026-07-06 13:00:00','Emergency Pain','Done','2026-07-06 07:09:06');
 /*!40000 ALTER TABLE `appointment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -91,7 +91,7 @@ CREATE TABLE `installment` (
   KEY `payment_id` (`payment_id`),
   CONSTRAINT `installment_ibfk_1` FOREIGN KEY (`treatment_plan_id`) REFERENCES `treatment_plan` (`id`) ON DELETE CASCADE,
   CONSTRAINT `installment_ibfk_2` FOREIGN KEY (`payment_id`) REFERENCES `payment` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -100,7 +100,6 @@ CREATE TABLE `installment` (
 
 LOCK TABLES `installment` WRITE;
 /*!40000 ALTER TABLE `installment` DISABLE KEYS */;
-INSERT INTO `installment` VALUES (1,3,200000,'2026-07-06','Pending',NULL),(2,3,200000,'2026-08-06','Pending',NULL),(3,3,200000,'2026-09-06','Pending',NULL),(4,3,200000,'2026-10-06','Pending',NULL),(5,3,200000,'2026-11-06','Pending',NULL);
 /*!40000 ALTER TABLE `installment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -124,7 +123,7 @@ CREATE TABLE `invoice` (
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `invoice_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointment` (`id`),
   CONSTRAINT `invoice_ibfk_2` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -133,7 +132,7 @@ CREATE TABLE `invoice` (
 
 LOCK TABLES `invoice` WRITE;
 /*!40000 ALTER TABLE `invoice` DISABLE KEYS */;
-INSERT INTO `invoice` VALUES (1,11,1,'2026-06-20 15:24:52',0.00,'value',0.00),(2,15,8,'2026-06-22 17:19:01',0.00,'value',0.00),(3,16,2,'2026-06-22 17:25:56',10.00,'percentage',0.00),(4,18,1,'2026-07-06 05:49:02',0.00,'value',0.00),(5,19,10,'2026-07-06 06:59:39',0.00,'value',0.00),(6,20,9,'2026-07-06 07:05:18',0.00,'value',0.00);
+INSERT INTO `invoice` VALUES (1,11,1,'2026-06-20 15:24:52',0.00,'value',0.00),(2,15,8,'2026-06-22 17:19:01',0.00,'value',0.00),(3,16,2,'2026-06-22 17:25:56',10.00,'percentage',0.00),(4,18,1,'2026-07-06 05:49:02',0.00,'value',0.00),(5,19,10,'2026-07-06 06:59:39',0.00,'value',0.00),(6,20,9,'2026-07-06 07:05:18',0.00,'value',0.00),(8,22,6,'2026-07-06 21:09:37',0.00,'value',0.00);
 /*!40000 ALTER TABLE `invoice` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -231,7 +230,7 @@ CREATE TABLE `patient_file` (
   PRIMARY KEY (`id`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `patient_file_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -260,7 +259,7 @@ CREATE TABLE `payment` (
   PRIMARY KEY (`id`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `payment_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -290,7 +289,7 @@ CREATE TABLE `payment_allocation` (
   KEY `invoice_id` (`invoice_id`),
   CONSTRAINT `payment_allocation_ibfk_1` FOREIGN KEY (`payment_id`) REFERENCES `payment` (`id`),
   CONSTRAINT `payment_allocation_ibfk_2` FOREIGN KEY (`invoice_id`) REFERENCES `invoice` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -299,7 +298,7 @@ CREATE TABLE `payment_allocation` (
 
 LOCK TABLES `payment_allocation` WRITE;
 /*!40000 ALTER TABLE `payment_allocation` DISABLE KEYS */;
-INSERT INTO `payment_allocation` VALUES (2,2,2,160000.00),(4,3,3,200000.00),(5,4,3,70000.00),(7,1,1,150000.00),(8,5,6,400000.00),(9,6,5,100000.00);
+INSERT INTO `payment_allocation` VALUES (2,2,2,160000.00),(4,3,3,200000.00),(5,4,3,70000.00),(7,1,1,150000.00),(8,5,6,400000.00),(13,6,5,100000.00);
 /*!40000 ALTER TABLE `payment_allocation` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -347,7 +346,7 @@ CREATE TABLE `treatment` (
   PRIMARY KEY (`id`),
   KEY `appointment_id` (`appointment_id`),
   CONSTRAINT `treatment_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointment` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -356,7 +355,7 @@ CREATE TABLE `treatment` (
 
 LOCK TABLES `treatment` WRITE;
 /*!40000 ALTER TABLE `treatment` DISABLE KEYS */;
-INSERT INTO `treatment` VALUES (1,11,'2026-06-20 16:00:00','Filling','1','',75000.00),(2,11,'2026-06-20 16:00:00','Filling','2','',75000.00),(3,15,'2026-06-22 17:10:00','Extraction','1','تخدير موضعي',80000.00),(4,15,'2026-06-22 17:10:00','Extraction','2','',80000.00),(5,16,'2026-06-22 17:25:00','Root Canal','1','',150000.00),(6,16,'2026-06-22 17:25:00','Root Canal','2','',150000.00),(7,18,'2026-07-07 16:00:00','Cleaning','3','',50000.00),(8,18,'2026-07-07 16:00:00','Root Canal','1','',150000.00),(9,19,'2026-07-06 12:00:00','Cleaning','1, 2','',100000.00),(10,20,'2026-07-06 12:00:00','Crown / Bridge','1','',200000.00),(11,20,'2026-07-06 12:00:00','Crown / Bridge','2','',200000.00);
+INSERT INTO `treatment` VALUES (1,11,'2026-06-20 16:00:00','Filling','1','',75000.00),(2,11,'2026-06-20 16:00:00','Filling','2','',75000.00),(3,15,'2026-06-22 17:10:00','Extraction','1','تخدير موضعي',80000.00),(4,15,'2026-06-22 17:10:00','Extraction','2','',80000.00),(5,16,'2026-06-22 17:25:00','Root Canal','1','',150000.00),(6,16,'2026-06-22 17:25:00','Root Canal','2','',150000.00),(7,18,'2026-07-07 16:00:00','Cleaning','3','',50000.00),(8,18,'2026-07-07 16:00:00','Root Canal','1','',150000.00),(9,19,'2026-07-06 12:00:00','Cleaning','1, 2','',100000.00),(10,20,'2026-07-06 12:00:00','Crown / Bridge','1','',200000.00),(11,20,'2026-07-06 12:00:00','Crown / Bridge','2','',200000.00),(12,22,'2026-07-06 13:00:00','Extraction','1','',80000.00),(13,22,'2026-07-06 13:00:00','Root Canal','2','',150000.00);
 /*!40000 ALTER TABLE `treatment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -377,7 +376,7 @@ CREATE TABLE `treatment_plan` (
   PRIMARY KEY (`id`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `treatment_plan_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -386,7 +385,6 @@ CREATE TABLE `treatment_plan` (
 
 LOCK TABLES `treatment_plan` WRITE;
 /*!40000 ALTER TABLE `treatment_plan` DISABLE KEYS */;
-INSERT INTO `treatment_plan` VALUES (3,10,'نخور',1000000,'Active','2026-07-06 20:55:32');
 /*!40000 ALTER TABLE `treatment_plan` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -410,7 +408,7 @@ CREATE TABLE `user` (
   UNIQUE KEY `ix_user_username` (`username`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `user_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -432,4 +430,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-06 20:55:59
+-- Dump completed on 2026-07-07  3:15:14

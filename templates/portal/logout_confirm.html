@@ -1,0 +1,25 @@
+{% extends "portal/base.html" %}
+
+{% block title %}Logout Confirmation{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-center" style="min-height: 50vh;">
+  <div class="card shadow-sm border-0 rounded-4 p-4 text-center" style="background: var(--surface-color); max-width: 450px; width: 100%;">
+    <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle mb-3" style="width: 80px; height: 80px;">
+      <i class="bi bi-box-arrow-right fs-1"></i>
+    </div>
+    
+    <h3 class="fw-bold mb-2">Logout Confirmation</h3>
+    <p class="text-secondary mb-4">Are you sure you want to log out of your account?</p>
+    
+    <div class="d-flex justify-content-center gap-3">
+      <a href="{{ url_for('portal.dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4 py-2">
+        Cancel
+      </a>
+      <a href="{{ url_for('portal.logout') }}" class="btn btn-danger rounded-pill px-4 py-2 fw-semibold">
+        Confirm Logout
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

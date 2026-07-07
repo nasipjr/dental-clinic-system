@@ -290,21 +290,22 @@ h6 {
   .navmenu>ul>li>a:before {
     content: "";
     position: absolute;
-    width: 100%;
     height: 2px;
     bottom: -6px;
     left: 0;
+    right: 0;
     background-color: var(--accent-color);
     visibility: hidden;
-    width: 0px;
-    transition: all 0.3s ease-in-out 0s;
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 0.3s ease-in-out, visibility 0.3s;
   }
 
   .navmenu a:hover:before,
   .navmenu li:hover>a:before,
   .navmenu .active:before {
     visibility: visible;
-    width: 100%;
+    transform: scaleX(1);
   }
 
   .navmenu li:hover>a,

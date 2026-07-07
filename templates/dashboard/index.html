@@ -204,8 +204,7 @@
                     <div class="col-6">
                       <div class="stat-grid-item scheduled">
                         <span class="text-muted d-block"
-                          style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">Scheduled
-                          Today</span>
+                          style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">Scheduled Today</span>
                         <strong style="font-size: 1.3rem; font-weight: 800;">{{ today_scheduled_appointments|length
                           }}</strong>
                         <span class="text-muted d-block" style="font-size: 0.65rem;">waiting sessions</span>
@@ -215,8 +214,7 @@
                     <div class="col-6">
                       <div class="stat-grid-item completed">
                         <span class="text-muted d-block"
-                          style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">Completed
-                          Today</span>
+                          style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">Completed Today</span>
                         <strong style="font-size: 1.3rem; font-weight: 800;">{{ today_done_appointments|length
                           }}</strong>
                         <span class="text-muted d-block" style="font-size: 0.65rem;">done sessions</span>
@@ -227,8 +225,7 @@
                     <div class="col-6">
                       <div class="stat-grid-item revenue">
                         <span class="text-muted d-block"
-                          style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">Today's
-                          Revenue</span>
+                          style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">Today's Revenue</span>
                         <strong style="font-size: 1.15rem; font-weight: 800;">{{ today_revenue_sum | format_price }} {{
                           currency_symbol }}</strong>
                         <span class="text-muted d-block" style="font-size: 0.65rem;">invoiced treatments</span>
@@ -238,8 +235,7 @@
                     <div class="col-6">
                       <div class="stat-grid-item collected">
                         <span class="text-muted d-block"
-                          style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">Today's
-                          Paid</span>
+                          style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">Today's Paid</span>
                         <strong style="font-size: 1.15rem; font-weight: 800;">{{ today_payments_sum | format_price }} {{
                           currency_symbol }}</strong>
                         <span class="text-muted d-block" style="font-size: 0.65rem;">payments collected</span>
@@ -301,8 +297,7 @@
                       </div>
                     </div>
                     {% else %}
-                    <small class="text-muted d-block" style="font-size: 0.72rem;">No more upcoming appointments
-                      scheduled for today.</small>
+                    <small class="text-muted d-block" style="font-size: 0.72rem;">No more upcoming appointments scheduled for today.</small>
                     {% endif %}
                   </div>
                 </div>
@@ -331,8 +326,7 @@
                 </div>
                 <div>
                   <small class="text-muted d-block mb-1"
-                    style="font-size: 0.7rem; font-weight:600; text-transform: uppercase; letter-spacing: 0.5px;">Paid
-                    Ratio</small>
+                    style="font-size: 0.7rem; font-weight:600; text-transform: uppercase; letter-spacing: 0.5px;">Paid Ratio</small>
                   <strong class="text-success" style="font-size: 1.15rem; font-weight:700;">
                     {% if total_revenue > 0 %}
                     {{ ((total_paid / total_revenue) * 100)|round(0)|int }}%
@@ -872,12 +866,18 @@
 
       if (!dot || !text) return;
 
+      const currentLang = document.documentElement.getAttribute('lang') || 'en';
+
       // Check if today is a working day
       if (!workingDays.includes(currentDay)) {
         dot.className = 'spinner-grow spinner-grow-sm text-danger';
         dot.style.animation = 'none';
         dot.style.background = '#dc3545';
-        text.innerHTML = 'Closed <span class="text-muted fw-normal" style="font-size: 0.7rem;">(Weekend / Day Off)</span>';
+        if (currentLang === 'ar') {
+          text.innerHTML = 'مغلق <span class="text-muted fw-normal" style="font-size: 0.7rem;">(عطلة نهاية الأسبوع / يوم عطلة)</span>';
+        } else {
+          text.innerHTML = 'Closed <span class="text-muted fw-normal" style="font-size: 0.7rem;">(Weekend / Day Off)</span>';
+        }
         return;
       }
 
@@ -893,12 +893,20 @@
         dot.className = 'spinner-grow spinner-grow-sm text-success';
         dot.style.animation = 'spinner-grow 1.5s linear infinite';
         dot.style.background = '#198754';
-        text.innerHTML = 'Open Now <span class="text-muted fw-normal" style="font-size: 0.7rem;">(Operating Hours)</span>';
+        if (currentLang === 'ar') {
+          text.innerHTML = 'مفتوح الآن <span class="text-muted fw-normal" style="font-size: 0.7rem;">(ساعات العمل)</span>';
+        } else {
+          text.innerHTML = 'Open Now <span class="text-muted fw-normal" style="font-size: 0.7rem;">(Operating Hours)</span>';
+        }
       } else {
         dot.className = 'spinner-grow spinner-grow-sm text-warning';
         dot.style.animation = 'none';
         dot.style.background = '#ffc107';
-        text.innerHTML = 'Closed <span class="text-muted fw-normal" style="font-size: 0.7rem;">(Off Hours)</span>';
+        if (currentLang === 'ar') {
+          text.innerHTML = 'مغلق <span class="text-muted fw-normal" style="font-size: 0.7rem;">(خارج أوقات العمل)</span>';
+        } else {
+          text.innerHTML = 'Closed <span class="text-muted fw-normal" style="font-size: 0.7rem;">(Off Hours)</span>';
+        }
       }
     }
 

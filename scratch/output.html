@@ -1,0 +1,2099 @@
+<!DOCTYPE html>
+
+<html lang="en" dir="ltr">
+
+<head>
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-bs-theme', savedTheme);
+      
+      // Sync local storage lang with server side cookie
+      localStorage.setItem('lang', 'en');
+    })();
+  </script>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>HomePage</title>
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <!-- Favicons -->
+  <link href="/static/assets/img/favicon.png" rel="icon">
+
+  <link href="/static/assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap"
+    rel="stylesheet">
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files -->
+  
+  <link href="/static/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  
+  <link href="/static/assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="/static/assets/vendor/aos/aos.css" rel="stylesheet">
+  <link href="/static/assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+  <link href="/static/assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+  <link href="/static/assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+  <!-- Main CSS File -->
+  <link href="/static/assets/css/main.css" rel="stylesheet">
+  <link href="/static/styles.css?v=1.6" rel="stylesheet">
+
+
+
+  <!-- =======================================================
+  * Template Name: Clinic
+  * Template URL: https://bootstrapmade.com/clinic-bootstrap-template/
+  * Updated: Jul 23 2025 with Bootstrap v5.3.7
+  * Author: BootstrapMade.com
+  * License: https://bootstrapmade.com/license/
+  ======================================================== -->
+</head>
+
+<body class="index-page">
+
+  <header id="header" class="header fixed-top">
+
+    <div class="topbar d-flex align-items-center dark-background">
+      <div class="container d-flex justify-content-between">
+        <div class="contact-info d-none d-md-flex align-items-center flex-shrink-0 text-nowrap">
+          <i class="bi bi-envelope d-flex align-items-center"><a
+              href="mailto:kh.nasipdragon@gmail.com">kh.nasipdragon@gmail.com</a></i>
+          <i class="bi bi-phone d-flex align-items-center ms-4"><span>+963 958 948 727</span></i>
+        </div>
+        <div class="social-links d-flex align-items-center gap-2 gap-md-3 flex-grow-1 flex-md-grow-0 flex-shrink-0 justify-content-between justify-content-md-end">
+          
+            <span class="text-white text-truncate" style="font-size: 13px; max-width: 60vw;">
+              <i class="bi bi-person-circle me-1"></i>
+              <span class="d-none d-sm-inline">Admin (Admin)</span>
+              <span class="d-inline d-sm-none">Admin</span>
+            </span>
+            <a href="/logout" class="topbar-logout-btn text-white ms-auto">
+              <i class="bi bi-box-arrow-right me-1"></i><span class="d-none d-sm-inline">Logout</span>
+            </a>
+          
+        </div>
+      </div>
+    </div><!-- End Top Bar -->
+
+    <div class="branding d-flex align-items-cente">
+
+      <div class="container position-relative d-flex align-items-center justify-content-between">
+        <a href="/" class="logo d-flex align-items-center">
+          <!-- Uncomment the line below if you also wish to use an image logo -->
+          <!-- <img src="assets/img/logo.webp" alt=""> -->
+          <h1 class="sitename">Clinic</h1>
+        </a>
+
+        <nav id="navmenu" class="navmenu">
+          <ul>
+            
+            <li>
+              <a href="/" class="">
+                Dashboard
+              </a>
+            </li>
+
+            <li>
+              <a href="/patients" class="active">
+                Patients
+              </a>
+            </li>
+
+            <li>
+              <a href="/appointments" class="">
+                Appointments
+                
+              </a>
+            </li>
+
+            <li>
+              <a href="/calendar" class="">
+                Calendar
+              </a>
+            </li>
+
+            
+            <li>
+              <a href="/invoices"
+                class="">
+                Invoices
+              </a>
+            </li>
+
+            <li>
+              <a href="/payments"
+                class="">
+                Payments
+              </a>
+            </li>
+            
+
+            
+            <li>
+              <a href="/reports" class="">
+                Reports
+              </a>
+            </li>
+
+            <li>
+              <a href="/settings" class="">
+                Settings
+              </a>
+            </li>
+            
+
+            
+
+            <li class="d-xl-none border-top pt-2 mt-2">
+              <span class="nav-link text-muted" style="cursor: default; padding: 10px 14px;">
+                Logged in: <strong>Admin</strong>
+              </span>
+            </li>
+            <li class="d-xl-none">
+              <a href="/logout" class="text-danger">
+                Logout
+              </a>
+            </li>
+            
+          </ul>
+
+          <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+        </nav>
+
+      </div>
+
+    </div>
+
+  </header>
+
+  <main class="main">
+    
+<br><br><br><br><br><br><br>
+
+<!-- Section Title -->
+<div class="container section-title" data-aos="fade-up">
+    <h2>Patient Details</h2>
+    <p>Complete overview of the patient's profile, appointments, treatments, and financial summary</p>
+</div>
+
+<!-- Patient Overview -->
+<section id="patient-detail-overview" class="find-a-doctor section pt-0">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <div class="doctor-profile patient-detail-card" data-aos="zoom-in" data-aos-delay="150">
+            <div class="profile-header">
+                <div class="doctor-avatar">
+                    <img src="/static/assets/my%20imgs/person.png" alt="Patient"
+                        class="img-fluid">
+                    <div class="status-indicator available"></div>
+                </div>
+
+                <div class="doctor-details">
+                    <h4>أحمد العلي</h4>
+                    <span class="specialty-tag">+963958948721</span>
+                </div>
+            </div>
+
+            <div class="patient-info-grid mt-4">
+                <div class="patient-info-box">
+                    <span class="info-label">Address</span>
+                    <p>المزة</p>
+                </div>
+
+                <div class="patient-info-box">
+                    <span class="info-label">Notes</span>
+                    <p>No notes available</p>
+                </div>
+
+                <div class="patient-info-box">
+                    <span class="info-label">Patient Portal Access</span>
+                    
+                        <p class="text-muted mb-2">
+                            <i class="bi bi-shield-slash"></i> Disabled
+                        </p>
+                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 fw-semibold" style="font-size: 0.72rem; border-radius: 4px; border-width: 1px;" data-bs-toggle="modal" data-bs-target="#createPortalModal">
+                            <i class="bi bi-shield-plus"></i> Enable Access
+                        </button>
+                    
+                </div>
+            </div>
+
+            <div class="action-buttons mt-4 patient-main-actions">
+                
+                <a href="/patients/1/edit" class="btn-primary">
+                    Edit Patient
+                </a>
+                
+
+                
+                <a href="/patients/1/appointments/add" class="btn-outline-main">
+                    Add Appointment
+                </a>
+                
+
+                
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- Patient Tabs -->
+<section class="find-a-doctor section pt-0">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+        <!-- Tabs Navigation -->
+        <ul class="nav justify-content-center patient-detail-tabs" id="patientTabs" role="tablist">
+
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active"
+                    id="appointments-tab-btn" data-bs-toggle="tab" data-bs-target="#appointments-tab" type="button"
+                    role="tab">
+                    <div class="section-title small-section-title mb-0">
+                        <h2>Appointments</h2>
+                        <p>All appointments related to this patient</p>
+                    </div>
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button class="nav-link " id="treatments-tab-btn"
+                    data-bs-toggle="tab" data-bs-target="#treatments-tab" type="button" role="tab">
+                    <div class="section-title small-section-title mb-0">
+                        <h2>Treatments</h2>
+                        <p>All recorded treatments across this patient's appointments</p>
+                    </div>
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button class="nav-link " id="financial-tab-btn"
+                    data-bs-toggle="tab" data-bs-target="#financial-tab" type="button" role="tab">
+                    <div class="section-title small-section-title mb-0">
+                        <h2>Financial Summary</h2>
+                        <p>Quick overview of this patient's financial balance</p>
+                    </div>
+                </button>
+            </li>
+
+            <li class="nav-item" role="presentation">
+                <button class="nav-link " id="files-tab-btn"
+                    data-bs-toggle="tab" data-bs-target="#files-tab" type="button" role="tab">
+                    <div class="section-title small-section-title mb-0">
+                        <h2>Medical Files</h2>
+                        <p>X-Rays, panoramas, & attachments</p>
+                    </div>
+                </button>
+            </li>
+
+        </ul>
+
+        <!-- Tabs Content -->
+        <div class="tab-content pt-2" id="patientTabsContent">
+
+            <!-- Appointments Tab -->
+            <div class="tab-pane fade show active" id="appointments-tab"
+                role="tabpanel">
+
+                <div id="patient-appointments-container">
+                    
+<div class="appointments-table-wrapper table-responsive" data-aos="fade-up" data-aos-delay="250">
+    <table class="table appointments-table align-middle">
+        <thead>
+            <tr>
+                <th>
+                    <a href="/patients/1/appointments-table?appointment_sort=id&amp;appointment_order=asc" class="dashboard-ajax-link" data-target="patient-appointments-container">
+                        ID
+                        
+                    </a>
+                </th>
+
+                <th>
+                    <a href="/patients/1/appointments-table?appointment_sort=date&amp;appointment_order=asc" class="dashboard-ajax-link" data-target="patient-appointments-container">
+                        Date & Time
+                        
+                        <i
+                            class="bi bi-arrow-down"></i>
+                        
+                    </a>
+                </th>
+
+                <th>
+                    <a href="/patients/1/appointments-table?appointment_sort=reason&amp;appointment_order=asc" class="dashboard-ajax-link" data-target="patient-appointments-container">
+                        Reason
+                        
+                    </a>
+                </th>
+
+                <th>
+                    <a href="/patients/1/appointments-table?appointment_sort=status&amp;appointment_order=asc" class="dashboard-ajax-link" data-target="patient-appointments-container">
+                        Status
+                        
+                    </a>
+                </th>
+
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            
+            <tr>
+                <td>18</td>
+
+                <td>
+                    2026-07-07 16:00
+                </td>
+
+                <td>
+                    Check-up
+                </td>
+
+                <td>
+                    <span class="appointment-status
+                        status-done
+                        ">
+                        Done
+                    </span>
+                </td>
+
+                <td class="text-center">
+                    <div class="appointments-actions">
+
+                        <a href="/appointments/18/view"
+                            class="table-action-btn view-btn" title="View Appointment">
+                            <i class="bi bi-eye"></i>
+                        </a>
+
+                        
+                        <a href="/appointments/18/session"
+                            class="table-action-btn appointment-table-btn" title="Open Session">
+                            <i class="bi bi-clipboard2-pulse"></i>
+                        </a>
+                        
+
+                        
+
+                        
+
+
+                    </div>
+                </td>
+            </tr>
+            
+            <tr>
+                <td>1</td>
+
+                <td>
+                    2026-06-21 10:00
+                </td>
+
+                <td>
+                    Check-up
+                </td>
+
+                <td>
+                    <span class="appointment-status
+                        status-cancelled
+                        ">
+                        Cancelled
+                    </span>
+                </td>
+
+                <td class="text-center">
+                    <div class="appointments-actions">
+
+                        <a href="/appointments/1/view"
+                            class="table-action-btn view-btn" title="View Appointment">
+                            <i class="bi bi-eye"></i>
+                        </a>
+
+                        
+                        <a href="/appointments/1/session"
+                            class="table-action-btn appointment-table-btn" title="Open Session">
+                            <i class="bi bi-clipboard2-pulse"></i>
+                        </a>
+                        
+
+                        
+
+                        
+                        <a href="/appointments/1/delete"
+                            class="table-action-btn delete-table-btn" title="Delete Appointment">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                        
+
+
+                    </div>
+                </td>
+            </tr>
+            
+            <tr>
+                <td>11</td>
+
+                <td>
+                    2026-06-20 16:00
+                </td>
+
+                <td>
+                    Check-up
+                </td>
+
+                <td>
+                    <span class="appointment-status
+                        status-done
+                        ">
+                        Done
+                    </span>
+                </td>
+
+                <td class="text-center">
+                    <div class="appointments-actions">
+
+                        <a href="/appointments/11/view"
+                            class="table-action-btn view-btn" title="View Appointment">
+                            <i class="bi bi-eye"></i>
+                        </a>
+
+                        
+                        <a href="/appointments/11/session"
+                            class="table-action-btn appointment-table-btn" title="Open Session">
+                            <i class="bi bi-clipboard2-pulse"></i>
+                        </a>
+                        
+
+                        
+
+                        
+
+
+                    </div>
+                </td>
+            </tr>
+            
+        </tbody>
+    </table>
+</div>
+
+
+                </div>
+
+            </div>
+
+            <!-- Treatments Tab -->
+            <div class="tab-pane fade " id="treatments-tab"
+                role="tabpanel">
+
+                <div id="patient-treatments-container">
+                    
+<div class="appointments-table-wrapper table-responsive" data-aos="fade-up" data-aos-delay="250">
+    <table class="table appointments-table align-middle">
+        <thead>
+            <tr>
+                <th>
+                    <a href="/patients/1/treatments-table?treatment_sort=id&amp;treatment_order=asc" class="dashboard-ajax-link" data-target="patient-treatments-container">
+                        ID
+                        
+                    </a>
+                </th>
+
+                <th>Appointment</th>
+
+                <th>
+                    <a href="/patients/1/treatments-table?treatment_sort=date&amp;treatment_order=asc" class="dashboard-ajax-link" data-target="patient-treatments-container">
+                        Treatment Date
+                        
+                        <i
+                            class="bi bi-arrow-down"></i>
+                        
+                    </a>
+                </th>
+
+                <th>
+                    <a href="/patients/1/treatments-table?treatment_sort=procedure_type&amp;treatment_order=asc" class="dashboard-ajax-link" data-target="patient-treatments-container">
+                        Procedure Type
+                        
+                    </a>
+                </th>
+
+                <th>
+                    <a href="/patients/1/treatments-table?treatment_sort=tooth_number&amp;treatment_order=asc" class="dashboard-ajax-link" data-target="patient-treatments-container">
+                        Tooth
+                        
+                    </a>
+                </th>
+
+                <th>Notes</th>
+
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            
+            <tr>
+                <td>7</td>
+
+                <td>
+                    <a href="/appointments/18/session">
+                        #18
+                    </a>
+                    <br>
+                    <small>
+                        2026-07-07 16:00
+                    </small>
+                </td>
+
+                <td>
+                    2026-07-07 16:00
+                </td>
+
+                <td>
+                    <strong>Cleaning</strong>
+                </td>
+
+                <td>
+                    3
+                </td>
+
+                <td>
+                    No notes available
+                </td>
+
+
+                <td class="text-center">
+                    <div class="appointments-actions">
+
+                        <a href="/treatments/7/view"
+                            class="table-action-btn view-btn" title="View Treatment">
+                            <i class="bi bi-eye"></i>
+                        </a>
+
+                        
+
+                    </div>
+                </td>
+            </tr>
+            
+            <tr>
+                <td>8</td>
+
+                <td>
+                    <a href="/appointments/18/session">
+                        #18
+                    </a>
+                    <br>
+                    <small>
+                        2026-07-07 16:00
+                    </small>
+                </td>
+
+                <td>
+                    2026-07-07 16:00
+                </td>
+
+                <td>
+                    <strong>Root Canal</strong>
+                </td>
+
+                <td>
+                    1
+                </td>
+
+                <td>
+                    No notes available
+                </td>
+
+
+                <td class="text-center">
+                    <div class="appointments-actions">
+
+                        <a href="/treatments/8/view"
+                            class="table-action-btn view-btn" title="View Treatment">
+                            <i class="bi bi-eye"></i>
+                        </a>
+
+                        
+
+                    </div>
+                </td>
+            </tr>
+            
+            <tr>
+                <td>1</td>
+
+                <td>
+                    <a href="/appointments/11/session">
+                        #11
+                    </a>
+                    <br>
+                    <small>
+                        2026-06-20 16:00
+                    </small>
+                </td>
+
+                <td>
+                    2026-06-20 16:00
+                </td>
+
+                <td>
+                    <strong>Filling</strong>
+                </td>
+
+                <td>
+                    1
+                </td>
+
+                <td>
+                    No notes available
+                </td>
+
+
+                <td class="text-center">
+                    <div class="appointments-actions">
+
+                        <a href="/treatments/1/view"
+                            class="table-action-btn view-btn" title="View Treatment">
+                            <i class="bi bi-eye"></i>
+                        </a>
+
+                        
+
+                    </div>
+                </td>
+            </tr>
+            
+            <tr>
+                <td>2</td>
+
+                <td>
+                    <a href="/appointments/11/session">
+                        #11
+                    </a>
+                    <br>
+                    <small>
+                        2026-06-20 16:00
+                    </small>
+                </td>
+
+                <td>
+                    2026-06-20 16:00
+                </td>
+
+                <td>
+                    <strong>Filling</strong>
+                </td>
+
+                <td>
+                    2
+                </td>
+
+                <td>
+                    No notes available
+                </td>
+
+
+                <td class="text-center">
+                    <div class="appointments-actions">
+
+                        <a href="/treatments/2/view"
+                            class="table-action-btn view-btn" title="View Treatment">
+                            <i class="bi bi-eye"></i>
+                        </a>
+
+                        
+
+                    </div>
+                </td>
+            </tr>
+            
+        </tbody>
+    </table>
+</div>
+
+
+                </div>
+
+            </div>
+
+            <!-- Financial Tab -->
+            <div class="tab-pane fade " id="financial-tab"
+                role="tabpanel">
+
+                <div class="financial-summary-grid" data-aos="fade-up" data-aos-delay="250">
+                    <div class="financial-card">
+                        <div class="financial-icon">
+                            <i class="bi bi-cash-stack"></i>
+                        </div>
+                        <h4>Total Invoiced</h4>
+                        <p>350.000 S.P</p>
+                    </div>
+
+                    <div class="financial-card">
+                        <div class="financial-icon">
+                            <i class="bi bi-wallet2"></i>
+                        </div>
+                        <h4>Total Paid</h4>
+                        <p>150.000 S.P</p>
+                    </div>
+
+                    <div
+                        class="financial-card remaining-warning">
+                        <div class="financial-icon">
+                            <i
+                                class="bi bi-exclamation-circle"></i>
+                        </div>
+
+                        
+                        <h4>Outstanding Amount</h4>
+                        <p>200.000 S.P</p>
+                        <span class="financial-card-note">This patient has an outstanding balance.</span>
+                        
+                    </div>
+                </div>
+
+                <div class="financial-details-stack mt-5" dir="ltr">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 d-print-none">
+                        <h4 class="fw-bold mb-0 text-main" style="color: var(--nav-hover-color, #3fbbc0); font-family: var(--heading-font);">
+                            Financial Transactions & Ledger
+                        </h4>
+                        <a href="/patients/1/ledger/print" target="_blank" class="btn btn-outline-primary rounded-pill px-4 fw-bold">
+                            <i class="bi bi-printer me-1"></i>
+                            Print Statement (Ledger)
+                        </a>
+                    </div>
+
+                    <!-- Inner sub-navigation for financial detail views -->
+                    <ul class="nav nav-tabs border-bottom mb-4 d-print-none" id="financialSubTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-bold" id="sub-ledger-tab-btn" data-bs-toggle="tab" data-bs-target="#sub-ledger-tab" type="button" role="tab">
+                                <i class="bi bi-journal-text me-1.5 text-info"></i>
+                                Chronological Ledger
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold" id="sub-invoices-tab-btn" data-bs-toggle="tab" data-bs-target="#sub-invoices-tab" type="button" role="tab">
+                                <i class="bi bi-receipt me-1.5 text-info"></i>
+                                Invoices
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link fw-bold" id="sub-payments-tab-btn" data-bs-toggle="tab" data-bs-target="#sub-payments-tab" type="button" role="tab">
+                                <i class="bi bi-cash me-1.5 text-info"></i>
+                                Payments
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="financialSubTabsContent">
+                        <!-- Sub Tab 1: Reconciled Ledger -->
+                        <div class="tab-pane fade show active" id="sub-ledger-tab" role="tabpanel">
+                            
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 120px;">Date</th>
+                                            <th style="width: 120px;">Ref Number</th>
+                                            <th>Description</th>
+                                            <th class="text-end" style="width: 140px;">Charges (Debit)</th>
+                                            <th class="text-end" style="width: 140px;">Payments (Credit)</th>
+                                            <th class="text-end" style="width: 160px;">Running Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        
+                                        <tr>
+                                            <td>2026-06-20</td>
+                                            <td>
+                                                
+                                                    <a href="/invoices/1" class="fw-bold text-primary">INV-1</a>
+                                                
+                                            </td>
+                                            <td>
+                                                
+                                                    <span class="badge bg-secondary bg-opacity-10 text-secondary-emphasis px-2.5 py-1.5 rounded-pill fw-semibold text-sm">
+                                                        Invoice
+                                                    </span>
+                                                
+                                                Filling, Filling
+                                            </td>
+                                            <td class="text-end text-danger fw-semibold">
+                                                
+                                                    <span dir="ltr">150.000 S.P</span>
+                                                
+                                            </td>
+                                            <td class="text-end text-success fw-semibold">
+                                                
+                                                    -
+                                                
+                                            </td>
+                                            <td class="text-end fw-bold">
+                                                <span dir="ltr" class="text-danger">
+                                                    150.000 S.P
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>2026-06-20</td>
+                                            <td>
+                                                
+                                                    <a href="/payments/1" class="fw-bold text-success">PAY-0001</a>
+                                                
+                                            </td>
+                                            <td>
+                                                
+                                                    <span class="badge bg-success bg-opacity-10 text-success-emphasis px-2.5 py-1.5 rounded-pill fw-semibold text-sm">
+                                                        Payment
+                                                    </span>
+                                                
+                                                Payment received
+                                            </td>
+                                            <td class="text-end text-danger fw-semibold">
+                                                
+                                                    -
+                                                
+                                            </td>
+                                            <td class="text-end text-success fw-semibold">
+                                                
+                                                    <span dir="ltr">150.000 S.P</span>
+                                                
+                                            </td>
+                                            <td class="text-end fw-bold">
+                                                <span dir="ltr" class="">
+                                                    0 S.P
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        
+                                        <tr>
+                                            <td>2026-07-06</td>
+                                            <td>
+                                                
+                                                    <a href="/invoices/4" class="fw-bold text-primary">INV-4</a>
+                                                
+                                            </td>
+                                            <td>
+                                                
+                                                    <span class="badge bg-secondary bg-opacity-10 text-secondary-emphasis px-2.5 py-1.5 rounded-pill fw-semibold text-sm">
+                                                        Invoice
+                                                    </span>
+                                                
+                                                Cleaning, Root Canal
+                                            </td>
+                                            <td class="text-end text-danger fw-semibold">
+                                                
+                                                    <span dir="ltr">200.000 S.P</span>
+                                                
+                                            </td>
+                                            <td class="text-end text-success fw-semibold">
+                                                
+                                                    -
+                                                
+                                            </td>
+                                            <td class="text-end fw-bold">
+                                                <span dir="ltr" class="text-danger">
+                                                    200.000 S.P
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                        </div>
+                        
+                        <!-- Sub Tab 2: Invoices -->
+                        <div class="tab-pane fade" id="sub-invoices-tab" role="tabpanel">
+                            <!-- Patient Invoices Table -->
+                            <div id="patient-invoices-container">
+                                
+<div class="appointments-table-wrapper table-responsive">
+    <table class="table appointments-table align-middle">
+        <thead>
+            <tr>
+                <th>
+                    <a href="/patients/1/invoices-table?invoice_sort=id&amp;invoice_order=asc" class="dashboard-ajax-link" data-target="patient-invoices-container">
+                        Invoice #
+                        
+                    </a>
+                </th>
+
+                <th>
+                    <a href="/patients/1/invoices-table?invoice_sort=date&amp;invoice_order=asc" class="dashboard-ajax-link" data-target="patient-invoices-container">
+                        Appointment Date
+                        
+                        <i class="bi bi-arrow-down"></i>
+                        
+                    </a>
+                </th>
+
+                <th>
+                    <a href="/patients/1/invoices-table?invoice_sort=patient&amp;invoice_order=asc" class="dashboard-ajax-link" data-target="patient-invoices-container">
+                        Patient
+                        
+                    </a>
+                </th>
+
+                <th>
+                    <a href="/patients/1/invoices-table?invoice_sort=treatments&amp;invoice_order=asc" class="dashboard-ajax-link" data-target="patient-invoices-container">
+                        Treatments
+                        
+                    </a>
+                </th>
+
+                <th>
+                    <a href="/patients/1/invoices-table?invoice_sort=total&amp;invoice_order=asc" class="dashboard-ajax-link" data-target="patient-invoices-container">
+                        Invoice Total
+                        
+                    </a>
+                </th>
+
+                <th>
+                    <a href="/patients/1/invoices-table?invoice_sort=payments&amp;invoice_order=asc" class="dashboard-ajax-link" data-target="patient-invoices-container">
+                        Total Payments
+                        
+                    </a>
+                </th>
+
+                <th>
+                    <a href="/patients/1/invoices-table?invoice_sort=outstanding&amp;invoice_order=asc" class="dashboard-ajax-link" data-target="patient-invoices-container">
+                        Outstanding / Credit
+                        
+                    </a>
+                </th>
+
+                <th>
+                    <a href="/patients/1/invoices-table?invoice_sort=status&amp;invoice_order=asc" class="dashboard-ajax-link" data-target="patient-invoices-container">
+                        Status
+                        
+                    </a>
+                </th>
+
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            
+            <tr>
+                <td>
+                    <strong>INV-4</strong>
+                </td>
+
+                <td>
+                    2026-07-07 16:00
+                </td>
+
+                <td>
+                    <strong>
+                        أحمد العلي
+                    </strong>
+                    <br>
+                    <small>+963958948721</small>
+                </td>
+
+                <td>
+                    2
+                </td>
+
+                <td>
+                    200.000 S.P
+                </td>
+
+                <td>
+                    0 S.P
+                </td>
+
+                <td>
+                    
+                    <span class="remaining-due">
+                        200.000 S.P
+                        <span class="due-badge">Due</span>
+                    </span>
+                    
+                </td>
+
+                <td>
+                    
+                    <span class="due-badge">Unpaid</span>
+                    
+                </td>
+
+                <td class="text-center">
+                    <div class="appointments-actions">
+
+                        <a href="/invoices/4"
+                            class="table-action-btn view-btn" title="View Invoice">
+                            <i class="bi bi-receipt"></i>
+                        </a>
+
+                        <a href="/appointments/18/view"
+                            class="table-action-btn session-btn" title="View Appointment">
+                            <i class="bi bi-eye"></i>
+                        </a>
+
+                        
+                        <a href="/appointments/18/session"
+                            class="table-action-btn edit-btn" title="Open Session">
+                            <i class="bi bi-clipboard2-pulse"></i>
+                        </a>
+                        
+
+                    </div>
+                </td>
+            </tr>
+            
+            <tr>
+                <td>
+                    <strong>INV-1</strong>
+                </td>
+
+                <td>
+                    2026-06-20 16:00
+                </td>
+
+                <td>
+                    <strong>
+                        أحمد العلي
+                    </strong>
+                    <br>
+                    <small>+963958948721</small>
+                </td>
+
+                <td>
+                    2
+                </td>
+
+                <td>
+                    150.000 S.P
+                </td>
+
+                <td>
+                    150.000 S.P
+                </td>
+
+                <td>
+                    
+                    <span class="remaining-clear">
+                        0 S.P
+                        <span class="paid-badge">Paid</span>
+                    </span>
+                    
+                </td>
+
+                <td>
+                    
+                    <span class="paid-badge">Paid</span>
+                    
+                </td>
+
+                <td class="text-center">
+                    <div class="appointments-actions">
+
+                        <a href="/invoices/1"
+                            class="table-action-btn view-btn" title="View Invoice">
+                            <i class="bi bi-receipt"></i>
+                        </a>
+
+                        <a href="/appointments/11/view"
+                            class="table-action-btn session-btn" title="View Appointment">
+                            <i class="bi bi-eye"></i>
+                        </a>
+
+                        
+                        <a href="/appointments/11/session"
+                            class="table-action-btn edit-btn" title="Open Session">
+                            <i class="bi bi-clipboard2-pulse"></i>
+                        </a>
+                        
+
+                    </div>
+                </td>
+            </tr>
+            
+        </tbody>
+    </table>
+</div>
+
+
+                            </div>
+                            <!-- /Patient Invoices Table -->
+                        </div>
+                        
+                        <!-- Sub Tab 3: Payments -->
+                        <div class="tab-pane fade" id="sub-payments-tab" role="tabpanel">
+                            <!-- Patient Payments Table -->
+                            <div id="patient-payments-container">
+                                <div class="appointments-table-wrapper table-responsive financial-detail-card mb-4">
+
+    <div class="financial-table-header">
+        <div>
+            <h4>Patient Payments</h4>
+            <p>All payments recorded for this patient.</p>
+        </div>
+
+        
+        <a href="/payments/add?patient_id=1"
+            class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle me-1"></i>
+            Add Payment
+        </a>
+        
+    </div>
+
+    
+    <table class="table appointments-table align-middle">
+        <thead>
+            <tr>
+                <th>
+                    <a href="/patients/1/payments-table?payment_sort=id&amp;payment_order=asc" class="dashboard-ajax-link" data-target="patient-payments-container">
+                        Payment #
+                        
+                    </a>
+                </th>
+
+                <th>
+                    <a href="/patients/1/payments-table?payment_sort=date&amp;payment_order=asc" class="dashboard-ajax-link" data-target="patient-payments-container">
+                        Date
+                        
+                        <i class="bi bi-arrow-down"></i>
+                        
+                    </a>
+                </th>
+
+                <th>
+                    <a href="/patients/1/payments-table?payment_sort=amount&amp;payment_order=asc" class="dashboard-ajax-link" data-target="patient-payments-container">
+                        Amount
+                        
+                    </a>
+                </th>
+
+                <th>
+                    <a href="/patients/1/payments-table?payment_sort=allocated&amp;payment_order=asc" class="dashboard-ajax-link" data-target="patient-payments-container">
+                        Allocated
+                        
+                    </a>
+                </th>
+
+                <th>
+                    <a href="/patients/1/payments-table?payment_sort=credit&amp;payment_order=asc" class="dashboard-ajax-link" data-target="patient-payments-container">
+                        Credit
+                        
+                    </a>
+                </th>
+
+                <th>Notes</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            
+            <tr>
+                <td>
+                    <a href="/payments/1" class="fw-bold text-primary">PAY-1</a>
+                </td>
+
+                <td>
+                    2026-06-20 15:28
+                </td>
+
+                <td>
+                    <span class="price-badge">
+                        150.000 S.P
+                    </span>
+                </td>
+
+                <td>
+                    <span class="remaining-clear">
+                        150.000 S.P
+                        <span class="paid-badge">Allocated</span>
+                    </span>
+                </td>
+
+                <td>
+                    
+                    <span class="remaining-clear">
+                        0.00 S.P
+                        <span class="paid-badge">No Credit</span>
+                    </span>
+                    
+                </td>
+
+                <td>
+                    No notes available
+                </td>
+                <td class="text-center">
+                    <div class="appointments-actions">
+                        <a href="/payments/1"
+                           class="table-action-btn view-btn"
+                           title="View Payment Details">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            
+        </tbody>
+    </table>
+
+    
+
+</div>
+                            </div>
+                            <!-- /Patient Payments Table -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Files Tab -->
+            <div class="tab-pane fade " id="files-tab"
+                role="tabpanel">
+
+                <div class="d-flex justify-content-between align-items-center mb-4 mt-3 flex-wrap gap-2">
+                    <h3 class="fw-bold mb-0 text-main" style="color: var(--nav-hover-color, #3fbbc0); font-family: var(--heading-font);">
+                        Medical Files & Clinical Attachments
+                    </h3>
+                    <div class="d-flex gap-2">
+                        
+                        <button type="button" class="btn btn-outline-primary rounded-pill px-4 fw-semibold" style="border-width: 1.5px;" data-bs-toggle="modal" data-bs-target="#uploadFileModal">
+                            <i class="bi bi-cloud-upload"></i> 
+                            Upload File
+                        </button>
+                    </div>
+                </div>
+
+                
+                    <div class="text-center py-5 rounded-4 shadow-sm" style="background: var(--surface-color); border: 1px solid rgba(0,0,0,0.06);">
+                        <i class="bi bi-folder-x text-muted" style="font-size: 4rem;"></i>
+                        <h4 class="mt-3 fw-bold" style="color: var(--heading-color);">No Medical Files Uploaded</h4>
+                        <p class="text-muted mb-4">No clinic files, panoramas, X-rays, or attachments have been uploaded for this patient.</p>
+                        <button type="button" class="btn btn-outline-primary rounded-pill px-4 fw-semibold" style="border-width: 1.5px;" data-bs-toggle="modal" data-bs-target="#uploadFileModal">
+                            <i class="bi bi-cloud-upload"></i> Upload First File
+                        </button>
+                    </div>
+                
+
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Create Portal Account Modal -->
+<div class="modal fade" id="createPortalModal" tabindex="-1" aria-labelledby="createPortalModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--surface-color); border: 1px solid color-mix(in srgb, var(--accent-color), transparent 85%); border-radius: 20px; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title" id="createPortalModalLabel" style="font-weight: 700; color: var(--heading-color); font-family: var(--heading-font);">Create Portal Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="/patients/1/portal/create">
+                <div class="modal-body py-4">
+                    <p class="text-muted small mb-4">Set up a patient portal account so the patient can log in and view or request appointments.</p>
+                    
+                    <div class="mb-3">
+                        <label for="portal-username" class="form-label fw-semibold" style="color: var(--heading-color); margin-bottom: 6px;">Username</label>
+                        <input type="text" id="portal-username" name="username" class="form-control rounded-3" placeholder="e.g. أحمدالعلي" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="portal-password" class="form-label fw-semibold" style="color: var(--heading-color); margin-bottom: 6px;">Password</label>
+                        <input type="password" id="portal-password" name="password" class="form-control rounded-3" placeholder="At least 6 characters" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 d-flex justify-content-center gap-2 pb-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Create Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Upload File Modal -->
+<div class="modal fade" id="uploadFileModal" tabindex="-1" aria-labelledby="uploadFileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--surface-color); border: 1px solid color-mix(in srgb, var(--accent-color), transparent 85%); border-radius: 20px; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title" id="uploadFileModalLabel" style="font-weight: 700; color: var(--heading-color); font-family: var(--heading-font);">Upload Medical File / X-Ray</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="/patients/1/files/upload" enctype="multipart/form-data">
+                <div class="modal-body py-4">
+                    <p class="text-muted small mb-4">Select an X-ray, panorama image, document, or PDF report to attach to this patient's clinical file.</p>
+                    
+                    <div class="mb-3">
+                        <label for="clinical-file" class="form-label fw-semibold" style="color: var(--heading-color); margin-bottom: 6px;">Select File</label>
+                        <input type="file" id="clinical-file" name="file" class="form-control rounded-3" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="file-notes" class="form-label fw-semibold" style="color: var(--heading-color); margin-bottom: 6px;">Description / Notes</label>
+                        <textarea id="file-notes" name="notes" class="form-control rounded-3" rows="3" placeholder="e.g. Lower jaw panorama, panoramic x-ray, dental structure..." maxlength="500"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 d-flex justify-content-center gap-2 pb-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Upload File</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- X-Ray Viewer & Compare Modal -->
+<div class="modal fade" id="xrayModal" tabindex="-1" aria-labelledby="xrayModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 overflow-hidden" style="background: var(--surface-color); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);">
+            <div class="modal-header border-bottom-0 pb-2 px-4 pt-4 d-flex justify-content-between align-items-center">
+                <div class="w-100 ">
+                    <h5 class="modal-title fw-bold" id="xrayModalLabel" style="font-size: 1.35rem; color: var(--heading-color); font-family: var(--heading-font);">
+                        <i class="bi bi-images text-info me-2"></i>
+                        X-Ray Studio & Compare
+                    </h5>
+                    <p class="text-muted small mb-0">
+                        Zoom, rotate, adjust brightness & contrast, or compare radiography images side-by-side.
+                    </p>
+                </div>
+                <button type="button" class="btn-close " data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body p-0" dir="ltr">
+                <!-- Tabs Navigation -->
+                <ul class="nav nav-tabs px-4 pt-2 border-bottom" id="xrayStudioTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active fw-semibold px-4 py-2.5" id="xray-viewer-tab" data-bs-toggle="tab" data-bs-target="#xray-viewer-pane" type="button" role="tab" style="font-size: 0.9rem;">
+                            <i class="bi bi-sliders me-1.5 text-info"></i> 
+                            Interactive Adjuster
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-semibold px-4 py-2.5" id="xray-compare-tab" data-bs-toggle="tab" data-bs-target="#xray-compare-pane" type="button" role="tab" style="font-size: 0.9rem;">
+                            <i class="bi bi-distribute-vertical me-1.5 text-info"></i> 
+                            Before / After Slider
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="xrayStudioContent">
+                    <!-- Tab 1: Interactive Viewer/Adjuster -->
+                    <div class="tab-pane fade show active p-4" id="xray-viewer-pane" role="tabpanel">
+                        <div class="row g-4">
+                            <!-- Sidebar controls -->
+                            <div class="col-lg-4">
+                                <div class="p-3 rounded-4 shadow-xs border h-100" style="background: rgba(0,0,0,0.02);">
+                                    <div class="mb-3">
+                                        <label for="select-xray-image" class="form-label fw-bold text-secondary small">
+                                            Select X-Ray Image
+                                        </label>
+                                        <select id="select-xray-image" class="form-select rounded-3 border-secondary-subtle">
+                                            <option value="">-- Choose an Image --</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <hr class="my-3 opacity-50">
+                                    
+                                    <h6 class="fw-bold mb-3 text-dark small text-uppercase tracking-wider">
+                                        <i class="bi bi-sliders2-vertical me-1"></i> 
+                                        Adjustments
+                                    </h6>
+                                    
+                                    <!-- Zoom -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="small fw-semibold text-secondary">Zoom</span>
+                                            <span class="small fw-bold text-primary" id="zoom-val">100%</span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <button class="btn btn-sm btn-outline-secondary py-0 px-2" id="btn-zoom-out" type="button"><i class="bi bi-dash"></i></button>
+                                            <input type="range" class="form-range flex-grow-1" id="slider-zoom" min="50" max="300" value="100">
+                                            <button class="btn btn-sm btn-outline-secondary py-0 px-2" id="btn-zoom-in" type="button"><i class="bi bi-plus"></i></button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Rotation -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="small fw-semibold text-secondary">Rotation</span>
+                                            <span class="small fw-bold text-primary" id="rotate-val">0°</span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <button class="btn btn-sm btn-outline-secondary py-0 px-2" id="btn-rotate-left" type="button"><i class="bi bi-arrow-counterclockwise"></i></button>
+                                            <input type="range" class="form-range flex-grow-1" id="slider-rotate" min="-180" max="180" value="0">
+                                            <button class="btn btn-sm btn-outline-secondary py-0 px-2" id="btn-rotate-right" type="button"><i class="bi bi-arrow-clockwise"></i></button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Brightness -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="small fw-semibold text-secondary">Brightness</span>
+                                            <span class="small fw-bold text-primary" id="brightness-val">100%</span>
+                                        </div>
+                                        <input type="range" class="form-range" id="slider-brightness" min="30" max="200" value="100">
+                                    </div>
+                                    
+                                    <!-- Contrast -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="small fw-semibold text-secondary">Contrast</span>
+                                            <span class="small fw-bold text-primary" id="contrast-val">100%</span>
+                                        </div>
+                                        <input type="range" class="form-range" id="slider-contrast" min="30" max="200" value="100">
+                                    </div>
+                                    
+                                    <!-- Invert colors -->
+                                    <div class="mb-4 d-flex justify-content-between align-items-center">
+                                        <span class="small fw-semibold text-secondary">Invert Colors (Negative view)</span>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="switch-invert">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Reset and actions -->
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-secondary rounded-pill py-2 text-sm fw-semibold" id="btn-reset-adjuster">
+                                            <i class="bi bi-arrow-clockwise me-1"></i> 
+                                            Reset Settings
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Viewer canvas -->
+                            <div class="col-lg-8">
+                                <div class="viewer-canvas-wrapper d-flex align-items-center justify-content-center border rounded-4 position-relative bg-dark" style="height: 460px; overflow: hidden; box-shadow: inset 0 4px 20px rgba(0,0,0,0.5);">
+                                    <div class="no-image-placeholder text-center text-secondary p-4">
+                                        <i class="bi bi-image fs-1 opacity-50 mb-3 d-block text-white"></i>
+                                        <h6 class="text-white fw-bold">
+                                            No Image Selected
+                                        </h6>
+                                        <p class="small opacity-75 mb-0">
+                                            Choose an image from the sidebar dropdown to start adjustments.
+                                        </p>
+                                    </div>
+                                    
+                                    <!-- The actual image wrapper -->
+                                    <div class="image-viewport position-absolute w-100 h-100 d-none d-flex align-items-center justify-content-center" style="cursor: grab;">
+                                        <img id="viewer-img" class="img-fluid object-fit-contain transition-transform-filters" alt="Radiography Image" style="max-height: 94%; max-width: 94%; pointer-events: none; user-select: none;">
+                                    </div>
+                                    
+                                    <!-- Controls Overlay -->
+                                    <div class="position-absolute bottom-0 start-0 w-100 p-3 d-none d-flex justify-content-between align-items-center text-white" id="viewer-overlay" style="background: linear-gradient(transparent, rgba(0,0,0,0.8));">
+                                        <span class="small fw-bold" id="overlay-filename"></span>
+                                        <span class="small bg-dark bg-opacity-70 px-2.5 py-1 rounded-pill" id="overlay-date"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 2: Before/After Slider -->
+                    <div class="tab-pane fade p-4" id="xray-compare-pane" role="tabpanel">
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <label for="compare-select-before" class="form-label fw-bold text-secondary small">
+                                    Before Image (Left)
+                                </label>
+                                <select id="compare-select-before" class="form-select rounded-3 border-secondary-subtle">
+                                    <option value="">-- Choose Image --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="compare-select-after" class="form-label fw-bold text-secondary small">
+                                    After Image (Right)
+                                </label>
+                                <select id="compare-select-after" class="form-select rounded-3 border-secondary-subtle">
+                                    <option value="">-- Choose Image --</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Slider Comparison Display -->
+                        <div class="comparison-display-wrapper border rounded-4 bg-dark overflow-hidden position-relative mx-auto shadow-lg" style="max-width: 800px; height: 460px; box-shadow: inset 0 4px 20px rgba(0,0,0,0.5);">
+                            <div class="compare-placeholder text-center text-secondary position-absolute top-50 start-50 translate-middle">
+                                <i class="bi bi-distribute-vertical fs-1 opacity-50 mb-3 d-block text-white"></i>
+                                <h6 class="text-white fw-bold">
+                                    Select Comparison Images
+                                </h6>
+                                <p class="small opacity-75 mb-0">
+                                    Choose both "Before" and "After" images to start comparison.
+                                </p>
+                            </div>
+                            
+                            <!-- The Comparison Slider Container -->
+                            <div id="slider-comparison-container" class="w-100 h-100 position-relative d-none" style="user-select: none;">
+                                <!-- After Image (Background) -->
+                                <img id="compare-img-after" alt="After image" />
+                                
+                                <!-- Before Image (Foreground, clipped) -->
+                                <img id="compare-img-before" alt="Before image" />
+                                
+                                <!-- Slider Input overlay -->
+                                <input type="range" min="0" max="100" value="50" class="position-absolute top-50 start-50 translate-middle w-100 h-100 opacity-0 compare-slider-input" id="compare-range-slider" style="z-index: 30; cursor: ew-resize;">
+                                
+                                <!-- Divider Line / Drag Indicator -->
+                                <div id="compare-divider" class="position-absolute top-0 h-100 bg-white" style="left: 50%; width: 2px; transform: translateX(-50%); z-index: 20; pointer-events: none; box-shadow: 0 0 10px rgba(0,0,0,0.5);">
+                                    <div class="position-absolute top-50 start-50 translate-middle bg-white rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 36px; height: 36px; border: 2px solid var(--primary-color);">
+                                        <i class="bi bi-arrows-expand text-primary" style="transform: rotate(90deg); font-size: 0.95rem;"></i>
+                                    </div>
+                                </div>
+                                
+                                <!-- Labels Overlay -->
+                                <span class="position-absolute bottom-3 start-3 badge bg-dark bg-opacity-70 px-3 py-2 text-uppercase fw-semibold" style="z-index: 25; font-size: 0.75rem; pointer-events: none;">
+                                    Before
+                                </span>
+                                <span class="position-absolute bottom-3 end-3 badge bg-dark bg-opacity-70 px-3 py-2 text-uppercase fw-semibold" style="z-index: 25; font-size: 0.75rem; pointer-events: none;">
+                                    After
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer border-top-0 d-flex justify-content-center pb-4">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-5 fw-bold" data-bs-dismiss="modal">
+                    Close Studio
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.patient-file-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.patient-file-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+}
+.file-preview-container:hover .preview-overlay {
+    opacity: 1 !important;
+}
+.preview-overlay {
+    transition: opacity 0.2s ease-in-out;
+}
+.patient-detail-tabs .nav-link {
+    cursor: pointer;
+}
+
+/* Image manipulation helper styles */
+.transition-transform-filters {
+    transition: filter 0.15s ease-out, transform 0.15s ease-out;
+}
+
+/* Compare Slider Input styling for overlay */
+.compare-slider-input {
+    margin: 0;
+    padding: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+}
+.compare-slider-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 40px;
+    height: 460px;
+    background: transparent;
+    cursor: ew-resize;
+}
+.compare-slider-input::-moz-range-thumb {
+    width: 40px;
+    height: 460px;
+    background: transparent;
+    cursor: ew-resize;
+    border: none;
+}
+
+#compare-img-before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+    clip-path: inset(0 var(--clip-percent, 50%) 0 0);
+    z-index: 10;
+}
+#compare-img-after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+    z-index: 5;
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Keep active tab on refresh
+    var tabEl = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    tabEl.forEach(function(el) {
+        el.addEventListener('shown.bs.tab', function (event) {
+            var targetId = event.target.getAttribute('data-bs-target').replace('#', '').replace('-tab', '');
+            var url = new URL(window.location.href);
+            url.searchParams.set('tab', targetId);
+            window.history.replaceState(null, '', url.toString());
+        });
+    });
+
+    // Populate patient images array from Jinja context
+    const patientImages = [
+        
+    ];
+
+    // Populate dropdowns
+    const selectXray = document.getElementById('select-xray-image');
+    const selectBefore = document.getElementById('compare-select-before');
+    const selectAfter = document.getElementById('compare-select-after');
+    
+    if (selectXray && selectBefore && selectAfter) {
+        patientImages.forEach(img => {
+            const opt1 = document.createElement('option');
+            opt1.value = img.url;
+            opt1.dataset.filename = img.filename;
+            opt1.dataset.date = img.date;
+            opt1.textContent = `${img.filename} (${img.date})`;
+            selectXray.appendChild(opt1);
+            
+            const opt2 = document.createElement('option');
+            opt2.value = img.url;
+            opt2.textContent = `${img.filename} (${img.date})`;
+            selectBefore.appendChild(opt2);
+            
+            const opt3 = document.createElement('option');
+            opt3.value = img.url;
+            opt3.textContent = `${img.filename} (${img.date})`;
+            selectAfter.appendChild(opt3);
+        });
+    }
+
+    // Tab 1: Interactive Adjuster
+    const viewerImg = document.getElementById('viewer-img');
+    const placeholder = document.querySelector('.no-image-placeholder');
+    const viewport = document.querySelector('.image-viewport');
+    const overlay = document.getElementById('viewer-overlay');
+    const overlayFilename = document.getElementById('overlay-filename');
+    const overlayDate = document.getElementById('overlay-date');
+    
+    // Sliders & Controls
+    const sliderZoom = document.getElementById('slider-zoom');
+    const zoomVal = document.getElementById('zoom-val');
+    const btnZoomIn = document.getElementById('btn-zoom-in');
+    const btnZoomOut = document.getElementById('btn-zoom-out');
+    
+    const sliderRotate = document.getElementById('slider-rotate');
+    const rotateVal = document.getElementById('rotate-val');
+    const btnRotateLeft = document.getElementById('btn-rotate-left');
+    const btnRotateRight = document.getElementById('btn-rotate-right');
+    
+    const sliderBrightness = document.getElementById('slider-brightness');
+    const brightnessVal = document.getElementById('brightness-val');
+    
+    const sliderContrast = document.getElementById('slider-contrast');
+    const contrastVal = document.getElementById('contrast-val');
+    
+    const switchInvert = document.getElementById('switch-invert');
+    const btnReset = document.getElementById('btn-reset-adjuster');
+
+    let zoom = 100;
+    let rotation = 0;
+    let brightness = 100;
+    let contrast = 100;
+    let invert = false;
+    let panX = 0;
+    let panY = 0;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+
+    function applyTransforms() {
+        if (!viewerImg) return;
+        const scale = zoom / 100;
+        const invertStr = invert ? 'invert(1)' : 'invert(0)';
+        viewerImg.style.filter = `brightness(${brightness}%) contrast(${contrast}%) ${invertStr}`;
+        viewerImg.style.transform = `translate(${panX}px, ${panY}px) scale(${scale}) rotate(${rotation}deg)`;
+    }
+
+    function updateLabels() {
+        if (zoomVal) zoomVal.textContent = zoom + '%';
+        if (rotateVal) rotateVal.textContent = rotation + '°';
+        if (brightnessVal) brightnessVal.textContent = brightness + '%';
+        if (contrastVal) contrastVal.textContent = contrast + '%';
+    }
+
+    function resetAdjustments() {
+        zoom = 100;
+        rotation = 0;
+        brightness = 100;
+        contrast = 100;
+        invert = false;
+        panX = 0;
+        panY = 0;
+        
+        if (sliderZoom) sliderZoom.value = 100;
+        if (sliderRotate) sliderRotate.value = 0;
+        if (sliderBrightness) sliderBrightness.value = 100;
+        if (sliderContrast) sliderContrast.value = 100;
+        if (switchInvert) switchInvert.checked = false;
+        
+        updateLabels();
+        applyTransforms();
+    }
+
+    if (selectXray) {
+        selectXray.addEventListener('change', function() {
+            const url = this.value;
+            if (!url) {
+                if (placeholder) placeholder.classList.remove('d-none');
+                if (viewport) viewport.classList.add('d-none');
+                if (overlay) overlay.classList.add('d-none');
+                return;
+            }
+            
+            const selectedOpt = this.options[this.selectedIndex];
+            if (placeholder) placeholder.classList.add('d-none');
+            if (viewport) viewport.classList.remove('d-none');
+            if (overlay) {
+                overlay.classList.remove('d-none');
+                overlayFilename.textContent = selectedOpt.dataset.filename;
+                overlayDate.textContent = selectedOpt.dataset.date;
+            }
+            
+            viewerImg.src = url;
+            resetAdjustments();
+        });
+    }
+
+    if (sliderZoom) {
+        sliderZoom.addEventListener('input', function() {
+            zoom = parseInt(this.value);
+            updateLabels();
+            applyTransforms();
+        });
+    }
+    if (sliderRotate) {
+        sliderRotate.addEventListener('input', function() {
+            rotation = parseInt(this.value);
+            updateLabels();
+            applyTransforms();
+        });
+    }
+    if (sliderBrightness) {
+        sliderBrightness.addEventListener('input', function() {
+            brightness = parseInt(this.value);
+            updateLabels();
+            applyTransforms();
+        });
+    }
+    if (sliderContrast) {
+        sliderContrast.addEventListener('input', function() {
+            contrast = parseInt(this.value);
+            updateLabels();
+            applyTransforms();
+        });
+    }
+    if (switchInvert) {
+        switchInvert.addEventListener('change', function() {
+            invert = this.checked;
+            applyTransforms();
+        });
+    }
+    if (btnReset) {
+        btnReset.addEventListener('click', resetAdjustments);
+    }
+
+    if (btnZoomIn) {
+        btnZoomIn.addEventListener('click', function() {
+            zoom = Math.min(300, zoom + 10);
+            if (sliderZoom) sliderZoom.value = zoom;
+            updateLabels();
+            applyTransforms();
+        });
+    }
+    if (btnZoomOut) {
+        btnZoomOut.addEventListener('click', function() {
+            zoom = Math.max(50, zoom - 10);
+            if (sliderZoom) sliderZoom.value = zoom;
+            updateLabels();
+            applyTransforms();
+        });
+    }
+
+    if (btnRotateLeft) {
+        btnRotateLeft.addEventListener('click', function() {
+            rotation = Math.max(-180, rotation - 15);
+            if (sliderRotate) sliderRotate.value = rotation;
+            updateLabels();
+            applyTransforms();
+        });
+    }
+    if (btnRotateRight) {
+        btnRotateRight.addEventListener('click', function() {
+            rotation = Math.min(180, rotation + 15);
+            if (sliderRotate) sliderRotate.value = rotation;
+            updateLabels();
+            applyTransforms();
+        });
+    }
+
+    if (viewport) {
+        viewport.addEventListener('mousedown', function(e) {
+            if (!selectXray.value) return;
+            isDragging = true;
+            viewport.style.cursor = 'grabbing';
+            startX = e.clientX - panX;
+            startY = e.clientY - panY;
+        });
+
+        window.addEventListener('mouseup', function() {
+            isDragging = false;
+            if (viewport) viewport.style.cursor = 'grab';
+        });
+
+        viewport.addEventListener('mousemove', function(e) {
+            if (!isDragging) return;
+            panX = e.clientX - startX;
+            panY = e.clientY - startY;
+            applyTransforms();
+        });
+    }
+
+    // Tab 2: Comparison Slider
+    const beforeImg = document.getElementById('compare-img-before');
+    const afterImg = document.getElementById('compare-img-after');
+    const comparePlaceholder = document.querySelector('.compare-placeholder');
+    const compareContainer = document.getElementById('slider-comparison-container');
+    const compareSlider = document.getElementById('compare-range-slider');
+    
+    function updateComparisonView() {
+        const beforeUrl = selectBefore.value;
+        const afterUrl = selectAfter.value;
+        
+        if (!beforeUrl || !afterUrl) {
+            if (comparePlaceholder) comparePlaceholder.classList.remove('d-none');
+            if (compareContainer) compareContainer.classList.add('d-none');
+            return;
+        }
+        
+        if (comparePlaceholder) comparePlaceholder.classList.add('d-none');
+        if (compareContainer) compareContainer.classList.remove('d-none');
+        
+        beforeImg.src = beforeUrl;
+        afterImg.src = afterUrl;
+        
+        if (compareSlider) {
+            compareSlider.value = 50;
+            compareContainer.style.setProperty('--clip-percent', '50%');
+            const divider = document.getElementById('compare-divider');
+            if (divider) divider.style.left = '50%';
+        }
+    }
+    
+    if (selectBefore) selectBefore.addEventListener('change', updateComparisonView);
+    if (selectAfter) selectAfter.addEventListener('change', updateComparisonView);
+    
+    if (compareSlider) {
+        compareSlider.addEventListener('input', function() {
+            const val = this.value;
+            const clipRight = 100 - val;
+            compareContainer.style.setProperty('--clip-percent', `${clipRight}%`);
+            const divider = document.getElementById('compare-divider');
+            if (divider) divider.style.left = `${val}%`;
+        });
+    }
+});
+</script>
+
+
+  </main>
+
+  <footer id="footer" class="footer-16 footer position-relative dark-background">
+
+    <div class="container footer-main">
+      <div class="row gy-5">
+
+        <div class="col-lg-4 col-md-6">
+          <div class="brand-section">
+            <a href="/" class="logo d-flex align-items-center mb-3 text-decoration-none">
+              <i class="fa-solid fa-tooth me-2 fs-3 text-primary footer-logo-glow"></i>
+              <span class="sitename">Clinic</span>
+            </a>
+
+            <p class="brand-description">
+              Dental Clinic Management System for managing patients, appointments,
+              treatments, and payments in one place.
+            </p>
+
+            <div class="footer-social-links d-flex gap-3 mt-4">
+              <a href="https://facebook.com" target="_blank" class="footer-social-icon-btn" title="Facebook"><i class="bi bi-facebook"></i></a>
+              <a href="https://instagram.com" target="_blank" class="footer-social-icon-btn" title="Instagram"><i class="bi bi-instagram"></i></a>
+              <a href="https://linkedin.com" target="_blank" class="footer-social-icon-btn" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+              <a href="https://wa.me/963958948727" target="_blank" class="footer-social-icon-btn" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-2 col-md-6">
+          <div class="nav-column">
+            <h6>Quick Access</h6>
+            <nav class="footer-nav">
+              <a href="/"><i class="bi bi-chevron-right me-1 small"></i> Dashboard</a>
+              <a href="/patients"><i class="bi bi-chevron-right me-1 small"></i> Patients</a>
+              <a href="/appointments"><i class="bi bi-chevron-right me-1 small"></i> Appointments</a>
+              <a href="/calendar"><i class="bi bi-chevron-right me-1 small"></i> Calendar</a>
+              
+              <a href="/invoices"><i class="bi bi-chevron-right me-1 small"></i> Invoices</a>
+              <a href="/payments"><i class="bi bi-chevron-right me-1 small"></i> Payments</a>
+              
+            </nav>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+          <div class="nav-column">
+            <h6>Clinic Tools</h6>
+            <nav class="footer-nav">
+              
+              <a href="/reports"><i class="bi bi-chevron-right me-1 small"></i> Reports</a>
+              <a href="/settings"><i class="bi bi-chevron-right me-1 small"></i> Settings</a>
+              
+              <a href="/reports#reports-dashboard-section"><i class="bi bi-chevron-right me-1 small"></i> Outstanding Balances</a>
+              
+              <a href="/appointments"><i class="bi bi-chevron-right me-1 small"></i> Appointment Sessions</a>
+              
+            </nav>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+          <div class="nav-column">
+            <h6>Clinic Info</h6>
+
+            <div class="footer-nav">
+              <a href="mailto:kh.nasipdragon@gmail.com" class="d-flex align-items-center gap-2 py-1">
+                <i class="bi bi-envelope text-primary fs-5"></i>
+                <span>kh.nasipdragon@gmail.com</span>
+              </a>
+
+              <a href="tel:+963 958 948 727" class="d-flex align-items-center gap-2 py-1">
+                <i class="bi bi-phone text-primary fs-5"></i>
+                <span>+963 958 948 727</span>
+              </a>
+
+              <span class="d-flex align-items-center gap-2 py-1 text-muted">
+                <i class="bi bi-geo-alt text-primary fs-5"></i>
+                <span>Damascus, Syria</span>
+              </span>
+            </div>
+
+            <h6 class="mt-4 mb-2 pt-2 text-white text-uppercase" style="font-size: 0.8rem; letter-spacing: 1px; font-weight: 600;">Operating Hours</h6>
+            <div class="footer-nav">
+              <span class="small d-flex align-items-center gap-2 text-muted">
+                <i class="bi bi-clock text-primary"></i> Sat - Thu: 9:00 AM - 6:00 PM
+              </span>
+              
+              <span class="small d-flex align-items-center gap-2 text-muted">
+                <i class="bi bi-calendar-x text-danger"></i> Friday: Closed
+              </span>
+              
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <div class="row align-items-center gy-3">
+
+        <div class="col-lg-6">
+          <div class="copyright text-center text-lg-start">
+            <p class="mb-0">
+              © <span>2026</span>
+              <strong class="px-1 sitename">Dental Clinic MS</strong>. All rights reserved.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-lg-6 text-center text-lg-end">
+          <div class="legal-links d-inline-flex align-items-center gap-2">
+            <i class="bi bi-shield-check text-success"></i>
+            <span class="text-muted small">Built for professional clinic management.</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </footer>
+
+  <!-- Scroll Top -->
+  <a href="#!" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i
+      class="bi bi-arrow-up-short"></i></a>
+
+  <!-- Preloader -->
+  <div id="preloader"></div>
+
+  <!-- Vendor JS Files -->
+  <script src="/static/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="/static/assets/vendor/php-email-form/validate.js"></script>
+  <script src="/static/assets/vendor/aos/aos.js"></script>
+  <script src="/static/assets/vendor/glightbox/js/glightbox.min.js"></script>
+  <script src="/static/assets/vendor/purecounter/purecounter_vanilla.js"></script>
+  <script src="/static/assets/vendor/swiper/swiper-bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
+
+  <!-- Main JS File -->
+  <script src="/static/assets/js/main.js"></script>
+
+</body>
+
+</html>}
+                    }
+                    observer.observe(document.body, { childList: true, subtree: true });
+                });
+            }
+            observer.observe(document.body, { childList: true, subtree: true });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const currentLang = document.documentElement.getAttribute('lang') || 'en';
+            if (currentLang === 'ar') {
+                translateDOM(document.body);
+                const title = document.title.trim();
+                if (arabicTranslations[title]) {
+                    document.title = arabicTranslations[title];
+                }
+                startObserver();
+            }
+        });
+    })();
+  </script>
+
+</body>
+
+</html>

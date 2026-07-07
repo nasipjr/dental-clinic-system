@@ -32,7 +32,7 @@ CREATE TABLE `appointment` (
   PRIMARY KEY (`id`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `appointment_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -123,7 +123,7 @@ CREATE TABLE `invoice` (
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `invoice_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointment` (`id`),
   CONSTRAINT `invoice_ibfk_2` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -199,7 +199,7 @@ CREATE TABLE `patient` (
   `emergency_contact` varchar(150) DEFAULT NULL,
   `medicare_number` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -230,7 +230,7 @@ CREATE TABLE `patient_file` (
   PRIMARY KEY (`id`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `patient_file_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -239,7 +239,7 @@ CREATE TABLE `patient_file` (
 
 LOCK TABLES `patient_file` WRITE;
 /*!40000 ALTER TABLE `patient_file` DISABLE KEYS */;
-INSERT INTO `patient_file` VALUES (2,10,'jaw.jpg','uploads/patients/fd593a4f6ce64161bc87f8961e534c64.jpg','image/jpeg','2026-07-06 06:16:07','فك');
+INSERT INTO `patient_file` VALUES (8,10,'jaw.jpg','uploads/patients/4a4b577bc56743a29a6f26fa1f1f7248.jpg','image/jpeg','2026-07-07 03:39:42','JAW');
 /*!40000 ALTER TABLE `patient_file` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -346,7 +346,7 @@ CREATE TABLE `treatment` (
   PRIMARY KEY (`id`),
   KEY `appointment_id` (`appointment_id`),
   CONSTRAINT `treatment_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointment` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -408,7 +408,7 @@ CREATE TABLE `user` (
   UNIQUE KEY `ix_user_username` (`username`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `user_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -417,7 +417,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1,'admin','scrypt:32768:8:1$atJj4C9ImjWZMGAA$660215c4e032bf012c87e69184d2e4d22e4e97a8237b3e4748e7b1d35545a3d4e89ce3961ad883c8b286e91288fcc98e909aa7ab829ca91dc6362adda6c97312','admin','Admin','User',NULL,NULL),(2,'hiba','scrypt:32768:8:1$h5VJrby7WCgxUyO6$c6685f4b248a4c4675ee3d61b7e9ccafbc9c50a43e330096bac3c4dff9024188c63c69382e650bd92a72e5e178795e80e95e60c8cba59027cce107788975db93','receptionist','Hiba','Ali',NULL,NULL),(3,'rasha','scrypt:32768:8:1$KBnCIoGxcxKUOmpP$c17ea5f372cfe7e1796035fab56b9ee993f6f25d8cec11068563371d651ea7629a2f5521dace16bffe3d89309c7cbb9b4f32013d5522c2e132eb0ec867c6124a','patient','رشا','الراعي',10,'rasha123');
+INSERT INTO `user` VALUES (1,'admin','scrypt:32768:8:1$atJj4C9ImjWZMGAA$660215c4e032bf012c87e69184d2e4d22e4e97a8237b3e4748e7b1d35545a3d4e89ce3961ad883c8b286e91288fcc98e909aa7ab829ca91dc6362adda6c97312','admin','Admin','User',NULL,NULL),(2,'hiba','scrypt:32768:8:1$h5VJrby7WCgxUyO6$c6685f4b248a4c4675ee3d61b7e9ccafbc9c50a43e330096bac3c4dff9024188c63c69382e650bd92a72e5e178795e80e95e60c8cba59027cce107788975db93','receptionist','Hiba','Ali',NULL,NULL),(32,'rasha','scrypt:32768:8:1$EAdcZ2hcVIrGqcxK$5f1e430d4e9e3ba459ebfe833746e1cdf5238db658dec3f8eb5ef3ed320e4b72172df1daeb68f4138b80bb58ed7324ce843ee79ef49242c6ecd0de0605f0da19','patient','رشا','الراعي',10,'rara12');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -430,4 +430,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-06 21:18:56
+-- Dump completed on 2026-07-07  3:44:04

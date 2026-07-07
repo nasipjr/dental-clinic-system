@@ -723,7 +723,13 @@ def upload_patient_file(patient_id):
         
     if file:
         filename = secure_filename(file.filename)
-        file_ext = os.path.splitext(filename)[1]
+        file_ext = os.path.splitext(filename)[1].lower()
+        
+        ALLOWED_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.txt'}
+        if file_ext not in ALLOWED_EXTENSIONS:
+            flash("Invalid file type. Only images, PDFs, documents, spreadsheets, and text files are allowed.", "danger")
+            return redirect(url_for("patients.patient_detail", patient_id=patient_id, tab="files"))
+            
         unique_filename = f"{uuid.uuid4().hex}{file_ext}"
         
         upload_dir = os.path.join(current_app.static_folder, "uploads", "patients")

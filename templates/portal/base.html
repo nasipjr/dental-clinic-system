@@ -38,9 +38,98 @@
   <!-- Main CSS File -->
   <link href="{{ url_for('static', filename='assets/css/main.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='styles.css') }}?v=1.6" rel="stylesheet">
+  <style>
+    .patient-portal-body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    .patient-portal-body .main {
+      flex: 1 0 auto;
+    }
+    
+    /* LIGHT MODE SPECIFIC STYLES */
+    html[data-bs-theme="light"] .patient-portal-body {
+      background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%) !important;
+      color: #2d3748 !important;
+    }
+    
+    html[data-bs-theme="light"] .patient-portal-body .card {
+      background: #ffffff !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04) !important;
+      border: 1px solid rgba(226, 232, 240, 0.8) !important;
+      border-radius: 20px !important;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    html[data-bs-theme="light"] .patient-portal-body .card:hover {
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.07) !important;
+    }
+    
+    /* Table enhancements in Light mode */
+    html[data-bs-theme="light"] .patient-portal-body .table {
+      --bs-table-bg: transparent !important;
+      color: #2d3748 !important;
+    }
+    html[data-bs-theme="light"] .patient-portal-body thead th {
+      background-color: #f7fafc !important;
+      color: #4a5568 !important;
+      font-weight: 700;
+      border-bottom: 2px solid #edf2f7 !important;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+    }
+    html[data-bs-theme="light"] .patient-portal-body tbody tr:hover {
+      background-color: rgba(23, 92, 221, 0.03) !important;
+    }
+    
+    /* Nav pills styling */
+    .patient-portal-body .nav-pills .nav-link {
+      color: var(--default-color);
+      background: color-mix(in srgb, var(--default-color), transparent 94%);
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    .patient-portal-body .nav-pills .nav-link:hover {
+      background: color-mix(in srgb, var(--default-color), transparent 88%);
+    }
+    
+    html[data-bs-theme="light"] .patient-portal-body .nav-pills .nav-link.active {
+      background: linear-gradient(135deg, #175cdd 0%, #114fb0 100%) !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 15px rgba(23, 92, 221, 0.3) !important;
+    }
+    
+    html[data-bs-theme="dark"] .patient-portal-body .nav-pills .nav-link.active {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4) !important;
+    }
+    
+    /* Header customizations */
+    html[data-bs-theme="light"] .patient-portal-body .header {
+      background: rgba(255, 255, 255, 0.95) !important;
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.02) !important;
+    }
+    
+    html[data-bs-theme="light"] .patient-portal-body .navmenu a,
+    html[data-bs-theme="light"] .patient-portal-body .navmenu a:focus {
+      color: #4a5568 !important;
+    }
+    
+    html[data-bs-theme="light"] .patient-portal-body .navmenu a.active,
+    html[data-bs-theme="light"] .patient-portal-body .navmenu a:hover {
+      color: #175cdd !important;
+    }
+  </style>
 </head>
 
-<body class="index-page">
+<body class="index-page patient-portal-body">
   <header id="header" class="header d-flex align-items-center sticky-top">
     <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
       <a href="{{ url_for('portal.dashboard') if session.get('role') == 'patient' else '#' }}" class="logo d-flex align-items-center">
@@ -50,12 +139,14 @@
       <nav id="navmenu" class="navmenu">
         <ul>
           {% if session.get('role') == 'patient' %}
-          <li><a href="{{ url_for('portal.dashboard') }}">Dashboard</a></li>
-          <li><a href="{{ url_for('portal.book_appointment') }}">Book Appointment</a></li>
-          <li><a href="{{ url_for('portal.logout') }}">Logout</a></li>
+          <li><a href="{{ url_for('portal.dashboard') }}" class="{% if request.path == url_for('portal.dashboard') %}active{% endif %}">Dashboard</a></li>
+          <li><a href="{{ url_for('portal.book_appointment') }}" class="{% if request.path == url_for('portal.book_appointment') %}active{% endif %}">Book Appointment</a></li>
+          <li><a href="{{ url_for('portal.billing') }}" class="{% if request.path == url_for('portal.billing') or request.path.startswith('/portal/invoices') %}active{% endif %}">My Billing</a></li>
+          <li><a href="{{ url_for('portal.medical_history') }}" class="{% if request.path == url_for('portal.medical_history') %}active{% endif %}">My Medical History</a></li>
+          <li><a href="{{ url_for('portal.logout_confirm') }}" class="{% if request.path == url_for('portal.logout_confirm') %}active{% endif %}">Logout</a></li>
           {% else %}
-          <li><a href="{{ url_for('portal.login') }}">Login</a></li>
-          <li><a href="{{ url_for('portal.register') }}">Register</a></li>
+          <li><a href="{{ url_for('portal.login') }}" class="{% if request.path == url_for('portal.login') %}active{% endif %}">Login</a></li>
+          <li><a href="{{ url_for('portal.register') }}" class="{% if request.path == url_for('portal.register') %}active{% endif %}">Register</a></li>
           {% endif %}
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
@@ -134,199 +225,6 @@
       localStorage.setItem('lang', newLang);
       window.location.reload();
     });
-  </script>
-
-  <script>
-    // ── Translation Script for Arabic Language ──
-    (function() {
-        // We inject the translations block from base.html to translate standard terms
-        const arabicTranslations = {
-            "Dashboard": "لوحة التحكم",
-            "Book Appointment": "حجز موعد",
-            "Logout": "تسجيل الخروج",
-            "Login": "تسجيل الدخول",
-            "Register": "إنشاء حساب",
-            "Patient Portal": "بوابة المرضى",
-            "Portal": "بوابة",
-            "Username": "اسم المستخدم",
-            "Password": "كلمة المرور",
-            "Sign In": "تسجيل الدخول",
-            "Create Account": "إنشاء حساب",
-            "First Name": "الاسم الأول",
-            "Last Name": "اسم العائلة",
-            "Email Address": "البريد الإلكتروني",
-            "Phone Number": "رقم الهاتف",
-            "Date of Birth": "تاريخ الميلاد",
-            "Gender": "الجنس",
-            "Select Gender": "اختر الجنس",
-            "Male": "ذكر",
-            "Female": "أنثى",
-            "Cancel": "إلغاء",
-            "Save": "حفظ",
-            "Scheduled": "مجدول",
-            "Pending": "معلق",
-            "Done": "منجز",
-            "Cancelled": "ملغى",
-            "Rejected": "مرفوض",
-            "Status": "الحالة",
-            "Reason": "السبب",
-            "Date": "التاريخ",
-            "Actions": "الإجراءات",
-            "Choose a Reason": "اختر سبباً",
-            "Select a Reason": "اختر سبب الحجز",
-            "Submit Request": "تقديم الطلب",
-            "Appointment Date & Time": "تاريخ ووقت الموعد",
-            "Check-up": "فحص دوري",
-            "Cleaning": "تنظيف وتلميع",
-            "Filling": "حشوة أسنان",
-            "Root Canal": "علاج عصب السن",
-            "Extraction": "قلع سن",
-            "Crown / Bridge": "تاج / جسر",
-            "Braces / Orthodontics": "تقويم الأسنان",
-            "Whitening": "تبييض الأسنان",
-            "Emergency Pain": "ألم طارئ",
-            "Follow-up": "متابعة",
-            "Select Date & Time": "اختر التاريخ والوقت",
-            "All rights reserved": "جميع الحقوق محفوظة",
-            "Welcome to your portal": "مرحباً بك في بوابتك الخاصة",
-            "Here is a summary of your appointment history": "إليك ملخصاً لتاريخ مواعيدك",
-            "No appointments found": "لم يتم العثور على أي مواعيد",
-            "Request a New Appointment": "طلب موعد جديد",
-            "Your profile details": "تفاصيل ملفك الشخصي",
-            "Name": "الاسم",
-            "Already have an account?": "هل لديك حساب بالفعل؟",
-            "Don't have an account?": "ليس لديك حساب؟",
-            "Create your account below to link it to your patient record": "أنشئ حسابك أدناه لربطه بملف المريض الخاص بك",
-            "Login to manage your appointments": "سجل الدخول لإدارة مواعيدك",
-            "Please contact the clinic staff to set up your login credentials.": "يرجى التواصل مع موظفي العيادة لإنشاء بيانات تسجيل الدخول الخاصة بك.",
-            "Don't have an account? Please contact the clinic staff to set up your login credentials.": "ليس لديك حساب؟ يرجى التواصل مع موظفي العيادة لإنشاء بيانات تسجيل الدخول الخاصة بك.",
-            "Enter username": "أدخل اسم المستخدم",
-            "Enter password": "أدخل كلمة المرور",
-            "Enter password (min 6 chars)": "أدخل كلمة المرور (6 خانات على الأقل)",
-            "Email:": "البريد الإلكتروني:",
-            "Phone:": "الهاتف:",
-            "Date of Birth:": "تاريخ الميلاد:",
-            "Email": "البريد الإلكتروني",
-            "Phone": "الهاتف",
-            "N/A": "غير متوفر",
-            "Appointments": "المواعيد",
-            "Appointment Calendar": "تقويم المواعيد",
-            "Select a date and time slot from the calendar below. Blocked slots are marked as \"Reserved\".": "اختر تاريخاً ووقتاً من التقويم أدناه. الخانات المحجوزة تظهر كـ \"محجوز\".",
-            "Book an Appointment": "حجز موعد جديد",
-            "Public registration is disabled. Please contact the clinic staff to set up your account.": "التسجيل العام معطل. يرجى التواصل مع موظفي العيادة لإنشاء حسابك.",
-            "Please log in to access the patient portal.": "يرجى تسجيل الدخول للوصول إلى بوابة المرضى.",
-            "Invalid username or password.": "اسم المستخدم أو كلمة المرور غير صالحة.",
-            "Please enter both username and password.": "يرجى إدخال اسم المستخدم وكلمة المرور.",
-            "You have logged out of the portal.": "لقد قمت بتسجيل الخروج من البوابة بنجاح.",
-            "All fields are required.": "جميع الحقول مطلوبة.",
-            "Invalid appointment date and time format.": "تنسيق تاريخ ووقت الموعد غير صالح.",
-            "Appointment cannot be booked in the past.": "لا يمكن حجز موعد في الماضي.",
-            "Appointment cannot be booked more than 30 days in advance.": "لا يمكن حجز موعد قبل أكثر من 30 يوماً.",
-            "Clinic is closed on this day.": "العيادة مغلقة في هذا اليوم.",
-            "Selected slot is no longer available. Please select another time.": "الوقت المحدد لم يعد متاحاً. يرجى اختيار وقت آخر.",
-            "Appointment request submitted successfully! Pending staff confirmation.": "تم تقديم طلب الموعد بنجاح! بانتظار تأكيد الموظفين.",
-            "Failed to submit request. Please try again.": "فشل تقديم الطلب. يرجى المحاولة مرة أخرى.",
-            "Success": "نجاح",
-            "Warning": "تنبيه",
-            "Error": "خطأ",
-            "Failed to request appointment. Please try again.": "فشل تقديم الطلب. يرجى المحاولة مرة أخرى.",
-            "Clinic Closed": "العيادة مغلقة",
-            "Appointments cannot be booked on holidays.": "لا يمكن حجز مواعيد في أيام العطل الرسمية.",
-            "Invalid Date": "تاريخ غير صالح",
-            "Invalid Time": "وقت غير صالح",
-            "Selected time is in the past. Please choose a future time.": "الوقت المحدد في الماضي. يرجى اختيار وقت مستقبلي.",
-            "Outside Business Hours": "خارج ساعات العمل",
-            "Booking Period Exceeded": "تجاوز فترة الحجز",
-            "Reserved Slot": "موعد محجوز",
-            "This slot is already reserved. Please select another time.": "هذا الوقت محجوز بالفعل. يرجى اختيار وقت آخر.",
-            "Request Appointment": "طلب حجز موعد جديد",
-            "Would you like to request a booking at the selected time?": "هل ترغب في طلب حجز موعد بالتاريخ والوقت المحددين؟",
-            "You must select a reason": "يجب اختيار سبب الحجز",
-            "Submitting Request...": "جاري إرسال الطلب...",
-            "Appointment time must be between": "يجب أن يكون وقت الموعد بين",
-            "and": "و"
-        };
-
-        window.arabicTranslations = arabicTranslations;
-
-        const sortedTranslationKeys = Object.keys(arabicTranslations).sort((a, b) => b.length - a.length);
-
-        function escapeRegExp(string) {
-            return string.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&');
-        }
-
-        function safeReplace(text, key, translation) {
-            const escapedKey = escapeRegExp(key);
-            const regex = new RegExp('(?<![a-zA-Z0-9])' + escapedKey + '(?![a-zA-Z0-9])', 'gi');
-            return text.replace(regex, translation);
-        }
-
-        function translateDOM(node) {
-            if (node.nodeType === Node.TEXT_NODE) {
-                let rawText = node.nodeValue;
-                let originalText = rawText;
-                
-                for (const key of sortedTranslationKeys) {
-                    rawText = safeReplace(rawText, key, arabicTranslations[key]);
-                }
-                
-                // Format phone numbers to prevent visual reversal in RTL/Arabic mode
-                const phoneRegex = /(\+[\d\s-]{5,18}\d|\b09\d[\d\s-]{4,15}\d)/g;
-                rawText = rawText.replace(phoneRegex, (match) => {
-                    if (match.startsWith('\u2066') && match.endsWith('\u2069')) {
-                        return match;
-                    }
-                    return '\u2066' + match + '\u2069';
-                });
-                
-                if (rawText !== originalText) {
-                    node.nodeValue = rawText;
-                }
-            } else if (node.nodeType === Node.ELEMENT_NODE) {
-                if (node.tagName === 'SCRIPT' || node.tagName === 'STYLE') return;
-                // Skip translating flatpickr elements
-                if (node.classList && (node.classList.contains('flatpickr-calendar') || node.classList.contains('flatpickr-am-pm'))) return;
-                
-                const placeholder = node.getAttribute('placeholder');
-                if (placeholder) {
-                    let translatedPlaceholder = placeholder;
-                    for (const key of sortedTranslationKeys) {
-                        translatedPlaceholder = safeReplace(translatedPlaceholder, key, arabicTranslations[key]);
-                    }
-                    if (translatedPlaceholder !== placeholder) {
-                        node.setAttribute('placeholder', translatedPlaceholder);
-                    }
-                }
-                
-                const titleAttr = node.getAttribute('title');
-                if (titleAttr) {
-                    let translatedTitle = titleAttr;
-                    for (const key of sortedTranslationKeys) {
-                        translatedTitle = safeReplace(translatedTitle, key, arabicTranslations[key]);
-                    }
-                    if (translatedTitle !== titleAttr) {
-                        node.setAttribute('title', translatedTitle);
-                    }
-                }
-                
-                for (let child of node.childNodes) {
-                    translateDOM(child);
-                }
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const currentLang = document.documentElement.getAttribute('lang') || 'en';
-            if (currentLang === 'ar') {
-                translateDOM(document.body);
-                let title = document.title;
-                for (const key of sortedTranslationKeys) {
-                    title = safeReplace(title, key, arabicTranslations[key]);
-                }
-                document.title = title;
-            }
-        });
-    })();
   </script>
   <script>
     if ('serviceWorker' in navigator) {

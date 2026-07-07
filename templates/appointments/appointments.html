@@ -153,6 +153,16 @@
             {% endif %}
         {% else %}
             <!-- Scheduled Appointments Tab Content -->
+            <div class="d-flex justify-content-end mb-3">
+                <div class="btn-group" role="group" aria-label="View Toggle" style="border-radius: 30px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--accent-color), transparent 80%);">
+                    <a href="{{ url_for('appointments.appointments') }}" class="btn btn-primary active px-4 py-2" style="font-weight: 600; border-radius: 0; border: none;">
+                        <i class="bi bi-list-task me-1"></i> List View
+                    </a>
+                    <a href="{{ url_for('appointments.calendar') }}" class="btn btn-outline-primary px-4 py-2" style="font-weight: 600; border-radius: 0; border: none;">
+                        <i class="bi bi-calendar3 me-1"></i> Calendar View
+                    </a>
+                </div>
+            </div>
             <!-- Filters -->
             <form id="appointments-filter-form" method="GET" action="{{ url_for('appointments.appointments_table') }}" class="appointments-filter-bar mb-4">
                 <div class="row gy-3 align-items-end">

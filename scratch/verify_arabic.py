@@ -33,9 +33,11 @@ with client:
     assert 'html lang="ar"' in html_ar
     assert 'dir="rtl"' in html_ar
     
-    # Verify new script is present
-    assert "Translation Script for Arabic Language" in html_ar
-    assert "MutationObserver" in html_ar
-    assert "safeReplace" in html_ar
+    # Verify that client-side script is NOT present
+    assert "Translation Script for Arabic Language" not in html_ar
+    assert "MutationObserver" not in html_ar
+    
+    # Verify server-side translation occurred
+    assert "لوحة التحكم" in html_ar
 
     print("SUCCESS: Templates render correct HTML lang attributes and the translation script is successfully injected!")

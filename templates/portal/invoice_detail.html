@@ -1,0 +1,324 @@
+{% extends "portal/base.html" %}
+
+{% block title %}Invoice Details - {{ invoice.invoice_number }}{% endblock %}
+
+{% block content %}
+<section id="invoice-detail-section" class="section d-print-none">
+    <div class="card shadow-sm border-0 rounded-4" style="background: var(--surface-color);">
+        <div class="card-body p-4">
+            
+            <!-- Header buttons -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <a href="{{ url_for('portal.billing') }}" class="btn btn-outline-secondary rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Billing
+                </a>
+                <button onclick="window.print()" class="btn btn-success rounded-pill px-4 d-inline-flex align-items-center gap-2">
+                    <i class="bi bi-printer"></i>
+                    <span>Print Invoice</span>
+                </button>
+            </div>
+
+            <div class="text-center mb-4">
+                <h3 class="fw-bold mb-1">Invoice {{ invoice.invoice_number }}</h3>
+                <span class="text-secondary small">Generated from appointment treatments</span>
+            </div>
+
+            <!-- Invoice Info Grid -->
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded-3 h-100" style="background: color-mix(in srgb, var(--default-color), transparent 96%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);">
+                        <span class="small d-block mb-1" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">Invoice Number</span>
+                        <span class="fw-bold" style="color: var(--heading-color);">{{ invoice.invoice_number }}</span>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded-3 h-100" style="background: color-mix(in srgb, var(--default-color), transparent 96%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);">
+                        <span class="small d-block mb-1" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">Issue Date</span>
+                        <span class="fw-bold" style="color: var(--heading-color);">{{ invoice.issue_date.strftime('%Y-%m-%d') }}</span>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded-3 h-100" style="background: color-mix(in srgb, var(--default-color), transparent 96%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);">
+                        <span class="small d-block mb-1" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">Invoice Status</span>
+                        {% if invoice.status == 'Paid' %}
+                        <span class="badge bg-success rounded-pill px-3 py-1 border border-success-subtle">Paid</span>
+                        {% elif invoice.status == 'Partially Paid' %}
+                        <span class="badge bg-warning text-dark rounded-pill px-3 py-1 border border-warning-subtle">Partial</span>
+                        {% else %}
+                        <span class="badge bg-danger rounded-pill px-3 py-1 border border-danger-subtle">Unpaid</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3 text-center">
+                    <div class="p-2 rounded-3 h-100 d-flex flex-column align-items-center justify-content-center" style="background: color-mix(in srgb, var(--default-color), transparent 96%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);">
+                        <span class="small d-block mb-1" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">QR Verification</span>
+                        <canvas id="invoice-qrcode" style="width: 70px; height: 70px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice Items Table -->
+            <h5 class="fw-bold mb-3"><i class="bi bi-card-list me-1 text-primary"></i> Invoice Items</h5>
+            <div class="table-responsive mb-4">
+                <table class="table align-middle">
+                    <thead style="background-color: color-mix(in srgb, var(--default-color), transparent 95%); color: var(--heading-color);">
+                        <tr>
+                            <th class="ps-3">#</th>
+                            <th>Treatment Date</th>
+                            <th>Procedure Type</th>
+                            <th>Tooth</th>
+                            <th>Notes</th>
+                            <th class="text-end pe-3">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for treatment in treatments %}
+                        <tr>
+                            <td class="ps-3">{{ loop.index }}</td>
+                            <td>{{ treatment.treatment_date.strftime('%Y-%m-%d') }}</td>
+                            <td><span class="badge bg-primary bg-opacity-10 text-primary px-2.5 py-1.5 rounded-pill">{{ treatment.procedure_type or 'General Treatment' }}</span></td>
+                            <td>{{ treatment.tooth_number or 'N/A' }}</td>
+                            <td><span class="small" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">{{ treatment.notes or 'No notes available' }}</span></td>
+                            <td class="text-end fw-semibold pe-3">{{ treatment.total_cost | format_price }} {{ currency_symbol }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="5" class="text-end fw-semibold">Subtotal</td>
+                            <td class="text-end fw-semibold pe-3">{{ invoice.subtotal | format_price }} {{ currency_symbol }}</td>
+                        </tr>
+                        {% if invoice.discount_amount > 0 %}
+                        <tr>
+                            <td colspan="5" class="text-end fw-semibold text-danger">Discount {% if invoice.discount_type == 'percentage' %}({{ "{:,.0f}".format(invoice.discount) }}%){% endif %}</td>
+                            <td class="text-end text-danger fw-semibold pe-3">- {{ invoice.discount_amount | format_price }} {{ currency_symbol }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr style="background-color: color-mix(in srgb, var(--default-color), transparent 95%); color: var(--heading-color);">
+                            <td colspan="5" class="text-end fw-bold">Total Amount</td>
+                            <td class="text-end fw-bold pe-3">{{ invoice.total_amount | format_price }} {{ currency_symbol }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="5" class="text-end fw-semibold text-success">Total Paid</td>
+                            <td class="text-end text-success fw-semibold pe-3">{{ invoice.total_paid | format_price }} {{ currency_symbol }}</td>
+                        </tr>
+                        {% if invoice.outstanding_amount > 0 %}
+                        <tr style="background-color: rgba(220, 53, 69, 0.1); color: #ff7b88;">
+                            <td colspan="5" class="text-end fw-bold">Remaining Balance Due</td>
+                            <td class="text-end fw-bold pe-3">{{ invoice.outstanding_amount | format_price }} {{ currency_symbol }}</td>
+                        </tr>
+                        {% endif %}
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Installment History -->
+            {% if invoice.payment_allocations %}
+            <h5 class="fw-bold mb-3"><i class="bi bi-history me-1 text-success"></i> Installment / Payment History</h5>
+            <div class="table-responsive">
+                <table class="table align-middle table-sm">
+                    <thead style="background-color: color-mix(in srgb, var(--default-color), transparent 95%); color: var(--heading-color);">
+                        <tr>
+                            <th class="ps-3">Receipt #</th>
+                            <th>Date Paid</th>
+                            <th class="text-end">Amount Paid</th>
+                            <th class="pe-3">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for allocation in invoice.payment_allocations %}
+                        <tr>
+                            <td class="fw-bold text-success ps-3">PAY-{{ allocation.payment.id }}</td>
+                            <td>{{ allocation.payment.payment_date.strftime('%Y-%m-%d %I:%M %p') }}</td>
+                            <td class="text-end fw-semibold text-success">{{ allocation.amount | format_price }} {{ currency_symbol }}</td>
+                            <td class="pe-3"><span class="small" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">{{ allocation.payment.notes or '' }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</section>
+
+<!-- Print Only Layout -->
+<div class="d-none d-print-block container mt-4" id="invoice-print-area">
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h1 class="fw-bold text-primary mb-1">{{ clinic_name }}</h1>
+            <p class="mb-1"><i class="bi bi-geo-alt"></i> {{ clinic_address or 'Clinic Address' }}</p>
+            <p class="mb-1"><i class="bi bi-phone"></i> {{ clinic_phone or 'Clinic Phone' }}</p>
+            <p class="mb-0"><i class="bi bi-envelope"></i> {{ clinic_email or 'Clinic Email' }}</p>
+        </div>
+        <div class="text-end">
+            <h2 class="text-uppercase fw-bold text-primary mb-2">Invoice</h2>
+            <h5 class="text-muted mb-3">Invoice Number: {{ invoice.invoice_number }}</h5>
+            <p class="mb-1"><strong>Date:</strong> {{ invoice.issue_date.strftime('%Y-%m-%d') }}</p>
+            <p class="mb-0"><strong>Status:</strong> {{ invoice.status }}</p>
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <!-- Bill To -->
+    <div class="mb-4">
+        <h5 class="text-uppercase text-secondary fw-semibold mb-2">Bill To:</h5>
+        <h4 class="mb-1 fw-bold">{{ patient.first_name }} {{ patient.last_name }}</h4>
+        {% if patient.phone %}<p class="mb-1"><strong>Phone:</strong> {{ patient.phone }}</p>{% endif %}
+        {% if patient.email %}<p class="mb-0"><strong>Email:</strong> {{ patient.email }}</p>{% endif %}
+    </div>
+
+    <!-- Items Table -->
+    <table class="table table-bordered print-table mb-4">
+        <thead class="table-light">
+            <tr>
+                <th style="width: 8%">#</th>
+                <th>Treatment / Procedure</th>
+                <th style="width: 15%">Tooth</th>
+                <th>Notes</th>
+                <th style="width: 20%" class="text-end">Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for treatment in treatments %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td><strong>{{ treatment.procedure_type or 'General Treatment' }}</strong></td>
+                <td>{{ treatment.tooth_number or 'N/A' }}</td>
+                <td>{{ treatment.notes or '' }}</td>
+                <td class="text-end">{{ treatment.total_cost | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4" class="text-end fw-semibold">Subtotal</td>
+                <td class="text-end">{{ invoice.subtotal | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% if invoice.discount_amount > 0 %}
+            <tr>
+                <td colspan="4" class="text-end fw-semibold text-danger">Discount {% if invoice.discount_type == 'percentage' %}({{ "{:,.0f}".format(invoice.discount) }}%){% endif %}</td>
+                <td class="text-end text-danger">- {{ invoice.discount_amount | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% endif %}
+            <tr class="table-light">
+                <td colspan="4" class="text-end fw-bold">Total Amount</td>
+                <td class="text-end fw-bold">{{ invoice.total_amount | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            <tr>
+                <td colspan="4" class="text-end fw-semibold text-success">Total Paid</td>
+                <td class="text-end text-success">{{ invoice.total_paid | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% if invoice.outstanding_amount > 0 %}
+            <tr class="table-danger-light">
+                <td colspan="4" class="text-end fw-bold text-danger">Remaining Balance Due</td>
+                <td class="text-end fw-bold text-danger">{{ invoice.outstanding_amount | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% endif %}
+        </tfoot>
+    </table>
+
+    <!-- Payment Allocations History -->
+    {% if invoice.payment_allocations %}
+    <div class="mb-4">
+        <h5 class="text-uppercase text-secondary fw-semibold mb-2">Installment / Payment History</h5>
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Receipt #</th>
+                    <th>Date Paid</th>
+                    <th class="text-end">Amount Paid</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for allocation in invoice.payment_allocations %}
+                <tr>
+                    <td>PAY-{{ allocation.payment.id }}</td>
+                    <td>{{ allocation.payment.payment_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="text-end">{{ allocation.amount | format_price }} {{ currency_symbol }}</td>
+                    <td>{{ allocation.payment.notes or '' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Footer with QR -->
+    <div class="d-flex justify-content-between align-items-end mt-5 pt-4 border-top">
+        <div class="text-center" style="width: 150px;">
+            <canvas id="print-invoice-qrcode" style="width: 120px; height: 120px;"></canvas>
+            <div class="text-muted small mt-1">Invoice Summary</div>
+        </div>
+        <div class="text-center pe-4">
+            <div class="mb-5 text-muted">Authorized Signature & Seal</div>
+            <div style="border-bottom: 1px solid #000; width: 200px;"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const clinicName = "{{ clinic_name | escape }}";
+    const issueDateISO = "{{ invoice.issue_date.isoformat() }}";
+    const totalAmount = "{{ invoice.total_amount }}";
+    const invoiceNum = "{{ invoice.invoice_number }}";
+    
+    const qrValue = `Clinic: ${clinicName}\nInvoice: ${invoiceNum}\nDate: ${issueDateISO}\nTotal: ${totalAmount} {{ currency_symbol }}`;
+    
+    // Render screen QR
+    const canvasScreen = document.getElementById("invoice-qrcode");
+    if (canvasScreen) {
+        new QRious({
+            element: canvasScreen,
+            value: qrValue,
+            size: 150
+        });
+    }
+    
+    // Render print QR
+    const canvasPrint = document.getElementById("print-invoice-qrcode");
+    if (canvasPrint) {
+        new QRious({
+            element: canvasPrint,
+            value: qrValue,
+            size: 150
+        });
+    }
+});
+</script>
+
+<style>
+@media print {
+    /* Hide layout elements during print */
+    #header, #footer, .topbar, #scroll-top, .section-title, .btn, .alert, .mobile-nav-toggle, #invoice-detail-section {
+        display: none !important;
+    }
+    
+    html, body, #main, #invoice-print-area, #invoice-print-area * {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+    
+    body {
+        font-size: 11pt !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    #invoice-print-area {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 10px !important;
+    }
+}
+</style>
+{% endblock %}

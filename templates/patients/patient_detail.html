@@ -18,8 +18,13 @@
         <div class="doctor-profile patient-detail-card" data-aos="zoom-in" data-aos-delay="150">
             <div class="profile-header">
                 <div class="doctor-avatar">
-                    <img src="{{ url_for('static', filename='assets/my imgs/person.png') }}" alt="Patient"
-                        class="img-fluid">
+                    {% if patient.gender and patient.gender.lower() in ('female', 'f', 'أنثى') %}
+                        <img src="{{ url_for('static', filename='assets/img/person/person-f-5.webp') }}" alt="Patient" class="img-fluid">
+                    {% elif patient.gender and patient.gender.lower() in ('male', 'm', 'ذكر') %}
+                        <img src="{{ url_for('static', filename='assets/img/person/person-m-3.webp') }}" alt="Patient" class="img-fluid">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='assets/my imgs/person.png') }}" alt="Patient" class="img-fluid">
+                    {% endif %}
                     <div class="status-indicator available"></div>
                 </div>
 

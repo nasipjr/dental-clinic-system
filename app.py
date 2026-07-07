@@ -1,4 +1,4 @@
-from flask import Flask, request, session, redirect, url_for, g
+from flask import Flask, request, session, redirect, url_for, g, flash
 
 from models import db
 from settings import Config
@@ -212,6 +212,24 @@ def load_logged_in_user():
 
 
 @app.before_request
+def validate_csrf():
+    # Only validate modifying requests
+    if request.method in ("GET", "HEAD", "OPTIONS"):
+        return
+    # Exclude deployment webhook
+    if request.endpoint == "deploy.deploy":
+        return
+        
+    csrf_token = session.get("csrf_token")
+    form_token = request.form.get("csrf_token")
+    header_token = request.headers.get("X-CSRF-Token")
+    
+    if not csrf_token or (form_token != csrf_token and header_token != csrf_token):
+        app.logger.warning(f"CSRF validation failed! method={request.method} path={request.path}")
+        return "CSRF Token missing or invalid", 403
+
+
+@app.before_request
 def check_login():
     # Exclude login, static resources, patient portal, and auto-deploy webhook
     excluded = ("auth.login", "static", "deploy.deploy")
@@ -219,7 +237,39 @@ def check_login():
         return
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
+    if not g.current_user:
+        session.clear()
+        flash("Your account has been deleted or deactivated.", "danger")
+        return redirect(url_for("auth.login"))
 
+
+@app.after_request
+def process_html_response(response):
+    if response.mimetype == "text/html":
+        import re
+        import secrets
+        
+        # 1. Inject CSRF Token in forms
+        csrf_token = session.get("csrf_token")
+        if not csrf_token:
+            csrf_token = secrets.token_hex(32)
+            session["csrf_token"] = csrf_token
+            
+        html_data = response.get_data(as_text=True)
+        csrf_input = f'<input type="hidden" name="csrf_token" value="{csrf_token}">'
+        html_data = re.sub(r'(<form[^>]*>)', r'\1' + csrf_input, html_data, flags=re.IGNORECASE)
+        
+        # 2. Server-side translation
+        lang = request.cookies.get("lang", "en")
+        if lang == "ar":
+            try:
+                from utils.translator import translate_html
+                html_data = translate_html(html_data)
+            except Exception as e:
+                app.logger.error(f"Server-side translation failed: {e}")
+                
+        response.set_data(html_data)
+    return response
 
 
 @app.context_processor

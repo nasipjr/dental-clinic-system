@@ -6,8 +6,15 @@
   <div class="col-lg-4">
     <div class="card shadow-sm border-0 rounded-4" style="background: var(--surface-color);">
       <div class="card-body p-4 text-center">
-        <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle mb-3" style="width: 80px; height: 80px;">
-          <i class="bi bi-person-circle fs-1"></i>
+        <div class="d-inline-flex align-items-center justify-content-center mb-3 position-relative" style="width: 80px; height: 80px;">
+          {% if patient.gender and patient.gender.lower() in ('female', 'f', 'أنثى') %}
+              <img src="{{ url_for('static', filename='assets/img/person/person-f-5.webp') }}" alt="Patient" class="img-fluid rounded-circle border" style="width: 80px; height: 80px; object-fit: cover;">
+          {% elif patient.gender and patient.gender.lower() in ('male', 'm', 'ذكر') %}
+              <img src="{{ url_for('static', filename='assets/img/person/person-m-3.webp') }}" alt="Patient" class="img-fluid rounded-circle border" style="width: 80px; height: 80px; object-fit: cover;">
+          {% else %}
+              <img src="{{ url_for('static', filename='assets/my imgs/person.png') }}" alt="Patient" class="img-fluid rounded-circle border" style="width: 80px; height: 80px; object-fit: cover;">
+          {% endif %}
+          <div class="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle" style="width: 16px; height: 16px; transform: translate(-2px, -2px);"></div>
         </div>
         <h4 class="fw-bold mb-1">{{ patient.first_name }} {{ patient.last_name }}</h4>
         <span class="badge bg-light text-dark mb-4 px-3 py-1.5 rounded-pill border border-dark-subtle">{{ patient.gender }}</span>

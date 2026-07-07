@@ -2,7 +2,7 @@ from functools import wraps
 from datetime import datetime, timedelta, time
 import json
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session, current_app, jsonify
-from models import db, Patient, Appointment, User
+from models import db, Patient, Appointment, User, Invoice, Payment, PatientFile
 from utils.settings_helper import get_setting
 
 portal_bp = Blueprint("portal", __name__, url_prefix="/portal")
@@ -354,3 +354,108 @@ def cancel_appointment(appointment_id):
         flash(error_msg, "danger")
         
     return redirect(url_for("portal.dashboard"))
+
+
+@portal_bp.route("/billing")
+@patient_login_required
+def billing():
+    patient_id = session.get("patient_id")
+    patient = Patient.query.get_or_404(patient_id)
+    invoices = Invoice.query.filter_by(patient_id=patient_id).order_by(Invoice.issue_date.desc()).all()
+    payments = Payment.query.filter_by(patient_id=patient_id).order_by(Payment.payment_date.desc()).all()
+    
+    return render_template(
+        "portal/billing.html",
+        patient=patient,
+        invoices=invoices,
+        payments=payments
+    )
+
+
+@portal_bp.route("/invoices/<int:invoice_id>")
+@patient_login_required
+def view_invoice(invoice_id):
+    patient_id = session.get("patient_id")
+    invoice = Invoice.query.get_or_404(invoice_id)
+    
+    # Security check: verify this invoice belongs to the patient
+    if invoice.patient_id != patient_id:
+        flash("You do not have permission to view this invoice.", "danger")
+        return redirect(url_for("portal.billing"))
+        
+    return render_template(
+        "portal/invoice_detail.html",
+        invoice=invoice,
+        appointment=invoice.appointment,
+        patient=invoice.patient,
+        treatments=invoice.treatments
+    )
+
+
+@portal_bp.route("/medical-history")
+@patient_login_required
+def medical_history():
+    patient_id = session.get("patient_id")
+    patient = Patient.query.get_or_404(patient_id)
+    
+    treatments = sorted(patient.treatments, key=lambda t: t.treatment_date, reverse=True)
+    files = sorted(patient.files, key=lambda f: f.upload_date, reverse=True)
+    
+    return render_template(
+        "portal/medical_history.html",
+        patient=patient,
+        treatments=treatments,
+        patient_files=files
+    )
+
+
+@portal_bp.route("/logout-confirm")
+@patient_login_required
+def logout_confirm():
+    return render_template("portal/logout_confirm.html")
+
+
+@portal_bp.route("/files/<int:file_id>")
+@patient_login_required
+def view_file(file_id):
+    import os
+    from flask import send_from_directory
+    
+    patient_file = PatientFile.query.get_or_404(file_id)
+    if patient_file.patient_id != session.get("patient_id"):
+        flash("Unauthorized access." if request.cookies.get('lang', 'en') == 'en' else "وصول غير مصرح به.", "danger")
+        return redirect(url_for("portal.medical_history"))
+        
+    disk_path = os.path.join(current_app.static_folder, patient_file.filepath)
+    if not os.path.exists(disk_path):
+        flash("File not found on server." if request.cookies.get('lang', 'en') == 'en' else "الملف غير موجود على الخادم.", "danger")
+        return redirect(url_for("portal.medical_history"))
+        
+    return send_from_directory(
+        os.path.join(current_app.static_folder, "uploads", "patients"),
+        os.path.basename(patient_file.filepath)
+    )
+
+
+@portal_bp.route("/files/<int:file_id>/download")
+@patient_login_required
+def download_file(file_id):
+    import os
+    from flask import send_from_directory
+    
+    patient_file = PatientFile.query.get_or_404(file_id)
+    if patient_file.patient_id != session.get("patient_id"):
+        flash("Unauthorized access." if request.cookies.get('lang', 'en') == 'en' else "وصول غير مصرح به.", "danger")
+        return redirect(url_for("portal.medical_history"))
+        
+    disk_path = os.path.join(current_app.static_folder, patient_file.filepath)
+    if not os.path.exists(disk_path):
+        flash("File not found on server." if request.cookies.get('lang', 'en') == 'en' else "الملف غير موجود على الخادم.", "danger")
+        return redirect(url_for("portal.medical_history"))
+        
+    return send_from_directory(
+        os.path.join(current_app.static_folder, "uploads", "patients"),
+        os.path.basename(patient_file.filepath),
+        as_attachment=True,
+        download_name=patient_file.filename
+    )
