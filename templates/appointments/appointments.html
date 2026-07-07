@@ -95,7 +95,7 @@
                         {% for appointment in pending_appointments %}
                         <tr>
                             <td>
-                                {{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if appointment.appointment_date else 'No date' }}
+                                {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else 'No date' }}
                             </td>
 
                             <td>

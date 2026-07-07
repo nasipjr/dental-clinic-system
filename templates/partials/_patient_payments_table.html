@@ -102,7 +102,7 @@
                 </td>
 
                 <td>
-                    {{ payment.payment_date.strftime('%Y-%m-%d %H:%M') if payment.payment_date else 'No date' }}
+                    {{ payment.payment_date.strftime('%Y-%m-%d %I:%M %p') if payment.payment_date else 'No date' }}
                 </td>
 
                 <td>

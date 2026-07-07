@@ -237,7 +237,7 @@
                 {% for allocation in invoice.payment_allocations %}
                 <tr>
                     <td>PAY-{{ allocation.payment.id }}</td>
-                    <td>{{ allocation.payment.payment_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ allocation.payment.payment_date.strftime('%Y-%m-%d %I:%M %p') }}</td>
                     <td class="text-end">{{ allocation.amount | format_price }} {{ currency_symbol }}</td>
                     <td>{{ allocation.payment.notes or '' }}</td>
                 </tr>

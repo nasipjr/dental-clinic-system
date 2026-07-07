@@ -67,7 +67,7 @@
                         <div class="patient-info-box">
                             <span class="info-label">Appointment Date</span>
                             <p>
-                                {{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if
+                                {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if
                                 appointment.appointment_date else 'No date' }}
                             </p>
                         </div>
@@ -98,7 +98,7 @@
                             <div class="col-md-12">
                                 <label class="form-label">Treatment Date</label>
                                 <div class="form-control readonly-status-field">
-                                    {{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if
+                                    {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if
                                     appointment.appointment_date else 'No date' }}
                                 </div>
                             </div>

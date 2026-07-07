@@ -74,7 +74,7 @@
             <p class="text-secondary small mb-0">{% if current_lang == 'ar' %}كشف حساب مالي تفصيلي للمريض{% else %}Detailed Financial Statement{% endif %}</p>
         </div>
         <div class="{% if current_lang == 'ar' %}text-start{% else %}text-end{% endif %}">
-            <h6 class="mb-1">{% if current_lang == 'ar' %}التاريخ:{% else %}Date:{% endif %} {{ now.strftime('%Y-%m-%d %H:%M') }}</h6>
+            <h6 class="mb-1">{% if current_lang == 'ar' %}التاريخ:{% else %}Date:{% endif %} {{ now.strftime('%Y-%m-%d %I:%M %p') }}</h6>
             <p class="text-secondary small mb-0">{% if current_lang == 'ar' %}مستخرج بواسطة النظام{% else %}System Generated Statement{% endif %}</p>
         </div>
     </div>

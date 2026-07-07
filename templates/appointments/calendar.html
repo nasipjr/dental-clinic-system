@@ -106,6 +106,10 @@
                                 id="modal-reason" class="ms-1"></span></p>
                         <p class="mb-0" style="color: var(--default-color);"><strong style="color: var(--heading-color);">Status:</strong> <span
                                 class="badge ms-1" id="modal-status"></span></p>
+                        <p class="mb-0 mt-2" id="modal-reminded-row" style="color: var(--default-color); display: none;">
+                            <strong style="color: var(--heading-color);">{% if current_lang == 'ar' %}حالة التذكير:{% else %}Reminder Status:{% endif %}</strong>
+                            <span id="modal-reminded-status" class="ms-1"></span>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -627,7 +631,13 @@
                 listMonth: currentLang === 'ar' ? 'قائمة' : 'List'
             },
             initialView: window.innerWidth < 768 ? 'listMonth' : 'dayGridMonth',
-            allDaySlot: false, // Removes the "all-day" slot/row
+            allDaySlot: false,
+        slotLabelFormat: {
+            hour: 'numeric',
+            minute: '2-digit',
+            meridiem: 'short',
+            hour12: true
+        }, // Removes the "all-day" slot/row
             slotEventOverlap: false, // Prevents events from visually stacking/overlapping
             slotMinTime: slotMinTime, // Dynamic start visible slots
             slotMaxTime: slotMaxTime, // Dynamic end visible slots
@@ -880,7 +890,7 @@
 
                 // Format datetime cleanly
                 const start = info.event.start;
-                const formattedDate = start.toLocaleDateString() + ' ' + start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const formattedDate = start.toLocaleDateString() + ' ' + start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
                 document.getElementById('modal-date-time').textContent = formattedDate;
 
                 document.getElementById('modal-reason').textContent = props.reason;
@@ -912,13 +922,28 @@
 
                 // Configure WhatsApp reminder button
                 const whatsappBtn = document.getElementById('modal-whatsapp-btn');
+                const remindedRow = document.getElementById('modal-reminded-row');
+                const remindedStatus = document.getElementById('modal-reminded-status');
+
                 if (props.status !== 'Done' && props.status !== 'Cancelled' && props.phone && props.phone !== 'No phone') {
                     whatsappBtn.style.display = 'inline-block';
                     whatsappBtn.onclick = function () {
-                        sendWhatsAppReminder(props.phone, props.patientName, formattedDate, "{{ clinic_name }}");
+                        sendWhatsAppReminder(props.phone, props.patientName, formattedDate, "{{ clinic_name }}", info.event.id);
                     };
                 } else {
                     whatsappBtn.style.display = 'none';
+                }
+
+                if (remindedRow && remindedStatus) {
+                    if (localStorage.getItem('reminded_appt_' + info.event.id) === 'true') {
+                        remindedRow.style.display = 'block';
+                        remindedStatus.innerHTML = `<span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1 small align-middle" style="font-size: 0.72rem; font-weight: 700;">
+                            <i class="bi bi-check-all fs-6"></i> ${currentLang === 'ar' ? 'تم التذكير' : 'Reminded'}
+                        </span>`;
+                    } else {
+                        remindedRow.style.display = 'none';
+                        remindedStatus.innerHTML = '';
+                    }
                 }
 
                 // Show bootstrap modal
@@ -953,18 +978,34 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         // Call Reschedule API
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                         fetch(`/appointments/${info.event.id}/reschedule`, {
                             method: 'POST',
                             headers: {
-                                'Content-Type': 'application/json'
+                                'Content-Type': 'application/json',
+                                'X-CSRF-Token': csrfToken
                             },
                             body: JSON.stringify({
-                                start: info.event.start.toISOString()
+                                start: new Date(info.event.start.getTime() - info.event.start.getTimezoneOffset() * 60000).toISOString().slice(0, 19)
                             })
                         })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
+                                // Clear reminded status since appointment time has changed
+                                localStorage.removeItem('reminded_appt_' + info.event.id);
+                                document.querySelectorAll(`.reminded-status-placeholder[data-appointment-id="${info.event.id}"]`).forEach(el => {
+                                    el.innerHTML = '';
+                                });
+                                const modalStatus = document.getElementById('modal-reminded-status');
+                                if (modalStatus) {
+                                    modalStatus.innerHTML = '';
+                                }
+                                const remindedRow = document.getElementById('modal-reminded-row');
+                                if (remindedRow) {
+                                    remindedRow.style.display = 'none';
+                                }
+
                                 Swal.fire({
                                     icon: 'success',
                                     title: currentLang === 'ar' ? 'تم النقل بنجاح!' : 'Rescheduled!',

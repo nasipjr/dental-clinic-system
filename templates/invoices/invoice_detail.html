@@ -54,7 +54,7 @@
                 <div class="patient-info-box">
                     <span class="info-label">Appointment Date</span>
                     <p>
-                        {{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if appointment.appointment_date else 'No date' }}
+                        {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else 'No date' }}
                     </p>
                 </div>
 
@@ -154,7 +154,7 @@
                             </td>
 
                             <td>
-                                {{ treatment.treatment_date.strftime('%Y-%m-%d %H:%M') if treatment.treatment_date else 'No date' }}
+                                {{ treatment.treatment_date.strftime('%Y-%m-%d %I:%M %p') if treatment.treatment_date else 'No date' }}
                             </td>
 
                             <td>
@@ -270,7 +270,7 @@
                             </td>
 
                             <td>
-                                {{ allocation.payment.payment_date.strftime('%Y-%m-%d %H:%M') if allocation.payment.payment_date else 'No date' }}
+                                {{ allocation.payment.payment_date.strftime('%Y-%m-%d %I:%M %p') if allocation.payment.payment_date else 'No date' }}
                             </td>
 
                             <td>
@@ -350,7 +350,7 @@
         <div class="text-end">
             <h2 class="text-uppercase fw-bold text-primary mb-2">Invoice</h2>
             <h5 class="text-muted mb-3">Invoice Number: {{ invoice.invoice_number }}</h5>
-            <p class="mb-1"><strong>Date:</strong> {{ invoice.issue_date.strftime('%Y-%m-%d %H:%M') }}</p>
+            <p class="mb-1"><strong>Date:</strong> {{ invoice.issue_date.strftime('%Y-%m-%d %I:%M %p') }}</p>
             <p class="mb-0"><strong>Status:</strong> 
                 {% if invoice.status == 'Paid' %}Paid
                 {% elif invoice.status == 'Partially Paid' %}Partially Paid
@@ -439,7 +439,7 @@
                 {% for allocation in invoice.payment_allocations %}
                 <tr>
                     <td>PAY-{{ allocation.payment.id }}</td>
-                    <td>{{ allocation.payment.payment_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ allocation.payment.payment_date.strftime('%Y-%m-%d %I:%M %p') }}</td>
                     <td class="text-end">{{ allocation.amount | format_price }} {{ currency_symbol }}</td>
                     <td>{{ allocation.payment.notes or '' }}</td>
                 </tr>

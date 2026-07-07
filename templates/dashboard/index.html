@@ -377,7 +377,7 @@
             {% for appointment in pending_appointments %}
             <tr>
               <td>
-                {{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if appointment.appointment_date else 'No
+                {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else 'No
                 date' }}
               </td>
 
@@ -497,7 +497,7 @@
             {% for appointment in today_scheduled_appointments %}
             <tr>
               <td>
-                {{ appointment.appointment_date.strftime('%H:%M') if appointment.appointment_date else 'No time' }}
+                {{ appointment.appointment_date.strftime('%I:%M %p') if appointment.appointment_date else 'No time' }}
               </td>
 
               <td>
@@ -583,11 +583,12 @@
                         {% if appointment.status not in ('Done', 'Cancelled') %}
                         <button type="button"
                           class="table-action-btn border-0 bg-transparent p-0 me-1"
-                          onclick="sendWhatsAppReminder('{{ appointment.patient.phone or '' }}', '{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}', '{{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if appointment.appointment_date else '' }}', '{{ clinic_name }}')"
+                          onclick="sendWhatsAppReminder('{{ appointment.patient.phone or '' }}', '{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}', '{{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else '' }}', '{{ clinic_name }}', {{ appointment.id }})"
                           title="{% if current_lang == 'ar' %}تذكير عبر واتساب{% else %}Send WhatsApp Reminder{% endif %}"
                           style="color: #25D366 !important; font-size: 1.15rem;">
                           <i class="bi bi-whatsapp"></i>
                         </button>
+                        <span class="reminded-status-placeholder" data-appointment-id="{{ appointment.id }}"></span>
                         {% endif %}
                         <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}"
                           class="table-action-btn view-btn" title="{% if current_lang == 'ar' %}عرض الموعد{% else %}View Appointment{% endif %}">
@@ -615,7 +616,92 @@
 
     </div>
   </section>
-  <!-- /Today's Scheduled Appointments Section -->
+  <!-- Tomorrow's Scheduled Appointments Title -->
+  <div class="container section-title" style="margin-top: 80px;" data-aos="fade-up">
+    <h2>{% if current_lang == 'ar' %}مواعيد الغد المجدولة{% else %}Tomorrow’s Scheduled Appointments{% endif %}</h2>
+    <p>{% if current_lang == 'ar' %}استعراض وإرسال رسائل تذكيرية للمرضى الذين لديهم مواعيد يوم غد.{% else %}View and send WhatsApp reminders to patients scheduled for tomorrow.{% endif %}</p>
+  </div>
+  <!-- /Tomorrow's Scheduled Appointments Title -->
+
+  <!-- Tomorrow's Scheduled Appointments Section -->
+  <section id="tomorrow-scheduled-appointments-section" class="find-a-doctor section pt-0">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+      {% if tomorrow_appointments %}
+      <div class="appointments-table-wrapper table-responsive">
+        <table class="table appointments-table align-middle" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+          <thead>
+            <tr>
+              <th>{% if current_lang == 'ar' %}الوقت{% else %}Time{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}رقم الهاتف{% else %}Phone{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}السبب{% else %}Reason{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+              <th class="text-center" style="min-width: 150px;">{% if current_lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for appointment in tomorrow_appointments %}
+            <tr>
+              <td>
+                {{ appointment.appointment_date.strftime('%I:%M %p') if appointment.appointment_date else 'No time' }}
+              </td>
+
+              <td>
+                <strong>
+                  {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                </strong>
+              </td>
+
+              <td>
+                {{ appointment.patient.phone or 'No phone number' }}
+              </td>
+
+              <td>
+                {{ appointment.reason or 'No reason provided' }}
+              </td>
+
+              <td>
+                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2.5 py-1.5 fw-semibold">
+                  {% if current_lang == 'ar' %}مجدول{% else %}Scheduled{% endif %}
+                </span>
+              </td>
+
+              <td class="text-center">
+                <div class="d-flex align-items-center justify-content-center gap-2">
+                    <button type="button"
+                      class="btn btn-sm btn-success rounded-pill px-3 py-1.5 fw-bold d-flex align-items-center gap-1.5 text-white"
+                      onclick="sendWhatsAppReminder('{{ appointment.patient.phone or '' }}', '{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}', '{{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else '' }}', '{{ clinic_name }}', {{ appointment.id }})"
+                      title="{% if current_lang == 'ar' %}تذكير عبر واتساب{% else %}Send WhatsApp Reminder{% endif %}"
+                      style="background-color: #25D366; border-color: #25D366;">
+                      <i class="bi bi-whatsapp"></i>
+                      <span>{% if current_lang == 'ar' %}تذكير{% else %}Remind{% endif %}</span>
+                    </button>
+                    <span class="reminded-status-placeholder" data-appointment-id="{{ appointment.id }}"></span>
+                    <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}"
+                      class="table-action-btn view-btn" title="{% if current_lang == 'ar' %}عرض الموعد{% else %}View Appointment{% endif %}">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% else %}
+      <div class="empty-state-card text-center">
+        <i class="bi bi-calendar-check text-muted fs-1 mb-3 d-block"></i>
+        <h4>{% if current_lang == 'ar' %}لا توجد مواعيد غداً{% else %}No scheduled appointments tomorrow{% endif %}</h4>
+        <p class="text-muted">{% if current_lang == 'ar' %}لا توجد أي مواعيد مسجلة ليوم غد حتى الآن.{% else %}There are no scheduled appointments waiting for tomorrow.{% endif %}</p>
+      </div>
+      {% endif %}
+
+    </div>
+  </section>
+  <!-- /Tomorrow's Scheduled Appointments Section -->
 
 
   <!-- Done Today Title -->
@@ -657,7 +743,7 @@
 
             <tr>
               <td>
-                {{ appointment.appointment_date.strftime('%H:%M') if appointment.appointment_date else 'No time' }}
+                {{ appointment.appointment_date.strftime('%I:%M %p') if appointment.appointment_date else 'No time' }}
               </td>
 
               <td>

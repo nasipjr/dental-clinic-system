@@ -22,7 +22,8 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(bookedSlots => {
             flatpickr(appointmentInput, {
                 enableTime: true,
-                dateFormat: "Y-m-d H:i",
+                dateFormat: "Y-m-d h:i K",
+                time_24hr: false,
                 minDate: "today",
                 maxDate: new Date().fp_incr(30),
                 minuteIncrement: 30,
@@ -54,7 +55,8 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error("Failed to load booked slots", err);
             flatpickr(appointmentInput, {
                 enableTime: true,
-                dateFormat: "Y-m-d H:i",
+                dateFormat: "Y-m-d h:i K",
+                time_24hr: false,
                 minDate: "today",
                 maxDate: new Date().fp_incr(30),
                 minuteIncrement: 30,

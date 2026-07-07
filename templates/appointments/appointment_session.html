@@ -66,7 +66,7 @@
                 <div class="doctor-details">
                     <h4>{{ patient.first_name }} {{ patient.last_name }}</h4>
                     <span class="specialty-tag">
-                        {{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if appointment.appointment_date else
+                        {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else
                         'No date' }}
                     </span>
                 </div>
@@ -512,7 +512,7 @@
                         <td>{{ treatment.id }}</td>
 
                         <td>
-                            {{ treatment.treatment_date.strftime('%Y-%m-%d %H:%M') if treatment.treatment_date else 'No
+                            {{ treatment.treatment_date.strftime('%Y-%m-%d %I:%M %p') if treatment.treatment_date else 'No
                             date' }}
                         </td>
 
@@ -617,7 +617,7 @@
                                     </a>
                                     <br>
                                     <small>
-                                        {{ treatment.appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if
+                                        {{ treatment.appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if
                                         treatment.appointment.appointment_date else 'No date' }}
                                     </small>
                                     <br>
@@ -631,7 +631,7 @@
                                 </td>
 
                                 <td>
-                                    {{ treatment.treatment_date.strftime('%Y-%m-%d %H:%M') if treatment.treatment_date
+                                    {{ treatment.treatment_date.strftime('%Y-%m-%d %I:%M %p') if treatment.treatment_date
                                     else 'No date' }}
                                 </td>
 
@@ -780,7 +780,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {% for t in treatments %}
         {
             id: {{ t.id }},
-            date: "{{ t.treatment_date.strftime('%Y-%m-%d %H:%M') if t.treatment_date else '' }}",
+            date: "{{ t.treatment_date.strftime('%Y-%m-%d %I:%M %p') if t.treatment_date else '' }}",
             procedure: "{{ t.procedure_type | escape }}",
             tooth: "{{ t.tooth_number or '' }}",
             notes: "{{ (t.notes or '') | replace('\n', ' ') | replace('\r', '') | escape }}",
@@ -798,7 +798,7 @@ document.addEventListener('DOMContentLoaded', function () {
         {
             id: {{ t.id }},
             appointment_id: {{ t.appointment.id }},
-            date: "{{ t.treatment_date.strftime('%Y-%m-%d %H:%M') if t.treatment_date else '' }}",
+            date: "{{ t.treatment_date.strftime('%Y-%m-%d %I:%M %p') if t.treatment_date else '' }}",
             procedure: "{{ t.procedure_type | escape }}",
             tooth: "{{ t.tooth_number or '' }}",
             notes: "{{ (t.notes or '') | replace('\n', ' ') | replace('\r', '') | escape }}",

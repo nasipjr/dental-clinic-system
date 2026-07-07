@@ -101,7 +101,7 @@
                 <!-- Print Page Title -->
                 <div class="d-none d-print-block mb-4">
                     <h3 class="fw-bold text-center">{% if current_lang == 'ar' %}تقرير التحليلات والإحصائيات العامة للمعيّنات{% else %}General Analytics & Statistics Report{% endif %}</h3>
-                    <p class="text-muted text-center">{% if current_lang == 'ar' %}تاريخ التصدير:{% else %}Printed Date:{% endif %} {{ now.strftime('%Y-%m-%d %H:%M') }}</p>
+                    <p class="text-muted text-center">{% if current_lang == 'ar' %}تاريخ التصدير:{% else %}Printed Date:{% endif %} {{ now.strftime('%Y-%m-%d %I:%M %p') }}</p>
                 </div>
 
                 <!-- KPI Cards Grid -->
@@ -325,7 +325,7 @@
                 <!-- Print Page Title -->
                 <div class="d-none d-print-block mb-4">
                     <h3 class="fw-bold text-center">{% if current_lang == 'ar' %}تقرير مصاريف العيادة وصافي الأرباح{% else %}Clinic Expenses & Profitability Report{% endif %}</h3>
-                    <p class="text-muted text-center">{% if current_lang == 'ar' %}تاريخ التصدير:{% else %}Printed Date:{% endif %} {{ now.strftime('%Y-%m-%d %H:%M') }}</p>
+                    <p class="text-muted text-center">{% if current_lang == 'ar' %}تاريخ التصدير:{% else %}Printed Date:{% endif %} {{ now.strftime('%Y-%m-%d %I:%M %p') }}</p>
                 </div>
 
                 <!-- KPI Cards Grid for Expenses & Profit -->
@@ -525,7 +525,7 @@
                 <!-- Print Page Title -->
                 <div class="d-none d-print-block mb-4">
                     <h3 class="fw-bold text-center">{% if current_lang == 'ar' %}تقرير الخلاصة المالية الشهرية{% else %}Monthly Financial Summary Report{% endif %}</h3>
-                    <p class="text-muted text-center">{% if current_lang == 'ar' %}تاريخ التصدير:{% else %}Printed Date:{% endif %} {{ now.strftime('%Y-%m-%d %H:%M') }}</p>
+                    <p class="text-muted text-center">{% if current_lang == 'ar' %}تاريخ التصدير:{% else %}Printed Date:{% endif %} {{ now.strftime('%Y-%m-%d %I:%M %p') }}</p>
                 </div>
 
                 <!-- Interactive Daily Financial Calendar -->

@@ -17,6 +17,7 @@
   <title>HomePage</title>
   <meta name="description" content="">
   <meta name="keywords" content="">
+  <meta name="csrf-token" content="{{ session.get('csrf_token') }}">
 
   <!-- Favicons -->
   <link href="{{ url_for('static', filename='assets/img/favicon.png') }}" rel="icon">
@@ -1085,7 +1086,7 @@
     })();
   </script>
   <script>
-    function sendWhatsAppReminder(phone, patientName, dateTimeStr, clinicName) {
+    function sendWhatsAppReminder(phone, patientName, dateTimeStr, clinicName, appointmentId) {
         if (!phone || phone.trim() === '' || phone === 'No phone' || phone === 'No phone number') {
             const isAr = document.documentElement.getAttribute('lang') === 'ar';
             alert(isAr ? 'خطأ: المريض لا يملك رقم هاتف مسجل!' : 'Error: Patient has no registered phone number!');
@@ -1108,6 +1109,36 @@
         let encodedText = encodeURIComponent(message);
         let url = `https://wa.me/${cleanedPhone}?text=${encodedText}`;
         window.open(url, '_blank');
+
+        // Store reminded status and update UI
+        if (appointmentId) {
+            localStorage.setItem('reminded_appt_' + appointmentId, 'true');
+            const isAr = document.documentElement.getAttribute('lang') === 'ar';
+            const badgeHtml = `<span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1 small align-middle" style="font-size: 0.72rem; font-weight: 700; margin-left: 4px; margin-right: 4px;">
+                <i class="bi bi-check-all fs-6"></i> ${isAr ? 'تم التذكير' : 'Reminded'}
+            </span>`;
+            
+            document.querySelectorAll(`.reminded-status-placeholder[data-appointment-id="${appointmentId}"]`).forEach(el => {
+                el.innerHTML = badgeHtml;
+            });
+
+            const modalStatus = document.getElementById('modal-reminded-status');
+            if (modalStatus) {
+                modalStatus.innerHTML = badgeHtml;
+            }
+        }
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll('.reminded-status-placeholder').forEach(el => {
+            const apptId = el.getAttribute('data-appointment-id');
+            if (apptId && localStorage.getItem('reminded_appt_' + apptId) === 'true') {
+                const isAr = document.documentElement.getAttribute('lang') === 'ar';
+                el.innerHTML = `<span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1 small align-middle" style="font-size: 0.72rem; font-weight: 700; margin-left: 4px; margin-right: 4px;">
+                    <i class="bi bi-check-all fs-6"></i> ${isAr ? 'تم التذكير' : 'Reminded'}
+                </span>`;
+            }
+        });
+    });
   </script>
 </html>

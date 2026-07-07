@@ -28,7 +28,7 @@
 
                         <p class="mt-2">
                             Appointment:
-                            {{ treatment.appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if treatment.appointment.appointment_date else 'No date' }}
+                            {{ treatment.appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if treatment.appointment.appointment_date else 'No date' }}
                         </p>
 
                         <p>

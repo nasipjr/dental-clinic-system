@@ -69,7 +69,7 @@
                 </td>
 
                 <td>
-                    {{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if appointment.appointment_date else 'No date' }}
+                    {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else 'No date' }}
                 </td>
 
                 <td>
@@ -103,11 +103,12 @@
                         {% if appointment.status == 'Scheduled' %}
                         <button type="button"
                             class="table-action-btn border-0 bg-transparent p-0"
-                            onclick="sendWhatsAppReminder('{{ appointment.patient.phone or '' }}', '{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}', '{{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if appointment.appointment_date else '' }}', '{{ clinic_name }}')"
+                            onclick="sendWhatsAppReminder('{{ appointment.patient.phone or '' }}', '{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}', '{{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else '' }}', '{{ clinic_name }}', {{ appointment.id }})"
                             title="Send WhatsApp Reminder"
                             style="color: #25D366 !important; font-size: 1.15rem; margin-right: 6px;">
                             <i class="bi bi-whatsapp"></i>
                         </button>
+                        <span class="reminded-status-placeholder" data-appointment-id="{{ appointment.id }}"></span>
                         {% if current_user.role in ('admin', 'receptionist') %}
                         <a href="{{ url_for('appointments.edit_appointment', appointment_id=appointment.id) }}"
                             class="table-action-btn edit-btn" title="Edit Appointment">

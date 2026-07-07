@@ -173,7 +173,7 @@ def add_appointment_direct():
                     return render_template(
                         "appointments/add_appointment.html",
                         patients=patients,
-                        error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %H:%M')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
+                        error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %I:%M %p')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
                         appointment_min_datetime=appointment_min_datetime,
                         appointment_max_datetime=appointment_max_datetime,
                         prefilled_date=prefilled_date,
@@ -236,7 +236,7 @@ def add_appointment(patient_id):
                     return render_template(
                         "appointments/add_appointment.html",
                         patient=patient,
-                        error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %H:%M')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
+                        error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %I:%M %p')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
                         appointment_min_datetime=appointment_min_datetime,
                         appointment_max_datetime=appointment_max_datetime,
                     ), 400
@@ -319,7 +319,7 @@ def edit_appointment(appointment_id):
                             "appointments/edit_appointment.html",
                             appointment=appointment,
                             mode="edit",
-                            error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %H:%M')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
+                            error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %I:%M %p')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
                             appointment_min_datetime=appointment_min_datetime,
                             appointment_max_datetime=appointment_max_datetime,
                         ), 400
@@ -473,7 +473,7 @@ def booked_slots():
             query = query.filter(Appointment.id != exclude_id)
 
         scheduled = query.all()
-        slots = [appt.appointment_date.strftime("%Y-%m-%d %H:%M") for appt in scheduled]
+        slots = [appt.appointment_date.strftime('%Y-%m-%d %I:%M %p') for appt in scheduled]
         return jsonify(slots)
     except Exception:
         return jsonify([]), 500
@@ -697,4 +697,4 @@ def update_appointment_status(appointment_id):
         current_app.logger.exception("Failed to update appointment status")
         return jsonify({"success": False, "message": "Failed to update status."}), 500
 
-
+

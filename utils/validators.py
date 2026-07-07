@@ -138,13 +138,19 @@ def parse_appointment_data(form):
     if not appointment_date_raw:
         return None, "Appointment date and time is required."
 
+    # Normalize Arabic AM/PM markers (ص and م) to AM/PM for Python strptime
+    appointment_date_raw_normalized = appointment_date_raw.replace('ص', 'AM').replace('م', 'PM').strip()
+
     try:
-        appointment_date = datetime.strptime(appointment_date_raw, "%Y-%m-%dT%H:%M")
+        appointment_date = datetime.strptime(appointment_date_raw_normalized, "%Y-%m-%dT%H:%M")
     except ValueError:
         try:
-            appointment_date = datetime.strptime(appointment_date_raw, "%Y-%m-%d %H:%M")
+            appointment_date = datetime.strptime(appointment_date_raw_normalized, "%Y-%m-%d %H:%M")
         except ValueError:
-            return None, "Appointment date and time must be valid."
+            try:
+                appointment_date = datetime.strptime(appointment_date_raw_normalized, "%Y-%m-%d %I:%M %p")
+            except ValueError:
+                return None, "Appointment date and time must be valid."
 
 
     from utils.settings_helper import get_setting

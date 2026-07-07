@@ -612,7 +612,7 @@
                                                     <td>
                                                         <span class="text-secondary small">{{ notif.type }}</span>
                                                     </td>
-                                                    <td>{{ notif.sent_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                                    <td>{{ notif.sent_at.strftime('%Y-%m-%d %I:%M:%S %p') }}</td>
                                                     <td>
                                                         {% if notif.status == 'sent' %}
                                                             <span class="badge bg-success" style="font-size: 0.72rem;"><i class="bi bi-check-circle"></i> Sent</span>

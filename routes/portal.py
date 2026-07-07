@@ -119,14 +119,18 @@ def book_appointment():
             flash_message("all_fields_required", "danger")
             return redirect(url_for("portal.book_appointment"))
 
+        appt_date_raw_normalized = appt_date_raw.replace('ص', 'AM').replace('م', 'PM').strip()
         try:
-            appointment_date = datetime.strptime(appt_date_raw, "%Y-%m-%dT%H:%M")
+            appointment_date = datetime.strptime(appt_date_raw_normalized, "%Y-%m-%dT%H:%M")
         except ValueError:
             try:
-                appointment_date = datetime.strptime(appt_date_raw, "%Y-%m-%d %H:%M")
+                appointment_date = datetime.strptime(appt_date_raw_normalized, "%Y-%m-%d %H:%M")
             except ValueError:
-                flash_message("invalid_date_format", "danger")
-                return redirect(url_for("portal.book_appointment"))
+                try:
+                    appointment_date = datetime.strptime(appt_date_raw_normalized, "%Y-%m-%d %I:%M %p")
+                except ValueError:
+                    flash_message("invalid_date_format", "danger")
+                    return redirect(url_for("portal.book_appointment"))
 
         # Time limits check
         try:
@@ -238,7 +242,7 @@ def booked_slots():
             Appointment.appointment_date <= limit_date
         ).all()
         
-        slots = [appt.appointment_date.strftime("%Y-%m-%d %H:%M") for appt in occupied]
+        slots = [appt.appointment_date.strftime('%Y-%m-%d %I:%M %p') for appt in occupied]
         return jsonify(slots)
     except Exception:
         return jsonify([]), 500

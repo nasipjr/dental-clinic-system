@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 
 from flask import Blueprint, current_app, render_template
 
@@ -82,6 +82,20 @@ def home():
             .all()
         )
 
+        # Tomorrow's appointments query
+        tomorrow = today + timedelta(days=1)
+        tomorrow_start = datetime.combine(tomorrow, time.min)
+        tomorrow_end = datetime.combine(tomorrow, time.max)
+        tomorrow_appointments = (
+            Appointment.query
+            .join(Patient)
+            .filter(Appointment.appointment_date >= tomorrow_start)
+            .filter(Appointment.appointment_date <= tomorrow_end)
+            .filter(Appointment.status == "Scheduled")
+            .order_by(Appointment.appointment_date.asc())
+            .all()
+        )
+
         return render_template(
             "dashboard/index.html",
             total_patients=total_patients,
@@ -96,6 +110,7 @@ def home():
             total_credit=total_credit,
             today_scheduled_appointments=today_scheduled_appointments,
             today_done_appointments=today_done_appointments,
+            tomorrow_appointments=tomorrow_appointments,
             today_payments_sum=today_payments_sum,
             today_revenue_sum=today_revenue_sum,
             pending_appointments=pending_appointments,

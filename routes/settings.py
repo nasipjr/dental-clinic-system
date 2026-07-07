@@ -100,7 +100,7 @@ def settings_page():
             if os.path.isfile(p) and f.startswith('backup_') and (f.endswith('.sql') or f.endswith('.db')):
                 stats = os.stat(p)
                 size_kb = round(stats.st_size / 1024, 2)
-                mtime = datetime.fromtimestamp(stats.st_mtime).strftime('%Y-%m-%d %H:%M:%S')
+                mtime = datetime.fromtimestamp(stats.st_mtime).strftime('%Y-%m-%d %I:%M:%S %p')
                 backups_list.append({
                     'filename': f,
                     'mtime': mtime,

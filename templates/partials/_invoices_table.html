@@ -135,7 +135,7 @@
                 </td>
 
                 <td>
-                    {{ invoice.appointment_date.strftime('%Y-%m-%d %H:%M') if invoice.appointment_date else 'No date' }}
+                    {{ invoice.appointment_date.strftime('%Y-%m-%d %I:%M %p') if invoice.appointment_date else 'No date' }}
                 </td>
 
                 <td>

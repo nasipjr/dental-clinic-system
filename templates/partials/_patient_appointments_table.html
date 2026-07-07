@@ -73,7 +73,7 @@
                 <td>{{ appointment.id }}</td>
 
                 <td>
-                    {{ appointment.appointment_date.strftime('%Y-%m-%d %H:%M') if appointment.appointment_date else 'No
+                    {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else 'No
                     date' }}
                 </td>
 

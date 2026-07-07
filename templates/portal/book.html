@@ -83,6 +83,12 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         initialView: window.innerWidth < 768 ? 'timeGridDay' : 'timeGridWeek',
         allDaySlot: false,
+        slotLabelFormat: {
+            hour: 'numeric',
+            minute: '2-digit',
+            meridiem: 'short',
+            hour12: true
+        },
         slotMinTime: slotMinTime,
         slotMaxTime: slotMaxTime,
         eventTimeFormat: {
@@ -275,7 +281,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             const formattedDate = clickedDate.toLocaleDateString(isArabic ? 'ar' : undefined);
-            const formattedTime = clickedDate.toLocaleTimeString(isArabic ? 'ar' : undefined, {hour: '2-digit', minute:'2-digit'});
+            const formattedTime = clickedDate.toLocaleTimeString(isArabic ? 'ar' : undefined, {hour: '2-digit', minute:'2-digit', hour12: true});
 
             Swal.fire({
                 title: isArabic ? 'طلب حجز موعد جديد' : 'Request Appointment',

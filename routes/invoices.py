@@ -187,8 +187,9 @@ def add_invoice():
                     error_message="Visit date is required.",
                 ), 400
 
+            appointment_date_raw_normalized = appointment_date_raw.replace('ص', 'AM').replace('م', 'PM').strip()
             try:
-                appointment_date = datetime.strptime(appointment_date_raw, "%Y-%m-%dT%H:%M")
+                appointment_date = datetime.strptime(appointment_date_raw_normalized, "%Y-%m-%dT%H:%M")
             except ValueError:
                 return render_template(
                     "invoices/add_invoice.html",

@@ -16,7 +16,7 @@
         <div class="add-patient-wrapper">
             <div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
                 <h2>{% if current_lang == 'ar' %}وصل الدفعة{% else %}Payment{% endif %} PAY-{{ payment.id }}</h2>
-                <p>{% if current_lang == 'ar' %}تاريخ التسجيل:{% else %}Recorded on{% endif %} {{ payment.payment_date.strftime('%Y-%m-%d %H:%M') if payment.payment_date else 'No date' }}</p>
+                <p>{% if current_lang == 'ar' %}تاريخ التسجيل:{% else %}Recorded on{% endif %} {{ payment.payment_date.strftime('%Y-%m-%d %I:%M %p') if payment.payment_date else 'No date' }}</p>
             </div>
 
             <!-- Payment Main Info -->
@@ -40,7 +40,7 @@
                 <div class="patient-info-box">
                     <span class="info-label">{% if current_lang == 'ar' %}تاريخ الدفع{% else %}Date Recorded{% endif %}</span>
                     <p>
-                        {{ payment.payment_date.strftime('%Y-%m-%d %H:%M') if payment.payment_date else 'No date' }}
+                        {{ payment.payment_date.strftime('%Y-%m-%d %I:%M %p') if payment.payment_date else 'No date' }}
                     </p>
                 </div>
 
@@ -91,7 +91,7 @@
                                 <strong>{{ allocation.invoice.invoice_number }}</strong>
                             </td>
                             <td>
-                                {{ allocation.invoice.issue_date.strftime('%Y-%m-%d %H:%M') if allocation.invoice.issue_date else 'No date' }}
+                                {{ allocation.invoice.issue_date.strftime('%Y-%m-%d %I:%M %p') if allocation.invoice.issue_date else 'No date' }}
                             </td>
                             <td class="text-end fw-bold">
                                 {{ allocation.invoice.total_amount | format_price }} {{ currency_symbol }}
@@ -146,7 +146,7 @@
         <div class="text-end">
             <h2 class="text-uppercase fw-bold text-success mb-2">{% if current_lang == 'ar' %}سند قبض نقدية{% else %}Payment Receipt{% endif %}</h2>
             <h5 class="text-muted mb-3">{% if current_lang == 'ar' %}رقم السند{% else %}Receipt Number{% endif %}: PAY-{{ payment.id }}</h5>
-            <p class="mb-1"><strong>{% if current_lang == 'ar' %}التاريخ{% else %}Date{% endif %}:</strong> {{ payment.payment_date.strftime('%Y-%m-%d %H:%M') if payment.payment_date else '' }}</p>
+            <p class="mb-1"><strong>{% if current_lang == 'ar' %}التاريخ{% else %}Date{% endif %}:</strong> {{ payment.payment_date.strftime('%Y-%m-%d %I:%M %p') if payment.payment_date else '' }}</p>
             <p class="mb-0"><strong>{% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}:</strong> {% if current_lang == 'ar' %}مقبول{% else %}Success{% endif %}</p>
         </div>
     </div>
