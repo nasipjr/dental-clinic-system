@@ -66,6 +66,44 @@
                         </button>
                     {% endif %}
                 </div>
+
+                <div class="patient-info-box">
+                    <span class="info-label">{% if current_lang == 'ar' %}إشعارات التذكير التلقائية{% else %}Automated Reminder Settings{% endif %}</span>
+                    <div class="d-flex flex-column gap-1">
+                        <div>
+                            {% if patient.reminders_enabled %}
+                                <span class="badge bg-success"><i class="bi bi-bell-fill me-1"></i> {% if current_lang == 'ar' %}مفعلة{% else %}Enabled{% endif %}</span>
+                            {% else %}
+                                <span class="badge bg-secondary"><i class="bi bi-bell-slash-fill me-1"></i> {% if current_lang == 'ar' %}معطلة{% else %}Disabled{% endif %}</span>
+                            {% endif %}
+                        </div>
+                        <div class="small text-muted mt-1">
+                            <i class="bi bi-telegram me-1" style="color: #2CA5E0;"></i>
+                            <strong>{% if current_lang == 'ar' %}معرف تيليغرام{% else %}Telegram Chat ID{% endif %}:</strong>
+                            {% if patient.telegram_chat_id %}
+                                <code class="text-dark bg-light px-1 py-0.5 rounded">{{ patient.telegram_chat_id }}</code>
+                            {% else %}
+                                <em class="text-danger small mb-1 d-block">{% if current_lang == 'ar' %}غير مرتبط{% else %}Not Linked{% endif %}</em>
+                                {% if bot_username %}
+                                    <div class="mt-2 d-flex align-items-center gap-3 bg-white p-2 border rounded-3 shadow-sm" style="direction: ltr; width: fit-content; max-width: 100%; margin: 8px 0;">
+                                        <!-- Text link on the left -->
+                                        <div class="d-flex flex-column justify-content-center px-2">
+                                            <span class="text-secondary small fw-semibold mb-1" style="font-size: 0.72rem;">{% if current_lang == 'ar' %}اسم معرف البوت للكتابة:{% else %}Bot username to type:{% endif %}</span>
+                                            <span class="fs-5 fw-bold text-primary mb-2" style="user-select: all; letter-spacing: 0.5px;">@{{ bot_username }}</span>
+                                            <a href="https://t.me/{{ bot_username }}" target="_blank" class="btn btn-sm btn-outline-info py-1 px-3 fw-semibold text-center" style="font-size: 0.7rem; border-radius: 4px;">
+                                                <i class="bi bi-telegram me-1"></i> {% if current_lang == 'ar' %}رابط البوت المباشر{% else %}Direct Bot Link{% endif %}
+                                            </a>
+                                        </div>
+                                        <!-- QR code on the right -->
+                                        <div class="p-1 border rounded" style="background-color: #f8f9fa;">
+                                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=https://t.me/{{ bot_username }}" alt="Telegram QR" style="border-radius: 4px; width: 110px; height: 110px; display: block;">
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="action-buttons mt-4 patient-main-actions">

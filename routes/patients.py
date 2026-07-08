@@ -192,6 +192,7 @@ def patient_detail(patient_id):
     current_app.logger.info(f"Patient detail page opened | patient_id={patient_id}")
 
     try:
+        from utils.notification_helper import get_bot_username
         patient = Patient.query.get_or_404(patient_id)
 
         appointment_sort = request.args.get("appointment_sort", "date")
@@ -336,7 +337,8 @@ def patient_detail(patient_id):
             invoice_sort=invoice_context["invoice_sort"],
             invoice_order=invoice_context["invoice_order"],
             active_tab=active_tab,
-            ledger_entries=ledger_entries
+            ledger_entries=ledger_entries,
+            bot_username=get_bot_username()
         )
 
     except Exception:

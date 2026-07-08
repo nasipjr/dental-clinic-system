@@ -25,18 +25,32 @@ DEFAULT_SETTINGS = {
     "working_hours_end": "17:00",
     "working_days": "0,1,2,3,4,6",
     "treatment_prices": json.dumps(DEFAULT_TREATMENT_PRICES),
-    "notification_enable_sms": "false",
-    "notification_enable_whatsapp": "false",
-    "notification_enable_email": "false",
-    "twilio_account_sid": "",
-    "twilio_auth_token": "",
-    "twilio_phone_number": "",
-    "twilio_whatsapp_number": "",
+    # ── Notification channels ──────────────────────────────────
+    "notification_enable_sms": "false",       # CommPeak
+    "notification_enable_telegram": "false",  # Telegram Bot
+    "notification_enable_email": "false",     # SMTP
+    # ── Telegram Bot credentials ───────────────────────────────
+    "telegram_bot_token": "",
+    "telegram_24h_enabled": "true",
+    "telegram_2h_enabled": "true",
+    "telegram_24h_template": "تذكير موعد من {clinic_name}: مرحباً {patient_name}، نود تذكيركم بموعدكم غداً بتاريخ {appointment_time}. نتمنى لكم السلامة.",
+    "telegram_2h_template": "تذكير موعد من {clinic_name}: مرحباً {patient_name}، نود تذكيركم بموعدكم اليوم بعد ساعتين في تمام الساعة {appointment_time}. بانتظاركم.",
+    # ── CommPeak credentials (Streams SMS gateway) ─────────────
+    "commpeak_api_key": "",
+    "commpeak_stream_id": "",
+    # ── SMTP Email credentials ─────────────────────────────────
     "smtp_host": "smtp.gmail.com",
     "smtp_port": "587",
     "smtp_user": "",
     "smtp_password": "",
     "smtp_from_email": "",
+    "email_24h_enabled": "true",
+    "email_2h_enabled": "true",
+    "email_24h_subject": "تذكير بموعدك لدى {clinic_name}",
+    "email_24h_template": "عزيزي {patient_name}،\n\nهذا تذكير بموعدك لدى {clinic_name} غداً بتاريخ {appointment_time}.\n\nنتمنى لكم السلامة.\n\nمع تحيات،\n{clinic_name}",
+    "email_2h_subject": "تذكير بموعدك لدى {clinic_name}",
+    "email_2h_template": "عزيزي {patient_name}،\n\nهذا تذكير بموعدك لدى {clinic_name} اليوم بعد ساعتين في تمام الساعة {appointment_time}.\n\nبانتظاركم.\n\nمع تحيات،\n{clinic_name}",
+    # ── Billing ───────────────────────────────────────────────
     "tax_rate": "15",
     "clinic_vat_number": "",
     "booking_window_days": "30"

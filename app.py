@@ -151,6 +151,35 @@ def check_and_add_session_opened_at_column():
             app.logger.error(f"Failed to add session_opened_at column: {e}")
 
 
+def check_and_add_telegram_columns():
+    from sqlalchemy import text
+    try:
+        db.session.execute(text("SELECT telegram_chat_id FROM patient LIMIT 1"))
+    except Exception:
+        db.session.rollback()
+        try:
+            app.logger.info("Adding telegram_chat_id column to patient table")
+            db.session.execute(text("ALTER TABLE patient ADD COLUMN telegram_chat_id VARCHAR(50) NULL"))
+            db.session.commit()
+            app.logger.info("Successfully added telegram_chat_id column to patient table")
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Failed to add telegram_chat_id column: {e}")
+
+    try:
+        db.session.execute(text("SELECT reminders_enabled FROM patient LIMIT 1"))
+    except Exception:
+        db.session.rollback()
+        try:
+            app.logger.info("Adding reminders_enabled column to patient table")
+            db.session.execute(text("ALTER TABLE patient ADD COLUMN reminders_enabled BOOLEAN NOT NULL DEFAULT 1"))
+            db.session.commit()
+            app.logger.info("Successfully added reminders_enabled column to patient table")
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Failed to add reminders_enabled column: {e}")
+
+
 def ensure_default_admin():
     from models import User
     try:
@@ -180,6 +209,7 @@ with app.app_context():
     check_and_add_patient_id_column()
     check_and_add_plain_password_column()
     check_and_add_session_opened_at_column()
+    check_and_add_telegram_columns()
     ensure_default_admin()
 
 
@@ -394,6 +424,13 @@ if __name__ == "__main__":
             app.logger.info("Appointment reminders scheduler thread started successfully")
         except Exception as e:
             app.logger.error(f"Failed to start appointment reminders scheduler: {e}")
+
+        try:
+            from utils.notification_helper import start_telegram_bot_listener
+            start_telegram_bot_listener(app)
+            app.logger.info("Telegram Bot auto-registration listener thread started successfully")
+        except Exception as e:
+            app.logger.error(f"Failed to start Telegram Bot listener: {e}")
 
     app.logger.info("Flask app is running")
     app.run(debug=True)

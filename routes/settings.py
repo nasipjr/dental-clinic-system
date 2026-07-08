@@ -26,18 +26,30 @@ def settings_page():
                         return redirect(url_for("settings.settings_page") + "#tab-calendar")
                 set_setting(key, val)
 
-            # 1b. Update Twilio & SMTP Notification settings
-            for key in ["twilio_account_sid", "twilio_auth_token", "twilio_phone_number", "twilio_whatsapp_number",
-                        "smtp_host", "smtp_port", "smtp_user", "smtp_password", "smtp_from_email"]:
+            # 1b. Update notification provider credentials and templates
+            for key in ["telegram_bot_token", "telegram_24h_template", "telegram_2h_template",
+                        "commpeak_api_key", "commpeak_stream_id",
+                        "smtp_host", "smtp_port", "smtp_user", "smtp_password", "smtp_from_email",
+                        "email_24h_subject", "email_24h_template", "email_2h_subject", "email_2h_template"]:
                 val = request.form.get(key, "").strip()
                 set_setting(key, val)
 
-            sms_enabled = "true" if request.form.get("notification_enable_sms") else "false"
-            whatsapp_enabled = "true" if request.form.get("notification_enable_whatsapp") else "false"
-            email_enabled = "true" if request.form.get("notification_enable_email") else "false"
-            set_setting("notification_enable_sms", sms_enabled)
-            set_setting("notification_enable_whatsapp", whatsapp_enabled)
-            set_setting("notification_enable_email", email_enabled)
+            sms_enabled      = "true" if request.form.get("notification_enable_sms")      else "false"
+            telegram_enabled = "true" if request.form.get("notification_enable_telegram") else "false"
+            email_enabled    = "true" if request.form.get("notification_enable_email")    else "false"
+            set_setting("notification_enable_sms",      sms_enabled)
+            set_setting("notification_enable_telegram", telegram_enabled)
+            set_setting("notification_enable_email",    email_enabled)
+
+            telegram_24h_enabled = "true" if request.form.get("telegram_24h_enabled") else "false"
+            telegram_2h_enabled  = "true" if request.form.get("telegram_2h_enabled")  else "false"
+            set_setting("telegram_24h_enabled", telegram_24h_enabled)
+            set_setting("telegram_2h_enabled",  telegram_2h_enabled)
+
+            email_24h_enabled = "true" if request.form.get("email_24h_enabled") else "false"
+            email_2h_enabled  = "true" if request.form.get("email_2h_enabled")  else "false"
+            set_setting("email_24h_enabled", email_24h_enabled)
+            set_setting("email_2h_enabled",  email_2h_enabled)
             
             # Save working days checklist as a comma-separated string
             working_days_list = request.form.getlist("working_days")
@@ -328,3 +340,65 @@ def delete_backup(filename):
         flash("Backup file not found.", "danger")
         
     return redirect(url_for("settings.settings_page") + "#tab-backups")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Test Notification Endpoints — called via AJAX from the settings page
+# ─────────────────────────────────────────────────────────────────────────────
+
+@settings_bp.route("/settings/test-sms", methods=["POST"])
+@role_required("admin")
+def test_sms():
+    from flask import jsonify
+    from utils.notification_helper import send_commpeak_sms
+    phone = request.form.get("phone", "").strip()
+    api_key = request.form.get("api_key", "").strip() or None
+    stream_id = request.form.get("stream_id", "").strip() or None
+
+    if not phone:
+        return jsonify({"success": False, "message": "Please enter a phone number."})
+    body = "Test SMS from Dental Clinic MS. CommPeak is working!"
+    success, msg = send_commpeak_sms(phone, body, api_key=api_key, stream_id=stream_id)
+    return jsonify({"success": success, "message": msg})
+
+
+@settings_bp.route("/settings/test-email", methods=["POST"])
+@role_required("admin")
+def test_email():
+    from flask import jsonify
+    from utils.notification_helper import send_smtp_email
+    email = request.form.get("email", "").strip()
+    smtp_host = request.form.get("smtp_host", "").strip() or None
+    smtp_port = request.form.get("smtp_port", "").strip() or None
+    smtp_user = request.form.get("smtp_user", "").strip() or None
+    smtp_password = request.form.get("smtp_password", "").strip() or None
+    smtp_from_email = request.form.get("smtp_from_email", "").strip() or None
+
+    if not email:
+        return jsonify({"success": False, "message": "Please enter an email address."})
+    success, msg = send_smtp_email(
+        email,
+        "Test Email — Dental Clinic MS",
+        "Test email from Dental Clinic MS. SMTP is working!",
+        smtp_host=smtp_host,
+        smtp_port=smtp_port,
+        smtp_user=smtp_user,
+        smtp_password=smtp_password,
+        from_email=smtp_from_email
+    )
+    return jsonify({"success": success, "message": msg})
+
+
+@settings_bp.route("/settings/test-telegram", methods=["POST"])
+@role_required("admin")
+def test_telegram():
+    from flask import jsonify
+    from utils.notification_helper import send_telegram_message
+    chat_id = request.form.get("chat_id", "").strip()
+    bot_token = request.form.get("bot_token", "").strip() or None
+
+    if not chat_id:
+        return jsonify({"success": False, "message": "Please enter a Chat ID."})
+    body = "Test from Dental Clinic MS. Telegram Bot is working!"
+    success, msg = send_telegram_message(chat_id, body, bot_token=bot_token)
+    return jsonify({"success": success, "message": msg})

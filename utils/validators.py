@@ -126,6 +126,8 @@ def parse_patient_data(form):
         "occupation": occupation if occupation else None,
         "emergency_contact": emergency_contact if emergency_contact else None,
         "medicare_number": medicare_number if medicare_number else None,
+        "telegram_chat_id": (form.get("telegram_chat_id") or "").strip() if (form.get("telegram_chat_id") or "").strip() else None,
+        "reminders_enabled": True if form.get("reminders_enabled") in ("on", "true", "1") else False,
     }
 
     return patient_data, None

@@ -136,10 +136,17 @@
                                 <input type="text" id="emergency_contact" name="emergency_contact" class="form-control"
                                     placeholder="Enter emergency contact">
                             </div>
-                            <div class="col-md-4">
-                                <label for="medicare_number" class="form-label">Medicare Number</label>
-                                <input type="text" id="medicare_number" name="medicare_number" class="form-control"
-                                    placeholder="Enter medicare number">
+                            <div class="col-md-6">
+                                <label for="telegram_chat_id" class="form-label">Telegram Chat ID</label>
+                                <input type="text" id="telegram_chat_id" name="telegram_chat_id" class="form-control"
+                                    placeholder="e.g. 123456789">
+                            </div>
+
+                            <div class="col-md-6 d-flex align-items-center pt-2">
+                                <div class="form-check form-switch mt-4">
+                                    <input class="form-check-input" type="checkbox" id="reminders_enabled" name="reminders_enabled" value="true" checked>
+                                    <label class="form-check-label fw-semibold" for="reminders_enabled">Enable Automated Reminders</label>
+                                </div>
                             </div><br>
 
                             <div class="col-12 text-center pt-2">

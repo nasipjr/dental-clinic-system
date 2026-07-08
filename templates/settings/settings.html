@@ -513,47 +513,126 @@
                                         <div class="col-md-12">
                                             <h5 class="fw-bold mb-3" style="color: var(--heading-color);">Enable Channels</h5>
                                             <div class="d-flex flex-column gap-2 bg-light p-3 rounded-3" style="background-color: rgba(var(--accent-color-rgb), 0.05) !important;">
+                                                
+                                                <!-- Telegram Switch -->
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="notification_enable_telegram" name="notification_enable_telegram" value="true" {% if settings.notification_enable_telegram == 'true' %}checked{% endif %}>
+                                                    <label class="form-check-label fw-semibold" for="notification_enable_telegram">
+                                                        <i class="bi bi-telegram me-1" style="color:#2CA5E0;"></i>
+                                                        Enable Telegram Reminders (Free — Recommended for Syria)
+                                                    </label>
+                                                    <div class="text-muted small">Sends appointment reminders via Telegram Bot. Completely free — no per-message cost.</div>
+                                                </div>
+                                                <hr class="my-2 opacity-25">
+                                                
+                                                <!-- SMS Switch -->
                                                 <div class="form-check form-switch">
                                                     <input class="form-check-input" type="checkbox" id="notification_enable_sms" name="notification_enable_sms" value="true" {% if settings.notification_enable_sms == 'true' %}checked{% endif %}>
-                                                    <label class="form-check-label fw-semibold" for="notification_enable_sms">Enable SMS Reminders (Twilio)</label>
-                                                    <div class="text-muted small">Sends text messages to patient mobile numbers 24 hours and 2 hours before their appointments.</div>
+                                                    <label class="form-check-label fw-semibold" for="notification_enable_sms">
+                                                        <i class="bi bi-chat-dots me-1" style="color:#25D366;"></i>
+                                                        Enable SMS Reminders (CommPeak — Syriatel &amp; MTN Syria)
+                                                    </label>
+                                                    <div class="text-muted small">Sends text messages to patient mobile numbers via CommPeak gateway (supports Syrian numbers).</div>
                                                 </div>
                                                 <hr class="my-2 opacity-25">
-                                                <div class="form-check form-switch">
-                                                    <input class="form-check-input" type="checkbox" id="notification_enable_whatsapp" name="notification_enable_whatsapp" value="true" {% if settings.notification_enable_whatsapp == 'true' %}checked{% endif %}>
-                                                    <label class="form-check-label fw-semibold" for="notification_enable_whatsapp">Enable WhatsApp Reminders (Twilio WhatsApp API)</label>
-                                                    <div class="text-muted small">Sends automated WhatsApp notifications to patient phone numbers.</div>
-                                                </div>
-                                                <hr class="my-2 opacity-25">
+                                                
+                                                <!-- Email Switch -->
                                                 <div class="form-check form-switch">
                                                     <input class="form-check-input" type="checkbox" id="notification_enable_email" name="notification_enable_email" value="true" {% if settings.notification_enable_email == 'true' %}checked{% endif %}>
-                                                    <label class="form-check-label fw-semibold" for="notification_enable_email">Enable Email Reminders (SMTP)</label>
-                                                    <div class="text-muted small">Sends HTML/Text emails to patient email addresses.</div>
+                                                    <label class="form-check-label fw-semibold" for="notification_enable_email">
+                                                        <i class="bi bi-envelope me-1" style="color:#EA4335;"></i>
+                                                        Enable Email Reminders (Gmail SMTP)
+                                                    </label>
+                                                    <div class="text-muted small">Sends reminder emails to patient email addresses using Gmail or any SMTP server.</div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <!-- Twilio Credentials -->
+                                        <!-- Telegram Bot Credentials -->
                                         <div class="col-md-12 pt-3 border-top">
-                                            <h5 class="fw-bold mb-3" style="color: var(--heading-color);">Twilio SMS & WhatsApp Credentials</h5>
-                                            <div class="text-secondary small mb-3">If Twilio keys are not provided, reminders will be logged to local logs for testing purposes without sending actual messages.</div>
+                                            <h5 class="fw-bold mb-2" style="color: var(--heading-color);">
+                                                <i class="bi bi-telegram me-2" style="color:#2CA5E0;"></i>Telegram Bot Settings
+                                            </h5>
+                                            <div class="text-secondary small mb-3">
+                                                <span>Create a bot via @BotFather on Telegram and paste the token below.</span>
+                                                <span>The patient must send /start to the bot first to get a Chat ID.</span>
+                                                <a href="https://core.telegram.org/bots#botfather" target="_blank" class="ms-1">Learn more →</a>
+                                            </div>
+                                            <div class="row g-3">
+                                                <div class="col-md-12">
+                                                    <label for="telegram_bot_token" class="settings-label">Telegram Bot Token</label>
+                                                    <input type="password" class="form-control settings-input" id="telegram_bot_token" name="telegram_bot_token" value="{{ settings.telegram_bot_token or '' }}" placeholder="e.g. 123456789:ABCdefGHIjklMNOpqrstUVwxyz">
+                                                </div>
+                                                <div class="col-md-8 mt-2">
+                                                    <label for="test_telegram_chat_id" class="settings-label">Test Chat ID (Your Telegram Chat ID)</label>
+                                                    <input type="text" class="form-control settings-input" id="test_telegram_chat_id" placeholder="e.g. 123456789">
+                                                </div>
+                                                <div class="col-md-4 mt-2 d-flex align-items-end">
+                                                    <button type="button" id="btn-test-telegram" class="btn btn-outline-info w-100 rounded-pill py-2">
+                                                        <i class="bi bi-send-fill me-1"></i> Test Telegram
+                                                    </button>
+                                                </div>
+                                                <div class="col-md-12 mt-1" id="test-telegram-result" style="display:none;"></div>
+
+                                                <!-- Telegram Templates and Timings -->
+                                                <div class="col-md-12 mt-3 pt-3 border-top">
+                                                    <h6 class="fw-bold mb-2" style="color: var(--heading-color);">Customize Telegram Messages</h6>
+                                                    <div class="row g-3">
+                                                        <!-- 24h Toggle -->
+                                                        <div class="col-md-12">
+                                                            <div class="form-check form-switch mb-1">
+                                                                <input class="form-check-input" type="checkbox" id="telegram_24h_enabled" name="telegram_24h_enabled" value="true" {% if settings.telegram_24h_enabled == 'true' %}checked{% endif %}>
+                                                                <label class="form-check-label fw-semibold" for="telegram_24h_enabled">Enable 24-Hour Reminder</label>
+                                                            </div>
+                                                            <textarea class="form-control settings-input" id="telegram_24h_template" name="telegram_24h_template" rows="2" placeholder="Enter message template for 24h reminder">{{ settings.telegram_24h_template or '' }}</textarea>
+                                                        </div>
+                                                        <!-- 2h Toggle -->
+                                                        <div class="col-md-12">
+                                                            <div class="form-check form-switch mb-1">
+                                                                <input class="form-check-input" type="checkbox" id="telegram_2h_enabled" name="telegram_2h_enabled" value="true" {% if settings.telegram_2h_enabled == 'true' %}checked{% endif %}>
+                                                                <label class="form-check-label fw-semibold" for="telegram_2h_enabled">Enable 2-Hour Reminder</label>
+                                                            </div>
+                                                            <textarea class="form-control settings-input" id="telegram_2h_template" name="telegram_2h_template" rows="2" placeholder="Enter message template for 2h reminder">{{ settings.telegram_2h_template or '' }}</textarea>
+                                                        </div>
+                                                        <!-- Help text for placeholders -->
+                                                        <div class="col-md-12 text-secondary small">
+                                                            <span>Available dynamic tags:</span>
+                                                            <code>{patient_name}</code>, <code>{appointment_time}</code>, <code>{clinic_name}</code>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- CommPeak Credentials -->
+                                        <div class="col-md-12 pt-3 border-top">
+                                            <h5 class="fw-bold mb-2" style="color: var(--heading-color);">
+                                                <i class="bi bi-chat-dots me-2" style="color:#25D366;"></i>CommPeak Credentials
+                                                <span class="badge bg-success ms-2" style="font-size:0.7rem;">Syria Compatible</span>
+                                            </h5>
+                                            <div class="text-secondary small mb-3">
+                                                <span>Register at commpeak.com — supports Syriatel &amp; MTN Syria.</span>
+                                                <span>Enter your TextPeak API Auth Token and Stream ID.</span>
+                                            </div>
                                             <div class="row g-3">
                                                 <div class="col-md-6">
-                                                    <label for="twilio_account_sid" class="settings-label">Twilio Account SID</label>
-                                                    <input type="text" class="form-control settings-input" id="twilio_account_sid" name="twilio_account_sid" value="{{ settings.twilio_account_sid or '' }}" placeholder="ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX">
+                                                    <label for="commpeak_api_key" class="settings-label">API Auth Token</label>
+                                                    <input type="password" class="form-control settings-input" id="commpeak_api_key" name="commpeak_api_key" value="{{ settings.commpeak_api_key or '' }}" placeholder="Your CommPeak API Auth Token (Bearer token)">
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <label for="twilio_auth_token" class="settings-label">Twilio Auth Token</label>
-                                                    <input type="password" class="form-control settings-input" id="twilio_auth_token" name="twilio_auth_token" value="{{ settings.twilio_auth_token or '' }}" placeholder="Your Twilio token">
+                                                    <label for="commpeak_stream_id" class="settings-label">Stream ID</label>
+                                                    <input type="text" class="form-control settings-input" id="commpeak_stream_id" name="commpeak_stream_id" value="{{ settings.commpeak_stream_id or '' }}" placeholder="Your CommPeak Stream ID">
                                                 </div>
-                                                <div class="col-md-6">
-                                                    <label for="twilio_phone_number" class="settings-label">Twilio From Number (SMS)</label>
-                                                    <input type="text" class="form-control settings-input" id="twilio_phone_number" name="twilio_phone_number" value="{{ settings.twilio_phone_number or '' }}" placeholder="e.g. +14155552671">
+                                                <div class="col-md-8 mt-2">
+                                                    <label for="test_sms_phone" class="settings-label">Test Phone Number (e.g., +963958948727)</label>
+                                                    <input type="text" class="form-control settings-input" id="test_sms_phone" placeholder="e.g. +963958948727">
                                                 </div>
-                                                <div class="col-md-6">
-                                                    <label for="twilio_whatsapp_number" class="settings-label">Twilio WhatsApp Sandbox/Number</label>
-                                                    <input type="text" class="form-control settings-input" id="twilio_whatsapp_number" name="twilio_whatsapp_number" value="{{ settings.twilio_whatsapp_number or '' }}" placeholder="e.g. whatsapp:+14155238886">
+                                                <div class="col-md-4 mt-2 d-flex align-items-end">
+                                                    <button type="button" id="btn-test-sms" class="btn btn-outline-success w-100 rounded-pill py-2">
+                                                        <i class="bi bi-send-fill me-1"></i> Send Test SMS
+                                                    </button>
                                                 </div>
+                                                <div class="col-md-12 mt-1" id="test-sms-result" style="display:none;"></div>
                                             </div>
                                         </div>
 
@@ -581,8 +660,57 @@
                                                     <label for="smtp_from_email" class="settings-label">From Email Address</label>
                                                     <input type="email" class="form-control settings-input" id="smtp_from_email" name="smtp_from_email" value="{{ settings.smtp_from_email or '' }}" placeholder="e.g. no-reply@clinic.com">
                                                 </div>
+
+                                                <!-- Email Templates and Timings -->
+                                                <div class="col-md-12 mt-3 pt-3 border-top">
+                                                    <h6 class="fw-bold mb-2" style="color: var(--heading-color);">Customize Email Messages</h6>
+                                                    <div class="row g-3">
+                                                        <!-- 24h Toggle -->
+                                                        <div class="col-md-12">
+                                                            <div class="form-check form-switch mb-1">
+                                                                <input class="form-check-input" type="checkbox" id="email_24h_enabled" name="email_24h_enabled" value="true" {% if settings.email_24h_enabled == 'true' %}checked{% endif %}>
+                                                                <label class="form-check-label fw-semibold" for="email_24h_enabled">Enable 24-Hour Reminder</label>
+                                                            </div>
+                                                            <div class="mb-2">
+                                                                <label for="email_24h_subject" class="settings-label small">Email Subject (24h)</label>
+                                                                <input type="text" class="form-control settings-input mb-1" id="email_24h_subject" name="email_24h_subject" value="{{ settings.email_24h_subject or '' }}" placeholder="Enter subject for 24h email">
+                                                            </div>
+                                                            <textarea class="form-control settings-input" id="email_24h_template" name="email_24h_template" rows="3" placeholder="Enter email template body for 24h reminder">{{ settings.email_24h_template or '' }}</textarea>
+                                                        </div>
+                                                        <!-- 2h Toggle -->
+                                                        <div class="col-md-12 mt-3">
+                                                            <div class="form-check form-switch mb-1">
+                                                                <input class="form-check-input" type="checkbox" id="email_2h_enabled" name="email_2h_enabled" value="true" {% if settings.email_2h_enabled == 'true' %}checked{% endif %}>
+                                                                <label class="form-check-label fw-semibold" for="email_2h_enabled">Enable 2-Hour Reminder</label>
+                                                            </div>
+                                                            <div class="mb-2">
+                                                                <label for="email_2h_subject" class="settings-label small">Email Subject (2h)</label>
+                                                                <input type="text" class="form-control settings-input mb-1" id="email_2h_subject" name="email_2h_subject" value="{{ settings.email_2h_subject or '' }}" placeholder="Enter subject for 2h email">
+                                                            </div>
+                                                            <textarea class="form-control settings-input" id="email_2h_template" name="email_2h_template" rows="3" placeholder="Enter email template body for 2h reminder">{{ settings.email_2h_template or '' }}</textarea>
+                                                        </div>
+                                                        <!-- Help text for placeholders -->
+                                                        <div class="col-md-12 text-secondary small">
+                                                            <span>Available dynamic tags:</span>
+                                                            <code>{patient_name}</code>, <code>{appointment_time}</code>, <code>{clinic_name}</code>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-8 mt-2">
+                                                    <label for="test_email_address" class="settings-label">Test Email Address</label>
+                                                    <input type="email" class="form-control settings-input" id="test_email_address" placeholder="e.g. doctor@gmail.com">
+                                                </div>
+                                                <div class="col-md-4 mt-2 d-flex align-items-end">
+                                                    <button type="button" id="btn-test-email" class="btn btn-outline-primary w-100 rounded-pill py-2">
+                                                        <i class="bi bi-send-fill me-1"></i> Send Test Email
+                                                    </button>
+                                                </div>
+                                                <div class="col-md-12 mt-1" id="test-email-result" style="display:none;"></div>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
                                     </div>
                                 </div>
 
@@ -1040,6 +1168,122 @@
                 form.action = `/settings/users/${userId}/edit`;
             });
         });
+
+        // Keep the hidden input in sync with the active tab
+        document.querySelectorAll('[data-bs-toggle="pill"]').forEach(function (btn) {
+            btn.addEventListener('shown.bs.tab', function (e) {
+                const target = e.target.getAttribute('data-bs-target');
+                const inp = document.getElementById('active-tab-input');
+                if (inp) inp.value = target;
+            });
+        });
+
+        // ── Test Buttons Event Listeners ─────────────────────────────────
+        // Read CSRF token dynamically from the injected form input
+        const getCsrfToken = () => {
+            const el = document.querySelector('input[name="csrf_token"]');
+            return el ? el.value : '';
+        };
+
+        // Helper to send test request
+        function sendTestRequest(url, data, btn, resultDiv) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Sending...';
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'col-md-12 mt-1 alert alert-info py-2';
+            resultDiv.textContent = 'جاري الإرسال...';
+
+            // Add CSRF Token
+            const formData = new FormData();
+            for (const key in data) {
+                formData.append(key, data[key]);
+            }
+            formData.append('csrf_token', getCsrfToken());
+
+            fetch(url, {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => {
+                if (!res.ok) {
+                    return res.text().then(text => {
+                        throw new Error(text || 'HTTP ' + res.status);
+                    });
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    resultDiv.className = 'col-md-12 mt-1 alert alert-success py-2';
+                    resultDiv.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i> ' + data.message;
+                } else {
+                    resultDiv.className = 'col-md-12 mt-1 alert alert-danger py-2';
+                    resultDiv.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> ' + data.message;
+                }
+            })
+            .catch(err => {
+                resultDiv.className = 'col-md-12 mt-1 alert alert-danger py-2';
+                resultDiv.textContent = 'حدث خطأ: ' + err.message;
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = btn.id === 'btn-test-sms' ? '<i class="bi bi-send-fill me-1"></i> Send Test SMS' :
+                               btn.id === 'btn-test-telegram' ? '<i class="bi bi-send-fill me-1"></i> Test Telegram' :
+                               '<i class="bi bi-send-fill me-1"></i> Send Test Email';
+            });
+        }
+
+        // Test SMS
+        const btnTestSms = document.getElementById('btn-test-sms');
+        if (btnTestSms) {
+            btnTestSms.addEventListener('click', function() {
+                const phone = document.getElementById('test_sms_phone').value.trim();
+                const apiKey = document.getElementById('commpeak_api_key').value.trim();
+                const streamId = document.getElementById('commpeak_stream_id').value.trim();
+                const resultDiv = document.getElementById('test-sms-result');
+                sendTestRequest('/settings/test-sms', {
+                    phone: phone,
+                    api_key: apiKey,
+                    stream_id: streamId
+                }, btnTestSms, resultDiv);
+            });
+        }
+
+        // Test Telegram
+        const btnTestTelegram = document.getElementById('btn-test-telegram');
+        if (btnTestTelegram) {
+            btnTestTelegram.addEventListener('click', function() {
+                const chatId = document.getElementById('test_telegram_chat_id').value.trim();
+                const botToken = document.getElementById('telegram_bot_token').value.trim();
+                const resultDiv = document.getElementById('test-telegram-result');
+                sendTestRequest('/settings/test-telegram', {
+                    chat_id: chatId,
+                    bot_token: botToken
+                }, btnTestTelegram, resultDiv);
+            });
+        }
+
+        // Test Email
+        const btnTestEmail = document.getElementById('btn-test-email');
+        if (btnTestEmail) {
+            btnTestEmail.addEventListener('click', function() {
+                const email = document.getElementById('test_email_address').value.trim();
+                const smtpHost = document.getElementById('smtp_host').value.trim();
+                const smtpPort = document.getElementById('smtp_port').value.trim();
+                const smtpUser = document.getElementById('smtp_user').value.trim();
+                const smtpPassword = document.getElementById('smtp_password').value.trim();
+                const smtpFromEmail = document.getElementById('smtp_from_email').value.trim();
+                const resultDiv = document.getElementById('test-email-result');
+                sendTestRequest('/settings/test-email', {
+                    email: email,
+                    smtp_host: smtpHost,
+                    smtp_port: smtpPort,
+                    smtp_user: smtpUser,
+                    smtp_password: smtpPassword,
+                    smtp_from_email: smtpFromEmail
+                }, btnTestEmail, resultDiv);
+            });
+        }
     });
 </script>
 {% endblock %}

@@ -169,6 +169,19 @@
                                         value="{{ patient.medicare_number or '' }}">
                                 </div>
 
+                                <div class="col-md-6">
+                                    <label for="telegram_chat_id" class="form-label">Telegram Chat ID</label>
+                                    <input type="text" id="telegram_chat_id" name="telegram_chat_id" class="form-control"
+                                        value="{{ patient.telegram_chat_id or '' }}" placeholder="e.g. 123456789">
+                                </div>
+
+                                <div class="col-md-6 d-flex align-items-center pt-2">
+                                    <div class="form-check form-switch mt-4">
+                                        <input class="form-check-input" type="checkbox" id="reminders_enabled" name="reminders_enabled" value="true" {% if patient.reminders_enabled %}checked{% endif %}>
+                                        <label class="form-check-label fw-semibold" for="reminders_enabled">Enable Automated Reminders</label>
+                                    </div>
+                                </div><br>
+
                                 {% if patient.user and session.get('role') in ('doctor', 'admin') %}
                                 <div class="col-md-12 mt-4 pt-3 border-top">
                                     <div class="card bg-light border-warning shadow-sm">

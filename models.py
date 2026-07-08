@@ -34,6 +34,8 @@ class Patient(db.Model):
     occupation = db.Column(db.String(150))
     emergency_contact = db.Column(db.String(150))
     medicare_number = db.Column(db.String(100))
+    telegram_chat_id = db.Column(db.String(50), nullable=True)
+    reminders_enabled = db.Column(db.Boolean, default=True, nullable=False)
 
     appointments = db.relationship(
         "Appointment",
