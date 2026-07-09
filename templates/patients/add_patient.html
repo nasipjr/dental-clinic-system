@@ -73,7 +73,21 @@
                             <div class="col-md-12">
                                 <label for="phone" class="form-label">Phone</label>
                                 <input type="text" id="phone" name="phone" class="form-control"
-                                    placeholder="Enter phone number">
+                                    placeholder="Enter phone number" pattern="^\+963\d{9}$">
+                                <div class="form-text text-muted mt-1" id="phone-hint">
+                                    {% if request.cookies.get('lang', 'en') == 'ar' %}
+                                    طريقة كتابة الرقم: <code dir="ltr">+963XXXXXXXXX</code> (مثال: <code dir="ltr">+963958948727</code>) - يجب أن يبدأ بـ +963 ويليه 9 أرقام.
+                                    {% else %}
+                                    How to write the number: <code dir="ltr">+963XXXXXXXXX</code> (e.g., <code dir="ltr">+963958948727</code>) - must start with +963 followed by exactly 9 digits.
+                                    {% endif %}
+                                </div>
+                                <div class="invalid-feedback" id="phone-feedback">
+                                    {% if request.cookies.get('lang', 'en') == 'ar' %}
+                                    رقم الهاتف غير صالح. يجب أن يبدأ بـ +963 يليه 9 أرقام (مثال: +963958948727).
+                                    {% else %}
+                                    Invalid phone number. Must start with +963 followed by exactly 9 digits (e.g., +963958948727).
+                                    {% endif %}
+                                </div>
                             </div>
 
                             <div class="col-md-12">
@@ -161,5 +175,41 @@
     </div>
 </section>
 
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const phoneInput = document.getElementById("phone");
+    const form = document.getElementById("add-patient-form");
+    
+    function validatePhone() {
+        const val = phoneInput.value.trim();
+        if (val === "") {
+            phoneInput.classList.remove("is-invalid");
+            return true;
+        }
+        const regex = /^\+963\d{9}$/;
+        if (!regex.test(val)) {
+            phoneInput.classList.add("is-invalid");
+            return false;
+        } else {
+            phoneInput.classList.remove("is-invalid");
+            return true;
+        }
+    }
 
+    if (phoneInput) {
+        phoneInput.addEventListener("input", validatePhone);
+        phoneInput.addEventListener("blur", validatePhone);
+    }
+
+    if (form) {
+        form.addEventListener("submit", function(e) {
+            if (phoneInput && !validatePhone()) {
+                e.preventDefault();
+                e.stopPropagation();
+                phoneInput.focus();
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

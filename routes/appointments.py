@@ -324,12 +324,22 @@ def edit_appointment(appointment_id):
                             appointment_max_datetime=appointment_max_datetime,
                         ), 400
 
-                appointment.appointment_date = appointment_data["appointment_date"]
+                old_date = appointment.appointment_date
+                new_date = appointment_data["appointment_date"]
+                time_edited = (old_date != new_date)
+
+                appointment.appointment_date = new_date
                 appointment.reason = appointment_data["reason"]
                 appointment.status = new_status
 
 
                 db.session.commit()
+
+            from services.notification_service import notify_appointment_cancellation, notify_appointment_reschedule
+            if new_status == "Cancelled":
+                notify_appointment_cancellation(appointment)
+            elif time_edited and new_status == "Scheduled":
+                notify_appointment_reschedule(appointment)
 
             current_app.logger.info(
                 f"Appointment updated successfully | appointment_id={appointment.id}"
@@ -436,6 +446,10 @@ def quick_cancel(appointment_id):
 
         appointment.status = "Cancelled"
         db.session.commit()
+
+        from services.notification_service import notify_appointment_cancellation
+        notify_appointment_cancellation(appointment)
+
         return jsonify({"success": True, "message": "Appointment cancelled successfully."})
     except Exception:
         db.session.rollback()
@@ -498,6 +512,11 @@ def calendar():
 def appointment_events():
     current_app.logger.info("Appointment events requested")
     try:
+        from utils.settings_helper import get_setting
+        try:
+            duration = int(get_setting("default_appointment_duration", "30"))
+        except ValueError:
+            duration = 30
         appointments = Appointment.query.all()
         events = []
         for appt in appointments:
@@ -509,7 +528,7 @@ def appointment_events():
                 color = "#0284c7"
 
             start_iso = appt.appointment_date.isoformat()
-            end_iso = (appt.appointment_date + timedelta(minutes=30)).isoformat()
+            end_iso = (appt.appointment_date + timedelta(minutes=duration)).isoformat()
 
             events.append({
                 "id": appt.id,
@@ -604,6 +623,10 @@ def decline_appointment(appointment_id):
         
         appt.status = "Cancelled"
         db.session.commit()
+
+        from services.notification_service import notify_appointment_cancellation
+        notify_appointment_cancellation(appt)
+
         return jsonify({"success": True, "message": "Appointment request declined."})
     except Exception:
         db.session.rollback()
@@ -647,6 +670,9 @@ def reschedule_appointment(appointment_id):
             
         appt.appointment_date = new_date
         db.session.commit()
+
+        from services.notification_service import notify_appointment_reschedule
+        notify_appointment_reschedule(appt)
         
         return jsonify({"success": True, "message": "Appointment rescheduled successfully."})
     except Exception:
@@ -690,6 +716,10 @@ def update_appointment_status(appointment_id):
 
         appt.status = new_status
         db.session.commit()
+
+        if new_status == "Cancelled":
+            from services.notification_service import notify_appointment_cancellation
+            notify_appointment_cancellation(appt)
         
         return jsonify({"success": True, "message": "Status updated successfully.", "new_status": new_status})
     except Exception:

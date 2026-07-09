@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const workingDaysAttr = appointmentInput.getAttribute("data-working-days") || "0,1,2,3,4,6";
     const minTimeAttr = appointmentInput.getAttribute("data-min-time") || "08:00";
     const maxTimeAttr = appointmentInput.getAttribute("data-max-time") || "18:00";
+    const durationAttr = parseInt(appointmentInput.getAttribute("data-duration") || "30", 10);
     const workingDaysList = workingDaysAttr.split(",").map(d => parseInt(d.trim(), 10));
     const currentLang = document.documentElement.getAttribute('lang') || 'en';
 
@@ -26,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 time_24hr: false,
                 minDate: "today",
                 maxDate: new Date().fp_incr(30),
-                minuteIncrement: 30,
+                minuteIncrement: durationAttr,
                 minTime: minTimeAttr,
                 maxTime: maxTimeAttr,
                 disable: [
@@ -59,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 time_24hr: false,
                 minDate: "today",
                 maxDate: new Date().fp_incr(30),
-                minuteIncrement: 30,
+                minuteIncrement: durationAttr,
                 minTime: minTimeAttr,
                 maxTime: maxTimeAttr,
                 disable: [

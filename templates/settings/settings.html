@@ -594,6 +594,22 @@
                                                             </div>
                                                             <textarea class="form-control settings-input" id="telegram_2h_template" name="telegram_2h_template" rows="2" placeholder="Enter message template for 2h reminder">{{ settings.telegram_2h_template or '' }}</textarea>
                                                         </div>
+                                                        <!-- Cancel Toggle -->
+                                                        <div class="col-md-12">
+                                                            <div class="form-check form-switch mb-1">
+                                                                <input class="form-check-input" type="checkbox" id="telegram_cancel_enabled" name="telegram_cancel_enabled" value="true" {% if settings.telegram_cancel_enabled == 'true' %}checked{% endif %}>
+                                                                <label class="form-check-label fw-semibold" for="telegram_cancel_enabled">Enable Cancellation Notification</label>
+                                                            </div>
+                                                            <textarea class="form-control settings-input" id="telegram_cancel_template" name="telegram_cancel_template" rows="2" placeholder="Enter message template for cancellation">{{ settings.telegram_cancel_template or '' }}</textarea>
+                                                        </div>
+                                                        <!-- Reschedule Toggle -->
+                                                        <div class="col-md-12">
+                                                            <div class="form-check form-switch mb-1">
+                                                                <input class="form-check-input" type="checkbox" id="telegram_reschedule_enabled" name="telegram_reschedule_enabled" value="true" {% if settings.telegram_reschedule_enabled == 'true' %}checked{% endif %}>
+                                                                <label class="form-check-label fw-semibold" for="telegram_reschedule_enabled">Enable Reschedule Notification</label>
+                                                            </div>
+                                                            <textarea class="form-control settings-input" id="telegram_reschedule_template" name="telegram_reschedule_template" rows="2" placeholder="Enter message template for reschedule">{{ settings.telegram_reschedule_template or '' }}</textarea>
+                                                        </div>
                                                         <!-- Help text for placeholders -->
                                                         <div class="col-md-12 text-secondary small">
                                                             <span>Available dynamic tags:</span>
@@ -633,6 +649,50 @@
                                                     </button>
                                                 </div>
                                                 <div class="col-md-12 mt-1" id="test-sms-result" style="display:none;"></div>
+
+                                                <!-- SMS Templates and Timings -->
+                                                <div class="col-md-12 mt-3 pt-3 border-top">
+                                                    <h6 class="fw-bold mb-2" style="color: var(--heading-color);">Customize SMS Messages</h6>
+                                                    <div class="row g-3">
+                                                        <!-- 24h SMS Toggle -->
+                                                        <div class="col-md-12">
+                                                            <div class="form-check form-switch mb-1">
+                                                                <input class="form-check-input" type="checkbox" id="sms_24h_enabled" name="sms_24h_enabled" value="true" {% if settings.sms_24h_enabled == 'true' %}checked{% endif %}>
+                                                                <label class="form-check-label fw-semibold" for="sms_24h_enabled">Enable 24-Hour Reminder</label>
+                                                            </div>
+                                                            <textarea class="form-control settings-input" id="sms_24h_template" name="sms_24h_template" rows="2" placeholder="Enter message template for 24h reminder">{{ settings.sms_24h_template or '' }}</textarea>
+                                                        </div>
+                                                        <!-- 2h SMS Toggle -->
+                                                        <div class="col-md-12">
+                                                            <div class="form-check form-switch mb-1">
+                                                                <input class="form-check-input" type="checkbox" id="sms_2h_enabled" name="sms_2h_enabled" value="true" {% if settings.sms_2h_enabled == 'true' %}checked{% endif %}>
+                                                                <label class="form-check-label fw-semibold" for="sms_2h_enabled">Enable 2-Hour Reminder</label>
+                                                            </div>
+                                                            <textarea class="form-control settings-input" id="sms_2h_template" name="sms_2h_template" rows="2" placeholder="Enter message template for 2h reminder">{{ settings.sms_2h_template or '' }}</textarea>
+                                                        </div>
+                                                        <!-- Cancel SMS Toggle -->
+                                                        <div class="col-md-12">
+                                                            <div class="form-check form-switch mb-1">
+                                                                <input class="form-check-input" type="checkbox" id="sms_cancel_enabled" name="sms_cancel_enabled" value="true" {% if settings.sms_cancel_enabled == 'true' %}checked{% endif %}>
+                                                                <label class="form-check-label fw-semibold" for="sms_cancel_enabled">Enable Cancellation SMS</label>
+                                                            </div>
+                                                            <textarea class="form-control settings-input" id="sms_cancel_template" name="sms_cancel_template" rows="2" placeholder="Enter message template for cancellation SMS">{{ settings.sms_cancel_template or '' }}</textarea>
+                                                        </div>
+                                                        <!-- Reschedule SMS Toggle -->
+                                                        <div class="col-md-12">
+                                                            <div class="form-check form-switch mb-1">
+                                                                <input class="form-check-input" type="checkbox" id="sms_reschedule_enabled" name="sms_reschedule_enabled" value="true" {% if settings.sms_reschedule_enabled == 'true' %}checked{% endif %}>
+                                                                <label class="form-check-label fw-semibold" for="sms_reschedule_enabled">Enable Reschedule SMS</label>
+                                                            </div>
+                                                            <textarea class="form-control settings-input" id="sms_reschedule_template" name="sms_reschedule_template" rows="2" placeholder="Enter message template for reschedule SMS">{{ settings.sms_reschedule_template or '' }}</textarea>
+                                                        </div>
+                                                        <!-- Help text for placeholders -->
+                                                        <div class="col-md-12 text-secondary small">
+                                                            <span>Available dynamic tags:</span>
+                                                            <code>{patient_name}</code>, <code>{appointment_time}</code>, <code>{clinic_name}</code>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -688,6 +748,30 @@
                                                                 <input type="text" class="form-control settings-input mb-1" id="email_2h_subject" name="email_2h_subject" value="{{ settings.email_2h_subject or '' }}" placeholder="Enter subject for 2h email">
                                                             </div>
                                                             <textarea class="form-control settings-input" id="email_2h_template" name="email_2h_template" rows="3" placeholder="Enter email template body for 2h reminder">{{ settings.email_2h_template or '' }}</textarea>
+                                                        </div>
+                                                        <!-- Cancel Toggle -->
+                                                        <div class="col-md-12 mt-3">
+                                                            <div class="form-check form-switch mb-1">
+                                                                <input class="form-check-input" type="checkbox" id="email_cancel_enabled" name="email_cancel_enabled" value="true" {% if settings.email_cancel_enabled == 'true' %}checked{% endif %}>
+                                                                <label class="form-check-label fw-semibold" for="email_cancel_enabled">Enable Cancellation Email</label>
+                                                            </div>
+                                                            <div class="mb-2">
+                                                                <label for="email_cancel_subject" class="settings-label small">Email Subject (Cancel)</label>
+                                                                <input type="text" class="form-control settings-input mb-1" id="email_cancel_subject" name="email_cancel_subject" value="{{ settings.email_cancel_subject or '' }}" placeholder="Enter subject for cancellation email">
+                                                            </div>
+                                                            <textarea class="form-control settings-input" id="email_cancel_template" name="email_cancel_template" rows="3" placeholder="Enter email template body for cancellation">{{ settings.email_cancel_template or '' }}</textarea>
+                                                        </div>
+                                                        <!-- Reschedule Toggle -->
+                                                        <div class="col-md-12 mt-3">
+                                                            <div class="form-check form-switch mb-1">
+                                                                <input class="form-check-input" type="checkbox" id="email_reschedule_enabled" name="email_reschedule_enabled" value="true" {% if settings.email_reschedule_enabled == 'true' %}checked{% endif %}>
+                                                                <label class="form-check-label fw-semibold" for="email_reschedule_enabled">Enable Reschedule Email</label>
+                                                            </div>
+                                                            <div class="mb-2">
+                                                                <label for="email_reschedule_subject" class="settings-label small">Email Subject (Reschedule)</label>
+                                                                <input type="text" class="form-control settings-input mb-1" id="email_reschedule_subject" name="email_reschedule_subject" value="{{ settings.email_reschedule_subject or '' }}" placeholder="Enter subject for reschedule email">
+                                                            </div>
+                                                            <textarea class="form-control settings-input" id="email_reschedule_template" name="email_reschedule_template" rows="3" placeholder="Enter email template body for reschedule">{{ settings.email_reschedule_template or '' }}</textarea>
                                                         </div>
                                                         <!-- Help text for placeholders -->
                                                         <div class="col-md-12 text-secondary small">

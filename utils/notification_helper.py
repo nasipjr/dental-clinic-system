@@ -57,13 +57,11 @@ def send_telegram_message(chat_id, body, bot_token=None):
 #  CommPeak — SMS Gateway (TextPeak Streams API)
 # ─────────────────────────────────────────────
 def send_commpeak_sms(to_number, body, api_key=None, stream_id=None):
-    """Send SMS via CommPeak TextPeak Streams API."""
+    """Send SMS via CommPeak TextPeak Streams API (simple_send endpoint)."""
     if api_key is None:
         api_key = get_setting("commpeak_api_key", "")
-    if stream_id is None:
-        stream_id = get_setting("commpeak_stream_id", "")
 
-    if not api_key or not stream_id:
+    if not api_key:
         current_app.logger.info(f"[MOCK SMS] To: {to_number} | Body: {body}")
         return True, "Mock Sent (CommPeak credentials not configured)"
 
@@ -72,25 +70,40 @@ def send_commpeak_sms(to_number, body, api_key=None, stream_id=None):
         import urllib.parse
         import urllib.error
         import json
+        import time
 
         # Clean number to ensure E.164 digits format (remove '+' for compatibility)
         cleaned_number = to_number.replace("+", "").strip()
 
-        url = "https://textpeak.commpeak.com/api/v1/streams/messages"
+        # The simple_send endpoint with trailing slash to prevent HTTP 307 redirect issues
+        url = "https://textpeak-streams.commpeak.com/simple_send/"
+        
         headers = {
-            "Authorization": f"Bearer {api_key}",
+            "Authorization": api_key,  # Direct stream token authorization
             "Content-Type": "application/json; charset=utf-8"
         }
+        
         payload = json.dumps({
-            "stream_id": stream_id,
-            "phone": cleaned_number,
-            "message": body
+            "messages": [
+                {
+                    "internal_id": str(int(time.time())),
+                    "recipient_phone": cleaned_number,
+                    "message_content": body
+                }
+            ]
         }).encode("utf-8")
 
         req = urllib.request.Request(url, data=payload, headers=headers, method="POST")
         with urllib.request.urlopen(req, timeout=10) as resp:
-            result_data = resp.read().decode("utf-8")
-            return True, f"Sent: {result_data}"
+            result_data = json.loads(resp.read().decode("utf-8"))
+            if result_data.get("status") is True:
+                return True, f"Sent: {result_data}"
+            else:
+                err_details = ""
+                messages = result_data.get("messages", [])
+                if messages:
+                    err_details = messages[0].get("details") or messages[0].get("error")
+                return False, f"CommPeak Error: {err_details or result_data}"
 
     except urllib.error.HTTPError as e:
         err_msg = e.read().decode("utf-8")
@@ -140,6 +153,20 @@ def send_smtp_email(to_email, subject, body, smtp_host=None, smtp_port=None, smt
     except Exception as e:
         current_app.logger.error(f"SMTP Email sending failed: {e}")
         return False, str(e)
+
+
+def format_notification_template(template_str, patient_name, formatted_date, clinic_name):
+    """Replace English and Arabic placeholders with actual values."""
+    if not template_str:
+        return ""
+    return template_str.replace("{patient_name}", patient_name)\
+                       .replace("{المريض_name}", patient_name)\
+                       .replace("{اسم_المريض}", patient_name)\
+                       .replace("{appointment_time}", formatted_date)\
+                       .replace("{الموعد_الوقت}", formatted_date)\
+                       .replace("{وقت_الموعد}", formatted_date)\
+                       .replace("{clinic_name}", clinic_name)\
+                       .replace("{اسم_العيادة}", clinic_name)
 
 
 # ─────────────────────────────────────────────
@@ -196,17 +223,25 @@ def trigger_reminder(appt, patient, type_label,
 
     # ── SMS via CommPeak ──────────────────────────────────────────────────
     if sms_enabled and patient.phone:
-        type_key = f"sms_{type_label}"
-        existing = NotificationLog.query.filter_by(
-            appointment_id=appt.id, type=type_key
-        ).first()
-        if not existing:
-            body = (
-                f"تذكير من {clinic_name}: موعدك بتاريخ {formatted_date}. "
-                f"يرجى الحضور في الوقت المحدد."
-            )
-            success, msg = send_commpeak_sms(patient.phone, body)
-            _log_notification(appt, patient, type_key, "sms", patient.phone, success, msg)
+        timing_enabled = True
+        template = ""
+        if type_label == "24h":
+            timing_enabled = get_setting("sms_24h_enabled", "true").lower() == "true"
+            template = get_setting("sms_24h_template", "")
+        elif type_label == "2h":
+            timing_enabled = get_setting("sms_2h_enabled", "true").lower() == "true"
+            template = get_setting("sms_2h_template", "")
+
+        if timing_enabled and template:
+            type_key = f"sms_{type_label}"
+            existing = NotificationLog.query.filter_by(
+                appointment_id=appt.id, type=type_key
+            ).first()
+            if not existing:
+                patient_full_name = f"{patient.first_name} {patient.last_name}".strip()
+                body = format_notification_template(template, patient_full_name, formatted_date, clinic_name)
+                success, msg = send_commpeak_sms(patient.phone, body)
+                _log_notification(appt, patient, type_key, "sms", patient.phone, success, msg)
 
     # ── Telegram Bot ─────────────────────────────────────────────────────
     if telegram_enabled:
@@ -227,11 +262,8 @@ def trigger_reminder(appt, patient, type_label,
                     appointment_id=appt.id, type=type_key
                 ).first()
                 if not existing:
-                    # Format placeholders
                     patient_full_name = f"{patient.first_name} {patient.last_name}".strip()
-                    body = template.replace("{patient_name}", patient_full_name)\
-                                   .replace("{appointment_time}", formatted_date)\
-                                   .replace("{clinic_name}", clinic_name)
+                    body = format_notification_template(template, patient_full_name, formatted_date, clinic_name)
                     success, msg = send_telegram_message(telegram_chat_id, body)
                     _log_notification(
                         appt, patient, type_key, "telegram", str(telegram_chat_id), success, msg
@@ -258,12 +290,8 @@ def trigger_reminder(appt, patient, type_label,
             ).first()
             if not existing:
                 patient_full_name = f"{patient.first_name} {patient.last_name}".strip()
-                subject = template_subject.replace("{patient_name}", patient_full_name)\
-                                          .replace("{appointment_time}", formatted_date)\
-                                          .replace("{clinic_name}", clinic_name)
-                body = template_body.replace("{patient_name}", patient_full_name)\
-                                     .replace("{appointment_time}", formatted_date)\
-                                     .replace("{clinic_name}", clinic_name)
+                subject = format_notification_template(template_subject, patient_full_name, formatted_date, clinic_name)
+                body = format_notification_template(template_body, patient_full_name, formatted_date, clinic_name)
                 success, msg = send_smtp_email(patient.email, subject, body)
                 _log_notification(
                     appt, patient, type_key, "email", patient.email, success, msg

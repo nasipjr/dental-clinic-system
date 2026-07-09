@@ -371,8 +371,10 @@ def inject_settings():
         "working_hours_start": start_str,
         "working_hours_end": end_str,
         "pending_count": pending_count,
-        "booking_window_days": get_setting("booking_window_days", "30")
+        "booking_window_days": get_setting("booking_window_days", "30"),
+        "default_appointment_duration": get_setting("default_appointment_duration", "30")
     }
+
 
 
 app.register_blueprint(auth_bp)

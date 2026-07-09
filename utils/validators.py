@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, time
+import re
 
 from utils.constants import APPOINTMENT_REASONS, PATIENT_GENDERS
 
@@ -64,8 +65,11 @@ def parse_patient_data(form):
         return None, "Preferred first name cannot exceed 100 characters."
 
     phone = (form.get("phone") or "").strip()
-    if phone and len(phone) > 20:
-        return None, "Phone number cannot exceed 20 characters."
+    if phone:
+        if not re.match(r'^\+963\d{9}$', phone):
+            return None, "Phone number must start with +963 followed by exactly 9 digits (e.g., +963958948727)."
+        if len(phone) > 20:
+            return None, "Phone number cannot exceed 20 characters."
 
     email = (form.get("email") or "").strip()
     if email:

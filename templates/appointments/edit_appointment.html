@@ -60,7 +60,8 @@
                                     min="{{ appointment_min_datetime }}" max="{{ appointment_max_datetime }}"
                                     data-working-days="{{ working_days }}"
                                     data-min-time="{{ working_hours_start }}"
-                                    data-max-time="{{ working_hours_end }}" required
+                                    data-max-time="{{ working_hours_end }}"
+                                    data-duration="{{ default_appointment_duration }}" required
                                     {% if is_locked %}disabled{% endif %}>
                             </div>
 

@@ -28,9 +28,13 @@ def settings_page():
 
             # 1b. Update notification provider credentials and templates
             for key in ["telegram_bot_token", "telegram_24h_template", "telegram_2h_template",
+                        "telegram_cancel_template", "telegram_reschedule_template",
                         "commpeak_api_key", "commpeak_stream_id",
+                        "sms_24h_template", "sms_2h_template",
+                        "sms_cancel_template", "sms_reschedule_template",
                         "smtp_host", "smtp_port", "smtp_user", "smtp_password", "smtp_from_email",
-                        "email_24h_subject", "email_24h_template", "email_2h_subject", "email_2h_template"]:
+                        "email_24h_subject", "email_24h_template", "email_2h_subject", "email_2h_template",
+                        "email_cancel_subject", "email_cancel_template", "email_reschedule_subject", "email_reschedule_template"]:
                 val = request.form.get(key, "").strip()
                 set_setting(key, val)
 
@@ -50,6 +54,26 @@ def settings_page():
             email_2h_enabled  = "true" if request.form.get("email_2h_enabled")  else "false"
             set_setting("email_24h_enabled", email_24h_enabled)
             set_setting("email_2h_enabled",  email_2h_enabled)
+
+            sms_24h_enabled = "true" if request.form.get("sms_24h_enabled") else "false"
+            sms_2h_enabled  = "true" if request.form.get("sms_2h_enabled")  else "false"
+            set_setting("sms_24h_enabled", sms_24h_enabled)
+            set_setting("sms_2h_enabled",  sms_2h_enabled)
+
+            sms_cancel_enabled = "true" if request.form.get("sms_cancel_enabled") else "false"
+            sms_reschedule_enabled = "true" if request.form.get("sms_reschedule_enabled") else "false"
+            set_setting("sms_cancel_enabled", sms_cancel_enabled)
+            set_setting("sms_reschedule_enabled", sms_reschedule_enabled)
+
+            telegram_cancel_enabled = "true" if request.form.get("telegram_cancel_enabled") else "false"
+            telegram_reschedule_enabled = "true" if request.form.get("telegram_reschedule_enabled") else "false"
+            set_setting("telegram_cancel_enabled", telegram_cancel_enabled)
+            set_setting("telegram_reschedule_enabled", telegram_reschedule_enabled)
+
+            email_cancel_enabled = "true" if request.form.get("email_cancel_enabled") else "false"
+            email_reschedule_enabled = "true" if request.form.get("email_reschedule_enabled") else "false"
+            set_setting("email_cancel_enabled", email_cancel_enabled)
+            set_setting("email_reschedule_enabled", email_reschedule_enabled)
             
             # Save working days checklist as a comma-separated string
             working_days_list = request.form.getlist("working_days")

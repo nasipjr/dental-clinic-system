@@ -52,17 +52,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const startParts = workingHoursStart ? workingHoursStart.split(':') : ["09", "00"];
     const endParts = workingHoursEnd ? workingHoursEnd.split(':') : ["17", "00"];
-    const startHrs = parseInt(startParts[0], 10) || 9;
-    const startMins = parseInt(startParts[1], 10) || 0;
-    const endHrs = parseInt(endParts[0], 10) || 17;
-    const endMins = parseInt(endParts[1], 10) || 0;
+    const startHrs = isNaN(parseInt(startParts[0], 10)) ? 9 : parseInt(startParts[0], 10);
+    const startMins = isNaN(parseInt(startParts[1], 10)) ? 0 : parseInt(startParts[1], 10);
+    const endHrs = isNaN(parseInt(endParts[0], 10)) ? 17 : parseInt(endParts[0], 10);
+    const endMins = isNaN(parseInt(endParts[1], 10)) ? 0 : parseInt(endParts[1], 10);
+
+    const defaultDuration = parseInt("{{ default_appointment_duration }}", 10) || 30;
+    const slotDurHrs = Math.floor(defaultDuration / 60);
+    const slotDurMins = defaultDuration % 60;
+    const slotDurationStr = `${String(slotDurHrs).padStart(2, '0')}:${String(slotDurMins).padStart(2, '0')}:00`;
 
     const slotMinTime = `${String(startHrs).padStart(2, '0')}:${String(startMins).padStart(2, '0')}:00`;
     let maxHrs = endHrs;
-    let maxMins = endMins + 30;
+    let maxMins = endMins + defaultDuration;
     if (maxMins >= 60) {
-        maxHrs += 1;
-        maxMins -= 60;
+        maxHrs += Math.floor(maxMins / 60);
+        maxMins = maxMins % 60;
     }
     const slotMaxTime = `${String(maxHrs).padStart(2, '0')}:${String(maxMins).padStart(2, '0')}:00`;
 
@@ -91,6 +96,7 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         slotMinTime: slotMinTime,
         slotMaxTime: slotMaxTime,
+        slotDuration: slotDurationStr,
         eventTimeFormat: {
             hour: 'numeric',
             minute: '2-digit',
@@ -313,9 +319,11 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                     });
 
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                     const formData = new URLSearchParams();
                     formData.append('appointment_date', dateParam);
                     formData.append('reason', result.value);
+                    formData.append('csrf_token', csrfToken);
 
                     fetch("{{ url_for('portal.book_appointment') }}", {
                         method: 'POST',

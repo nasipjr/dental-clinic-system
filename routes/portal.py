@@ -266,10 +266,15 @@ def portal_events():
             Appointment.appointment_date <= limit_date
         ).all()
         
+        try:
+            duration = int(get_setting("default_appointment_duration", "30"))
+        except ValueError:
+            duration = 30
+            
         events = []
         for appt in occupied:
             start_iso = appt.appointment_date.isoformat()
-            end_iso = (appt.appointment_date + timedelta(minutes=30)).isoformat()
+            end_iso = (appt.appointment_date + timedelta(minutes=duration)).isoformat()
             
             events.append({
                 "title": "Reserved",
@@ -310,6 +315,10 @@ def cancel_appointment(appointment_id):
         db.session.commit()
         
         current_app.logger.info(f"Appointment {appointment.id} cancelled by patient {patient_id}")
+        
+        # Notify patient through services
+        from services.notification_service import notify_appointment_cancellation
+        notify_appointment_cancellation(appointment)
         
         success_msg = {
             "ar": "تم إلغاء الموعد بنجاح وتم إشعار العيادة.",

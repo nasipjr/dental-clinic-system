@@ -35,7 +35,23 @@ class HTMLTranslator(HTMLParser):
         if not text.strip():
             return text
         
-        # Apply translation patterns
+        # Extract leading and trailing whitespace
+        leading = re.match(r'^\s*', text).group(0)
+        trailing = re.search(r'\s*$', text).group(0)
+        
+        middle = text.strip()
+        # Normalize middle whitespace
+        normalized_middle = re.sub(r'\s+', ' ', middle)
+        
+        # Apply translation patterns on normalized middle
+        translated = normalized_middle
+        for pattern, translation in compiled_patterns:
+            translated = pattern.sub(translation, translated)
+            
+        if translated != normalized_middle:
+            return leading + translated + trailing
+            
+        # Fallback to direct matching on original text if no translation was applied
         for pattern, translation in compiled_patterns:
             text = pattern.sub(translation, text)
             

@@ -32,7 +32,7 @@ CREATE TABLE `appointment` (
   PRIMARY KEY (`id`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `appointment_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=66 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,7 +41,7 @@ CREATE TABLE `appointment` (
 
 LOCK TABLES `appointment` WRITE;
 /*!40000 ALTER TABLE `appointment` DISABLE KEYS */;
-INSERT INTO `appointment` VALUES (1,1,'2026-06-21 10:00:00','Check-up','Cancelled',NULL),(2,2,'2026-06-22 10:00:00','Cleaning','Cancelled',NULL),(3,3,'2026-06-23 10:00:00','Filling','Cancelled',NULL),(4,4,'2026-06-24 10:00:00','Root Canal','Cancelled',NULL),(5,5,'2026-06-25 10:00:00','Extraction','Cancelled',NULL),(6,6,'2026-06-26 10:00:00','Check-up','Cancelled',NULL),(7,7,'2026-06-27 10:00:00','Cleaning','Cancelled',NULL),(8,8,'2026-06-28 10:00:00','Filling','Cancelled',NULL),(9,9,'2026-06-29 10:00:00','Check-up','Cancelled',NULL),(10,10,'2026-06-30 10:00:00','Follow-up','Cancelled',NULL),(11,1,'2026-06-20 16:00:00','Check-up','Done',NULL),(12,9,'2026-06-24 12:00:00','Extraction','Cancelled',NULL),(13,8,'2026-06-24 11:00:00','Whitening','Cancelled',NULL),(15,8,'2026-06-22 17:10:00','Extraction','Done',NULL),(16,2,'2026-06-22 17:25:00','Emergency Pain','Done',NULL),(17,10,'2026-06-27 11:00:00','Root Canal','Cancelled',NULL),(18,1,'2026-07-07 16:00:00','Check-up','Done','2026-07-06 05:43:00'),(19,10,'2026-07-06 12:00:00','Extraction','Done','2026-07-06 06:54:58'),(20,9,'2026-07-06 12:00:00','Crown / Bridge','Done','2026-07-06 07:05:06'),(21,3,'2026-07-06 12:00:00','Whitening','Cancelled',NULL),(22,6,'2026-07-06 13:00:00','Emergency Pain','Done','2026-07-06 07:09:06'),(55,2,'2026-07-08 11:00:00','Extraction','Scheduled',NULL),(56,6,'2026-07-08 15:00:00','Extraction','Scheduled',NULL);
+INSERT INTO `appointment` VALUES (1,1,'2026-06-21 10:00:00','Check-up','Cancelled',NULL),(2,2,'2026-06-22 10:00:00','Cleaning','Cancelled',NULL),(3,3,'2026-06-23 10:00:00','Filling','Cancelled',NULL),(4,4,'2026-06-24 10:00:00','Root Canal','Cancelled',NULL),(5,5,'2026-06-25 10:00:00','Extraction','Cancelled',NULL),(6,6,'2026-06-26 10:00:00','Check-up','Cancelled',NULL),(7,7,'2026-06-27 10:00:00','Cleaning','Cancelled',NULL),(8,8,'2026-06-28 10:00:00','Filling','Cancelled',NULL),(9,9,'2026-06-29 10:00:00','Check-up','Cancelled',NULL),(10,10,'2026-06-30 10:00:00','Follow-up','Cancelled',NULL),(11,1,'2026-06-20 16:00:00','Check-up','Done',NULL),(12,9,'2026-06-24 12:00:00','Extraction','Cancelled',NULL),(13,8,'2026-06-24 11:00:00','Whitening','Cancelled',NULL),(15,8,'2026-06-22 17:10:00','Extraction','Done',NULL),(16,2,'2026-06-22 17:25:00','Emergency Pain','Done',NULL),(17,10,'2026-06-27 11:00:00','Root Canal','Cancelled',NULL),(18,1,'2026-07-07 16:00:00','Check-up','Done','2026-07-06 05:43:00'),(19,10,'2026-07-06 12:00:00','Extraction','Done','2026-07-06 06:54:58'),(20,9,'2026-07-06 12:00:00','Crown / Bridge','Done','2026-07-06 07:05:06'),(21,3,'2026-07-06 12:00:00','Whitening','Cancelled',NULL),(22,6,'2026-07-06 13:00:00','Emergency Pain','Done','2026-07-06 07:09:06'),(55,2,'2026-07-08 11:00:00','Extraction','Cancelled',NULL),(56,6,'2026-07-08 15:00:00','Extraction','Cancelled',NULL),(57,45,'2026-07-08 09:00:00','Check-up','Cancelled',NULL),(60,45,'2026-07-09 03:15:00','Emergency Pain','Cancelled',NULL),(61,46,'2026-07-09 03:30:00','Extraction','Cancelled',NULL),(63,45,'2026-07-09 03:45:00','Extraction','Cancelled',NULL),(64,45,'2026-07-09 19:00:00','Emergency Pain','Scheduled',NULL),(65,46,'2026-07-09 19:15:00','Extraction','Scheduled',NULL);
 /*!40000 ALTER TABLE `appointment` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -158,7 +158,7 @@ CREATE TABLE `notification_log` (
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `notification_log_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointment` (`id`) ON DELETE CASCADE,
   CONSTRAINT `notification_log_ibfk_2` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -167,6 +167,7 @@ CREATE TABLE `notification_log` (
 
 LOCK TABLES `notification_log` WRITE;
 /*!40000 ALTER TABLE `notification_log` DISABLE KEYS */;
+INSERT INTO `notification_log` VALUES (16,61,46,'sms_2h','sms','0995198749','2026-07-09 01:47:32','failed','CommPeak Error: 422: invalid phone structure: (0) Could not interpret numbers after plus-sign.'),(17,61,46,'telegram_2h','telegram','5122108241','2026-07-09 01:47:33','sent',NULL),(18,61,46,'email_2h','email','kh.nasipdragon3@gmail.com','2026-07-09 01:47:36','sent',NULL),(19,63,45,'sms_2h','sms','+963958948727','2026-07-09 01:47:38','sent',NULL),(20,63,45,'telegram_2h','telegram','932284186','2026-07-09 01:47:39','sent',NULL),(21,63,45,'email_2h','email','kh.nasipdragon@gmail.com','2026-07-09 01:47:43','sent',NULL);
 /*!40000 ALTER TABLE `notification_log` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -201,7 +202,7 @@ CREATE TABLE `patient` (
   `telegram_chat_id` varchar(50) DEFAULT NULL,
   `reminders_enabled` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=48 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -210,7 +211,7 @@ CREATE TABLE `patient` (
 
 LOCK TABLES `patient` WRITE;
 /*!40000 ALTER TABLE `patient` DISABLE KEYS */;
-INSERT INTO `patient` VALUES (1,NULL,'أحمد','العلي',NULL,'1990-05-15','Male','+963958948721','ahmed.ali@example.com','المزة','دمشق',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1),(2,NULL,'فاطمة','الحسن',NULL,'1995-08-20','Female','+963988454890','fatima.hassan@example.com','الشهباء','حلب',NULL,NULL,NULL,'','','',NULL,NULL,NULL,NULL,1),(3,NULL,'محمد','المصري',NULL,'1988-12-10','Male','+963958948723','mohammad.masri@example.com','الإنشاءات','حمص',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1),(4,NULL,'سارة','الخالد',NULL,'1992-03-05','Female','+963958948724','sara.khaled@example.com','المشروع الأول','اللاذقية',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1),(5,NULL,'خالد','اليوسف',NULL,'1985-07-25','Male','+963958948725','khaled.youssef@example.com','الشريعة','حماة',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1),(6,NULL,'نور','الخطيب',NULL,'1998-10-18','Female','+963958948726','nour.khatib@example.com','الكورنيش','طرطوس',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1),(7,NULL,'يوسف','سليمان',NULL,'1991-01-30','Male','+963958948727','youssef.sleiman@example.com','أبو رمانة','دمشق',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1),(8,NULL,'منى','عبود',NULL,'1987-09-12','Female','+963958948728','mona.abboud@example.com','طريق قنوات','السويداء',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1),(9,NULL,'سامر','حنا',NULL,'1983-04-22','Male','+963958948729','samer.hanna@example.com','باب توما','دمشق',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1),(10,NULL,'رشا','الراعي',NULL,'1994-11-02','Female','+963958948730','rasha.raei@example.com','الحمراء','حمص',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1);
+INSERT INTO `patient` VALUES (1,NULL,'أحمد','العلي',NULL,'1990-05-15','Male','+963958948721','ahmed.ali@example.com','المزة','دمشق',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1),(2,NULL,'فاطمة','الحسن',NULL,'1995-08-20','Female','+963988454890','fatima.hassan@example.com','الشهباء','حلب',NULL,NULL,NULL,'','','',NULL,NULL,NULL,NULL,1),(3,NULL,'محمد','المصري',NULL,'1988-12-10','Male','+963958948723','mohammad.masri@example.com','الإنشاءات','حمص',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1),(4,NULL,'سارة','الخالد',NULL,'1992-03-05','Female','+963958948724','sara.khaled@example.com','المشروع الأول','اللاذقية',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1),(5,NULL,'خالد','اليوسف',NULL,'1985-07-25','Male','+963958948725','khaled.youssef@example.com','الشريعة','حماة',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1),(6,NULL,'نور','الخطيب',NULL,'1998-10-18','Female','+963958948726','nour.khatib@example.com','الكورنيش','طرطوس',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1),(7,NULL,'يوسف','سليمان',NULL,'1991-01-30','Male','+963958948427','youssef.sleiman@example.com','أبو رمانة','دمشق',NULL,NULL,NULL,'','','',NULL,NULL,NULL,NULL,1),(8,NULL,'منى','عبود',NULL,'1987-09-12','Female','+963958948728','mona.abboud@example.com','طريق قنوات','السويداء',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1),(9,NULL,'سامر','حنا',NULL,'1983-04-22','Male','+963958948729','samer.hanna@example.com','باب توما','دمشق',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1),(10,NULL,'رشا','الراعي',NULL,'1994-11-02','Female','+963958948730','rasha.raei@example.com','الحمراء','حمص',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,1),(45,'mr','نسيب','جبارة','نسيب','2002-06-10','Male','+963958948727','kh.nasipdragon@gmail.com','اللاذقية استراد الزراعة','اللاذقية','اللاذقية','10 618','سوريا','لا يوجد','لا يوجد','لا يوجد','مهندس','محمد علي',NULL,'932284186',1),(46,'dr','نسيب','الجابري','نسيب','2002-06-10','Male','+963995198749','kh.nasipdragon3@gmail.com','اللاذقية استراد الزراعة','اللاذقية','اللاذقية','10 618','Syria','لا','لا','لا','مهندس','نسيب جبارة',NULL,'5122108241',1),(47,'ms','جنا','عديرة','جنا','2004-02-21','Female','0938589133','janaodera0934099489@gmail.com','اللاذقية عين ام ابراهيم','اللاذقية','اللاذقية','10 618','Syria','لا','لا','لا','صيدلانية','نسيب جبارة',NULL,'5428455321',1);
 /*!40000 ALTER TABLE `patient` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -317,7 +318,7 @@ CREATE TABLE `system_setting` (
   `value` text,
   PRIMARY KEY (`id`),
   UNIQUE KEY `ix_system_setting_key` (`key`)
-) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -326,7 +327,7 @@ CREATE TABLE `system_setting` (
 
 LOCK TABLES `system_setting` WRITE;
 /*!40000 ALTER TABLE `system_setting` DISABLE KEYS */;
-INSERT INTO `system_setting` VALUES (1,'clinic_name','Clinic'),(2,'clinic_phone','+963 958 948 727'),(3,'clinic_email','kh.nasipdragon@gmail.com'),(4,'clinic_address','Damascus, Syria'),(5,'currency_symbol','S.P'),(6,'default_appointment_duration','30'),(7,'working_hours_start','09:00'),(8,'working_hours_end','18:00'),(9,'working_days','0,1,2,3,4,6'),(10,'treatment_prices','{\"Check-up\": 25000, \"Cleaning\": 50000, \"Filling\": 75000, \"Root Canal\": 150000, \"Extraction\": 80000, \"Crown / Bridge\": 200000, \"Braces / Orthodontics\": 300000, \"Whitening\": 120000, \"Emergency Pain\": 60000, \"Follow-up\": 20000}'),(11,'notification_enable_sms','true'),(12,'notification_enable_whatsapp','false'),(13,'notification_enable_email','false'),(14,'twilio_account_sid',''),(15,'twilio_auth_token',''),(16,'twilio_phone_number',''),(17,'twilio_whatsapp_number',''),(18,'smtp_host','smtp.gmail.com'),(19,'smtp_port','587'),(20,'smtp_user','admin'),(21,'smtp_password',''),(22,'smtp_from_email',''),(23,'tax_rate','15'),(24,'clinic_vat_number',''),(25,'booking_window_days','35'),(26,'notification_enable_telegram','true'),(27,'telegram_bot_token','8732677418:AAGqRTIJyPDl4-mbTGEuoGLcsgF3yUlGha4'),(28,'easysendsms_username','nasikh.nqcg3d2026'),(29,'easysendsms_password','nj0958948727nj'),(30,'easysendsms_sender','DrClinic'),(31,'commpeak_api_key',''),(32,'commpeak_stream_id',''),(33,'telegram_24h_enabled','true'),(34,'telegram_2h_enabled','true'),(35,'telegram_24h_template','تذكير موعد من {clinic_name}: مرحباً {المريض_name}، نود تذكيركم بموعدكم غداً بتاريخ {الموعد_الوقت}. نتمنى لكم السلامة.'),(36,'telegram_2h_template','تذكير موعد من {clinic_name}: مرحباً {المريض_name}، نود تذكيركم بموعدكم اليوم بعد ساعتين في تمام الساعة {الموعد_الوقت}. بانتظاركم.');
+INSERT INTO `system_setting` VALUES (1,'clinic_name','Clinic'),(2,'clinic_phone','+963 958 948 727'),(3,'clinic_email','kh.nasipdragon@gmail.com'),(4,'clinic_address','Damascus, Syria'),(5,'currency_symbol','S.P'),(6,'default_appointment_duration','15'),(7,'working_hours_start','00:00'),(8,'working_hours_end','23:00'),(9,'working_days','0,1,2,3,4,5,6'),(10,'treatment_prices','{\"Check-up\": 25000, \"Cleaning\": 50000, \"Filling\": 75000, \"Root Canal\": 150000, \"Extraction\": 80000, \"Crown / Bridge\": 200000, \"Braces / Orthodontics\": 300000, \"Whitening\": 120000, \"Emergency Pain\": 60000, \"Follow-up\": 20000}'),(11,'notification_enable_sms','true'),(12,'notification_enable_whatsapp','false'),(13,'notification_enable_email','true'),(14,'twilio_account_sid',''),(15,'twilio_auth_token',''),(16,'twilio_phone_number',''),(17,'twilio_whatsapp_number',''),(18,'smtp_host','smtp.gmail.com'),(19,'smtp_port','587'),(20,'smtp_user','kh.nasipdragon@gmail.com'),(21,'smtp_password','gela rjdv ynqx ijto'),(22,'smtp_from_email','kh.nasipdragon@gmail.com'),(23,'tax_rate','15'),(24,'clinic_vat_number',''),(25,'booking_window_days','35'),(26,'notification_enable_telegram','true'),(27,'telegram_bot_token','8732677418:AAGqRTIJyPDl4-mbTGEuoGLcsgF3yUlGha4'),(28,'easysendsms_username','nasikh.nqcg3d2026'),(29,'easysendsms_password','nj0958948727nj'),(30,'easysendsms_sender','DrClinic'),(31,'commpeak_api_key','65959128dc1fd202542a36cc65600c98032826248369a6cb733fc628eee278a336b54f5929ad7bb56aae82f0d600afe0e975fe8ea8'),(32,'commpeak_stream_id',''),(33,'telegram_24h_enabled','true'),(34,'telegram_2h_enabled','true'),(35,'telegram_24h_template','تذكير موعد من {clinic_name}: مرحباً {المريض_name}، نود تذكيركم بموعدكم غداً بتاريخ {الموعد_الوقت}. نتمنى لكم السلامة.'),(36,'telegram_2h_template','تذكير موعد من {clinic_name}: مرحباً {المريض_name}، نود تذكيركم بموعدكم اليوم بعد ساعتين في تمام الساعة {الموعد_الوقت}. بانتظاركم.'),(37,'email_24h_enabled','true'),(38,'email_2h_enabled','true'),(39,'email_24h_subject','تذكير بموعدك لدى {clinic_name}'),(40,'email_24h_template','عزيزي {المريض_name}،\r\n\r\nهذا تذكير بموعدك لدى {clinic_name} غداً بتاريخ {الموعد_الوقت}.\r\n\r\nنتمنى لكم السلامة.\r\n\r\nمع تحيات،\r\n{clinic_name}'),(41,'email_2h_subject','تذكير بموعدك لدى {clinic_name}'),(42,'email_2h_template','عزيزي {المريض_name}،\r\n\r\nهذا تذكير بموعدك لدى {clinic_name} اليوم بعد ساعتين في تمام الساعة {الموعد_الوقت}.\r\n\r\nبانتظاركم.\r\n\r\nمع تحيات،\r\n{clinic_name}'),(43,'sms_cancel_enabled','true'),(44,'sms_reschedule_enabled','true'),(45,'telegram_cancel_enabled','true'),(46,'telegram_reschedule_enabled','true'),(47,'email_cancel_enabled','true'),(48,'email_reschedule_enabled','true'),(49,'sms_cancel_template','تنبيه من {clinic_name}: تم إلغاء موعدك المحدد بتاريخ {appointment_time}.'),(50,'sms_reschedule_template','تنبيه من {clinic_name}: تم تعديل موعدك ليصبح بتاريخ {appointment_time}. يرجى الحضور في الوقت المحدد.'),(51,'telegram_cancel_template','تنبيه من {clinic_name}: تم إلغاء موعدك المحدد بتاريخ {appointment_time}. نتمنى لكم السلامة.'),(52,'telegram_reschedule_template','تنبيه من {clinic_name}: تم تعديل موعدك ليصبح بتاريخ {appointment_time}. يرجى الحضور في الوقت المحدد.'),(53,'email_cancel_subject','إلغاء الموعد - {clinic_name}'),(54,'email_cancel_template','عزيزي {patient_name}،\n\nنود إعلامكم بأنه تم إلغاء موعدكم المحدد بتاريخ {appointment_time}.\n\nنتمنى لكم السلامة.\n\nمع تحيات،\n{clinic_name}'),(55,'email_reschedule_subject','تعديل موعدك لدى {clinic_name}'),(56,'email_reschedule_template','عزيزي {patient_name}،\n\nنود إعلامكم بأنه تم تعديل موعدكم ليصبح بتاريخ {appointment_time}.\n\nيرجى الحضور في الوقت المحدد.\n\nمع تحيات،\n{clinic_name}');
 /*!40000 ALTER TABLE `system_setting` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -410,7 +411,7 @@ CREATE TABLE `user` (
   UNIQUE KEY `ix_user_username` (`username`),
   KEY `patient_id` (`patient_id`),
   CONSTRAINT `user_ibfk_1` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -419,7 +420,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1,'admin','scrypt:32768:8:1$atJj4C9ImjWZMGAA$660215c4e032bf012c87e69184d2e4d22e4e97a8237b3e4748e7b1d35545a3d4e89ce3961ad883c8b286e91288fcc98e909aa7ab829ca91dc6362adda6c97312','admin','Admin','User',NULL,NULL),(2,'hiba','scrypt:32768:8:1$h5VJrby7WCgxUyO6$c6685f4b248a4c4675ee3d61b7e9ccafbc9c50a43e330096bac3c4dff9024188c63c69382e650bd92a72e5e178795e80e95e60c8cba59027cce107788975db93','receptionist','Hiba','Ali',NULL,NULL),(32,'rasha','scrypt:32768:8:1$EAdcZ2hcVIrGqcxK$5f1e430d4e9e3ba459ebfe833746e1cdf5238db658dec3f8eb5ef3ed320e4b72172df1daeb68f4138b80bb58ed7324ce843ee79ef49242c6ecd0de0605f0da19','patient','رشا','الراعي',10,'rara12');
+INSERT INTO `user` VALUES (1,'admin','scrypt:32768:8:1$atJj4C9ImjWZMGAA$660215c4e032bf012c87e69184d2e4d22e4e97a8237b3e4748e7b1d35545a3d4e89ce3961ad883c8b286e91288fcc98e909aa7ab829ca91dc6362adda6c97312','admin','Admin','User',NULL,NULL),(2,'hiba','scrypt:32768:8:1$h5VJrby7WCgxUyO6$c6685f4b248a4c4675ee3d61b7e9ccafbc9c50a43e330096bac3c4dff9024188c63c69382e650bd92a72e5e178795e80e95e60c8cba59027cce107788975db93','receptionist','Hiba','Ali',NULL,NULL),(32,'rasha','scrypt:32768:8:1$EAdcZ2hcVIrGqcxK$5f1e430d4e9e3ba459ebfe833746e1cdf5238db658dec3f8eb5ef3ed320e4b72172df1daeb68f4138b80bb58ed7324ce843ee79ef49242c6ecd0de0605f0da19','patient','رشا','الراعي',10,'rara12'),(41,'nasipp','scrypt:32768:8:1$SBzyv3dPeVzpkuXT$31deea4212dd09effdc3e6f387d68241dc12959463acaf292e4491a19734bab6dcd3f3592c320ee1f7ae371e9fc470a5977afc925697e5c2809b88a7fb9190bd','patient','نسيب','جبارة',45,'nasipp123'),(42,'jana','scrypt:32768:8:1$oqNJimi02CXRSj9k$91ae8baa33c86ee57d0715ca4cd01d28f8012955fa216806b285b859e5c0758027e62b4a2412ebfd7261982f204fef7087b7f13a5ddb7f2f1f1e18470467eedf','patient','جنا','عديرة',47,'jana123');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -432,4 +433,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-08  5:35:00
+-- Dump completed on 2026-07-09 18:50:41

@@ -593,20 +593,25 @@
 
         const startParts = workingHoursStart ? workingHoursStart.split(':') : ["09", "00"];
         const endParts = workingHoursEnd ? workingHoursEnd.split(':') : ["17", "00"];
-        const startHrs = parseInt(startParts[0], 10) || 9;
-        const startMins = parseInt(startParts[1], 10) || 0;
-        const endHrs = parseInt(endParts[0], 10) || 17;
-        const endMins = parseInt(endParts[1], 10) || 0;
+        const startHrs = isNaN(parseInt(startParts[0], 10)) ? 9 : parseInt(startParts[0], 10);
+        const startMins = isNaN(parseInt(startParts[1], 10)) ? 0 : parseInt(startParts[1], 10);
+        const endHrs = isNaN(parseInt(endParts[0], 10)) ? 17 : parseInt(endParts[0], 10);
+        const endMins = isNaN(parseInt(endParts[1], 10)) ? 0 : parseInt(endParts[1], 10);
+
+        const defaultDuration = parseInt("{{ default_appointment_duration }}", 10) || 30;
+        const slotDurHrs = Math.floor(defaultDuration / 60);
+        const slotDurMins = defaultDuration % 60;
+        const slotDurationStr = `${String(slotDurHrs).padStart(2, '0')}:${String(slotDurMins).padStart(2, '0')}:00`;
 
         // slotMinTime is simply start time
         const slotMinTime = `${String(startHrs).padStart(2, '0')}:${String(startMins).padStart(2, '0')}:00`;
 
-        // slotMaxTime: add 30 minutes to make the last slot visible (e.g. 17:30:00 if end is 17:00)
+        // slotMaxTime: add defaultDuration to make the last slot visible (e.g. 17:15:00 if end is 17:00 and duration is 15)
         let maxHrs = endHrs;
-        let maxMins = endMins + 30;
+        let maxMins = endMins + defaultDuration;
         if (maxMins >= 60) {
-            maxHrs += 1;
-            maxMins -= 60;
+            maxHrs += Math.floor(maxMins / 60);
+            maxMins = maxMins % 60;
         }
         const slotMaxTime = `${String(maxHrs).padStart(2, '0')}:${String(maxMins).padStart(2, '0')}:00`;
 
@@ -641,6 +646,7 @@
             slotEventOverlap: false, // Prevents events from visually stacking/overlapping
             slotMinTime: slotMinTime, // Dynamic start visible slots
             slotMaxTime: slotMaxTime, // Dynamic end visible slots
+            slotDuration: slotDurationStr,
             eventTimeFormat: {
                 hour: 'numeric',
                 minute: '2-digit',
@@ -845,10 +851,11 @@
                     if (clickedDateStart.getTime() === todayStart.getTime()) {
                         const nextSlot = new Date(now);
                         const mins = nextSlot.getMinutes();
-                        if (mins < 30) {
-                            nextSlot.setMinutes(30, 0, 0);
+                        const remainder = mins % defaultDuration;
+                        if (remainder === 0) {
+                            nextSlot.setSeconds(0, 0);
                         } else {
-                            nextSlot.setHours(nextSlot.getHours() + 1, 0, 0, 0);
+                            nextSlot.setMinutes(mins + (defaultDuration - remainder), 0, 0);
                         }
                         
                         if (nextSlot.getHours() * 60 + nextSlot.getMinutes() >= endHrs * 60 + endMins) {
