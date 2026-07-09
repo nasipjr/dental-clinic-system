@@ -1091,6 +1091,48 @@
 
     renderStatusChart();
     updateClinicStatus();
+
+    // Today's appointments auto-refresh polling
+    let currentStatusesString = "";
+
+    function checkStatuses() {
+      // Don't poll if the tab is hidden to save resources
+      if (document.hidden) return;
+
+      fetch("/appointments/today-statuses")
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Build a string representing all statuses sorted by appointment ID
+            const keys = Object.keys(data.statuses).sort();
+            const statusesStr = keys.map(k => `${k}:${data.statuses[k]}`).join(',');
+            
+            console.log("[Auto-Refresh] Checked statuses:", statusesStr);
+            
+            if (currentStatusesString === "") {
+              // Initial load, record current state
+              currentStatusesString = statusesStr;
+            } else if (currentStatusesString !== statusesStr) {
+              console.log("[Auto-Refresh] Status change detected! Reloading page...");
+              // Status changed! Refresh the page to show latest updates
+              window.location.reload();
+            }
+          }
+        })
+        .catch(err => console.error("[Auto-Refresh] Error polling statuses:", err));
+    }
+
+    // Run check immediately and then every 10 seconds
+    checkStatuses();
+    setInterval(checkStatuses, 10000);
+
+    // Also check immediately when the user returns to the tab
+    document.addEventListener("visibilitychange", function() {
+      if (!document.hidden) {
+        console.log("[Auto-Refresh] Tab active, checking statuses immediately...");
+        checkStatuses();
+      }
+    });
   });
 </script>
 {% endblock %}

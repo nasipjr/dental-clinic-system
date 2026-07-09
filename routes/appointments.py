@@ -728,3 +728,28 @@ def update_appointment_status(appointment_id):
         return jsonify({"success": False, "message": "Failed to update status."}), 500
 
 
+@appointments_bp.route("/appointments/today-statuses", methods=["GET"])
+@role_required("admin", "doctor", "receptionist")
+def get_today_statuses():
+    current_app.logger.info("Auto-refresh status check requested")
+    try:
+        from datetime import datetime, time
+        today = datetime.now().date()
+        today_start = datetime.combine(today, time.min)
+        today_end = datetime.combine(today, time.max)
+        
+        appointments = (
+            Appointment.query
+            .filter(Appointment.appointment_date >= today_start)
+            .filter(Appointment.appointment_date <= today_end)
+            .all()
+        )
+        
+        statuses = {str(a.id): a.status for a in appointments}
+        return jsonify({"success": True, "statuses": statuses})
+    except Exception:
+        current_app.logger.exception("Failed to get today statuses")
+        return jsonify({"success": False, "statuses": {}}), 500
+
+
+
