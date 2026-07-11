@@ -3318,3 +3318,172 @@ td.fc-day-past {
     border-color: color-mix(in srgb, var(--default-color), transparent 85%) !important;
 }
 
+/* ==========================================
+   PREMIUM CUSTOM SELECT & ALERT STYLING
+   ========================================== */
+
+/* Custom select.form-select overrides */
+select.form-select,
+.form-select {
+  border-radius: 12px !important;
+  border: 1.5px solid color-mix(in srgb, var(--default-color), transparent 82%) !important;
+  background-color: var(--surface-color) !important;
+  color: var(--default-color) !important;
+  padding: 0.65rem 2.25rem 0.65rem 1rem !important;
+  font-weight: 500 !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23175cdd' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  background-size: 16px 12px !important;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease, transform 0.15s ease !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
+  appearance: none !important;
+}
+
+select.form-select:hover,
+.form-select:hover {
+  border-color: var(--accent-color) !important;
+  background-color: color-mix(in srgb, var(--accent-color), transparent 97%) !important;
+}
+
+select.form-select:focus,
+.form-select:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-color), transparent 85%) !important;
+  background-color: var(--surface-color) !important;
+  outline: none !important;
+}
+
+/* RTL Support for form-select */
+[dir="rtl"] select.form-select,
+[dir="rtl"] .form-select {
+  padding: 0.65rem 1rem 0.65rem 2.25rem !important;
+  background-position: left 0.75rem center !important;
+}
+
+/* Dark Mode Overrides for Custom Select */
+[data-bs-theme="dark"] select.form-select,
+[data-bs-theme="dark"] .form-select {
+  background-color: color-mix(in srgb, var(--surface-color), #000 15%) !important;
+  border-color: color-mix(in srgb, var(--default-color), transparent 75%) !important;
+  color: #f1f5f9 !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2338bdf8' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+}
+
+[data-bs-theme="dark"] select.form-select:hover,
+[data-bs-theme="dark"] .form-select:hover {
+  border-color: var(--accent-color) !important;
+  background-color: color-mix(in srgb, var(--accent-color), transparent 93%) !important;
+}
+
+[data-bs-theme="dark"] select.form-select:focus,
+[data-bs-theme="dark"] .form-select:focus {
+  background-color: color-mix(in srgb, var(--surface-color), #000 20%) !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-color), transparent 75%) !important;
+}
+
+
+/* Premium Alert Banner Styling */
+.alert {
+  border-radius: 16px !important;
+  border: 1.5px solid transparent !important;
+  padding: 1rem 1.5rem !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  backdrop-filter: blur(8px) !important;
+  animation: slideInDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.alert::before {
+  font-family: "bootstrap-icons" !important;
+  font-size: 1.35rem !important;
+  flex-shrink: 0 !important;
+}
+
+/* Success alert styling */
+.alert-success {
+  background-color: rgba(25, 135, 84, 0.08) !important;
+  border-color: rgba(25, 135, 84, 0.25) !important;
+  color: #198754 !important;
+}
+.alert-success::before {
+  content: "\f272" !important; /* check-circle-fill */
+}
+
+/* Danger alert styling */
+.alert-danger {
+  background-color: rgba(220, 53, 69, 0.08) !important;
+  border-color: rgba(220, 53, 69, 0.25) !important;
+  color: #dc3545 !important;
+}
+.alert-danger::before {
+  content: "\f33a" !important; /* exclamation-octagon-fill */
+}
+
+/* Warning alert styling */
+.alert-warning {
+  background-color: rgba(255, 193, 7, 0.08) !important;
+  border-color: rgba(255, 193, 7, 0.25) !important;
+  color: #ffc107 !important;
+}
+.alert-warning::before {
+  content: "\f33b" !important; /* exclamation-triangle-fill */
+}
+
+/* Info alert styling */
+.alert-info {
+  background-color: rgba(13, 202, 240, 0.08) !important;
+  border-color: rgba(13, 202, 240, 0.25) !important;
+  color: #0dcaf0 !important;
+}
+.alert-info::before {
+  content: "\f437" !important; /* info-circle-fill */
+}
+
+.alert .btn-close {
+  margin-left: auto !important;
+  padding: 1.25rem !important;
+  background-size: 0.8rem !important;
+}
+
+[dir="rtl"] .alert .btn-close {
+  margin-right: auto !important;
+  margin-left: 0 !important;
+}
+
+/* Dark mode overrides for alerts */
+[data-bs-theme="dark"] .alert-success {
+  background-color: rgba(40, 167, 69, 0.15) !important;
+  border-color: rgba(40, 167, 69, 0.35) !important;
+  color: #34d399 !important;
+}
+[data-bs-theme="dark"] .alert-danger {
+  background-color: rgba(220, 53, 69, 0.15) !important;
+  border-color: rgba(220, 53, 69, 0.35) !important;
+  color: #f87171 !important;
+}
+[data-bs-theme="dark"] .alert-warning {
+  background-color: rgba(255, 193, 7, 0.15) !important;
+  border-color: rgba(255, 193, 7, 0.35) !important;
+  color: #fbbf24 !important;
+}
+[data-bs-theme="dark"] .alert-info {
+  background-color: rgba(13, 202, 240, 0.15) !important;
+  border-color: rgba(13, 202, 240, 0.35) !important;
+  color: #60a5fa !important;
+}
+
+

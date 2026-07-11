@@ -25,6 +25,7 @@ DEFAULT_SETTINGS = {
     "working_hours_end": "17:00",
     "working_days": "0,1,2,3,4,6",
     "treatment_prices": json.dumps(DEFAULT_TREATMENT_PRICES),
+    "anesthesia_needle_price": "50000",
     # ── Notification channels ──────────────────────────────────
     "notification_enable_sms": "false",       # CommPeak
     "notification_enable_telegram": "false",  # Telegram Bot

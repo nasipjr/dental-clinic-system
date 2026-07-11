@@ -5,6 +5,7 @@ from services.invoice_service import sync_invoice_for_appointment
 from services.payment_service import allocate_patient_payments_to_invoices
 from utils.constants import TREATMENT_PRICES, TREATMENT_PROCEDURE_TYPES
 from utils.auth_helper import role_required
+from utils.settings_helper import get_setting
 
 
 treatments_bp = Blueprint("treatments", __name__)
@@ -57,6 +58,7 @@ def appointment_session(appointment_id):
             credit_amount=credit_amount,
             previous_treatments=previous_treatments,
             treatment_prices=dict(TREATMENT_PRICES),
+            anesthesia_needle_price=float(get_setting("anesthesia_needle_price", 50000)),
         )
 
     except Exception:
@@ -116,7 +118,17 @@ def add_treatment_to_appointment(appointment_id):
             # Calculate cost multiplied by the number of teeth selected
             teeth_list = [t.strip() for t in tooth_number.split(',') if t.strip()]
             num_teeth = len(teeth_list) if teeth_list else 1
-            total_cost = TREATMENT_PRICES[procedure_type] * num_teeth
+            
+            use_anesthesia = request.form.get("use_anesthesia") == "on"
+            anesthesia_needles = int(request.form.get("anesthesia_needles", 0)) if use_anesthesia else 0
+            
+            if use_anesthesia:
+                needle_p = float(get_setting("anesthesia_needle_price", 50000))
+                anesthesia_cost = anesthesia_needles * needle_p
+            else:
+                anesthesia_cost = 0.0
+                
+            total_cost = (TREATMENT_PRICES[procedure_type] * num_teeth) + anesthesia_cost
 
             new_treatment = Treatment(
                 appointment_id=appointment.id,
@@ -125,6 +137,9 @@ def add_treatment_to_appointment(appointment_id):
                 tooth_number=tooth_number,
                 notes=notes,
                 total_cost=total_cost,
+                use_anesthesia=use_anesthesia,
+                anesthesia_needles=anesthesia_needles,
+                anesthesia_cost=anesthesia_cost,
             )
 
             db.session.add(new_treatment)
@@ -143,11 +158,25 @@ def add_treatment_to_appointment(appointment_id):
                 url_for("treatments.appointment_session", appointment_id=appointment.id)
             )
 
+        treatments = Treatment.query.filter_by(appointment_id=appointment.id).all()
+        previous_treatments = (
+            Treatment.query.join(Appointment)
+            .filter(
+                Appointment.patient_id == appointment.patient_id,
+                Appointment.id != appointment.id,
+            )
+            .order_by(Treatment.treatment_date.desc(), Treatment.id.desc())
+            .all()
+        )
+
         return render_template(
             "treatments/add_treatment.html",
             appointment=appointment,
             patient=appointment.patient,
+            treatments=treatments,
+            previous_treatments=previous_treatments,
             treatment_prices=dict(TREATMENT_PRICES),
+            anesthesia_needle_price=float(get_setting("anesthesia_needle_price", 50000)),
         )
 
     except Exception:
@@ -317,7 +346,20 @@ def edit_treatment(treatment_id):
             # Calculate cost multiplied by the number of teeth selected
             teeth_list = [t.strip() for t in tooth_number.split(',') if t.strip()]
             num_teeth = len(teeth_list) if teeth_list else 1
-            treatment.total_cost = TREATMENT_PRICES[procedure_type] * num_teeth
+            
+            use_anesthesia = request.form.get("use_anesthesia") == "on"
+            anesthesia_needles = int(request.form.get("anesthesia_needles", 0)) if use_anesthesia else 0
+            
+            if use_anesthesia:
+                needle_p = float(get_setting("anesthesia_needle_price", 50000))
+                anesthesia_cost = anesthesia_needles * needle_p
+            else:
+                anesthesia_cost = 0.0
+                
+            treatment.use_anesthesia = use_anesthesia
+            treatment.anesthesia_needles = anesthesia_needles
+            treatment.anesthesia_cost = anesthesia_cost
+            treatment.total_cost = (TREATMENT_PRICES[procedure_type] * num_teeth) + anesthesia_cost
 
             db.session.flush()
 
@@ -337,13 +379,27 @@ def edit_treatment(treatment_id):
                 )
             )
 
+        treatments = Treatment.query.filter_by(appointment_id=treatment.appointment_id).all()
+        previous_treatments = (
+            Treatment.query.join(Appointment)
+            .filter(
+                Appointment.patient_id == treatment.appointment.patient_id,
+                Appointment.id != treatment.appointment_id,
+            )
+            .order_by(Treatment.treatment_date.desc(), Treatment.id.desc())
+            .all()
+        )
+
         return render_template(
             "treatments/edit_treatment.html",
             treatment=treatment,
             appointment=treatment.appointment,
             patient=treatment.appointment.patient,
             mode="edit",
+            treatments=treatments,
+            previous_treatments=previous_treatments,
             treatment_prices=dict(TREATMENT_PRICES),
+            anesthesia_needle_price=float(get_setting("anesthesia_needle_price", 50000)),
         )
 
     except Exception:
@@ -365,13 +421,27 @@ def view_treatment(treatment_id):
     try:
         treatment = Treatment.query.get_or_404(treatment_id)
 
+        treatments = Treatment.query.filter_by(appointment_id=treatment.appointment_id).all()
+        previous_treatments = (
+            Treatment.query.join(Appointment)
+            .filter(
+                Appointment.patient_id == treatment.appointment.patient_id,
+                Appointment.id != treatment.appointment_id,
+            )
+            .order_by(Treatment.treatment_date.desc(), Treatment.id.desc())
+            .all()
+        )
+
         return render_template(
             "treatments/edit_treatment.html",
             treatment=treatment,
             appointment=treatment.appointment,
             patient=treatment.appointment.patient,
             mode="view",
+            treatments=treatments,
+            previous_treatments=previous_treatments,
             treatment_prices=dict(TREATMENT_PRICES),
+            anesthesia_needle_price=float(get_setting("anesthesia_needle_price", 50000)),
         )
 
     except Exception:

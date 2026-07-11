@@ -228,6 +228,15 @@
                                     <div class="settings-hint"><i class="bi bi-info-circle me-1"></i>This symbol will be
                                         applied dynamically to all invoices, payments, and report pages.</div>
                                 </div>
+                                <div class="col-md-12 mt-3">
+                                    <label for="anesthesia_needle_price" class="settings-label">Anesthesia / Needle Price (Per Application)</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control settings-input" id="anesthesia_needle_price"
+                                            name="anesthesia_needle_price" value="{{ settings.anesthesia_needle_price }}" min="0" required>
+                                        <span class="input-group-text">{{ currency_symbol }}</span>
+                                    </div>
+                                    <div class="settings-hint"><i class="bi bi-info-circle me-1"></i>This cost will be multiplied by the number of times anesthesia is administered (expressed as needles used).</div>
+                                </div>
                             </div>
                         </div>
 

@@ -181,23 +181,15 @@
                     Add Treatment
                 </a>
 
-                <form method="POST" action="{{ url_for('treatments.end_appointment_session', appointment_id=appointment.id) }}"
-                    class="session-action-form">
-                    <button type="submit" class="btn-end-session session-action-btn"
-                        onclick="return confirm('Are you sure you want to end this session? The appointment will become Done and treatments will become read-only.')">
-                        End Session
-                    </button>
-                </form>
+                <button type="button" class="btn-end-session session-action-btn" data-bs-toggle="modal" data-bs-target="#endSessionModal">
+                    End Session
+                </button>
                 {% endif %}
 
                 {% if appointment.status == 'Done' and (not appointment.invoice or appointment.invoice.total_paid == 0) %}
-                <form method="POST" action="{{ url_for('treatments.reopen_appointment_session', appointment_id=appointment.id) }}"
-                    class="session-action-form">
-                    <button type="submit" class="btn-session-primary session-action-btn"
-                        onclick="return confirm('Are you sure you want to reopen this session? This will set it back to Scheduled and allow editing treatments.')">
-                        Reopen Session
-                    </button>
-                </form>
+                <button type="button" class="btn-session-primary session-action-btn" data-bs-toggle="modal" data-bs-target="#reopenSessionModal">
+                    Reopen Session
+                </button>
                 {% endif %}
 
 
@@ -747,6 +739,22 @@
                                 <label for="modal-notes" class="form-label text-secondary small fw-bold" id="lbl-form-notes"></label>
                                 <textarea id="modal-notes" name="notes" class="form-control" rows="4"></textarea>
                             </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6 d-flex align-items-center">
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" id="modal-use-anesthesia" name="use_anesthesia">
+                                        <label class="form-check-label text-secondary small fw-bold ms-1" for="modal-use-anesthesia">
+                                            {{ 'استخدام تخدير' if current_lang == 'ar' else 'Use Anesthesia' }}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" id="modal-needles-wrapper" style="display: none;">
+                                    <label for="modal-needles" class="form-label text-secondary small fw-bold">
+                                        {{ 'عدد مرات التخدير / الإبر' if current_lang == 'ar' else 'Needles (Times Anesthetized)' }}
+                                    </label>
+                                    <input type="number" id="modal-needles" name="anesthesia_needles" class="form-control settings-input" min="1" value="1">
+                                </div>
+                            </div>
                             <div class="mb-3">
                                 <label class="form-label text-secondary small fw-bold" id="lbl-form-price"></label>
                                 <div id="modal-procedure-price-display" class="form-control readonly-status-field">
@@ -770,6 +778,72 @@
     </div>
 </div>
 
+<!-- End Session Confirmation Modal -->
+<div class="modal fade" id="endSessionModal" tabindex="-1" aria-labelledby="endSessionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg" style="background: var(--surface-color);">
+            <div class="modal-header border-0 pb-0 justify-content-end">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center px-4 pb-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle mb-3" style="width: 70px; height: 70px;">
+                    <i class="bi bi-exclamation-triangle fs-1"></i>
+                </div>
+                <h4 class="fw-bold mb-2">
+                    {{ 'إنهاء جلسة الموعد' if current_lang == 'ar' else 'End Appointment Session' }}
+                </h4>
+                <p class="text-secondary mb-4">
+                    {{ 'هل أنت متأكد من إنهاء هذه الجلسة؟ ستصبح حالة الموعد "مكتمل" وتصبح المعالجات للقراءة فقط ولا يمكن تعديلها.' if current_lang == 'ar' else 'Are you sure you want to end this session? The appointment status will change to "Done" and treatments will become read-only.' }}
+                </p>
+                <form method="POST" action="{{ url_for('treatments.end_appointment_session', appointment_id=appointment.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token') }}">
+                    <div class="d-flex justify-content-center gap-3">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                            {{ 'إلغاء' if current_lang == 'ar' else 'Cancel' }}
+                        </button>
+                        <button type="submit" class="btn btn-danger rounded-pill px-4 fw-semibold">
+                            {{ 'إنهاء الجلسة' if current_lang == 'ar' else 'End Session' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reopen Session Confirmation Modal -->
+<div class="modal fade" id="reopenSessionModal" tabindex="-1" aria-labelledby="reopenSessionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg" style="background: var(--surface-color);">
+            <div class="modal-header border-0 pb-0 justify-content-end">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center px-4 pb-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle mb-3" style="width: 70px; height: 70px;">
+                    <i class="bi bi-arrow-counterclockwise fs-1"></i>
+                </div>
+                <h4 class="fw-bold mb-2">
+                    {{ 'إعادة فتح الجلسة' if current_lang == 'ar' else 'Reopen Appointment Session' }}
+                </h4>
+                <p class="text-secondary mb-4">
+                    {{ 'هل أنت متأكد من إعادة فتح هذه الجلسة؟ سيتم تغيير الحالة إلى "مجدول" مما يتيح لك إضافة أو تعديل المعالجات.' if current_lang == 'ar' else 'Are you sure you want to reopen this session? This will set the status back to "Scheduled" and allow editing treatments.' }}
+                </p>
+                <form method="POST" action="{{ url_for('treatments.reopen_appointment_session', appointment_id=appointment.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token') }}">
+                    <div class="d-flex justify-content-center gap-3">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                            {{ 'إلغاء' if current_lang == 'ar' else 'Cancel' }}
+                        </button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-semibold text-white">
+                            {{ 'إعادة فتح' if current_lang == 'ar' else 'Reopen Session' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const prices = JSON.parse('{{ treatment_prices | tojson | safe }}');
@@ -785,6 +859,8 @@ document.addEventListener('DOMContentLoaded', function () {
             tooth: "{{ t.tooth_number or '' }}",
             notes: "{{ (t.notes or '') | replace('\n', ' ') | replace('\r', '') | escape }}",
             cost: "{{ t.total_cost }}",
+            use_anesthesia: {{ 'true' if t.use_anesthesia else 'false' }},
+            anesthesia_needles: {{ t.anesthesia_needles or 0 }},
             view_url: "{{ url_for('treatments.view_treatment', treatment_id=t.id) }}",
             edit_url: "{{ url_for('treatments.edit_treatment', treatment_id=t.id) }}",
             delete_url: "{{ url_for('treatments.delete_treatment', treatment_id=t.id) }}"
@@ -802,6 +878,8 @@ document.addEventListener('DOMContentLoaded', function () {
             procedure: "{{ t.procedure_type | escape }}",
             tooth: "{{ t.tooth_number or '' }}",
             notes: "{{ (t.notes or '') | replace('\n', ' ') | replace('\r', '') | escape }}",
+            use_anesthesia: {{ 'true' if t.use_anesthesia else 'false' }},
+            anesthesia_needles: {{ t.anesthesia_needles or 0 }},
             cost: "{{ t.total_cost }}"
         }{% if not loop.last %},{% endif %}
         {% endfor %}
@@ -955,10 +1033,21 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 activeItems.forEach(t => {
                     const formattedCost = parseFloat(t.cost).toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                    let anesthesiaText = '';
+                    if (t.use_anesthesia) {
+                        const needlesLabel = isAr ? 'حقنة' : 'injection';
+                        const needlesLabelPl = isAr ? 'حقن' : 'injections';
+                        const suffix = t.anesthesia_needles === 1 ? needlesLabel : (t.anesthesia_needles > 2 && t.anesthesia_needles < 11 ? needlesLabelPl : needlesLabel);
+                        const label = isAr ? `+ تخدير (${t.anesthesia_needles} ${suffix})` : `+ Anesthesia (${t.anesthesia_needles} ${t.anesthesia_needles > 1 ? needlesLabelPl : needlesLabel})`;
+                        anesthesiaText = `<div class="text-secondary small mt-0.5" style="font-size: 0.8rem; font-weight: 500;"><i class="bi bi-shield-fill-plus me-1 text-info"></i>${label}</div>`;
+                    }
                     let html = `
                         <div class="list-group-item border rounded-3 mb-2 p-3 bg-light-subtle shadow-xs">
                             <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-                                <h6 class="mb-0 fw-bold text-success">${t.procedure}</h6>
+                                <div class="d-flex flex-column">
+                                    <h6 class="mb-0 fw-bold text-success">${t.procedure}</h6>
+                                    ${anesthesiaText}
+                                </div>
                                 <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">${formattedCost} ${currency}</span>
                             </div>
                             <p class="mb-2 text-secondary small">${t.notes || (isAr ? 'بلا ملاحظات' : 'No notes available')}</p>
@@ -981,10 +1070,21 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 historyItems.forEach(t => {
                     const formattedCost = parseFloat(t.cost).toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                    let anesthesiaText = '';
+                    if (t.use_anesthesia) {
+                        const needlesLabel = isAr ? 'حقنة' : 'injection';
+                        const needlesLabelPl = isAr ? 'حقن' : 'injections';
+                        const suffix = t.anesthesia_needles === 1 ? needlesLabel : (t.anesthesia_needles > 2 && t.anesthesia_needles < 11 ? needlesLabelPl : needlesLabel);
+                        const label = isAr ? `+ تخدير (${t.anesthesia_needles} ${suffix})` : `+ Anesthesia (${t.anesthesia_needles} ${t.anesthesia_needles > 1 ? needlesLabelPl : needlesLabel})`;
+                        anesthesiaText = `<div class="text-secondary small mt-0.5" style="font-size: 0.8rem; font-weight: 500;"><i class="bi bi-shield-fill-plus me-1 text-info"></i>${label}</div>`;
+                    }
                     let html = `
                         <div class="list-group-item border rounded-3 mb-2 p-3 bg-light-subtle shadow-xs">
                             <div class="d-flex w-100 justify-content-between align-items-center mb-1">
-                                <h6 class="mb-0 fw-semibold text-primary">${t.procedure}</h6>
+                                <div class="d-flex flex-column">
+                                    <h6 class="mb-0 fw-semibold text-primary">${t.procedure}</h6>
+                                    ${anesthesiaText}
+                                </div>
                                 <small class="text-muted fw-bold">${t.date.split(' ')[0]}</small>
                             </div>
                             <p class="mb-2 text-secondary small">${t.notes || (isAr ? 'بلا ملاحظات' : 'No notes available')}</p>
@@ -1002,6 +1102,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('modal-add-treatment-form');
             if (form) {
                 form.reset();
+                document.getElementById('modal-needles-wrapper').style.display = 'none';
                 document.getElementById('modal-procedure-price-display').textContent = trans.priceSelect;
             }
 
@@ -1011,19 +1112,53 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Handle form procedure change inside modal
+    // Handle form elements inside modal
     const modalProcSelect = document.getElementById('modal-procedure-type');
     const modalPriceDisplay = document.getElementById('modal-procedure-price-display');
-    if (modalProcSelect && modalPriceDisplay) {
-        modalProcSelect.addEventListener('change', function() {
-            const selectedProc = this.value;
-            if (!selectedProc || prices[selectedProc] === undefined) {
-                modalPriceDisplay.textContent = trans.priceSelect;
-                return;
+    const modalUseAnesthesia = document.getElementById('modal-use-anesthesia');
+    const modalNeedlesWrapper = document.getElementById('modal-needles-wrapper');
+    const modalNeedlesInput = document.getElementById('modal-needles');
+    const needlePrice = parseFloat("{{ anesthesia_needle_price }}") || 50000;
+
+    function updateModalPrice() {
+        const selectedProc = modalProcSelect.value;
+        if (!selectedProc || prices[selectedProc] === undefined) {
+            modalPriceDisplay.textContent = trans.priceSelect;
+            return;
+        }
+        
+        const procPrice = parseFloat(prices[selectedProc]);
+        const useAnesthesia = modalUseAnesthesia.checked;
+        const needlesCount = parseInt(modalNeedlesInput.value) || 1;
+        const anesthesiaCost = useAnesthesia ? needlesCount * needlePrice : 0;
+        const total = procPrice + anesthesiaCost;
+        
+        let displayVal = total.toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' ' + currency;
+        if (useAnesthesia) {
+            const isAr = document.documentElement.lang === 'ar';
+            const procLabel = isAr ? 'شامل التخدير' : 'inc. anesthesia';
+            displayVal += ` (${procLabel})`;
+        }
+        modalPriceDisplay.textContent = displayVal;
+    }
+
+    if (modalUseAnesthesia && modalNeedlesWrapper) {
+        modalUseAnesthesia.addEventListener('change', function() {
+            if (this.checked) {
+                modalNeedlesWrapper.style.display = 'block';
+            } else {
+                modalNeedlesWrapper.style.display = 'none';
             }
-            const priceNum = parseFloat(prices[selectedProc]);
-            modalPriceDisplay.textContent = priceNum.toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' ' + currency;
+            updateModalPrice();
         });
+    }
+
+    if (modalNeedlesInput) {
+        modalNeedlesInput.addEventListener('input', updateModalPrice);
+    }
+
+    if (modalProcSelect && modalPriceDisplay) {
+        modalProcSelect.addEventListener('change', updateModalPrice);
     }
 });
 </script>

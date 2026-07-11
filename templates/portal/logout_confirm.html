@@ -1,25 +1,41 @@
 {% extends "portal/base.html" %}
 
-{% block title %}Logout Confirmation{% endblock %}
+{% block title %}
+  {% if current_lang == 'ar' %}تأكيد تسجيل الخروج{% else %}Logout Confirmation{% endif %}
+{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-center" style="min-height: 50vh;">
-  <div class="card shadow-sm border-0 rounded-4 p-4 text-center" style="background: var(--surface-color); max-width: 450px; width: 100%;">
-    <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle mb-3" style="width: 80px; height: 80px;">
+<div class="d-flex align-items-center justify-content-center" style="min-height: 60vh;">
+  <div class="card shadow border-0 rounded-4 p-5 text-center logout-card" style="background: var(--surface-color); max-width: 450px; width: 100%; transition: all 0.3s ease;">
+    <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle mb-4 animate-icon" style="width: 80px; height: 80px; transition: all 0.3s ease;">
       <i class="bi bi-box-arrow-right fs-1"></i>
     </div>
     
-    <h3 class="fw-bold mb-2">Logout Confirmation</h3>
-    <p class="text-secondary mb-4">Are you sure you want to log out of your account?</p>
+    <h3 class="fw-bold mb-2">
+      {% if current_lang == 'ar' %}تأكيد تسجيل الخروج{% else %}Logout Confirmation{% endif %}
+    </h3>
+    <p class="text-secondary mb-4 px-2">
+      {% if current_lang == 'ar' %}هل أنت متأكد من رغبتك في تسجيل الخروج من حسابك؟{% else %}Are you sure you want to log out of your account?{% endif %}
+    </p>
     
     <div class="d-flex justify-content-center gap-3">
-      <a href="{{ url_for('portal.dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4 py-2">
-        Cancel
+      <a href="{{ url_for('portal.dashboard') }}" class="btn btn-outline-secondary rounded-pill px-4 py-2.5">
+        {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
       </a>
-      <a href="{{ url_for('portal.logout') }}" class="btn btn-danger rounded-pill px-4 py-2 fw-semibold">
-        Confirm Logout
+      <a href="{{ url_for('portal.logout') }}" class="btn btn-danger rounded-pill px-4 py-2.5 fw-semibold">
+        {% if current_lang == 'ar' %}تسجيل الخروج{% else %}Confirm Logout{% endif %}
       </a>
     </div>
   </div>
 </div>
+
+<style>
+.logout-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.08) !important;
+}
+.logout-card:hover .animate-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+</style>
 {% endblock %}

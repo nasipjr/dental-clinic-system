@@ -277,6 +277,22 @@
                                  color: #198754 !important;
                                  fill: color-mix(in srgb, #198754, transparent 80%) !important;
                              }
+                             .tooth-select-btn.active-treatment {
+                                 border-color: color-mix(in srgb, #198754, transparent 70%);
+                                 background: color-mix(in srgb, #198754, transparent 96%);
+                             }
+                             .tooth-select-btn.active-treatment .tooth-svg {
+                                 color: #198754 !important;
+                                 fill: color-mix(in srgb, #198754, transparent 80%) !important;
+                             }
+                             .tooth-select-btn.history-treatment {
+                                 border-color: color-mix(in srgb, #0d6efd, transparent 70%);
+                                 background: color-mix(in srgb, #0d6efd, transparent 96%);
+                             }
+                             .tooth-select-btn.history-treatment .tooth-svg {
+                                 color: #0d6efd !important;
+                                 fill: color-mix(in srgb, #0d6efd, transparent 80%) !important;
+                             }
                              .tooth-svg-container {
                                  margin: 2px 0;
                              }
@@ -315,9 +331,8 @@
                              }
                              </style>
 
-                             <div class="col-md-12">
-                                 <label for="tooth_number" class="form-label fw-bold">Tooth Number (Select from chart or type)</label>
-                                 <div class="odontogram-wrapper mb-3">
+                              <div class="col-md-12">
+                                  <div class="odontogram-wrapper mb-3">
                                      <div class="text-center text-secondary small mb-3">
                                          <i class="bi bi-info-circle me-1"></i> Click teeth on the chart to select or deselect.
                                      </div>
@@ -397,105 +412,237 @@
                                          </div>
                                      </div>
                                  </div>
-                                 <input type="text" id="tooth_number" name="tooth_number" class="form-control settings-input"
-                                     value="{{ treatment.tooth_number or '' }}" placeholder="e.g. 14, 15" {% if is_locked %}readonly{% endif %}>
+                                  <input type="hidden" id="tooth_number" name="tooth_number" value="{{ treatment.tooth_number or '' }}">
                              </div>
 
-                                <div class="col-12">
-                                    <label for="notes" class="form-label">Notes</label>
-                                    <textarea id="notes" name="notes" class="form-control" rows="5"
-                                        placeholder="Add treatment notes">{{ treatment.notes or '' }}</textarea>
-                                </div>
-                                <div class="col-md-12">
-                                    <label class="form-label">Procedure Price</label>
-                                    <div id="procedure_price_display" class="form-control readonly-status-field">
-                                        {{ (treatment.total_cost or 0) | format_price }} {{ currency_symbol }}
-                                    </div>
-                                </div>
+                                 <div class="col-12">
+                                     <label for="notes" class="form-label">Notes</label>
+                                     <textarea id="notes" name="notes" class="form-control" rows="5"
+                                         placeholder="Add treatment notes" {% if is_locked %}readonly{% endif %}>{{ treatment.notes or '' }}</textarea>
+                                 </div>
+                                 
+                                 <div class="col-md-6 d-flex align-items-center mt-3">
+                                     <div class="form-check form-switch">
+                                         <input class="form-check-input" type="checkbox" id="use_anesthesia" name="use_anesthesia" 
+                                             {% if treatment.use_anesthesia %}checked{% endif %} {% if is_locked %}disabled{% endif %}>
+                                         <label class="form-check-label text-secondary small fw-bold ms-1" for="use_anesthesia">
+                                             {{ 'استخدام تخدير' if current_lang == 'ar' else 'Use Anesthesia' }}
+                                         </label>
+                                     </div>
+                                 </div>
+                                 
+                                 <div class="col-md-6 mt-3" id="needles_wrapper" style="display: {% if treatment.use_anesthesia %}block{% else %}none{% endif %};">
+                                     <label for="anesthesia_needles" class="form-label text-secondary small fw-bold">
+                                         {{ 'عدد مرات التخدير / الإبر' if current_lang == 'ar' else 'Needles (Times Anesthetized)' }}
+                                     </label>
+                                     <input type="number" id="anesthesia_needles" name="anesthesia_needles" class="form-control settings-input" 
+                                         min="1" value="{{ treatment.anesthesia_needles or 1 }}" {% if is_locked %}readonly{% endif %}>
+                                 </div>
+
+                                 <div class="col-md-12 mt-3">
+                                     <label class="form-label">Procedure Price</label>
+                                     <div id="procedure_price_display" class="form-control readonly-status-field">
+                                         {{ (treatment.total_cost or 0) | format_price }} {{ currency_symbol }}
+                                     </div>
+                                 </div>
 
 
-                            </div>
-                        </fieldset>
+                             </div>
+                         </fieldset>
 
-                        <div class="col-12 text-center pt-4">
-                            {% if not is_locked %}
-                            <button type="submit" class="save-patient-btn">
-                                Save Changes
-                            </button>
-                            {% endif %}
+                         <div class="col-12 text-center pt-4">
+                             {% if not is_locked %}
+                             <button type="submit" class="save-patient-btn">
+                                 Save Changes
+                             </button>
+                             {% endif %}
 
-                            {% if current_mode == 'view' and treatment.appointment.status in ('Scheduled', 'Checked In', 'In Chair') %}
-                            <a href="{{ url_for('treatments.edit_treatment', treatment_id=treatment.id) }}"
-                                class="btn-primary px-4">
-                                Edit Treatment
-                            </a>
-                            {% endif %}
+                             {% if current_mode == 'view' and treatment.appointment.status in ('Scheduled', 'Checked In', 'In Chair') %}
+                             <a href="{{ url_for('treatments.edit_treatment', treatment_id=treatment.id) }}"
+                                 class="btn-primary px-4">
+                                 Edit Treatment
+                             </a>
+                             {% endif %}
 
-                            <a href="{{ url_for('treatments.appointment_session', appointment_id=treatment.appointment.id) }}"
-                                class="btn-outline-main px-4 ms-2">
-                                Back to Session
-                            </a>
-                        </div>
+                             <a href="{{ url_for('treatments.appointment_session', appointment_id=treatment.appointment.id) }}"
+                                 class="btn-outline-main px-4 ms-2">
+                                 Back to Session
+                             </a>
+                         </div>
 
-                    </form>
+                     </form>
 
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const procedureSelect = document.getElementById('procedure_type');
-    const priceDisplay = document.getElementById('procedure_price_display');
-    const toothInput = document.getElementById('tooth_number');
-    const toothButtons = document.querySelectorAll('.tooth-btn');
+                 </div>
+             </div>
+         </div>
+     </div>
+ </section>
+ <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Parse current treatments
+    const currentTreatments = [
+        {% for t in treatments %}
+        {
+            procedure: "{{ t.procedure_type | escape }}",
+            tooth: "{{ t.tooth_number or '' }}",
+            date: "{{ t.treatment_date.strftime('%Y-%m-%d') if t.treatment_date else '' }}"
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
 
-    if (procedureSelect && priceDisplay) {
-        const prices = JSON.parse(procedureSelect.dataset.prices || '{}');
+    // Parse history treatments
+    const historyTreatments = [
+        {% for t in previous_treatments %}
+        {
+            procedure: "{{ t.procedure_type | escape }}",
+            tooth: "{{ t.tooth_number or '' }}",
+            date: "{{ t.treatment_date.strftime('%Y-%m-%d') if t.treatment_date else '' }}"
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
 
-        function updateProcedurePrice() {
-            const selectedProcedure = procedureSelect.value;
-
-            if (!selectedProcedure || prices[selectedProcedure] === undefined) {
-                priceDisplay.textContent = document.documentElement.lang === 'ar' ? 'اختر نوع الإجراء لعرض السعر' : 'Select a procedure type to show price';
-                return;
-            }
-
-            let teethCount = 1;
-            if (toothInput) {
-                const teethList = toothInput.value.split(',')
-                    .map(t => t.trim())
-                    .filter(t => t !== '');
-                if (teethList.length > 0) {
-                    teethCount = teethList.length;
-                }
-            }
-
-            const basePrice = parseFloat(prices[selectedProcedure]);
-            const totalPrice = basePrice * teethCount;
-            
-            const isAr = document.documentElement.lang === 'ar';
-            const toothLabel = isAr ? 'أسنان' : 'teeth';
-            const totalLabel = isAr ? 'المجموع' : 'Total';
-            
-            let displayVal = totalPrice.toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' {{ currency_symbol }}';
-            if (teethCount > 1) {
-                displayVal += ` (${totalLabel} لـ ${teethCount} ${toothLabel})`;
-            }
-            priceDisplay.textContent = displayVal;
-        }
-
-        procedureSelect.addEventListener('change', updateProcedurePrice);
-        
-        if (toothInput) {
-            toothInput.addEventListener('input', updateProcedurePrice);
-        }
-
-        // Initialize price display
-        updateProcedurePrice();
-        window.updateProcedurePrice = updateProcedurePrice; // expose helper
+    function appliesToTooth(treatment, toothNum) {
+        if (!treatment.tooth) return false;
+        const teeth = treatment.tooth.split(',').map(s => s.trim());
+        return teeth.includes(toothNum);
     }
+
+    const fdiMap = {
+        '1': '18', '2': '17', '3': '16', '4': '15', '5': '14', '6': '13', '7': '12', '8': '11',
+        '9': '21', '10': '22', '11': '23', '12': '24', '13': '25', '14': '26', '15': '27', '16': '28',
+        '17': '38', '18': '37', '19': '36', '20': '35', '21': '34', '22': '33', '23': '32', '24': '31',
+        '25': '41', '26': '42', '27': '43', '28': '44', '29': '45', '30': '46', '31': '47', '32': '48'
+    };
+
+    const isAr = document.documentElement.lang === 'ar';
+
+    for (let i = 1; i <= 32; i++) {
+        const toothStr = i.toString();
+        const activeMatches = currentTreatments.filter(t => appliesToTooth(t, toothStr));
+        const historyMatches = historyTreatments.filter(t => appliesToTooth(t, toothStr));
+        
+        const btn = document.querySelector(`.tooth-btn[data-tooth="${toothStr}"]`);
+        if (btn) {
+            if (activeMatches.length > 0) {
+                btn.classList.add('active-treatment');
+            } else if (historyMatches.length > 0) {
+                btn.classList.add('history-treatment');
+            }
+            
+            // Build tooltip title
+            let tooltipHtml = '';
+            const fdiNum = fdiMap[toothStr];
+            
+            tooltipHtml += `<strong class="d-block mb-1">${isAr ? 'السن' : 'Tooth'} ${toothStr} (FDI ${fdiNum})</strong>`;
+            
+            if (activeMatches.length > 0) {
+                tooltipHtml += `<div class="text-success small"><i class="bi bi-check-circle-fill me-1"></i>${isAr ? 'جلسة حالية:' : 'Current Session:'}</div>`;
+                activeMatches.forEach(t => {
+                    tooltipHtml += `<div class="ms-2 small text-nowrap">• ${t.procedure}</div>`;
+                });
+            }
+            if (historyMatches.length > 0) {
+                tooltipHtml += `<div class="text-primary small mt-1"><i class="bi bi-clock-history me-1"></i>${isAr ? 'معالجات سابقة:' : 'Past History:'}</div>`;
+                historyMatches.forEach(t => {
+                    tooltipHtml += `<div class="ms-2 small text-nowrap">• ${t.procedure} (${t.date})</div>`;
+                });
+            }
+            
+            if (activeMatches.length === 0 && historyMatches.length === 0) {
+                tooltipHtml += `<div class="text-muted small">${isAr ? 'سليم / لا يوجد معالجات' : 'Healthy / No treatments'}</div>`;
+            }
+            
+            btn.setAttribute('data-bs-toggle', 'tooltip');
+            btn.setAttribute('data-bs-html', 'true');
+            btn.setAttribute('data-bs-title', tooltipHtml);
+        }
+    }
+
+    // Initialize Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+     const procedureSelect = document.getElementById('procedure_type');
+     const priceDisplay = document.getElementById('procedure_price_display');
+     const toothInput = document.getElementById('tooth_number');
+     const toothButtons = document.querySelectorAll('.tooth-btn');
+     const useAnesthesiaCheckbox = document.getElementById('use_anesthesia');
+     const needlesWrapper = document.getElementById('needles_wrapper');
+     const needlesInput = document.getElementById('anesthesia_needles');
+     const needlePrice = parseFloat("{{ anesthesia_needle_price }}") || 50000;
+
+     if (procedureSelect && priceDisplay) {
+         const prices = JSON.parse(procedureSelect.dataset.prices || '{}');
+
+         function updateProcedurePrice() {
+             const selectedProcedure = procedureSelect.value;
+
+             if (!selectedProcedure || prices[selectedProcedure] === undefined) {
+                 priceDisplay.textContent = document.documentElement.lang === 'ar' ? 'اختر نوع الإجراء لعرض السعر' : 'Select a procedure type to show price';
+                 return;
+             }
+
+             let teethCount = 1;
+             if (toothInput) {
+                 const teethList = toothInput.value.split(',')
+                     .map(t => t.trim())
+                     .filter(t => t !== '');
+                 if (teethList.length > 0) {
+                     teethCount = teethList.length;
+                 }
+             }
+
+             const basePrice = parseFloat(prices[selectedProcedure]);
+             const procTotal = basePrice * teethCount;
+             
+             const useAnesthesia = useAnesthesiaCheckbox ? useAnesthesiaCheckbox.checked : false;
+             const needlesCount = needlesInput ? (parseInt(needlesInput.value) || 1) : 0;
+             const anesthesiaCost = useAnesthesia ? needlesCount * needlePrice : 0;
+             
+             const totalPrice = procTotal + anesthesiaCost;
+             
+             const isAr = document.documentElement.lang === 'ar';
+             const toothLabel = isAr ? 'أسنان' : 'teeth';
+             const totalLabel = isAr ? 'المجموع' : 'Total';
+             
+             let displayVal = totalPrice.toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' {{ currency_symbol }}';
+             if (teethCount > 1) {
+                 displayVal += ` (${totalLabel} لـ ${teethCount} ${toothLabel})`;
+             }
+             if (useAnesthesia) {
+                 const incAnesthLabel = isAr ? 'شامل التخدير' : 'inc. anesthesia';
+                 displayVal += ` (${incAnesthLabel})`;
+             }
+             priceDisplay.textContent = displayVal;
+         }
+
+         procedureSelect.addEventListener('change', updateProcedurePrice);
+         
+         if (toothInput) {
+             toothInput.addEventListener('input', updateProcedurePrice);
+         }
+         
+         if (useAnesthesiaCheckbox && needlesWrapper) {
+             useAnesthesiaCheckbox.addEventListener('change', function() {
+                 if (this.checked) {
+                     needlesWrapper.style.display = 'block';
+                 } else {
+                     needlesWrapper.style.display = 'none';
+                 }
+                 updateProcedurePrice();
+             });
+         }
+         
+         if (needlesInput) {
+             needlesInput.addEventListener('input', updateProcedurePrice);
+         }
+
+         // Initialize price display
+         updateProcedurePrice();
+         window.updateProcedurePrice = updateProcedurePrice; // expose helper
+     }
 
     if (toothInput && toothButtons.length > 0) {
         // Pre-select active teeth on page load

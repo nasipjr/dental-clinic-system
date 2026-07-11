@@ -14,7 +14,7 @@ def settings_page():
             # 1. Update general, calendar, and billing settings
             for key in ["clinic_name", "clinic_phone", "clinic_email", "clinic_address", 
                         "working_hours_start", "working_hours_end", "default_appointment_duration", 
-                        "currency_symbol", "booking_window_days"]:
+                        "currency_symbol", "booking_window_days", "anesthesia_needle_price"]:
                 val = request.form.get(key, "").strip()
                 if key == "booking_window_days":
                     try:
@@ -24,6 +24,14 @@ def settings_page():
                     except ValueError:
                         flash("Booking window days must be a positive integer.", "danger")
                         return redirect(url_for("settings.settings_page") + "#tab-calendar")
+                if key == "anesthesia_needle_price":
+                    try:
+                        fval = float(val)
+                        if fval < 0:
+                            raise ValueError
+                    except ValueError:
+                        flash("Anesthesia needle price must be a non-negative number.", "danger")
+                        return redirect(url_for("settings.settings_page") + "#tab-billing")
                 set_setting(key, val)
 
             # 1b. Update notification provider credentials and templates

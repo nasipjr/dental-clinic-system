@@ -180,6 +180,24 @@ def check_and_add_telegram_columns():
             app.logger.error(f"Failed to add reminders_enabled column: {e}")
 
 
+def check_and_add_anesthesia_columns():
+    from sqlalchemy import text
+    try:
+        db.session.execute(text("SELECT use_anesthesia FROM treatment LIMIT 1"))
+    except Exception:
+        db.session.rollback()
+        try:
+            app.logger.info("Adding anesthesia columns to treatment table")
+            db.session.execute(text("ALTER TABLE treatment ADD COLUMN use_anesthesia BOOLEAN NOT NULL DEFAULT 0"))
+            db.session.execute(text("ALTER TABLE treatment ADD COLUMN anesthesia_needles INTEGER NOT NULL DEFAULT 0"))
+            db.session.execute(text("ALTER TABLE treatment ADD COLUMN anesthesia_cost DECIMAL(10,2) NOT NULL DEFAULT 0.00"))
+            db.session.commit()
+            app.logger.info("Successfully added anesthesia columns to treatment table")
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Failed to add anesthesia columns: {e}")
+
+
 def ensure_default_admin():
     from models import User
     try:
@@ -210,6 +228,7 @@ with app.app_context():
     check_and_add_plain_password_column()
     check_and_add_session_opened_at_column()
     check_and_add_telegram_columns()
+    check_and_add_anesthesia_columns()
     ensure_default_admin()
 
 

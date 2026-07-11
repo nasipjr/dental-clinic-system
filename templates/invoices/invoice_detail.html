@@ -161,6 +161,16 @@
                                 <span class="procedure-badge">
                                     {{ treatment.procedure_type or 'General Treatment' }}
                                 </span>
+                                {% if treatment.use_anesthesia %}
+                                    <div class="text-muted small mt-1" style="font-size: 0.78rem;">
+                                        <i class="bi bi-shield-fill-plus me-1 text-info"></i>
+                                        {% if current_lang == 'ar' %}
+                                            + تخدير ({{ treatment.anesthesia_needles }} إبرة)
+                                        {% else %}
+                                            + Anesthesia ({{ treatment.anesthesia_needles }} needle{% if treatment.anesthesia_needles > 1 %}s{% endif %})
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
                             </td>
 
                             <td>
@@ -386,7 +396,19 @@
             {% for treatment in treatments %}
             <tr>
                 <td>{{ loop.index }}</td>
-                <td><strong>{{ treatment.procedure_type or 'General Treatment' }}</strong></td>
+                <td>
+                    <strong>{{ treatment.procedure_type or 'General Treatment' }}</strong>
+                    {% if treatment.use_anesthesia %}
+                        <br>
+                        <small class="text-muted" style="font-size: 0.78rem;">
+                            {% if current_lang == 'ar' %}
+                                + تخدير ({{ treatment.anesthesia_needles }} إبرة)
+                            {% else %}
+                                + Anesthesia ({{ treatment.anesthesia_needles }} needle{% if treatment.anesthesia_needles > 1 %}s{% endif %})
+                            {% endif %}
+                        </small>
+                    {% endif %}
+                </td>
                 <td>{{ treatment.tooth_number or 'N/A' }}</td>
                 <td>{{ treatment.notes or '' }}</td>
                 <td class="text-end">{{ treatment.total_cost | format_price }} {{ currency_symbol }}</td>

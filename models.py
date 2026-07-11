@@ -228,6 +228,10 @@ class Treatment(db.Model):
 
     total_cost = db.Column(db.Numeric(10, 2), default=0.00)
 
+    use_anesthesia = db.Column(db.Boolean, default=False, nullable=False)
+    anesthesia_needles = db.Column(db.Integer, default=0, nullable=False)
+    anesthesia_cost = db.Column(db.Numeric(10, 2), default=0.00, nullable=False)
+
     @property
     def patient(self):
         return self.appointment.patient
