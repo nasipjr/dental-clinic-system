@@ -453,5 +453,12 @@ if __name__ == "__main__":
         except Exception as e:
             app.logger.error(f"Failed to start Telegram Bot listener: {e}")
 
+        try:
+            from routes.appointments import schedule_expired_appointments_cleanup
+            schedule_expired_appointments_cleanup(app)
+            app.logger.info("Expired appointments cleanup scheduler thread started successfully")
+        except Exception as e:
+            app.logger.error(f"Failed to start expired appointments cleanup scheduler: {e}")
+
     app.logger.info("Flask app is running")
     app.run(debug=True)

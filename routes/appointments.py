@@ -14,28 +14,42 @@ from utils.auth_helper import role_required
 appointments_bp = Blueprint("appointments", __name__)
 
 
-@appointments_bp.before_app_request
-def auto_cancel_expired_appointments():
-    if request.endpoint and "static" not in request.endpoint:
-        try:
-            one_hour_ago = datetime.now() - timedelta(hours=1)
-            expired = Appointment.query.filter(
-                Appointment.status == "Scheduled",
-                Appointment.appointment_date < one_hour_ago,
-                Appointment.session_opened_at == None,  # noqa: E711 – skip if session was opened
-            ).all()
-            if expired:
-                cancelled_count = 0
-                for appt in expired:
-                    if not appt.treatments:
-                        appt.status = "Cancelled"
-                        cancelled_count += 1
-                if cancelled_count > 0:
-                    db.session.commit()
-                    current_app.logger.info(f"Auto-cancelled {cancelled_count} expired appointments.")
-        except Exception:
-            db.session.rollback()
-            current_app.logger.exception("Failed to auto-cancel expired appointments")
+def cancel_expired_appointments():
+    try:
+        one_hour_ago = datetime.now() - timedelta(hours=1)
+        expired = Appointment.query.filter(
+            Appointment.status == "Scheduled",
+            Appointment.appointment_date < one_hour_ago,
+            Appointment.session_opened_at == None,  # noqa: E711 – skip if session was opened
+        ).all()
+        if expired:
+            cancelled_count = 0
+            for appt in expired:
+                if not appt.treatments:
+                    appt.status = "Cancelled"
+                    cancelled_count += 1
+            if cancelled_count > 0:
+                db.session.commit()
+                current_app.logger.info(f"Auto-cancelled {cancelled_count} expired appointments.")
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Failed to auto-cancel expired appointments")
+
+
+def schedule_expired_appointments_cleanup(app, interval_seconds=900):
+    """Starts a background daemon thread that periodically cancels expired scheduled appointments."""
+    import threading
+    import time
+
+    def run_cleanup_loop():
+        time.sleep(10)
+        while True:
+            with app.app_context():
+                cancel_expired_appointments()
+            time.sleep(interval_seconds)
+
+    thread = threading.Thread(target=run_cleanup_loop, daemon=True)
+    thread.start()
 
 
 
