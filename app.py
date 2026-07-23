@@ -348,8 +348,8 @@ def validate_csrf():
 
 @app.before_request
 def enforce_system_license():
-    # Exclude static files, activation page, logout, and deploy webhook
-    excluded_endpoints = ("auth.activate_license", "auth.logout", "static", "deploy.deploy")
+    # Exclude login, activation, static files, logout, and deploy webhook
+    excluded_endpoints = ("auth.login", "auth.activate_license", "auth.logout", "static", "deploy.deploy")
     if not request.endpoint or request.endpoint in excluded_endpoints:
         return
 
@@ -363,8 +363,8 @@ def enforce_system_license():
 
 @app.before_request
 def check_login():
-    # Exclude login, static resources, patient portal, and auto-deploy webhook
-    excluded = ("auth.login", "static", "deploy.deploy")
+    # Exclude login, activation, static resources, patient portal, and auto-deploy webhook
+    excluded = ("auth.login", "auth.activate_license", "auth.logout", "static", "deploy.deploy")
     if request.endpoint in excluded or not request.endpoint or request.endpoint.startswith("portal."):
         return
     if "user_id" not in session:

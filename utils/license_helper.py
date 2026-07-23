@@ -131,6 +131,13 @@ def check_clock_tampering() -> tuple[bool, str]:
     return False, ""
 
 
+def reset_clock_activity():
+    """Resets the last system activity timestamp to current system time."""
+    from utils.settings_helper import set_setting
+    set_setting("last_system_activity", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+
+
 def get_current_license_status() -> dict:
     """
     Returns current active license status details from DB.

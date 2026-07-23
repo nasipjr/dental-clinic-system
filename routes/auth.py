@@ -86,9 +86,11 @@ def activate_license():
         if not is_valid:
             flash(str(data_or_msg), "danger")
         else:
+            from utils.license_helper import reset_clock_activity
             set_setting("active_license_key", data_or_msg["key"])
             set_setting("license_type", data_or_msg["license_type"])
             set_setting("license_expires_at", data_or_msg["expires_at"].strftime("%Y-%m-%d %H:%M:%S"))
+            reset_clock_activity()
 
             success_msg = {
                 "ar": f"🎉 تم تفعيل ترخيص النظام بنجاح! متبقي {data_or_msg['days_remaining']} يوماً.",
@@ -96,7 +98,10 @@ def activate_license():
             }.get(lang, "License activated successfully.")
             
             flash(success_msg, "success")
-            return redirect(url_for("dashboard.home"))
+            if "user_id" in session:
+                return redirect(url_for("dashboard.home"))
+            else:
+                return redirect(url_for("auth.login"))
 
     status = get_current_license_status()
     current_lang = request.cookies.get('lang', 'ar')
