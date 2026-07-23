@@ -84,6 +84,16 @@
                         </div><br>
 
                         <div class="col-md-12">
+                            <label for="doctor_id" class="form-label">Doctor</label>
+                            <select id="doctor_id" name="doctor_id" class="form-select">
+                                <option value="">Any Available Doctor</option>
+                                {% for doc in (doctors or all_doctors) %}
+                                <option value="{{ doc.id }}">{{ doc.display_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div><br>
+
+                        <div class="col-md-12">
                             <label class="form-label">Status</label>
                             <div class="form-control readonly-status-field">
                                 Scheduled

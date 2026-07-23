@@ -111,11 +111,13 @@ def settings_page():
                 
                 set_setting("treatment_prices", json.dumps(treatment_dict))
             
-            flash("Settings updated successfully!", "success")
+            is_ar = request.cookies.get("lang") == "ar" or request.cookies.get("lang") != "en"
+            flash("تم تحديث الإعدادات بنجاح!" if is_ar else "Settings updated successfully!", "success")
             current_app.logger.info("Settings updated successfully")
         except Exception:
             current_app.logger.exception("Failed to update system settings")
-            flash("Failed to update settings. Please try again.", "danger")
+            is_ar = request.cookies.get("lang") == "ar" or request.cookies.get("lang") != "en"
+            flash("فشل في تحديث الإعدادات. يرجى المحاولة مرة أخرى." if is_ar else "Failed to update settings. Please try again.", "danger")
             
         active_tab = request.form.get("active_tab", "").strip()
         if active_tab and active_tab.startswith("#"):

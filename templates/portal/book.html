@@ -7,8 +7,8 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <div class="container section-title" data-aos="fade-up">
-    <h2>Book an Appointment</h2>
-    <p>Select a date and time slot from the calendar below. Blocked slots are marked as "Reserved".</p>
+    <h2>{% if current_lang == 'ar' %}حجز موعد{% else %}Book an Appointment{% endif %}</h2>
+    <p>{% if current_lang == 'ar' %}اختر التاريخ والوقت المناسب من التقويم أدناه. الأوقات غير المتاحة موضحة كـ "محجوز".{% else %}Select a date and time slot from the calendar below. Blocked slots are marked as "Reserved".{% endif %}</p>
     <div class="d-flex flex-wrap justify-content-center gap-3 mt-3">
       <div class="d-flex align-items-center gap-2">
         <span class="d-inline-block rounded-circle" style="width: 10px; height: 10px; background-color: var(--surface-color); border: 2px solid var(--accent-color);"></span>
@@ -75,6 +75,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const isArabic = currentLang === 'ar';
 
     const reasons = {{ reasons | tojson }};
+    const doctorsList = [
+        {% for doc in (doctors or all_doctors) %}
+        { id: "{{ doc.id }}", name: "{{ doc.display_name }}" },
+        {% endfor %}
+    ];
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
         locale: currentLang === 'ar' ? 'ar' : 'en',
@@ -183,12 +188,18 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         },
         dateClick: function (info) {
-            const clickedDate = info.date;
             const now = new Date();
             const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const clickedDateStart = new Date(clickedDate.getFullYear(), clickedDate.getMonth(), clickedDate.getDate());
             
-            const dayOfWeek = clickedDate.getDay();
+            // Extract YYYY-MM-DD from info.dateStr to ensure 100% accurate local date parsing
+            const datePartStr = info.dateStr.split('T')[0];
+            const [yStr, mStr, dStr] = datePartStr.split('-');
+            const selYear = parseInt(yStr, 10);
+            const selMonth = parseInt(mStr, 10) - 1;
+            const selDay = parseInt(dStr, 10);
+            
+            const clickedDateStart = new Date(selYear, selMonth, selDay);
+            const dayOfWeek = clickedDateStart.getDay();
             
             if (!workingDays.includes(dayOfWeek)) {
                 Swal.fire({
@@ -211,40 +222,19 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             
             const hasTime = info.dateStr.includes('T') || info.dateStr.includes(' ');
-            if (hasTime && clickedDate < now) {
-                Swal.fire({
-                    icon: 'error',
-                    title: isArabic ? 'وقت غير صالح' : 'Invalid Time',
-                    text: isArabic ? 'الوقت المحدد في الماضي. يرجى اختيار وقت مستقبلي.' : 'Selected time is in the past. Please choose a future time.',
-                    confirmButtonColor: '#175cdd'
-                });
-                return;
-            }
-
-            if (!hasTime) {
-                calendar.changeView('timeGridWeek', info.dateStr);
-                return;
-            }
-
-            const hours = clickedDate.getHours();
-            const minutes = clickedDate.getMinutes();
-            const timeVal = hours * 60 + minutes;
+            let clickedDate = info.date;
+            
+            // Generate available 30-min free time slots for this day within working hours
             const startVal = startHrs * 60 + startMins;
             const endVal = endHrs * 60 + endMins;
-            if (timeVal < startVal || timeVal > endVal) {
-                Swal.fire({
-                    icon: 'error',
-                    title: isArabic ? 'خارج ساعات العمل' : 'Outside Business Hours',
-                    text: isArabic ? `يجب جدولة المواعيد بين ${workingHoursStart} و ${workingHoursEnd}.` : `Appointments must be scheduled between ${workingHoursStart} and ${workingHoursEnd}.`,
-                    confirmButtonColor: '#175cdd'
-                });
-                return;
-            }
-
+            const events = calendar.getEvents();
+            const availableSlots = [];
+            
+            // Check booking window constraint
             const maxDate = new Date(todayStart);
             maxDate.setDate(maxDate.getDate() + bookingWindowDays);
             maxDate.setHours(23, 59, 59, 999);
-            if (clickedDate > maxDate) {
+            if (clickedDateStart > maxDate) {
                 Swal.fire({
                     icon: 'error',
                     title: isArabic ? 'تجاوز فترة الحجز' : 'Booking Period Exceeded',
@@ -254,28 +244,52 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            const events = calendar.getEvents();
-            let isOccupied = false;
-            events.forEach(evt => {
-                if (evt.start && evt.end) {
-                    if (clickedDate >= evt.start && clickedDate < evt.end) {
-                        isOccupied = true;
+            for (let mins = startVal; mins + defaultDuration <= endVal; mins += defaultDuration) {
+                const slotH = Math.floor(mins / 60);
+                const slotM = mins % 60;
+                const testDate = new Date(selYear, selMonth, selDay, slotH, slotM);
+                
+                if (testDate > now) {
+                    let isOcc = false;
+                    events.forEach(evt => {
+                        if (evt.start && evt.end && testDate >= evt.start && testDate < evt.end) {
+                            isOcc = true;
+                        }
+                    });
+                    if (!isOcc) {
+                        const timeValStr = (slotH < 10 ? '0' : '') + slotH + ':' + (slotM < 10 ? '0' : '') + slotM;
+                        const timeLabel = testDate.toLocaleTimeString(isArabic ? 'ar' : undefined, {hour: '2-digit', minute:'2-digit', hour12: true});
+                        availableSlots.push({ val: timeValStr, label: timeLabel });
                     }
                 }
-            });
-
-            if (isOccupied) {
+            }
+            
+            if (availableSlots.length === 0) {
                 Swal.fire({
-                    icon: 'error',
-                    title: isArabic ? 'موعد محجوز' : 'Reserved Slot',
-                    text: isArabic ? 'هذا الوقت محجوز بالفعل. يرجى اختيار وقت آخر.' : 'This slot is already reserved. Please select another time.',
+                    icon: 'warning',
+                    title: isArabic ? 'لا توجد أوقات متاحة' : 'No Available Slots',
+                    text: isArabic ? 'عفواً، لا توجد أوقات متاحة للحجز في هذا اليوم. يرجى اختيار يوم آخر.' : 'Sorry, no available slots for this day. Please pick another day.',
                     confirmButtonColor: '#175cdd'
                 });
                 return;
             }
 
-            const offsetDate = new Date(clickedDate.getTime() - clickedDate.getTimezoneOffset() * 60000);
-            const dateParam = offsetDate.toISOString().substring(0, 16);
+            let defaultTimeVal = availableSlots[0].val;
+            if (hasTime) {
+                const clickedH = clickedDate.getHours();
+                const clickedM = clickedDate.getMinutes();
+                const clickedValStr = (clickedH < 10 ? '0' : '') + clickedH + ':' + (clickedM < 10 ? '0' : '') + clickedM;
+                if (availableSlots.some(s => s.val === clickedValStr)) {
+                    defaultTimeVal = clickedValStr;
+                }
+            }
+            
+            let timeSelectHtml = `<div class="mt-3 text-start"><label class="form-label swal-custom-label fw-bold mb-1">${isArabic ? 'اختر وقت الموعد' : 'Select Time Slot'}</label><select id="swal-time-slot" class="form-select">`;
+            availableSlots.forEach(s => {
+                const isSelected = s.val === defaultTimeVal ? 'selected' : '';
+                timeSelectHtml += `<option value="${s.val}" ${isSelected}>${s.label}</option>`;
+            });
+            timeSelectHtml += `</select></div>`;
 
             const selectOptions = {};
             reasons.forEach(r => {
@@ -286,13 +300,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 selectOptions[r] = translated;
             });
 
-            const formattedDate = clickedDate.toLocaleDateString(isArabic ? 'ar' : undefined);
-            const formattedTime = clickedDate.toLocaleTimeString(isArabic ? 'ar' : undefined, {hour: '2-digit', minute:'2-digit', hour12: true});
+            const formattedDate = clickedDateStart.toLocaleDateString(isArabic ? 'ar' : undefined);
+
+            let doctorSelectHtml = `<div class="mt-3 text-start"><label class="form-label swal-custom-label fw-bold mb-1">${isArabic ? 'اختر الطبيب المفضل (اختياري)' : 'Select Preferred Doctor (Optional)'}</label><select id="swal-doctor-id" class="form-select"><option value="">${isArabic ? 'أي طبيب متاح' : 'Any Available Doctor'}</option>`;
+            doctorsList.forEach(d => {
+                doctorSelectHtml += `<option value="${d.id}">${d.name}</option>`;
+            });
+            doctorSelectHtml += `</select></div>`;
 
             Swal.fire({
                 title: isArabic ? 'طلب حجز موعد جديد' : 'Request Appointment',
-                html: `<p class="mb-3">${isArabic ? 'هل ترغب في طلب حجز موعد بالتاريخ والوقت المحددين؟' : 'Would you like to request a booking at the selected time?'}</p>
-                       <div class="text-primary fw-bold mb-4 fs-5">${formattedDate} ${formattedTime}</div>`,
+                html: `<p class="mb-2">${isArabic ? 'اختر تفاصيل الموعد المطلوبة:' : 'Select your preferred appointment details:'}</p>
+                       <div class="text-primary fw-bold mb-3 fs-5">${formattedDate}</div>
+                       ${timeSelectHtml}
+                       ${doctorSelectHtml}`,
                 input: 'select',
                 inputOptions: selectOptions,
                 inputPlaceholder: isArabic ? 'اختر سبب الحجز' : 'Select a Reason',
@@ -300,17 +321,25 @@ document.addEventListener("DOMContentLoaded", function () {
                 confirmButtonText: isArabic ? 'تقديم الطلب' : 'Submit Request',
                 cancelButtonText: isArabic ? 'إلغاء' : 'Cancel',
                 confirmButtonColor: '#175cdd',
-                inputValidator: (value) => {
-                    return new Promise((resolve) => {
-                        if (value) {
-                            resolve();
-                        } else {
-                            resolve(isArabic ? 'يجب اختيار سبب الحجز' : 'You must select a reason');
-                        }
-                    });
+                preConfirm: () => {
+                    const reasonSelect = Swal.getInput();
+                    const reasonVal = reasonSelect ? reasonSelect.value : '';
+                    if (!reasonVal) {
+                        Swal.showValidationMessage(isArabic ? 'يجب اختيار سبب الحجز' : 'You must select a reason');
+                        return false;
+                    }
+                    const timeEl = document.getElementById('swal-time-slot');
+                    const docEl = document.getElementById('swal-doctor-id');
+                    return {
+                        reason: reasonVal,
+                        timeSlot: timeEl ? timeEl.value : '',
+                        doctorId: docEl ? docEl.value : ''
+                    };
                 }
             }).then((result) => {
-                if (result.isConfirmed) {
+                if (result.isConfirmed && result.value) {
+                    const { reason, timeSlot, doctorId } = result.value;
+
                     Swal.fire({
                         title: isArabic ? 'جاري إرسال الطلب...' : 'Submitting Request...',
                         allowOutsideClick: false,
@@ -319,37 +348,47 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                     });
 
-                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    const finalDateParam = `${datePartStr}T${timeSlot}`;
+                    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+                    const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
                     const formData = new URLSearchParams();
-                    formData.append('appointment_date', dateParam);
-                    formData.append('reason', result.value);
+                    formData.append('appointment_date', finalDateParam);
+                    formData.append('reason', reason);
+                    if (doctorId) formData.append('doctor_id', doctorId);
                     formData.append('csrf_token', csrfToken);
 
                     fetch("{{ url_for('portal.book_appointment') }}", {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-Requested-With': 'XMLHttpRequest'
                         },
                         body: formData.toString()
                     })
-                    .then(res => {
-                        if (res.redirected) {
-                            window.location.href = res.url;
-                            return;
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: isArabic ? 'تم تقديم الطلب' : 'Request Submitted',
+                                text: data.message || (isArabic ? 'تم إرسال طلب الموعد بنجاح، وهو الآن قيد التثبيت.' : 'Request submitted successfully.'),
+                                confirmButtonColor: '#175cdd'
+                            }).then(() => {
+                                window.location.href = "{{ url_for('portal.dashboard') }}";
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: isArabic ? 'تنبيه' : 'Notice',
+                                text: data.message || (isArabic ? 'فشل تقديم الطلب. يرجى المحاولة مرة أخرى.' : 'Failed to request appointment.'),
+                                confirmButtonColor: '#175cdd'
+                            });
                         }
-                        return res.text();
-                    })
-                    .then(html => {
-                        window.location.href = "{{ url_for('portal.dashboard') }}";
                     })
                     .catch(err => {
                         console.error(err);
-                        Swal.fire({
-                            icon: 'error',
-                            title: isArabic ? 'خطأ' : 'Error',
-                            text: isArabic ? 'فشل تقديم الطلب. يرجى المحاولة مرة أخرى.' : 'Failed to request appointment. Please try again.',
-                            confirmButtonColor: '#175cdd'
-                        });
+                        window.location.href = "{{ url_for('portal.dashboard') }}";
                     });
                 }
             });

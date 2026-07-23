@@ -19,6 +19,23 @@ def appointment_session(appointment_id):
     try:
         appointment = Appointment.query.get_or_404(appointment_id)
 
+        from flask import session
+        user_id = session.get("user_id")
+        user_role = session.get("role")
+
+        # Doctor users can only open session for their own appointments
+        if user_role == "doctor" and appointment.doctor_id and appointment.doctor_id != user_id:
+            return render_template(
+                "error_message.html",
+                title="Unauthorized",
+                message="عفواً، لا يمكنك فتح جلسة علاج لموعد مخصص لطبيب آخر.",
+                back_url=url_for("appointments.view_appointment", appointment_id=appointment.id),
+            ), 403
+
+        # Cancelled appointments redirect to view appointment read-only for non-admin users
+        if user_role != "admin" and appointment.status == "Cancelled":
+            return redirect(url_for("appointments.view_appointment", appointment_id=appointment.id))
+
         # Mark the session as opened so the auto-cancel job won't cancel it,
         # even if more than one hour has passed since the appointment time.
         if appointment.status in ("Scheduled", "Checked In", "In Chair") and appointment.session_opened_at is None:
@@ -130,6 +147,13 @@ def add_treatment_to_appointment(appointment_id):
                 
             total_cost = (TREATMENT_PRICES[procedure_type] * num_teeth) + anesthesia_cost
 
+            treating_doctor_id = None
+            from flask import g
+            if g.get("current_user") and g.current_user.role in ("doctor", "admin"):
+                treating_doctor_id = g.current_user.id
+            elif appointment.doctor_id:
+                treating_doctor_id = appointment.doctor_id
+
             new_treatment = Treatment(
                 appointment_id=appointment.id,
                 treatment_date=treatment_date,
@@ -140,6 +164,7 @@ def add_treatment_to_appointment(appointment_id):
                 use_anesthesia=use_anesthesia,
                 anesthesia_needles=anesthesia_needles,
                 anesthesia_cost=anesthesia_cost,
+                doctor_id=treating_doctor_id,
             )
 
             db.session.add(new_treatment)

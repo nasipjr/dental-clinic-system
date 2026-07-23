@@ -1,0 +1,432 @@
+
+# -*- coding: utf-8 -*-
+# Script to generate dental_clinic_guide.html
+import os
+
+html_parts = []
+
+# Head + CSS
+html_parts.append("""<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>دليل نظام ادارة العيادة السنية الشامل</title>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap");
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:"Cairo",sans-serif;background:#f0f4ff;color:#1a1a2e;line-height:1.7;font-size:14px;}
+.cover{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 40%,#0d6efd 100%);color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 40px;page-break-after:always;}
+.cover h1{font-size:3rem;font-weight:900;margin-bottom:15px;}
+.cover h2{font-size:1.4rem;font-weight:400;opacity:0.85;margin-bottom:40px;}
+.cover-badge{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:50px;padding:8px 24px;font-size:13px;font-weight:600;margin-bottom:30px;}
+.pills{display:flex;gap:15px;flex-wrap:wrap;justify-content:center;margin-bottom:40px;}
+.pill{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:30px;padding:7px 18px;font-size:13px;font-weight:600;}
+.stats{display:flex;gap:40px;justify-content:center;border-top:1px solid rgba(255,255,255,0.2);padding-top:25px;width:100%;max-width:700px;}
+.stat{text-align:center;}
+.stat .num{font-size:2.5rem;font-weight:900;color:#60d0ff;}
+.stat .lbl{font-size:12px;opacity:0.75;}
+.page{max-width:960px;margin:0 auto;padding:50px;background:#fff;}
+.sh{display:flex;align-items:center;gap:15px;margin-bottom:30px;padding-bottom:15px;border-bottom:3px solid #0d6efd;}
+.si{width:50px;height:50px;background:linear-gradient(135deg,#0d6efd,#0066cc);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;flex-shrink:0;}
+.sh h2{font-size:1.6rem;font-weight:800;color:#0f172a;}
+.sh p{font-size:13px;color:#64748b;}
+.sn{font-size:11px;font-weight:700;color:#0d6efd;letter-spacing:2px;margin-bottom:4px;}
+.cg{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;margin-bottom:30px;}
+.c{background:#f8faff;border:1px solid #e2eaf8;border-radius:16px;padding:22px;}
+.ci{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px;}
+.ci.blue{background:#dbeafe;}.ci.green{background:#dcfce7;}.ci.orange{background:#ffedd5;}.ci.purple{background:#f3e8ff;}.ci.teal{background:#ccfbf1;}.ci.red{background:#fee2e2;}
+.c h4{font-size:1rem;font-weight:700;margin-bottom:6px;color:#0f172a;}
+.c p{font-size:12.5px;color:#64748b;}
+.fs{position:relative;padding-right:30px;margin-bottom:30px;}
+.f{display:flex;gap:20px;margin-bottom:22px;align-items:flex-start;}
+.fn{width:32px;height:32px;background:linear-gradient(135deg,#0d6efd,#0066cc);border-radius:50%;color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:auto;box-shadow:0 0 0 4px #fff,0 0 0 5px #0d6efd;}
+.fc{flex:1;}
+.fc h4{font-weight:700;font-size:1rem;margin-bottom:4px;color:#0f172a;}
+.fc p{font-size:12.5px;color:#64748b;}
+table{width:100%;border-collapse:collapse;margin-bottom:25px;font-size:13px;}
+th{background:linear-gradient(135deg,#0d6efd,#0066cc);color:#fff;padding:12px 16px;text-align:right;font-weight:700;}
+td{padding:10px 16px;border-bottom:1px solid #e2e8f0;vertical-align:top;}
+tr:nth-child(even) td{background:#f8faff;}
+.b{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.bg{background:#dcfce7;color:#15803d;}.bb{background:#dbeafe;color:#1d4ed8;}.bo{background:#ffedd5;color:#c2410c;}.br{background:#fee2e2;color:#b91c1c;}.bgr{background:#f1f5f9;color:#475569;}
+.hb{border-radius:16px;padding:22px 25px;margin-bottom:22px;border-right:5px solid;}
+.hb.i{background:#eff6ff;border-color:#0d6efd;}.hb.s{background:#f0fdf4;border-color:#16a34a;}.hb.w{background:#fffbeb;border-color:#f59e0b;}.hb.d{background:#fff1f2;border-color:#e11d48;}
+.hb h4{font-weight:700;margin-bottom:8px;font-size:1rem;}
+.hb.i h4{color:#1d4ed8;}.hb.s h4{color:#15803d;}.hb.w h4{color:#b45309;}.hb.d h4{color:#be123c;}
+.hb ul{padding-right:20px;}.hb ul li{margin-bottom:5px;font-size:13px;}
+.pg{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;margin-bottom:30px;}
+.pc{border:2px solid #e2eaf8;border-radius:18px;padding:25px 20px;text-align:center;position:relative;overflow:hidden;}
+.pc.feat{border-color:#0d6efd;background:linear-gradient(135deg,#f0f7ff,#e8f0fe);}
+.pc.feat::before{content:"موصى به";position:absolute;top:10px;left:50%;transform:translateX(-50%);background:#0d6efd;color:#fff;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;white-space:nowrap;}
+.pc h3{font-size:1.1rem;font-weight:800;margin-bottom:10px;margin-top:20px;}
+.pc .pr{font-size:1.8rem;font-weight:900;color:#0d6efd;margin:10px 0;}
+.pc .pr span{font-size:13px;font-weight:500;color:#64748b;}
+.pc .ds{font-size:12px;color:#64748b;margin-bottom:15px;}
+.pc ul{text-align:right;list-style:none;}
+.pc ul li{font-size:12.5px;padding:4px 0;color:#475569;}
+.pc ul li::before{content:"+ ";color:#16a34a;font-weight:700;}
+.pc ul li.no::before{content:"- ";color:#e11d48;}
+.cmd{background:#0f172a;color:#e2e8f0;border-radius:12px;padding:18px 22px;margin-bottom:15px;font-family:"Courier New",monospace;font-size:13px;direction:ltr;text-align:left;border:1px solid #1e293b;}
+.ps{margin-bottom:50px;}
+.af{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;margin:25px 0;}
+.an{background:#0d6efd;color:#fff;padding:10px 18px;border-radius:30px;font-weight:700;font-size:13px;text-align:center;}
+.an.g{background:#16a34a;}.an.o{background:#f59e0b;}.an.p{background:#7c3aed;}.an.t{background:#0f9488;}.an.r{background:#dc2626;}
+.ar{font-size:20px;color:#94a3b8;}
+.ds{background:linear-gradient(135deg,#0f172a,#1e3a5f);color:#fff;padding:30px 50px;}
+.ds h2{font-size:1.5rem;font-weight:800;}
+.ds p{opacity:0.75;font-size:13px;margin-top:4px;}
+.ti{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px dashed #e2e8f0;font-size:14px;}
+.tn{color:#0d6efd;font-weight:700;font-size:12px;}
+footer{background:#0f172a;color:rgba(255,255,255,0.6);text-align:center;padding:25px;font-size:12px;}
+@media print{body{background:#fff;}.cover,.ds{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+</style>
+</head>
+<body>""")
+
+# Cover
+html_parts.append("""
+<div class="cover">
+  <div class="cover-badge">نظام ادارة العيادة السنية - الدليل الشامل</div>
+  <h1>Dental Clinic MS</h1>
+  <h2>دليل العرض والنشر والتشغيل الكامل</h2>
+  <div class="pills">
+    <div class="pill">ادارة شاملة</div><div class="pill">بوابة المريض</div>
+    <div class="pill">فوترة وتقارير</div><div class="pill">تقويم ذكي</div>
+    <div class="pill">عربي / انجليزي</div><div class="pill">وضع ليلي</div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="num">8+</div><div class="lbl">وحدات وظيفية</div></div>
+    <div class="stat"><div class="num">4</div><div class="lbl">ادوار مستخدمين</div></div>
+    <div class="stat"><div class="num">100%</div><div class="lbl">ويب / سطح مكتب</div></div>
+  </div>
+</div>""")
+
+# TOC
+html_parts.append("""
+<div class="page">
+  <div class="sh"><div class="si">📋</div><div><div class="sn">فهرس المحتويات</div><h2>ما ستجده في هذا الدليل</h2></div></div>
+  <div class="ti"><span>🚀 القسم الاول: دليل الميزات والعرض على العيادات</span><span class="tn">صفحة 3</span></div>
+  <div class="ti"><span>&nbsp;&nbsp;• نظرة عامة واهم الميزات</span><span></span></div>
+  <div class="ti"><span>&nbsp;&nbsp;• ادوار المستخدمين وصلاحياتهم</span><span></span></div>
+  <div class="ti"><span>&nbsp;&nbsp;• تدفق العمل اليومي من الحجز للدفع</span><span></span></div>
+  <div class="ti"><span>&nbsp;&nbsp;• نقاط البيع والجذب للعيادات</span><span></span></div>
+  <div class="ti" style="margin-top:10px;"><span>💻 القسم الثاني: التثبيت على اللابتوب (محلياً)</span><span class="tn">صفحة 9</span></div>
+  <div class="ti"><span>&nbsp;&nbsp;• المتطلبات والادوات اللازمة</span><span></span></div>
+  <div class="ti"><span>&nbsp;&nbsp;• التثبيت خطوة بخطوة</span><span></span></div>
+  <div class="ti"><span>&nbsp;&nbsp;• حل ملف Installer (.exe)</span><span></span></div>
+  <div class="ti"><span>&nbsp;&nbsp;• الوصول من اجهزة متعددة داخل العيادة</span><span></span></div>
+  <div class="ti" style="margin-top:10px;"><span>☁️ القسم الثالث: الاستضافة السحابية والانترنت</span><span class="tn">صفحة 14</span></div>
+  <div class="ti"><span>&nbsp;&nbsp;• خيارات الاستضافة مع الاسعار الدقيقة (6 مزودين)</span><span></span></div>
+  <div class="ti"><span>&nbsp;&nbsp;• مقارنة شاملة بين المزودين</span><span></span></div>
+  <div class="ti"><span>&nbsp;&nbsp;• اسعار الدومينات والشهادات</span><span></span></div>
+  <div class="ti"><span>&nbsp;&nbsp;• خطوات رفع النظام السحابي</span><span></span></div>
+  <div class="ti"><span>&nbsp;&nbsp;• النسخ الاحتياطي والامان</span><span></span></div>
+</div>""")
+
+# Section 1 header
+html_parts.append("""
+<div class="ds"><h2>🚀 القسم الاول: دليل الميزات وكيفية عرضه على العيادات</h2><p>كل ما تحتاج معرفته لاقناع العيادة واظهار قيمة النظام</p></div>
+<div class="page">
+  <div class="ps">
+    <div class="sh"><div class="si">🦷</div><div><div class="sn">1.1</div><h2>نظرة عامة على النظام</h2><p>ما هو النظام وماذا يحل؟</p></div></div>
+    <div class="hb i"><h4>🎯 ما يحله النظام</h4><ul>
+      <li>انهاء الفوضى في جدولة المواعيد وضياع الدفاتر الورقية</li>
+      <li>تتبع المدفوعات والديون وكشف الحسابات بدقة صارمة</li>
+      <li>تاريخ علاجي كامل لكل مريض مع مخطط الاسنان (Odontogram)</li>
+      <li>بوابة الكترونية للمرضى لحجز مواعيدهم بانفسهم</li>
+      <li>تقارير وتحليلات مالية وعملياتية في الوقت الفعلي</li>
+    </ul></div>
+    <div class="cg">
+      <div class="c"><div class="ci blue">👥</div><h4>ادارة المرضى</h4><p>ملف كامل: البيانات الشخصية، التاريخ الطبي، الاسنان، الملفات، والسجل المالي.</p></div>
+      <div class="c"><div class="ci green">📅</div><h4>التقويم الذكي</h4><p>تقويم تفاعلي (يومي/اسبوعي/شهري) مع ادارة المواعيد والتعارضات الزمنية.</p></div>
+      <div class="c"><div class="ci orange">💊</div><h4>ادارة العلاجات</h4><p>تسجيل جلسات العلاج والاجراءات السنية مع مخطط Odontogram تفاعلي.</p></div>
+      <div class="c"><div class="ci purple">💵</div><h4>الفوترة والمدفوعات</h4><p>اصدار فواتير، تسجيل مدفوعات، تتبع المستحقات، وكشف حساب تراكمي (Ledger).</p></div>
+      <div class="c"><div class="ci teal">📱</div><h4>بوابة المريض</h4><p>المريض يحجز موعده بنفسه عبر الموقع ويتتبع حالة طلباته ومدفوعاته.</p></div>
+      <div class="c"><div class="ci red">📊</div><h4>التقارير والتحليلات</h4><p>تقارير مالية شهرية وسنوية، خرائط حرارية، وجداول احترافية قابلة للطباعة.</p></div>
+    </div>
+  </div>""")
+
+# Roles section
+html_parts.append("""
+  <div class="ps">
+    <div class="sh"><div class="si">👤</div><div><div class="sn">1.2</div><h2>ادوار المستخدمين وصلاحياتهم</h2><p>نظام صلاحيات متعدد الطبقات لحماية بيانات العيادة</p></div></div>
+    <table>
+      <thead><tr><th>الدور</th><th>الوصول للمرضى</th><th>الوصول للمالية</th><th>البيانات الطبية</th><th>الاعدادات</th><th>واتساب</th></tr></thead>
+      <tbody>
+        <tr><td><span class="b br">Admin - مدير النظام</span></td><td><span class="b bg">كامل</span></td><td><span class="b bg">كامل</span></td><td><span class="b bg">كامل</span></td><td><span class="b bg">كامل</span></td><td><span class="b bg">نعم</span></td></tr>
+        <tr><td><span class="b bb">Receptionist - الاستقبال</span></td><td><span class="b bg">كامل</span></td><td><span class="b bg">كامل</span></td><td><span class="b bo">للعرض فقط</span></td><td><span class="b bo">محدود</span></td><td><span class="b bg">نعم</span></td></tr>
+        <tr><td><span class="b bb">Doctor - الطبيب</span></td><td><span class="b bg">كامل</span></td><td><span class="b br">مخفي</span></td><td><span class="b bg">كامل</span></td><td><span class="b br">لا</span></td><td><span class="b br">لا</span></td></tr>
+        <tr><td><span class="b bgr">Patient - المريض (البوابة)</span></td><td><span class="b bo">بياناته فقط</span></td><td><span class="b bo">مدفوعاته فقط</span></td><td><span class="b bo">بياناته فقط</span></td><td><span class="b br">لا</span></td><td><span class="b br">لا</span></td></tr>
+      </tbody>
+    </table>
+  </div>""")
+
+# Workflow section
+html_parts.append("""
+  <div class="ps">
+    <div class="sh"><div class="si">🔄</div><div><div class="sn">1.3</div><h2>تدفق العمل اليومي الكامل</h2><p>من حجز الموعد وحتى تسديد الدفع</p></div></div>
+    <div class="af">
+      <div class="an">🌐 حجز المريض</div><div class="ar">←</div>
+      <div class="an o">⏳ طلب معلق</div><div class="ar">←</div>
+      <div class="an g">✅ تاكيد الاستقبال</div><div class="ar">←</div>
+      <div class="an p">🩺 الجلسة الطبية</div><div class="ar">←</div>
+      <div class="an t">🦷 اضافة علاج</div><div class="ar">←</div>
+      <div class="an r">💳 الفاتورة والدفع</div>
+    </div>
+    <div class="fs">
+      <div class="f"><div class="fc"><h4>📱 الخطوة 1 - حجز الموعد</h4><p>المريض يدخل بوابته الالكترونية، يختار التاريخ والوقت المتاح من التقويم الشهري، يحدد الطبيب المفضل وسبب الزيارة. النظام لا يسمح بحجز اوقات محجوزة او خارج ساعات العمل.</p></div><div class="fn">1</div></div>
+      <div class="f"><div class="fc"><h4>🔔 الخطوة 2 - مراجعة الطلبات</h4><p>الادارة او الاستقبال يرى الطلبات المعلقة في لوحة التحكم مع عدادها. يمكن تاكيد الموعد او رفضه مع اشعار مخصص. كل عملية تصدر نافذة SweetAlert احترافية.</p></div><div class="fn">2</div></div>
+      <div class="f"><div class="fc"><h4>📲 الخطوة 3 - ارسال تذكير واتساب</h4><p>يوم قبل الموعد، الاستقبال يضغط زر الواتساب الاخضر لارسال رسالة تلقائية جاهزة للمريض برقمه المسجل تذكيره بموعده والعيادة.</p></div><div class="fn">3</div></div>
+      <div class="f"><div class="fc"><h4>🩺 الخطوة 4 - فتح الجلسة الطبية</h4><p>الطبيب يفتح جلسة علاجية للموعد. يرى بيانات المريض الكاملة وتاريخه العلاجي. يضيف اجراءات علاجية محددة بالسن المعالج مع الملاحظات.</p></div><div class="fn">4</div></div>
+      <div class="f"><div class="fc"><h4>📊 الخطوة 5 - انهاء الجلسة والفوترة</h4><p>بعد انتهاء العلاج يضغط انهاء الجلسة ويتحول الموعد لـ Done. النظام ينشئ فاتورة تلقائية. الاستقبال يسجل الدفع جزئياً او كاملاً.</p></div><div class="fn">5</div></div>
+      <div class="f"><div class="fc"><h4>💰 الخطوة 6 - متابعة الحسابات</h4><p>كشف الحساب التراكمي (Ledger) يتتبع كل فاتورة ودفعة. الادارة تعرف بدقة: اجمالي المفوتر، المدفوع، المستحق، والرصيد الزائد.</p></div><div class="fn">6</div></div>
+    </div>
+  </div>""")
+
+# Selling points + Features table
+html_parts.append("""
+  <div class="ps">
+    <div class="sh"><div class="si">🎯</div><div><div class="sn">1.4</div><h2>نقاط القوة عند عرضه للعيادات</h2></div></div>
+    <div class="cg">
+      <div class="c" style="border-color:#0d6efd;"><div class="ci blue">🌐</div><h4>يعمل بدون انترنت</h4><p>يثبت مباشرة على لابتوب العيادة - لا حاجة لاتصال انترنت دائم.</p></div>
+      <div class="c" style="border-color:#16a34a;"><div class="ci green">🌍</div><h4>عربي وانجليزي كامل</h4><p>واجهة مزدوجة اللغة مع RTL كامل. يناسب العيادات العربية 100%.</p></div>
+      <div class="c" style="border-color:#7c3aed;"><div class="ci purple">🌙</div><h4>وضع ليلي احترافي</h4><p>تصميم ليلي كامل يريح العيون مع الوان مخصصة لكل عيادة.</p></div>
+      <div class="c" style="border-color:#f59e0b;"><div class="ci orange">🦷</div><h4>مخطط الاسنان Odontogram</h4><p>رسم تفاعلي كامل لـ 32 سناً مع تسجيل الاجراءات على كل سن.</p></div>
+      <div class="c" style="border-color:#0f9488;"><div class="ci teal">💬</div><h4>تكامل واتساب</h4><p>زر مباشر لارسال تذكير واتساب جاهز للمريض بضغطة واحدة.</p></div>
+      <div class="c" style="border-color:#dc2626;"><div class="ci red">🔒</div><h4>امان وصلاحيات متعددة</h4><p>الطبيب لا يرى المالية، المريض لا يرى بيانات الاخرين.</p></div>
+    </div>
+    <div class="hb s"><h4>💡 نصيحة للعرض على العيادة</h4><ul>
+      <li><strong>ابدأ بالمشكلة:</strong> اسالهم كيف يتابعون المواعيد والمدفوعات الان؟</li>
+      <li><strong>اظهر الجلسة المباشرة:</strong> سجل مريضاً، احجز موعداً، افتح جلسة، اضف علاجاً، اصدر فاتورة كلها في 3 دقائق.</li>
+      <li><strong>اظهر التقارير:</strong> رسم بياني الايرادات والتقويم المالي اليومي هي النقطة الاقوى.</li>
+      <li><strong>اكد على بوابة المريض:</strong> مريضك يحجز موعده من موبايله بدون مكالمات.</li>
+      <li><strong>اختم بالواتساب:</strong> اضغط الزر امامهم وسيرون الرسالة ترسل فوراً.</li>
+    </ul></div>
+  </div>
+  <div class="ps">
+    <div class="sh"><div class="si">⚙️</div><div><div class="sn">1.5</div><h2>الميزات التفصيلية لكل وحدة</h2></div></div>
+    <table>
+      <thead><tr><th>الوحدة</th><th>الميزات المتوفرة</th></tr></thead>
+      <tbody>
+        <tr><td><strong>👥 المرضى</strong></td><td>بيانات كاملة - تاريخ طبي - طبيب اساسي - ملفات وصور - بحث وفلترة - طباعة كشف الحساب</td></tr>
+        <tr><td><strong>📅 المواعيد</strong></td><td>حجز يدوي او عبر البوابة - تاكيد/رفض - تنبيه التعارض - تغيير الحالة - سجل المواعيد الكامل</td></tr>
+        <tr><td><strong>🗓️ التقويم</strong></td><td>عرض يومي/اسبوعي/شهري - تقويم تفاعلي - حجز مباشر بالنقر - فلترة حسب الطبيب</td></tr>
+        <tr><td><strong>💊 العلاجات</strong></td><td>جلسات علاجية - Odontogram تفاعلي - 32 سن - تسجيل اجراء بالسن - ملاحظات وتاريخ</td></tr>
+        <tr><td><strong>🧾 الفواتير</strong></td><td>اصدار فاتورة تلقائي - تعديل - طباعة PDF - ربط بالموعد والعلاج</td></tr>
+        <tr><td><strong>💳 المدفوعات</strong></td><td>تسجيل دفعات متعددة - حساب المتبقي - رصيد زائد (Credit) - Ledger تراكمي</td></tr>
+        <tr><td><strong>📊 التقارير</strong></td><td>ملخص شهري - اداء 6 اشهر - تقويم مالي يومي - جدول سنوي</td></tr>
+        <tr><td><strong>🌐 البوابة الالكترونية</strong></td><td>تسجيل دخول المريض - حجز موعد - اختيار طبيب - متابعة الحالة - سجل مدفوعاته</td></tr>
+        <tr><td><strong>⚙️ الاعدادات</strong></td><td>بيانات العيادة - ساعات العمل - ايام الاجازة - عملة - الوان وثيم - مستخدمون - نسخ احتياطي</td></tr>
+        <tr><td><strong>🔔 الاشعارات</strong></td><td>واتساب مباشر - اشعارات تيليغرام - تاريخ اخر تذكير</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>""")
+
+# Section 2 - Local Installation
+html_parts.append("""
+<div class="ds"><h2>💻 القسم الثاني: التثبيت على اللابتوب (تشغيل محلي)</h2><p>خطوات مفصلة لتثبيت النظام داخل العيادة</p></div>
+<div class="page">
+  <div class="ps">
+    <div class="sh"><div class="si">📦</div><div><div class="sn">2.1</div><h2>المتطلبات والادوات اللازمة</h2></div></div>
+    <div class="cg">
+      <div class="c"><div class="ci blue">🐍</div><h4>Python 3.10+</h4><p>اللغة الاساسية للنظام. تنزيل من python.org. تاكد من تفعيل Add to PATH عند التثبيت.</p></div>
+      <div class="c"><div class="ci orange">🐬</div><h4>MySQL عبر XAMPP</h4><p>قاعدة البيانات. XAMPP (مجاني) من apachefriends.org - الاسهل على Windows.</p></div>
+      <div class="c"><div class="ci green">📁</div><h4>ملفات المشروع</h4><p>مجلد المشروع كاملاً مع ملف .env المعدل ببيانات قاعدة البيانات.</p></div>
+    </div>
+    <div class="hb w"><h4>البرامج الاضافية الاختيارية</h4><ul>
+      <li><strong>Notepad++ او VS Code:</strong> لتعديل ملف .env بسهولة</li>
+      <li><strong>Git:</strong> لتحديث النظام لاحقاً بسهولة من GitHub</li>
+    </ul></div>
+  </div>
+  <div class="ps">
+    <div class="sh"><div class="si">🛠️</div><div><div class="sn">2.2</div><h2>التثبيت خطوة بخطوة</h2></div></div>
+    <div class="fs">
+      <div class="f"><div class="fc"><h4>الخطوة 1 - تثبيت XAMPP وتشغيل MySQL</h4><p>حمل XAMPP من apachefriends.org وثبته. افتح XAMPP Control Panel وشغل MySQL. اذهب للمتصفح: http://localhost/phpmyadmin</p></div><div class="fn">1</div></div>
+      <div class="f"><div class="fc"><h4>الخطوة 2 - انشاء قاعدة البيانات</h4><p>في phpMyAdmin اضغط New وانشئ قاعدة بيانات اسمها: dental_clinic (بدون مسافات). اختر Encoding: utf8mb4_unicode_ci</p></div><div class="fn">2</div></div>
+      <div class="f"><div class="fc"><h4>الخطوة 3 - تثبيت Python والمكتبات</h4><div class="cmd">python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt</div></div><div class="fn">3</div></div>
+      <div class="f"><div class="fc"><h4>الخطوة 4 - اعداد ملف .env</h4><div class="cmd">DB_USER=root
+DB_PASSWORD=كلمة_مرور_MySQL
+DB_HOST=127.0.0.1
+DB_PORT=3308
+DB_NAME=dental_clinic
+SECRET_KEY=نص_عشوائي_طويل</div></div><div class="fn">4</div></div>
+      <div class="f"><div class="fc"><h4>الخطوة 5 - تشغيل البرنامج</h4><div class="cmd">python app.py
+# افتح المتصفح على: http://127.0.0.1:5000</div><p>عند اول تشغيل النظام ينشئ جميع الجداول تلقائياً وينشئ حساب Admin.</p></div><div class="fn">5</div></div>
+    </div>
+  </div>
+  <div class="ps">
+    <div class="sh"><div class="si">📦</div><div><div class="sn">2.3</div><h2>حل ملف Installer (.exe) - الطريقة المثالية</h2><p>تطبيق سطح مكتب كامل بنقرة مزدوجة - بدون تقنيات</p></div></div>
+    <div class="hb i"><h4>النظام جاهز لهذا مسبقاً!</h4><ul>
+      <li>الملف desktop_app.py و Clinic MS.spec موجودان في المشروع</li>
+      <li>النظام يستخدم PyInstaller لتحويله لـ .exe و PyWebView لعرضه كتطبيق نافذة</li>
+      <li>الناتج: ملف .exe واحد يفتح نافذة التطبيق بدون متصفح بدون بايثون</li>
+    </ul></div>
+    <div class="fs">
+      <div class="f"><div class="fc"><h4>بناء ملف .exe من PyInstaller</h4><div class="cmd">pyinstaller "Clinic MS.spec"
+# الناتج يكون في مجلد dist/</div></div><div class="fn">1</div></div>
+      <div class="f"><div class="fc"><h4>انشاء مثبت احترافي بـ Inno Setup (مجاني)</h4><p>Inno Setup يحول مجلد dist/ الى ملف ClinicMS_Setup.exe يثبت البرنامج مع: اختيار مجلد التثبيت، اختصار سطح المكتب، انشاء قاعدة البيانات تلقائياً، برنامج الازالة.</p></div><div class="fn">2</div></div>
+      <div class="f"><div class="fc"><h4>الحل الانسب: SQLite بدلاً من MySQL (مثالي للعيادات)</h4><p>تعديل بسيط في settings.py لاستخدام SQLite يلغي الحاجة لـ MySQL تماماً. قاعدة بيانات ملف واحد .db مثالية للعيادات الصغيرة والمتوسطة.</p><div class="cmd">SQLALCHEMY_DATABASE_URI = "sqlite:///clinic.db"</div></div><div class="fn">3</div></div>
+    </div>
+    <table>
+      <thead><tr><th>المعيار</th><th>Python يدوي</th><th>ملف .exe (PyInstaller)</th><th>Installer كامل + SQLite</th></tr></thead>
+      <tbody>
+        <tr><td>سهولة التثبيت</td><td><span class="b bo">متوسط</span></td><td><span class="b bb">سهل</span></td><td><span class="b bg">سهل جداً</span></td></tr>
+        <tr><td>يحتاج Python مثبت؟</td><td><span class="b br">نعم</span></td><td><span class="b bg">لا</span></td><td><span class="b bg">لا</span></td></tr>
+        <tr><td>يحتاج MySQL؟</td><td><span class="b br">نعم</span></td><td><span class="b br">نعم</span></td><td><span class="b bg">لا</span></td></tr>
+        <tr><td>مناسب للعيادات</td><td><span class="b bo">تقنياً فقط</span></td><td><span class="b bb">جيد</span></td><td><span class="b bg">ممتاز</span></td></tr>
+        <tr><td>حجم الملف</td><td><span class="b bg">صغير</span></td><td><span class="b bo">100-200 MB</span></td><td><span class="b bo">150-250 MB</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ps">
+    <div class="sh"><div class="si">🌐</div><div><div class="sn">2.4</div><h2>الوصول من اجهزة متعددة داخل العيادة</h2></div></div>
+    <div class="hb s"><h4>الاعداد السهل - شبكة Wi-Fi داخلية</h4><ul>
+      <li>شغل البرنامج على لابتوب الاستقبال كـ Server رئيسي</li>
+      <li>عدل تشغيل Flask: app.run(host="0.0.0.0", port=5000)</li>
+      <li>من اي جهاز اخر على نفس الشبكة: http://192.168.1.X:5000 (IP لابتوب الاستقبال)</li>
+      <li>الطبيب يفتح متصفحه ويعمل من تابلت او لابتوب منفصل</li>
+    </ul></div>
+  </div>
+</div>""")
+
+# Section 3 - Cloud Hosting
+html_parts.append("""
+<div class="ds"><h2>☁️ القسم الثالث: الاستضافة السحابية والوصول عبر الانترنت</h2><p>خيارات واسعار دقيقة لرفع النظام سحابياً ليعمل من اي مكان</p></div>
+<div class="page">
+  <div class="ps">
+    <div class="sh"><div class="si">☁️</div><div><div class="sn">3.1</div><h2>خيارات الاستضافة السحابية مع الاسعار</h2><p>مقارنة شاملة واسعار محدثة 2025</p></div></div>
+    <div class="hb i"><h4>ماذا تحتاج للاستضافة؟</h4><ul>
+      <li><strong>سيرفر VPS:</strong> يشغل Flask + قاعدة البيانات</li>
+      <li><strong>دومين (اختياري):</strong> عنوان مثل clinic.com بدلاً من IP رقمي</li>
+      <li><strong>SSL/HTTPS:</strong> تشفير مجاني عبر Let's Encrypt</li>
+      <li><strong>نسخ احتياطي تلقائي</strong></li>
+    </ul></div>
+    <div class="pg">
+      <div class="pc feat">
+        <h3>🚂 Railway</h3>
+        <div class="pr">$5<span>/شهر تقريباً</span></div>
+        <div class="ds-inner" style="font-size:12px;color:#475569;margin-bottom:15px;">الاسهل للبدء - مناسب جداً لـ Flask</div>
+        <ul><li>نشر تلقائي من GitHub</li><li>PostgreSQL مدمج</li><li>SSL مجاني تلقائي</li><li>دومين فرعي مجاني</li><li class="no">محدودية الذاكرة (512 MB)</li></ul>
+      </div>
+      <div class="pc">
+        <h3>🌥️ Hetzner Cloud</h3>
+        <div class="pr">$4.5<span>/شهر</span></div>
+        <div style="font-size:12px;color:#475569;margin-bottom:15px;">الارخص والاسرع - افضل قيمة</div>
+        <ul><li>2 vCPU, 2 GB RAM</li><li>40 GB SSD</li><li>20 TB نقل بيانات</li><li>اداء ممتاز مقابل السعر</li><li class="no">سيرفرات في اوروبا فقط</li></ul>
+      </div>
+      <div class="pc">
+        <h3>🌊 DigitalOcean</h3>
+        <div class="pr">$6<span>/شهر</span></div>
+        <div style="font-size:12px;color:#475569;margin-bottom:15px;">سيرفر VPS كامل التحكم</div>
+        <ul><li>1 vCPU, 1 GB RAM</li><li>25 GB SSD</li><li>1 TB نقل بيانات</li><li>تحكم كامل في السيرفر</li><li class="no">يحتاج خبرة Linux</li></ul>
+      </div>
+      <div class="pc">
+        <h3>⚡ Vultr</h3>
+        <div class="pr">$6<span>/شهر</span></div>
+        <div style="font-size:12px;color:#475569;margin-bottom:15px;">نقاط في الشرق الاوسط</div>
+        <ul><li>1 vCPU, 1 GB RAM</li><li>25 GB NVMe SSD</li><li>2 TB نقل بيانات</li><li>سرعة عالية</li><li class="no">لا يوجد plan مجاني</li></ul>
+      </div>
+      <div class="pc">
+        <h3>🟦 Render.com</h3>
+        <div class="pr">$0-7<span>/شهر</span></div>
+        <div style="font-size:12px;color:#475569;margin-bottom:15px;">مجاني مع قيود</div>
+        <ul><li>Plan مجاني (ينام 15 دق)</li><li>Starter: $7/شهر - دائم</li><li>PostgreSQL مدمج</li><li>نشر من GitHub</li><li class="no">المجاني بطيء جداً</li></ul>
+      </div>
+      <div class="pc">
+        <h3>☁️ AWS Lightsail</h3>
+        <div class="pr">$3.5<span>/شهر (3 اشهر مجاناً)</span></div>
+        <div style="font-size:12px;color:#475569;margin-bottom:15px;">امازون بسعر ثابت</div>
+        <ul><li>512 MB RAM, 1 vCPU</li><li>20 GB SSD</li><li>1 TB نقل بيانات</li><li>موثوقية عالية</li><li class="no">قاعدة البيانات غالية ($15)</li></ul>
+      </div>
+    </div>
+  </div>
+  <div class="ps">
+    <div class="sh"><div class="si">📊</div><div><div class="sn">3.2</div><h2>مقارنة شاملة بين الخيارات</h2></div></div>
+    <table>
+      <thead><tr><th>المزود</th><th>السعر/شهر</th><th>الصعوبة</th><th>السرعة</th><th>المناسب لـ</th><th>توصيتي</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Railway</strong></td><td>~$5</td><td><span class="b bg">سهل جداً</span></td><td><span class="b bg">جيد</span></td><td>عيادة واحدة - بداية سريعة</td><td><span class="b bg">للبداية</span></td></tr>
+        <tr><td><strong>Hetzner</strong></td><td>~$4.5</td><td><span class="b bo">متوسط</span></td><td><span class="b bg">ممتاز</span></td><td>عيادة احترافية - تحكم كامل</td><td><span class="b bb">للاحترافية</span></td></tr>
+        <tr><td><strong>DigitalOcean</strong></td><td>$6</td><td><span class="b bo">متوسط</span></td><td><span class="b bg">جيد جداً</span></td><td>مطور يريد تحكم كامل</td><td><span class="b bb">موثوق</span></td></tr>
+        <tr><td><strong>Vultr</strong></td><td>$6</td><td><span class="b bo">متوسط</span></td><td><span class="b bg">ممتاز</span></td><td>قريب من الشرق الاوسط</td><td><span class="b bb">للمنطقة</span></td></tr>
+        <tr><td><strong>Render (مجاني)</strong></td><td>$0</td><td><span class="b bg">سهل</span></td><td><span class="b br">بطيء</span></td><td>تجربة فقط - لا للانتاج</td><td><span class="b bo">للتجربة فقط</span></td></tr>
+        <tr><td><strong>AWS Lightsail</strong></td><td>$3.5+</td><td><span class="b bo">متوسط</span></td><td><span class="b bg">ممتاز</span></td><td>عيادات تحتاج موثوقية عالية</td><td><span class="b bb">موثوق</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ps">
+    <div class="sh"><div class="si">🔗</div><div><div class="sn">3.3</div><h2>اسعار الدومينات والشهادات</h2></div></div>
+    <table>
+      <thead><tr><th>الخدمة</th><th>المزود</th><th>السعر</th><th>الملاحظة</th></tr></thead>
+      <tbody>
+        <tr><td><strong>دومين .com</strong></td><td>Namecheap</td><td>~$9-12/سنة</td><td>الافضل سعراً</td></tr>
+        <tr><td><strong>دومين .com</strong></td><td>GoDaddy</td><td>$12-15/سنة</td><td>الاكثر شهرة</td></tr>
+        <tr><td><strong>دومين .clinic</strong></td><td>Namecheap</td><td>~$25-35/سنة</td><td>مميز للعيادات</td></tr>
+        <tr><td><strong>SSL/HTTPS</strong></td><td>Let's Encrypt</td><td>مجاني تماماً</td><td>يجدد تلقائياً كل 90 يوم</td></tr>
+        <tr><td><strong>CDN + حماية</strong></td><td>Cloudflare</td><td>مجاني</td><td>يحمي ويسرع الموقع</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="ps">
+    <div class="sh"><div class="si">🚀</div><div><div class="sn">3.4</div><h2>خطوات رفع النظام السحابي (Railway - الاسهل)</h2></div></div>
+    <div class="fs">
+      <div class="f"><div class="fc"><h4>اعداد المشروع للنشر</h4><p>انشئ ملف Procfile في جذر المشروع:</p><div class="cmd">web: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2</div></div><div class="fn">1</div></div>
+      <div class="f"><div class="fc"><h4>رفع المشروع على GitHub</h4><div class="cmd">git init
+git add .
+git commit -m "Initial deploy"
+git push -u origin main</div></div><div class="fn">2</div></div>
+      <div class="f"><div class="fc"><h4>نشر على Railway</h4><ul style="padding-right:20px;font-size:13px;color:#475569;"><li>افتح railway.app وسجل بحساب GitHub</li><li>اضغط New Project ثم Deploy from GitHub repo</li><li>اختر المستودع الخاص بالمشروع</li><li>Railway سيكتشف Flask تلقائياً ويبدا النشر</li></ul></div><div class="fn">3</div></div>
+      <div class="f"><div class="fc"><h4>اضافة قاعدة البيانات PostgreSQL</h4><ul style="padding-right:20px;font-size:13px;color:#475569;"><li>في مشروع Railway: اضغط + New ثم Database ثم PostgreSQL</li><li>انسخ متغير DATABASE_URL التلقائي</li><li>اضفه في Variables للمشروع الرئيسي</li></ul></div><div class="fn">4</div></div>
+      <div class="f"><div class="fc"><h4>اضافة المتغيرات البيئية</h4><div class="cmd">SECRET_KEY=نص_عشوائي_طويل_32_حرف
+FLASK_ENV=production</div></div><div class="fn">5</div></div>
+    </div>
+  </div>
+  <div class="ps">
+    <div class="sh"><div class="si">🔒</div><div><div class="sn">3.5</div><h2>النسخ الاحتياطي والامان</h2></div></div>
+    <div class="hb d"><h4>تنبيهات امنية مهمة للنشر الانتاجي</h4><ul>
+      <li>غير SECRET_KEY في .env الى قيمة عشوائية طويلة (32+ حرف)</li>
+      <li>عين FLASK_ENV=production لاخفاء رسائل الخطا التفصيلية</li>
+      <li>استخدم Cloudflare كطبقة حماية مجانية امام السيرفر</li>
+      <li>خذ نسخة احتياطية اسبوعية على الاقل من قاعدة البيانات</li>
+      <li>لا تشارك ملف .env مع اي شخص ولا ترفعه على GitHub</li>
+    </ul></div>
+  </div>
+  <div class="ps">
+    <div class="sh"><div class="si">🏆</div><div><div class="sn">الخلاصة</div><h2>ما الحل الانسب لكل سيناريو؟</h2></div></div>
+    <table>
+      <thead><tr><th>السيناريو</th><th>الحل الانسب</th><th>التكلفة</th></tr></thead>
+      <tbody>
+        <tr><td>عيادة صغيرة - تجربة النظام</td><td>تثبيت محلي على لابتوب + SQLite</td><td><span class="b bg">مجاني</span></td></tr>
+        <tr><td>عيادة صغيرة - استخدام يومي محلي</td><td>لابتوب + XAMPP + MySQL + .exe installer</td><td><span class="b bg">مجاني</span></td></tr>
+        <tr><td>عيادة تريد وصول الطاقم عن بعد</td><td>Railway.app (PostgreSQL مدمج)</td><td><span class="b bb">~$5/شهر</span></td></tr>
+        <tr><td>عيادة احترافية - اداء عالٍ</td><td>Hetzner VPS + Nginx + Gunicorn</td><td><span class="b bb">~$4.5-9/شهر</span></td></tr>
+        <tr><td>سلسلة عيادات - مستخدمون كثيرون</td><td>DigitalOcean Droplet $12 (2 GB RAM)</td><td><span class="b bo">~$12/شهر</span></td></tr>
+      </tbody>
+    </table>
+    <div class="hb s"><h4>🎯 التوصية الشخصية للتسويق عند العيادات</h4><ul>
+      <li><strong>للعيادة الاولى:</strong> ابدأ بالتثبيت المحلي مجاناً - اذا احبوه انتقل للسحابي</li>
+      <li><strong>للسحابي:</strong> ابدأ بـ Railway بـ $5/شهر - سهل، سريع، لا يحتاج خبرة Linux</li>
+      <li><strong>للعيادة الاحترافية:</strong> Hetzner بـ $4.5/شهر - ارخص واقوى مقابل السعر</li>
+      <li><strong>الدومين:</strong> Namecheap بـ $10/سنة + Cloudflare مجاني = عنوان احترافي وآمن</li>
+      <li><strong>التكلفة الاجمالية للسحابي:</strong> ~$15-18/شهر (سيرفر + دومين + كل شيء)</li>
+    </ul></div>
+  </div>
+</div>
+<footer>
+  <p>🦷 Dental Clinic MS - نظام ادارة العيادة السنية | الدليل الشامل للعرض والنشر والاستضافة</p>
+  <p style="margin-top:8px;opacity:0.5;">جميع الاسعار المذكورة تقديرية - تحقق من المواقع الرسمية لاحدث الاسعار | 2025</p>
+</footer>
+</body>
+</html>""")
+
+final_html = ''.join(html_parts)
+
+with open('dental_clinic_guide.html', 'w', encoding='utf-8') as f:
+    f.write(final_html)
+
+print(f'SUCCESS! Guide written: {len(final_html)} bytes, {final_html.count(chr(10))} lines')
+print('Open: dental_clinic_guide.html')

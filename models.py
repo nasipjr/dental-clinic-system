@@ -36,6 +36,8 @@ class Patient(db.Model):
     medicare_number = db.Column(db.String(100))
     telegram_chat_id = db.Column(db.String(50), nullable=True)
     reminders_enabled = db.Column(db.Boolean, default=True, nullable=False)
+    primary_doctor_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    primary_doctor = db.relationship("User", foreign_keys=[primary_doctor_id], backref="primary_patients")
 
     appointments = db.relationship(
         "Appointment",
@@ -130,6 +132,8 @@ class Appointment(db.Model):
     reason = db.Column(db.String(255))
     status = db.Column(db.String(50), default="Scheduled")
     session_opened_at = db.Column(db.DateTime, nullable=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    doctor = db.relationship("User", foreign_keys=[doctor_id], backref="doctor_appointments")
 
     treatments = db.relationship(
         "Treatment",
@@ -231,6 +235,8 @@ class Treatment(db.Model):
     use_anesthesia = db.Column(db.Boolean, default=False, nullable=False)
     anesthesia_needles = db.Column(db.Integer, default=0, nullable=False)
     anesthesia_cost = db.Column(db.Numeric(10, 2), default=0.00, nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    doctor = db.relationship("User", foreign_keys=[doctor_id], backref="doctor_treatments")
 
     @property
     def patient(self):
@@ -455,7 +461,7 @@ class User(db.Model):
     first_name = db.Column(db.String(100), nullable=True)
     last_name = db.Column(db.String(100), nullable=True)
     patient_id = db.Column(db.Integer, db.ForeignKey("patient.id"), nullable=True)
-    patient = db.relationship("Patient", backref=db.backref("user", uselist=False))
+    patient = db.relationship("Patient", foreign_keys=[patient_id], backref=db.backref("user", uselist=False))
     plain_password = db.Column(db.String(255), nullable=True)
 
     def __init__(self, **kwargs):
@@ -468,6 +474,15 @@ class User(db.Model):
     def check_password(self, password):
         from werkzeug.security import check_password_hash
         return check_password_hash(self.password_hash, password)
+
+    @property
+    def display_name(self):
+        full_name = f"{self.first_name or ''} {self.last_name or ''}".strip()
+        if full_name:
+            if self.role in ("doctor", "admin"):
+                return f"د. {full_name}" if not full_name.startswith("د.") else full_name
+            return full_name
+        return self.username
 
 
 class PatientFile(db.Model):

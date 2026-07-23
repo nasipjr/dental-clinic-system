@@ -78,29 +78,45 @@
 
                 <td>
                     <span class="appointment-status
-                        {% if appointment.status == 'Done' %}status-done
-                        {% elif appointment.status == 'Cancelled' %}status-cancelled
-                        {% elif appointment.status == 'Pending' %}status-pending
+                        {% if appointment.status == 'Done' or appointment.status == 'منجز' %}status-done
+                        {% elif appointment.status == 'Cancelled' or appointment.status == 'ملغي' %}status-cancelled
+                        {% elif appointment.status == 'Pending' or appointment.status == 'قيد التثبيت' %}status-pending
+                        {% elif appointment.status == 'Rejected' or appointment.status == 'تم الرفض' or appointment.status == 'مرفوض' %}status-rejected
                         {% else %}status-scheduled{% endif %}">
-                        {{ appointment.status }}
+                        {% if appointment.status == 'Rejected' %}
+                            {% if current_lang == 'ar' %}تم الرفض{% else %}Rejected{% endif %}
+                        {% elif appointment.status == 'Pending' %}
+                            {% if current_lang == 'ar' %}قيد التثبيت{% else %}Pending{% endif %}
+                        {% elif appointment.status == 'Scheduled' %}
+                            {% if current_lang == 'ar' %}مجدول{% else %}Scheduled{% endif %}
+                        {% elif appointment.status == 'Done' %}
+                            {% if current_lang == 'ar' %}منجز{% else %}Done{% endif %}
+                        {% elif appointment.status == 'Cancelled' %}
+                            {% if current_lang == 'ar' %}ملغي{% else %}Cancelled{% endif %}
+                        {% else %}
+                            {{ appointment.status }}
+                        {% endif %}
                     </span>
                 </td>
 
                 <td class="text-center">
                     <div class="appointments-actions">
+                        <!-- View Button (Always visible) -->
                         <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}"
                             class="table-action-btn view-btn" title="View Appointment">
                             <i class="bi bi-eye"></i>
                         </a>
 
-                        {% if current_user.role in ('admin', 'doctor') %}
+                        <!-- Open Session Button (Allowed for Admin always, or assigned Doctor if not Cancelled) -->
+                        {% if current_user.role == 'admin' or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id and appointment.status != 'Cancelled') %}
                         <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
                             class="table-action-btn appointment-table-btn" title="Open Session">
                             <i class="bi bi-clipboard2-pulse"></i>
                         </a>
                         {% endif %}
 
-                        {% if appointment.status == 'Scheduled' %}
+                        <!-- WhatsApp Reminder (Only for Scheduled appointments) -->
+                        {% if appointment.status == 'Scheduled' and current_user.role in ('admin', 'receptionist') %}
                         <button type="button"
                             class="table-action-btn border-0 bg-transparent p-0"
                             onclick="sendWhatsAppReminder('{{ appointment.patient.phone or '' }}', '{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}', '{{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else '' }}', '{{ clinic_name }}', {{ appointment.id }})"
@@ -109,12 +125,18 @@
                             <i class="bi bi-whatsapp"></i>
                         </button>
                         <span class="reminded-status-placeholder" data-appointment-id="{{ appointment.id }}"></span>
-                        {% if current_user.role in ('admin', 'receptionist') %}
+                        {% endif %}
+
+                        <!-- Edit Button (Allowed for Admin always, or Receptionist/assigned Doctor if Scheduled) -->
+                        {% if current_user.role == 'admin' or (appointment.status == 'Scheduled' and (current_user.role == 'receptionist' or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id))) %}
                         <a href="{{ url_for('appointments.edit_appointment', appointment_id=appointment.id) }}"
                             class="table-action-btn edit-btn" title="Edit Appointment">
                             <i class="bi bi-pencil-square"></i>
                         </a>
+                        {% endif %}
 
+                        <!-- Quick Cancel (Only for Scheduled appointments) -->
+                        {% if appointment.status == 'Scheduled' and (current_user.role in ('admin', 'receptionist') or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id)) %}
                         <button type="button"
                             class="table-action-btn quick-action-btn border-0 bg-transparent p-0"
                             data-action-url="{{ url_for('appointments.quick_cancel', appointment_id=appointment.id) }}"
@@ -122,17 +144,15 @@
                             title="Quick Cancel">
                             <i class="bi bi-x-circle text-danger"></i>
                         </button>
-
-                        {% endif %}
                         {% endif %}
 
-                        {% if current_user.role in ('admin', 'receptionist') and appointment.status != 'Done' %}
+                        <!-- Delete Button (Only for Admin) -->
+                        {% if current_user.role == 'admin' %}
                         <a href="{{ url_for('appointments.delete_appointment', appointment_id=appointment.id) }}"
                             class="table-action-btn delete-table-btn" title="Delete Appointment">
                             <i class="bi bi-trash"></i>
                         </a>
                         {% endif %}
-
                     </div>
                 </td>
             </tr>

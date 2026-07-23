@@ -230,6 +230,18 @@
   color: #ffd043;
 }
 
+.status-rejected {
+  background: rgba(255, 140, 0, 0.18);
+  color: #f57c00;
+  border: 1px solid rgba(255, 140, 0, 0.3);
+}
+
+[data-bs-theme="dark"] .status-rejected {
+  background: rgba(255, 140, 0, 0.25);
+  color: #ffb74d;
+  border: 1px solid rgba(255, 140, 0, 0.4);
+}
+
 .btn-status {
   display: inline-flex;
   align-items: center;
@@ -2320,7 +2332,14 @@ body.calendar-page.scrolled .header {
   color: #e2e8f0 !important;
 }
 
-/* SweetAlert dark theme integration */
+/* SweetAlert dark & light theme integration */
+.swal2-popup .swal-custom-label,
+.swal2-popup label {
+  color: var(--default-color, #212529) !important;
+  font-weight: 600 !important;
+  display: block;
+}
+
 [data-bs-theme="dark"] .swal2-popup {
   background-color: #1e293b !important;
   color: #e2e8f0 !important;
@@ -2338,6 +2357,35 @@ body.calendar-page.scrolled .header {
 
 [data-bs-theme="dark"] .swal2-loading {
   background-color: transparent !important;
+}
+
+[data-bs-theme="dark"] .swal2-popup .swal-custom-label,
+[data-bs-theme="dark"] .swal2-popup label {
+  color: #f1f5f9 !important;
+}
+
+[data-bs-theme="dark"] .swal2-popup .form-select,
+[data-bs-theme="dark"] .swal2-popup .form-control,
+[data-bs-theme="dark"] .swal2-popup select.swal2-select,
+[data-bs-theme="dark"] .swal2-popup select,
+[data-bs-theme="dark"] .swal2-popup input {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border: 1px solid #334155 !important;
+  border-radius: 10px !important;
+}
+
+[data-bs-theme="dark"] .swal2-popup .form-select option,
+[data-bs-theme="dark"] .swal2-popup select option {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .swal2-popup select:focus,
+[data-bs-theme="dark"] .swal2-popup input:focus,
+[data-bs-theme="dark"] .swal2-popup .form-select:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25) !important;
 }
 
 /* Flatpickr Calendar theme integration for dark mode */

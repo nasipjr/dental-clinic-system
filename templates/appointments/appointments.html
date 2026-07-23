@@ -21,12 +21,24 @@
             <div class="d-flex align-items-center gap-3">
                 <i class="bi bi-exclamation-circle-fill fs-4" style="color: #ffc107;"></i>
                 <div>
-                    <strong style="color: #664d03; display: block;">You have {{ pending_count }} pending appointment requests</strong>
-                    <span class="small text-muted">Review patient self-bookings from the portal</span>
+                    <strong style="color: #664d03; display: block;">
+                        {% if current_lang == 'ar' %}
+                            لديك {{ pending_count }} طلبات مواعيد معلقة
+                        {% else %}
+                            You have {{ pending_count }} pending appointment requests
+                        {% endif %}
+                    </strong>
+                    <span class="small text-muted">
+                        {% if current_lang == 'ar' %}
+                            مراجعة حجوزات المرضى الذاتية من البوابة
+                        {% else %}
+                            Review patient self-bookings from the portal
+                        {% endif %}
+                    </span>
                 </div>
             </div>
             <a href="{{ url_for('appointments.pending_appointments') }}" class="btn btn-warning btn-sm rounded-pill px-4 fw-bold text-dark">
-                Review Requests
+                {% if current_lang == 'ar' %}مراجعة الطلبات{% else %}Review Requests{% endif %}
             </a>
         </div>
         {% endif %}
@@ -37,9 +49,8 @@
                 <p class="mb-0">Manage all appointments from one place.</p>
             </div>
 
-            {% if current_user.role in ('admin', 'receptionist') %}
             <div class="d-flex gap-2 align-items-center">
-                {% if has_cancelled %}
+                {% if has_cancelled and current_user.role in ('admin', 'receptionist') %}
                 <form action="{{ url_for('appointments.delete_all_cancelled') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete all cancelled appointments? This action cannot be undone.');" style="margin: 0;">
                     <button type="submit" class="btn btn-danger" style="border-radius: 30px; font-weight: 600; padding: 10px 24px;">
                         <i class="bi bi-trash"></i>
@@ -47,12 +58,13 @@
                     </button>
                 </form>
                 {% endif %}
+                {% if current_user.role in ('admin', 'receptionist', 'doctor') %}
                 <a href="{{ url_for('appointments.add_appointment_direct') }}" class="btn btn-primary" style="border-radius: 30px; font-weight: 600; padding: 10px 24px;">
                     <i class="bi bi-plus-circle"></i>
                     New Appointment
                 </a>
+                {% endif %}
             </div>
-            {% endif %}
 
         </div>
 

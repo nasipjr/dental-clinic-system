@@ -207,9 +207,24 @@ def parse_appointment_data(form):
     if reason not in APPOINTMENT_REASONS:
         return None, "Invalid appointment reason."
 
+    doctor_id_raw = form.get("doctor_id", "").strip()
+    doctor_id = None
+    if doctor_id_raw:
+        try:
+            doctor_id = int(doctor_id_raw)
+        except ValueError:
+            doctor_id = None
+
+    if not doctor_id:
+        from models import User
+        admin_doc = User.query.filter((User.role == "admin") | (User.username == "admin")).first()
+        if admin_doc:
+            doctor_id = admin_doc.id
+
     appointment_data = {
         "appointment_date": appointment_date,
         "reason": reason,
+        "doctor_id": doctor_id,
     }
 
     return appointment_data, None
@@ -267,7 +282,7 @@ def parse_invoice_payment_amount(payment_amount_raw):
     return payment_amount, None
 
 
-def check_appointment_conflict(appointment_date, current_appointment_id=None):
+def check_appointment_conflict(appointment_date, current_appointment_id=None, doctor_id=None):
     from models import Appointment
     from datetime import timedelta
     from utils.settings_helper import get_setting
@@ -277,11 +292,13 @@ def check_appointment_conflict(appointment_date, current_appointment_id=None):
     except ValueError:
         duration = 30
 
+    # Clinic has 1 dental chair -> Check conflict across ALL doctors for the time slot
     conflict = Appointment.query.filter(
         Appointment.status.in_(["Scheduled", "Pending"]),
         Appointment.appointment_date < appointment_date + timedelta(minutes=duration),
         Appointment.appointment_date > appointment_date - timedelta(minutes=duration)
     )
+
     if current_appointment_id:
         conflict = conflict.filter(Appointment.id != current_appointment_id)
 

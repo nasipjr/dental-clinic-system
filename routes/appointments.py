@@ -69,6 +69,13 @@ def get_appointments_context():
             (Patient.last_name.ilike(f"%{search_query}%"))
         )
 
+    doctor_filter = request.args.get("doctor_id", "")
+    if doctor_filter:
+        try:
+            query = query.filter(Appointment.doctor_id == int(doctor_filter))
+        except ValueError:
+            pass
+
     if status_filter:
         query = query.filter(Appointment.status == status_filter)
     else:
@@ -145,10 +152,12 @@ def appointments_table():
 
 
 @appointments_bp.route("/appointments/add", methods=["GET", "POST"])
-@role_required("admin", "receptionist")
+@role_required("admin", "receptionist", "doctor")
 def add_appointment_direct():
     current_app.logger.info("Direct add appointment page/request")
     try:
+        from models import User
+        doctors = User.query.filter(User.role.in_(["admin", "doctor"])).all()
         patients = Patient.query.order_by(Patient.first_name.asc(), Patient.last_name.asc()).all()
         appointment_min_datetime, appointment_max_datetime = get_appointment_datetime_limits()
         
@@ -162,6 +171,7 @@ def add_appointment_direct():
                 return render_template(
                     "appointments/add_appointment.html",
                     patients=patients,
+                    doctors=doctors,
                     error_message="Patient ID is required.",
                     appointment_min_datetime=appointment_min_datetime,
                     appointment_max_datetime=appointment_max_datetime,
@@ -175,6 +185,7 @@ def add_appointment_direct():
                 return render_template(
                     "appointments/add_appointment.html",
                     patients=patients,
+                    doctors=doctors,
                     error_message=appointment_error,
                     appointment_min_datetime=appointment_min_datetime,
                     appointment_max_datetime=appointment_max_datetime,
@@ -182,11 +193,15 @@ def add_appointment_direct():
                 ), 400
 
             with booking_lock:
-                conflict = check_appointment_conflict(appointment_data["appointment_date"])
+                conflict = check_appointment_conflict(
+                    appointment_data["appointment_date"],
+                    doctor_id=appointment_data.get("doctor_id")
+                )
                 if conflict:
                     return render_template(
                         "appointments/add_appointment.html",
                         patients=patients,
+                        doctors=doctors,
                         error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %I:%M %p')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
                         appointment_min_datetime=appointment_min_datetime,
                         appointment_max_datetime=appointment_max_datetime,
@@ -197,6 +212,7 @@ def add_appointment_direct():
                     patient_id=patient.id,
                     appointment_date=appointment_data["appointment_date"],
                     reason=appointment_data["reason"],
+                    doctor_id=appointment_data.get("doctor_id"),
                     status="Scheduled",
                 )
 
@@ -212,6 +228,7 @@ def add_appointment_direct():
         return render_template(
             "appointments/add_appointment.html",
             patients=patients,
+            doctors=doctors,
             appointment_min_datetime=appointment_min_datetime,
             appointment_max_datetime=appointment_max_datetime,
             prefilled_date=prefilled_date,
@@ -224,11 +241,13 @@ def add_appointment_direct():
 
 
 @appointments_bp.route("/patients/<int:patient_id>/appointments/add", methods=["GET", "POST"])
-@role_required("admin", "receptionist")
+@role_required("admin", "receptionist", "doctor")
 def add_appointment(patient_id):
     current_app.logger.info(f"Add appointment page/request | patient_id={patient_id}")
 
     try:
+        from models import User
+        doctors = User.query.filter(User.role.in_(["admin", "doctor"])).all()
         patient = Patient.query.get_or_404(patient_id)
         appointment_min_datetime, appointment_max_datetime = get_appointment_datetime_limits()
 
@@ -239,17 +258,22 @@ def add_appointment(patient_id):
                 return render_template(
                     "appointments/add_appointment.html",
                     patient=patient,
+                    doctors=doctors,
                     error_message=appointment_error,
                     appointment_min_datetime=appointment_min_datetime,
                     appointment_max_datetime=appointment_max_datetime,
                 ), 400
 
             with booking_lock:
-                conflict = check_appointment_conflict(appointment_data["appointment_date"])
+                conflict = check_appointment_conflict(
+                    appointment_data["appointment_date"],
+                    doctor_id=appointment_data.get("doctor_id")
+                )
                 if conflict:
                     return render_template(
                         "appointments/add_appointment.html",
                         patient=patient,
+                        doctors=doctors,
                         error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %I:%M %p')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
                         appointment_min_datetime=appointment_min_datetime,
                         appointment_max_datetime=appointment_max_datetime,
@@ -259,6 +283,7 @@ def add_appointment(patient_id):
                     patient_id=patient.id,
                     appointment_date=appointment_data["appointment_date"],
                     reason=appointment_data["reason"],
+                    doctor_id=appointment_data.get("doctor_id"),
                     status="Scheduled",
                 )
 
@@ -275,6 +300,7 @@ def add_appointment(patient_id):
         return render_template(
             "appointments/add_appointment.html",
             patient=patient,
+            doctors=doctors,
             appointment_min_datetime=appointment_min_datetime,
             appointment_max_datetime=appointment_max_datetime,
         )
@@ -291,11 +317,25 @@ def edit_appointment(appointment_id):
     current_app.logger.info(f"Edit appointment page/request | appointment_id={appointment_id}")
 
     try:
+        from models import User
+        doctors = User.query.filter(User.role.in_(["admin", "doctor"])).all()
         appointment = Appointment.query.get_or_404(appointment_id)
         appointment_min_datetime, appointment_max_datetime = get_appointment_datetime_limits()
 
+        from flask import session
+        user_id = session.get("user_id")
+        user_role = session.get("role")
+
+        if user_role == "doctor" and appointment.doctor_id and appointment.doctor_id != user_id:
+            return render_template(
+                "error_message.html",
+                title="Unauthorized",
+                message="عفواً، لا يمكنك تعديل موعد خاص بطبيب آخر.",
+                back_url=url_for("appointments.view_appointment", appointment_id=appointment.id),
+            ), 403
+
         if request.method == "POST":
-            if appointment.status != "Scheduled":
+            if user_role != "admin" and appointment.status != "Scheduled":
                 return "Cannot edit a closed or cancelled appointment.", 403
 
             appointment_data, appointment_error = parse_appointment_data(request.form)
@@ -304,6 +344,7 @@ def edit_appointment(appointment_id):
                 return render_template(
                     "appointments/edit_appointment.html",
                     appointment=appointment,
+                    doctors=doctors,
                     mode="edit",
                     error_message=appointment_error,
                     appointment_min_datetime=appointment_min_datetime,
@@ -316,6 +357,7 @@ def edit_appointment(appointment_id):
                 return render_template(
                     "appointments/edit_appointment.html",
                     appointment=appointment,
+                    doctors=doctors,
                     mode="edit",
                     error_message="Invalid appointment status.",
                     appointment_min_datetime=appointment_min_datetime,
@@ -326,12 +368,14 @@ def edit_appointment(appointment_id):
                 if new_status == "Scheduled":
                     conflict = check_appointment_conflict(
                         appointment_data["appointment_date"],
-                        current_appointment_id=appointment.id
+                        current_appointment_id=appointment.id,
+                        doctor_id=appointment_data.get("doctor_id")
                     )
                     if conflict:
                         return render_template(
                             "appointments/edit_appointment.html",
                             appointment=appointment,
+                            doctors=doctors,
                             mode="edit",
                             error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %I:%M %p')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
                             appointment_min_datetime=appointment_min_datetime,
@@ -344,6 +388,7 @@ def edit_appointment(appointment_id):
 
                 appointment.appointment_date = new_date
                 appointment.reason = appointment_data["reason"]
+                appointment.doctor_id = appointment_data.get("doctor_id")
                 appointment.status = new_status
 
 
@@ -364,6 +409,7 @@ def edit_appointment(appointment_id):
         return render_template(
             "appointments/edit_appointment.html",
             appointment=appointment,
+            doctors=doctors,
             mode="edit",
             appointment_min_datetime=appointment_min_datetime,
             appointment_max_datetime=appointment_max_datetime,
@@ -531,6 +577,10 @@ def appointment_events():
             duration = int(get_setting("default_appointment_duration", "30"))
         except ValueError:
             duration = 30
+        from flask import session
+        user_id = session.get("user_id")
+        user_role = session.get("role")
+
         appointments = Appointment.query.all()
         events = []
         for appt in appointments:
@@ -544,6 +594,30 @@ def appointment_events():
             start_iso = appt.appointment_date.isoformat()
             end_iso = (appt.appointment_date + timedelta(minutes=duration)).isoformat()
 
+            is_closed = bool(appt.status in ("Done", "Cancelled"))
+            is_admin = (user_role == "admin")
+
+            # Admin can open any session.
+            # Doctor can open session for their assigned appointments if not Cancelled (even if Done)
+            can_open_session = (
+                is_admin or (
+                    user_role == "doctor" and appt.doctor_id == user_id and appt.status != "Cancelled"
+                )
+            )
+
+            can_edit = (
+                is_admin or (
+                    not is_closed and appt.status == "Scheduled" and
+                    (user_role == "receptionist" or (user_role == "doctor" and appt.doctor_id == user_id))
+                )
+            )
+
+            can_remind = (
+                not is_closed and appt.status == "Scheduled" and
+                (user_role in ("admin", "receptionist") or (user_role == "doctor" and appt.doctor_id == user_id)) and
+                bool(appt.patient and appt.patient.phone and appt.patient.phone.strip() and appt.patient.phone != "No phone")
+            )
+
             events.append({
                 "id": appt.id,
                 "title": f"{appt.patient.first_name} {appt.patient.last_name} ({appt.reason or 'N/A'})",
@@ -556,9 +630,13 @@ def appointment_events():
                     "reason": appt.reason or "No reason",
                     "status": appt.status,
                     "id": appt.id,
-                    "sessionUrl": url_for("treatments.appointment_session", appointment_id=appt.id),
+                    "isClosed": is_closed,
+                    "canOpenSession": can_open_session,
+                    "canEdit": can_edit,
+                    "canRemind": can_remind,
+                    "sessionUrl": url_for("treatments.appointment_session", appointment_id=appt.id) if can_open_session else None,
                     "viewUrl": url_for("appointments.view_appointment", appointment_id=appt.id),
-                    "editUrl": url_for("appointments.edit_appointment", appointment_id=appt.id) if appt.status == "Scheduled" else None
+                    "editUrl": url_for("appointments.edit_appointment", appointment_id=appt.id) if can_edit else None
                 }
             })
         return jsonify(events)
@@ -615,15 +693,18 @@ def confirm_appointment(appointment_id):
     try:
         appt = Appointment.query.get_or_404(appointment_id)
         if appt.status != "Pending":
-            return jsonify({"success": False, "message": "Only pending appointments can be confirmed."}), 400
+            is_ar = request.cookies.get("lang") == "ar" or session.get("lang") == "ar"
+            return jsonify({"success": False, "message": "يمكن تأكيد المواعيد قيد التثبيت فقط." if is_ar else "Only pending appointments can be confirmed."}), 400
         
         appt.status = "Scheduled"
         db.session.commit()
-        return jsonify({"success": True, "message": "Appointment confirmed successfully."})
-    except Exception:
+        is_ar = request.cookies.get("lang") == "ar" or session.get("lang") == "ar"
+        return jsonify({"success": True, "message": "تم تأكيد طلب الموعد بنجاح." if is_ar else "Appointment confirmed successfully."})
+    except Exception as e:
         db.session.rollback()
         current_app.logger.exception("Failed to confirm appointment request")
-        return jsonify({"success": False, "message": "Internal server error."}), 500
+        is_ar = request.cookies.get("lang") == "ar" or session.get("lang") == "ar"
+        return jsonify({"success": False, "message": "حدث خطأ في النظام أثناء التأكيد." if is_ar else "Internal server error."}), 500
 
 
 @appointments_bp.route("/appointments/<int:appointment_id>/decline", methods=["POST"])
@@ -633,19 +714,25 @@ def decline_appointment(appointment_id):
     try:
         appt = Appointment.query.get_or_404(appointment_id)
         if appt.status != "Pending":
-            return jsonify({"success": False, "message": "Only pending appointments can be declined."}), 400
+            is_ar = request.cookies.get("lang") == "ar" or session.get("lang") == "ar"
+            return jsonify({"success": False, "message": "يمكن رفض المواعيد قيد التثبيت فقط." if is_ar else "Only pending appointments can be declined."}), 400
         
-        appt.status = "Cancelled"
+        appt.status = "Rejected"
         db.session.commit()
 
-        from services.notification_service import notify_appointment_cancellation
-        notify_appointment_cancellation(appt)
+        try:
+            from services.notification_service import notify_appointment_cancellation
+            notify_appointment_cancellation(appt)
+        except Exception as e:
+            current_app.logger.error(f"Failed to send cancellation notification: {e}")
 
-        return jsonify({"success": True, "message": "Appointment request declined."})
-    except Exception:
+        is_ar = request.cookies.get("lang") == "ar" or session.get("lang") == "ar"
+        return jsonify({"success": True, "message": "تم رفض طلب الموعد بنجاح." if is_ar else "Appointment request declined."})
+    except Exception as e:
         db.session.rollback()
         current_app.logger.exception("Failed to decline appointment request")
-        return jsonify({"success": False, "message": "Internal server error."}), 500
+        is_ar = request.cookies.get("lang") == "ar" or session.get("lang") == "ar"
+        return jsonify({"success": False, "message": "حدث خطأ في النظام أثناء الرفض." if is_ar else "Internal server error."}), 500
 
 
 @appointments_bp.route("/appointments/<int:appointment_id>/reschedule", methods=["POST"])

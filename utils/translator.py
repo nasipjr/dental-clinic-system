@@ -29,7 +29,8 @@ class HTMLTranslator(HTMLParser):
     def __init__(self):
         super().__init__()
         self.output = []
-        self.skip_stack = 0  # To track script/style tags
+        self.skip_stack = 0  # To track script/style/translate=no tags
+        self.skip_tags = []
 
     def translate_text(self, text):
         if not text.strip():
@@ -61,13 +62,20 @@ class HTMLTranslator(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         self.output.append(f"<{tag}")
-        if tag.lower() in ('script', 'style'):
+        
+        is_no_translate = (
+            tag.lower() in ('script', 'style') or
+            any(name.lower() == 'translate' and value == 'no' for name, value in attrs) or
+            any(name.lower() == 'class' and 'notranslate' in (value or '').split() for name, value in attrs)
+        )
+        if is_no_translate:
             self.skip_stack += 1
-            
+            self.skip_tags.append(tag.lower())
+
         for name, value in attrs:
             if value is not None:
                 # Translate specific interactive attributes
-                if name.lower() in ('placeholder', 'title', 'data-tooltip', 'data-bs-title', 'data-original-title'):
+                if self.skip_stack == 0 and name.lower() in ('placeholder', 'title', 'data-tooltip', 'data-bs-title', 'data-original-title'):
                     value = self.translate_text(value)
                 self.output.append(f' {name}="{html_escape(value)}"')
             else:
@@ -75,7 +83,10 @@ class HTMLTranslator(HTMLParser):
         self.output.append(">")
 
     def handle_endtag(self, tag):
-        if tag.lower() in ('script', 'style'):
+        if self.skip_tags and self.skip_tags[-1] == tag.lower():
+            self.skip_tags.pop()
+            self.skip_stack = max(0, self.skip_stack - 1)
+        elif tag.lower() in ('script', 'style'):
             self.skip_stack = max(0, self.skip_stack - 1)
         self.output.append(f"</{tag}>")
 

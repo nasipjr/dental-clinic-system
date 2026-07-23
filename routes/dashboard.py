@@ -36,25 +36,33 @@ def home():
         today_done = sum(1 for a in today_appointments if a.status == "Done")
         today_scheduled = sum(1 for a in today_appointments if a.status == "Scheduled")
 
-        today_scheduled_appointments = (
+        from flask import g
+        user = g.get("current_user")
+        doctor_filter_id = user.id if (user and user.role == "doctor") else None
+
+        scheduled_query = (
             Appointment.query
             .join(Patient)
             .filter(Appointment.appointment_date >= today_start)
             .filter(Appointment.appointment_date <= today_end)
             .filter(Appointment.status.in_(["Scheduled", "Checked In", "In Chair"]))
-            .order_by(Appointment.appointment_date.asc())
-            .all()
         )
+        if doctor_filter_id:
+            scheduled_query = scheduled_query.filter(Appointment.doctor_id == doctor_filter_id)
 
-        today_done_appointments = (
+        today_scheduled_appointments = scheduled_query.order_by(Appointment.appointment_date.asc()).all()
+
+        done_query = (
             Appointment.query
             .join(Patient)
             .filter(Appointment.appointment_date >= today_start)
             .filter(Appointment.appointment_date <= today_end)
             .filter(Appointment.status == "Done")
-            .order_by(Appointment.appointment_date.asc())
-            .all()
         )
+        if doctor_filter_id:
+            done_query = done_query.filter(Appointment.doctor_id == doctor_filter_id)
+
+        today_done_appointments = done_query.order_by(Appointment.appointment_date.asc()).all()
 
         from models import Invoice
         total_revenue = sum(float(inv.total_amount) for inv in Invoice.query.join(Invoice.appointment).filter(Appointment.status != "Cancelled").all())
@@ -74,27 +82,25 @@ def home():
             ).all()
         )
 
-        pending_appointments = (
-            Appointment.query
-            .join(Patient)
-            .filter(Appointment.status == "Pending")
-            .order_by(Appointment.appointment_date.asc())
-            .all()
-        )
+        pending_query = Appointment.query.join(Patient).filter(Appointment.status == "Pending")
+        if doctor_filter_id:
+            pending_query = pending_query.filter(Appointment.doctor_id == doctor_filter_id)
+        pending_appointments = pending_query.order_by(Appointment.appointment_date.asc()).all()
 
         # Tomorrow's appointments query
         tomorrow = today + timedelta(days=1)
         tomorrow_start = datetime.combine(tomorrow, time.min)
         tomorrow_end = datetime.combine(tomorrow, time.max)
-        tomorrow_appointments = (
+        tomorrow_query = (
             Appointment.query
             .join(Patient)
             .filter(Appointment.appointment_date >= tomorrow_start)
             .filter(Appointment.appointment_date <= tomorrow_end)
             .filter(Appointment.status == "Scheduled")
-            .order_by(Appointment.appointment_date.asc())
-            .all()
         )
+        if doctor_filter_id:
+            tomorrow_query = tomorrow_query.filter(Appointment.doctor_id == doctor_filter_id)
+        tomorrow_appointments = tomorrow_query.order_by(Appointment.appointment_date.asc()).all()
 
         return render_template(
             "dashboard/index.html",

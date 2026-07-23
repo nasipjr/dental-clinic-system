@@ -4,6 +4,7 @@ import json
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session, current_app, jsonify
 from models import db, Patient, Appointment, User, Invoice, Payment, PatientFile
 from utils.settings_helper import get_setting
+from utils.constants import APPOINTMENT_REASONS
 
 portal_bp = Blueprint("portal", __name__, url_prefix="/portal")
 
@@ -94,14 +95,27 @@ def dashboard():
     
     # Fetch patient appointments ordered by date
     appointments = Appointment.query.filter_by(patient_id=patient_id).order_by(Appointment.appointment_date.desc()).all()
+    doctors = User.query.filter(User.role.in_(["admin", "doctor"])).all()
     
     from utils.constants import APPOINTMENT_REASONS
     
+    working_hours_start = get_setting("working_hours_start", "09:00")
+    working_hours_end = get_setting("working_hours_end", "21:00")
+    working_days = get_setting("working_days", "0,1,2,3,4,6")
+    default_appointment_duration = get_setting("default_appointment_duration", "30")
+    booking_window_days = get_setting("booking_window_days", "30")
+
     return render_template(
         "portal/dashboard.html",
         patient=patient,
         appointments=appointments,
-        reasons=list(APPOINTMENT_REASONS)
+        doctors=doctors,
+        reasons=list(APPOINTMENT_REASONS),
+        working_hours_start=working_hours_start,
+        working_hours_end=working_hours_end,
+        working_days=working_days,
+        booking_window_days=booking_window_days,
+        default_appointment_duration=default_appointment_duration
     )
 
 
@@ -112,10 +126,13 @@ def book_appointment():
     patient = Patient.query.get_or_404(patient_id)
 
     if request.method == "POST":
+        is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
         appt_date_raw = request.form.get("appointment_date", "").strip()
         reason = request.form.get("reason", "").strip()
 
         if not appt_date_raw or not reason:
+            if is_ajax:
+                return jsonify({"success": False, "message": "جميع الحقول مطلوبة."}), 400
             flash_message("all_fields_required", "danger")
             return redirect(url_for("portal.book_appointment"))
 
@@ -129,6 +146,8 @@ def book_appointment():
                 try:
                     appointment_date = datetime.strptime(appt_date_raw_normalized, "%Y-%m-%d %I:%M %p")
                 except ValueError:
+                    if is_ajax:
+                        return jsonify({"success": False, "message": "تنسيق تاريخ ووقت الموعد غير صالح."}), 400
                     flash_message("invalid_date_format", "danger")
                     return redirect(url_for("portal.book_appointment"))
 
@@ -141,10 +160,14 @@ def book_appointment():
         max_date = now + timedelta(days=booking_window_days)
 
         if appointment_date < now:
+            if is_ajax:
+                return jsonify({"success": False, "message": "لا يمكن حجز موعد في الماضي."}), 400
             flash_message("past_date", "danger")
             return redirect(url_for("portal.book_appointment"))
 
         if appointment_date > max_date:
+            if is_ajax:
+                return jsonify({"success": False, "message": f"لا يمكن حجز موعد قبل أكثر من {booking_window_days} يوماً."}), 400
             flash_message("advance_date", "danger", days=booking_window_days)
             return redirect(url_for("portal.book_appointment"))
 
@@ -154,6 +177,8 @@ def book_appointment():
         day_str = appointment_date.strftime("%w")
 
         if day_str not in working_days_list:
+            if is_ajax:
+                return jsonify({"success": False, "message": "العيادة مغلقة في هذا اليوم."}), 400
             flash_message("clinic_closed", "danger")
             return redirect(url_for("portal.book_appointment"))
 
@@ -174,14 +199,21 @@ def book_appointment():
 
         appt_time = appointment_date.time()
         if appt_time < start_time or appt_time > end_time:
+            if is_ajax:
+                return jsonify({"success": False, "message": f"يجب أن يكون وقت الموعد بين {start_str} و {end_str}."}), 400
             flash_message("time_limit", "danger", start=start_str, end=end_str)
             return redirect(url_for("portal.book_appointment"))
 
         # Check conflict
         from utils.validators import check_appointment_conflict, booking_lock
+        doctor_id_raw = request.form.get("doctor_id", "").strip()
+        doctor_id = int(doctor_id_raw) if doctor_id_raw.isdigit() else None
+
         with booking_lock:
-            conflict = check_appointment_conflict(appointment_date)
+            conflict = check_appointment_conflict(appointment_date, doctor_id=doctor_id)
             if conflict:
+                if is_ajax:
+                    return jsonify({"success": False, "message": "عفواً، هذا الوقت غير متاح للحجز."}), 400
                 flash_message("slot_unavailable", "danger")
                 return redirect(url_for("portal.book_appointment"))
 
@@ -190,37 +222,50 @@ def book_appointment():
                     patient_id=patient.id,
                     appointment_date=appointment_date,
                     reason=reason,
+                    doctor_id=doctor_id,
                     status="Pending" # Pending approval
                 )
                 db.session.add(new_appt)
                 db.session.commit()
+                if is_ajax:
+                    return jsonify({"success": True, "message": "تم تقديم طلب الموعد بنجاح وهو الآن قيد التثبيت."})
                 flash_message("booking_success", "success")
                 return redirect(url_for("portal.dashboard"))
             except Exception as e:
                 db.session.rollback()
                 current_app.logger.error(f"Failed to submit appointment request: {e}")
+                if is_ajax:
+                    return jsonify({"success": False, "message": "حدث خطأ أثناء تقديم الطلب. يرجى المحاولة لاحقاً."}), 500
                 flash_message("booking_failed", "danger")
                 return redirect(url_for("portal.book_appointment"))
 
     # Limits for input
-    try:
-        booking_window_days = int(get_setting("booking_window_days", "30"))
-    except ValueError:
-        booking_window_days = 30
+    # Fetch settings
+    working_hours_start = get_setting("working_hours_start", "09:00")
+    working_hours_end = get_setting("working_hours_end", "21:00")
+    working_days = get_setting("working_days", "0,1,2,3,4,6")
+    default_appointment_duration = get_setting("default_appointment_duration", "30")
+    booking_window_days = get_setting("booking_window_days", "30")
+
     now = datetime.now()
     max_date = now + timedelta(days=booking_window_days)
     min_datetime_str = now.strftime("%Y-%m-%dT%H:%M")
     max_datetime_str = max_date.strftime("%Y-%m-%dT%H:%M")
 
     # Fetch default reasons
-    from utils.constants import APPOINTMENT_REASONS
-
+    doctors = User.query.filter(User.role.in_(["admin", "doctor"])).all()
     return render_template(
         "portal/book.html",
         patient=patient,
+        doctors=doctors,
         reasons=list(APPOINTMENT_REASONS),
         min_datetime=min_datetime_str,
-        max_datetime=max_datetime_str
+        max_datetime=max_datetime_str,
+        working_hours_start=working_hours_start,
+        working_hours_end=working_hours_end,
+        working_days=working_days,
+        booking_window_days=booking_window_days,
+        default_appointment_duration=default_appointment_duration
     )
 
 

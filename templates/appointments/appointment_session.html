@@ -110,6 +110,7 @@
                 </div>
             </div>
 
+            {% if current_user.role in ('admin', 'receptionist') %}
             <div class="financial-summary-grid mt-4">
                 <div class="financial-card">
                     <div class="financial-icon">
@@ -123,9 +124,7 @@
                     <div class="financial-icon">
                         <i class="bi bi-wallet2"></i>
                     </div>
-                    <h4>
-                        <h4>Total Payments</h4>
-                    </h4>
+                    <h4>Total Payments</h4>
                     <p>{{ total_paid_sum | format_price }} {{ currency_symbol }}</p>
                 </div>
 
@@ -156,6 +155,7 @@
                     {% endif %}
                 </div>
             </div>
+            {% endif %}
 
             <div class="session-actions-grid mt-4">
 
@@ -168,7 +168,7 @@
                     class="btn-outline-main session-action-btn">
                     View Appointment
                 </a>
-                {% if appointment.has_invoice %}
+                {% if appointment.has_invoice and current_user.role in ('admin', 'receptionist') %}
                 <a href="{{ url_for('payments.add_patient_payment', patient_id=patient.id) }}"
                     class="btn-session-primary session-action-btn">
                     Add Payment

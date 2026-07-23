@@ -62,5 +62,10 @@ def login():
 @auth_bp.route("/logout")
 def logout():
     session.clear()
-    flash("You have been logged out successfully.", "success")
+    lang = request.cookies.get('lang', 'ar')
+    msg = {
+        "ar": "تم تسجيل الخروج بنجاح.",
+        "en": "You have been logged out successfully."
+    }.get(lang, "تم تسجيل الخروج بنجاح.")
+    flash(msg, "success")
     return redirect(url_for("auth.login"))

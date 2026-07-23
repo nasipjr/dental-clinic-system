@@ -1,6 +1,6 @@
 {% extends "portal/base.html" %}
 
-{% block title %}My Billing{% endblock %}
+{% block title %}{% if current_lang == 'ar' %}فواتيري ومدفوعاتي{% else %}My Billing{% endif %}{% endblock %}
 
 {% block content %}
 <div class="row gy-4">
@@ -11,16 +11,16 @@
         <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle mb-3" style="width: 80px; height: 80px;">
           <i class="bi bi-wallet2 fs-1"></i>
         </div>
-        <h4 class="fw-bold mb-1">Financial Summary</h4>
-        <p class="text-secondary small mb-4">Quick overview of your financial balance</p>
+        <h4 class="fw-bold mb-1">{% if current_lang == 'ar' %}الملخص المالي{% else %}Financial Summary{% endif %}</h4>
+        <p class="text-secondary small mb-4">{% if current_lang == 'ar' %}نظرة عامة على رصيدك المالي{% else %}Quick overview of your financial balance{% endif %}</p>
         
         <div class="text-start border-top pt-3">
           <div class="d-flex justify-content-between mb-2">
-            <span class="small fw-medium" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">Total Invoiced</span>
+            <span class="small fw-medium" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">{% if current_lang == 'ar' %}إجمالي الفواتير{% else %}Total Invoiced{% endif %}</span>
             <span class="small fw-bold text-primary">{{ patient.total_invoice_amount | format_price }} {{ currency_symbol }}</span>
           </div>
           <div class="d-flex justify-content-between mb-2">
-            <span class="small fw-medium" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">Total Paid</span>
+            <span class="small fw-medium" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">{% if current_lang == 'ar' %}إجمالي المدفوعات{% else %}Total Paid{% endif %}</span>
             <span class="small fw-bold text-success">{{ patient.total_payments_amount | format_price }} {{ currency_symbol }}</span>
           </div>
           
@@ -28,22 +28,22 @@
           
           {% if patient.outstanding_amount > 0 %}
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="text-danger fw-bold small">Outstanding Balance</span>
+            <span class="text-danger fw-bold small">{% if current_lang == 'ar' %}المبلغ المتبقي المستحق{% else %}Outstanding Balance{% endif %}</span>
             <span class="badge bg-danger rounded-pill px-3 py-1.5 fw-bold">{{ patient.outstanding_amount | format_price }} {{ currency_symbol }}</span>
           </div>
           {% endif %}
           
           {% if patient.credit_amount > 0 %}
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="text-success fw-bold small">Patient Credit</span>
+            <span class="text-success fw-bold small">{% if current_lang == 'ar' %}رصيد المريض الدائن{% else %}Patient Credit{% endif %}</span>
             <span class="badge bg-success rounded-pill px-3 py-1.5 fw-bold">{{ patient.credit_amount | format_price }} {{ currency_symbol }}</span>
           </div>
           {% endif %}
           
           {% if patient.outstanding_amount == 0 and patient.credit_amount == 0 %}
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="small fw-medium" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">Balance Status</span>
-            <span class="badge bg-light text-dark rounded-pill px-3 py-1.5 border border-secondary-subtle">All Settled</span>
+            <span class="small fw-medium" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">{% if current_lang == 'ar' %}حالة الرصيد{% else %}Balance Status{% endif %}</span>
+            <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1.5 border border-success-subtle fw-semibold">{% if current_lang == 'ar' %}خالص / مسدد بالكامل{% else %}All Settled{% endif %}</span>
           </div>
           {% endif %}
         </div>
@@ -59,12 +59,12 @@
         <ul class="nav nav-pills mb-4 gap-2" id="billingTabs" role="tablist">
           <li class="nav-item" role="presentation">
             <button class="nav-link active rounded-pill px-4" id="invoices-tab" data-bs-toggle="pill" data-bs-target="#invoices-pane" type="button" role="tab">
-              <i class="bi bi-file-earmark-text me-1"></i> My Invoices
+              <i class="bi bi-file-earmark-text me-1"></i> {% if current_lang == 'ar' %}فواتيري{% else %}My Invoices{% endif %}
             </button>
           </li>
           <li class="nav-item" role="presentation">
             <button class="nav-link rounded-pill px-4" id="payments-tab" data-bs-toggle="pill" data-bs-target="#payments-pane" type="button" role="tab">
-              <i class="bi bi-credit-card me-1"></i> Payment History
+              <i class="bi bi-credit-card me-1"></i> {% if current_lang == 'ar' %}سجل المدفوعات{% else %}Payment History{% endif %}
             </button>
           </li>
         </ul>
@@ -76,11 +76,11 @@
               <table class="table align-middle">
                 <thead>
                   <tr>
-                    <th>Invoice #</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th class="text-end">Total</th>
-                    <th class="text-end">Action</th>
+                    <th>{% if current_lang == 'ar' %}رقم الفاتورة{% else %}Invoice #{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}التاريخ{% else %}Date{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+                    <th class="text-end">{% if current_lang == 'ar' %}الإجمالي{% else %}Total{% endif %}</th>
+                    <th class="text-end">{% if current_lang == 'ar' %}الإجراء{% else %}Action{% endif %}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -90,19 +90,19 @@
                     <td>{{ inv.issue_date.strftime('%Y-%m-%d') }}</td>
                     <td>
                       {% if inv.status == 'Paid' %}
-                      <span class="badge bg-success rounded-pill px-3 py-1.5 border border-success-subtle">Paid</span>
+                      <span class="badge bg-success rounded-pill px-3 py-1.5 border border-success-subtle">{% if current_lang == 'ar' %}مدفوع{% else %}Paid{% endif %}</span>
                       {% elif inv.status == 'Partially Paid' %}
-                      <span class="badge bg-warning text-dark rounded-pill px-3 py-1.5 border border-warning-subtle">Partial</span>
+                      <span class="badge bg-warning text-dark rounded-pill px-3 py-1.5 border border-warning-subtle">{% if current_lang == 'ar' %}مدفوع جزئياً{% else %}Partial{% endif %}</span>
                       {% elif inv.status == 'Credit' %}
-                      <span class="badge bg-info rounded-pill px-3 py-1.5 border border-info-subtle">Credit</span>
+                      <span class="badge bg-info rounded-pill px-3 py-1.5 border border-info-subtle">{% if current_lang == 'ar' %}رصيد دائن{% else %}Credit{% endif %}</span>
                       {% else %}
-                      <span class="badge bg-danger rounded-pill px-3 py-1.5 border border-danger-subtle">Unpaid</span>
+                      <span class="badge bg-danger rounded-pill px-3 py-1.5 border border-danger-subtle">{% if current_lang == 'ar' %}غير مدفوع{% else %}Unpaid{% endif %}</span>
                       {% endif %}
                     </td>
                     <td class="text-end fw-semibold">{{ inv.total_amount | format_price }} {{ currency_symbol }}</td>
                     <td class="text-end">
                       <a href="{{ url_for('portal.view_invoice', invoice_id=inv.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                        <i class="bi bi-eye me-1"></i> View Detail
+                        <i class="bi bi-eye me-1"></i> {% if current_lang == 'ar' %}عرض التفاصيل{% else %}View Detail{% endif %}
                       </a>
                     </td>
                   </tr>
@@ -110,7 +110,7 @@
                   <tr>
                     <td colspan="5" class="text-center py-5">
                       <i class="bi bi-file-earmark-x text-muted" style="font-size: 3rem;"></i>
-                      <p class="text-muted mt-2 mb-0">No invoices found</p>
+                      <p class="text-muted mt-2 mb-0">{% if current_lang == 'ar' %}لا توجد فواتير{% else %}No invoices found{% endif %}</p>
                     </td>
                   </tr>
                   {% endfor %}
@@ -125,10 +125,10 @@
               <table class="table align-middle">
                 <thead>
                   <tr>
-                    <th>Receipt #</th>
-                    <th>Date</th>
-                    <th class="text-end">Amount</th>
-                    <th>Notes</th>
+                    <th>{% if current_lang == 'ar' %}رقم الإيصال{% else %}Receipt #{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}التاريخ{% else %}Date{% endif %}</th>
+                    <th class="text-end">{% if current_lang == 'ar' %}المبلغ{% else %}Amount{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}الملاحظات{% else %}Notes{% endif %}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -141,7 +141,7 @@
                       {% if pay.notes %}
                         <span class="small">{{ pay.notes }}</span>
                       {% else %}
-                        <span class="text-muted small italic">No notes available</span>
+                        <span class="text-muted small italic">{% if current_lang == 'ar' %}لا توجد ملاحظات{% else %}No notes available{% endif %}</span>
                       {% endif %}
                     </td>
                   </tr>
@@ -149,7 +149,7 @@
                   <tr>
                     <td colspan="4" class="text-center py-5">
                       <i class="bi bi-credit-card-2-back text-muted" style="font-size: 3rem;"></i>
-                      <p class="text-muted mt-2 mb-0">No payments yet</p>
+                      <p class="text-muted mt-2 mb-0">{% if current_lang == 'ar' %}لا توجد مدفوعات مسجلة{% else %}No payments yet{% endif %}</p>
                     </td>
                   </tr>
                   {% endfor %}

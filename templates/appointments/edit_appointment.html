@@ -120,6 +120,18 @@
                                 </select>
                             </div>
 
+                            <div class="col-12">
+                                <label for="doctor_id" class="form-label">Doctor</label>
+                                <select id="doctor_id" name="doctor_id" class="form-select" {% if is_locked %}disabled{% endif %}>
+                                    <option value="">Any Available Doctor</option>
+                                    {% for doc in (doctors or all_doctors) %}
+                                    <option value="{{ doc.id }}" {% if appointment.doctor_id == doc.id %}selected{% endif %}>
+                                        {{ doc.display_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
                             <div class="col-md-12">
                                 <label for="status" class="form-label">Status</label>
 

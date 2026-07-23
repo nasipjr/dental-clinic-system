@@ -113,7 +113,7 @@
                 </a>
                 {% endif %}
 
-                {% if current_user.role in ('admin', 'receptionist') %}
+                {% if current_user.role in ('admin', 'receptionist', 'doctor') %}
                 <a href="{{ url_for('appointments.add_appointment', patient_id=patient.id) }}" class="btn-outline-main">
                     {% if current_lang == 'ar' %}حجز موعد جديد{% else %}Add Appointment{% endif %}
                 </a>
@@ -160,6 +160,7 @@
                 </button>
             </li>
 
+            {% if current_user.role in ('admin', 'receptionist') %}
             <li class="nav-item" role="presentation">
                 <button class="nav-link {% if active_tab == 'financial' %}active{% endif %}" id="financial-tab-btn"
                     data-bs-toggle="tab" data-bs-target="#financial-tab" type="button" role="tab">
@@ -169,6 +170,7 @@
                     </div>
                 </button>
             </li>
+            {% endif %}
 
             <li class="nav-item" role="presentation">
                 <button class="nav-link {% if active_tab == 'files' %}active{% endif %}" id="files-tab-btn"
@@ -205,6 +207,7 @@
 
             </div>
 
+            {% if current_user.role in ('admin', 'receptionist') %}
             <!-- Financial Tab -->
             <div class="tab-pane fade {% if active_tab == 'financial' %}show active{% endif %}" id="financial-tab"
                 role="tabpanel">
@@ -379,6 +382,7 @@
                 </div>
 
             </div>
+            {% endif %}
 
             <!-- Files Tab -->
             <div class="tab-pane fade {% if active_tab == 'files' %}show active{% endif %}" id="files-tab"

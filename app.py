@@ -198,6 +198,45 @@ def check_and_add_anesthesia_columns():
             app.logger.error(f"Failed to add anesthesia columns: {e}")
 
 
+def check_and_add_doctor_columns():
+    from sqlalchemy import text
+    try:
+        db.session.execute(text("SELECT doctor_id FROM appointment LIMIT 1"))
+    except Exception:
+        db.session.rollback()
+        try:
+            app.logger.info("Adding doctor_id column to appointment table")
+            db.session.execute(text("ALTER TABLE appointment ADD COLUMN doctor_id INT NULL"))
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Failed to add doctor_id column to appointment: {e}")
+
+    try:
+        db.session.execute(text("SELECT doctor_id FROM treatment LIMIT 1"))
+    except Exception:
+        db.session.rollback()
+        try:
+            app.logger.info("Adding doctor_id column to treatment table")
+            db.session.execute(text("ALTER TABLE treatment ADD COLUMN doctor_id INT NULL"))
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Failed to add doctor_id column to treatment: {e}")
+
+    try:
+        db.session.execute(text("SELECT primary_doctor_id FROM patient LIMIT 1"))
+    except Exception:
+        db.session.rollback()
+        try:
+            app.logger.info("Adding primary_doctor_id column to patient table")
+            db.session.execute(text("ALTER TABLE patient ADD COLUMN primary_doctor_id INT NULL"))
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Failed to add primary_doctor_id column to patient: {e}")
+
+
 def ensure_default_admin():
     from models import User
     try:
@@ -229,6 +268,7 @@ with app.app_context():
     check_and_add_session_opened_at_column()
     check_and_add_telegram_columns()
     check_and_add_anesthesia_columns()
+    check_and_add_doctor_columns()
     ensure_default_admin()
 
 
@@ -369,11 +409,16 @@ def inject_settings():
     else:
         closed_str = ", ".join(closed_names)
 
-    from models import Appointment
+    from models import Appointment, User
     try:
         pending_count = Appointment.query.filter_by(status="Pending").count()
     except Exception:
         pending_count = 0
+
+    try:
+        doctors_list = User.query.filter(User.role.in_(["admin", "doctor"])).all()
+    except Exception:
+        doctors_list = []
 
     return {
         "clinic_name": get_setting("clinic_name", "Clinic"),
@@ -383,6 +428,7 @@ def inject_settings():
         "clinic_address": get_setting("clinic_address", "Damascus, Syria"),
         "clinic_vat_number": get_setting("clinic_vat_number", ""),
         "current_user": g.current_user if "current_user" in dir(g) else None,
+        "all_doctors": doctors_list,
         "operating_hours": hours_formatted,
         "operating_days": days_str,
         "operating_closed": closed_str,

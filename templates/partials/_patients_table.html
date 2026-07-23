@@ -80,30 +80,46 @@
         <tbody>
             {% for patient in patients %}
             <tr>
-                <td>{{ patient.id }}</td>
+                <td class="fw-bold text-primary" style="font-size: 0.95rem;">{{ patient.id }}</td>
 
                 <td>
-                    <strong>{{ patient.first_name }}</strong>
+                    <span class="fw-bold text-main" style="font-size: 0.95rem;">{{ patient.first_name }}</span>
                 </td>
 
                 <td>
-                    <strong>{{ patient.last_name }}</strong>
+                    <span class="fw-semibold text-secondary-emphasis" style="font-size: 0.95rem;">{{ patient.last_name }}</span>
+                </td>
+
+                <td class="dir-ltr text-start">
+                    {% if patient.phone %}
+                    <span class="text-info-emphasis opacity-75 font-monospace" style="font-size: 0.9rem;">{{ patient.phone }}</span>
+                    {% else %}
+                    <span class="text-muted small">-</span>
+                    {% endif %}
+                </td>
+
+                <td class="dir-ltr text-start">
+                    {% if patient.email %}
+                    <span class="text-secondary small opacity-75">{{ patient.email }}</span>
+                    {% else %}
+                    <span class="text-muted small">-</span>
+                    {% endif %}
                 </td>
 
                 <td>
-                    {{ patient.phone or 'No phone' }}
+                    {% if patient.city %}
+                    <span class="badge bg-dark-subtle text-body border-0 fw-normal px-2.5 py-1" style="font-size: 0.82rem; background: rgba(255,255,255,0.06) !important;">{{ patient.city }}</span>
+                    {% else %}
+                    <span class="text-muted small">-</span>
+                    {% endif %}
                 </td>
 
                 <td>
-                    {{ patient.email or 'No email' }}
-                </td>
-
-                <td>
-                    {{ patient.city or 'No city' }}
-                </td>
-
-                <td>
-                    {{ patient.date_of_birth.strftime('%Y-%m-%d') if patient.date_of_birth else 'No date' }}
+                    {% if patient.date_of_birth %}
+                    <span class="text-secondary opacity-75 small">{{ patient.date_of_birth.strftime('%Y-%m-%d') }}</span>
+                    {% else %}
+                    <span class="text-muted small">-</span>
+                    {% endif %}
                 </td>
 
                 <td class="text-center">
@@ -113,7 +129,7 @@
                             <i class="bi bi-eye"></i>
                         </a>
 
-                        {% if current_user.role in ('admin', 'receptionist') %}
+                        {% if current_user.role in ('admin', 'receptionist', 'doctor') %}
                         <a href="{{ url_for('appointments.add_appointment', patient_id=patient.id) }}"
                             class="table-action-btn appointment-table-btn" title="Add Appointment">
                             <i class="bi bi-calendar-plus"></i>

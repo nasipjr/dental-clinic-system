@@ -187,8 +187,23 @@ def reports_dashboard():
                 "accrual_profit": accrual_profit_m
             })
 
+        from models import User
+        doctors = User.query.filter(User.role.in_(["admin", "doctor"])).all()
+        doctors_report = []
+        for doc in doctors:
+            doc_appts = Appointment.query.filter_by(doctor_id=doc.id).count()
+            doc_treatments = Treatment.query.filter_by(doctor_id=doc.id).all()
+            doc_revenue = sum(float(t.total_cost or 0) for t in doc_treatments)
+            doctors_report.append({
+                "doctor": doc,
+                "appointment_count": doc_appts,
+                "treatment_count": len(doc_treatments),
+                "total_revenue": doc_revenue
+            })
+
         return render_template(
             "reports/reports.html",
+            doctors_report=doctors_report,
             total_patients=total_patients,
             total_appointments=total_appointments,
             total_invoiced=total_invoiced,

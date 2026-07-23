@@ -115,11 +115,11 @@
             </div>
             <div class="modal-footer border-top-0 d-flex justify-content-center gap-2 pb-4 flex-wrap">
                 <button type="button" id="modal-whatsapp-btn" class="btn text-white px-4"
-                    style="background-color: #25D366; border-color: #25D366; border-radius: 30px; font-weight: 600; display: none;">
+                    style="background-color: #25D366; border-color: #25D366; border-radius: 30px; font-weight: 600; display: none !important;">
                     <i class="bi bi-whatsapp me-1"></i> Remind
                 </button>
                 <a href="#" id="modal-session-link" class="btn btn-teal px-4 text-white"
-                    style="background-color: #16a34a; border-color: #16a34a; border-radius: 30px; font-weight: 600;">
+                    style="background-color: #16a34a; border-color: #16a34a; border-radius: 30px; font-weight: 600; display: none !important;">
                     <i class="bi bi-clipboard2-pulse me-1"></i> Open Session
                 </a>
                 <a href="#" id="modal-view-link" class="btn btn-outline-secondary px-4"
@@ -127,7 +127,7 @@
                     <i class="bi bi-eye me-1"></i> View Detail
                 </a>
                 <a href="#" id="modal-edit-link" class="btn btn-primary px-4"
-                    style="background-color: #175cdd; border-color: #175cdd; border-radius: 30px; font-weight: 600;">
+                    style="background-color: #175cdd; border-color: #175cdd; border-radius: 30px; font-weight: 600; display: none !important;">
                     <i class="bi bi-pencil-square me-1"></i> Edit
                 </a>
             </div>
@@ -915,30 +915,50 @@
                     statusBadge.classList.add('bg-primary');
                 }
 
-                // Configure buttons URLs
-                document.getElementById('modal-session-link').href = props.sessionUrl;
-                document.getElementById('modal-view-link').href = props.viewUrl;
+                const isClosed = (props.isClosed === true || props.status === 'Done' || props.status === 'Cancelled' || props.status === 'منجز' || props.status === 'ملغي');
 
-                const editBtn = document.getElementById('modal-edit-link');
-                if (props.editUrl) {
-                    editBtn.href = props.editUrl;
-                    editBtn.style.display = 'inline-block';
+                // Configure session link (Server controls canOpenSession based on role & ownership)
+                const sessionBtn = document.getElementById('modal-session-link');
+                if (props.canOpenSession === true && props.sessionUrl) {
+                    sessionBtn.href = props.sessionUrl;
+                    sessionBtn.style.setProperty('display', 'inline-block', 'important');
+                    if (props.status === 'Done' || props.status === 'منجز') {
+                        sessionBtn.innerHTML = `<i class="bi bi-clipboard2-pulse me-1"></i> ${typeof currentLang !== 'undefined' && currentLang === 'ar' ? 'إعادة فتح الجلسة' : 'Reopen Session'}`;
+                    } else {
+                        sessionBtn.innerHTML = `<i class="bi bi-clipboard2-pulse me-1"></i> ${typeof currentLang !== 'undefined' && currentLang === 'ar' ? 'فتح الجلسة' : 'Open Session'}`;
+                    }
                 } else {
-                    editBtn.style.display = 'none';
+                    sessionBtn.style.setProperty('display', 'none', 'important');
+                    sessionBtn.removeAttribute('href');
                 }
 
-                // Configure WhatsApp reminder button
+                // Configure view link (always visible)
+                document.getElementById('modal-view-link').href = props.viewUrl;
+
+                // Configure edit link (Server controls canEdit based on role & ownership)
+                const editBtn = document.getElementById('modal-edit-link');
+                if (props.canEdit === true && props.editUrl) {
+                    editBtn.href = props.editUrl;
+                    editBtn.style.setProperty('display', 'inline-block', 'important');
+                } else {
+                    editBtn.style.setProperty('display', 'none', 'important');
+                    editBtn.removeAttribute('href');
+                }
+
+                // Configure WhatsApp reminder button (Reminders strictly for scheduled appointments)
                 const whatsappBtn = document.getElementById('modal-whatsapp-btn');
                 const remindedRow = document.getElementById('modal-reminded-row');
                 const remindedStatus = document.getElementById('modal-reminded-status');
+                const canSeeWhatsApp = {{ 'true' if current_user.role in ('admin', 'receptionist') else 'false' }};
 
-                if (props.status !== 'Done' && props.status !== 'Cancelled' && props.phone && props.phone !== 'No phone') {
-                    whatsappBtn.style.display = 'inline-block';
-                    whatsappBtn.onclick = function () {
+                if (canSeeWhatsApp && !isClosed && props.canRemind === true && props.phone && props.phone !== 'No phone') {
+                    if (whatsappBtn) whatsappBtn.style.setProperty('display', 'inline-block', 'important');
+                    if (whatsappBtn) whatsappBtn.onclick = function () {
                         sendWhatsAppReminder(props.phone, props.patientName, formattedDate, "{{ clinic_name }}", info.event.id);
                     };
                 } else {
-                    whatsappBtn.style.display = 'none';
+                    if (whatsappBtn) whatsappBtn.style.setProperty('display', 'none', 'important');
+                    if (whatsappBtn) whatsappBtn.onclick = null;
                 }
 
                 if (remindedRow && remindedStatus) {

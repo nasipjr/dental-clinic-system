@@ -219,14 +219,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
     event.preventDefault();
     const url = btn.getAttribute("data-action-url");
-    const msg = btn.getAttribute("data-confirm-msg");
+    const rawMsg = btn.getAttribute("data-confirm-msg") || "";
+    const isDecline = url && url.includes("/decline");
+    const isArabic = document.documentElement.getAttribute("lang") === "ar";
 
-    if (confirm(msg)) {
+    const titleText = isDecline 
+      ? (isArabic ? "تأكيد رفض طلب الموعد" : "Decline Booking Request") 
+      : (isArabic ? "تأكيد قبول الموعد" : "Confirm Booking Request");
+    
+    const confirmBtnText = isDecline 
+      ? (isArabic ? "نعم، إرفض الموعد" : "Yes, Decline") 
+      : (isArabic ? "نعم، أكد الموعد" : "Yes, Confirm");
+    
+    const confirmBtnColor = isDecline ? "#dc3545" : "#198754";
+    const alertMsg = isArabic 
+      ? (isDecline ? "هل أنت تأكد من إغلاق ورفض هذا الموعد؟" : "هل أنت تأكد من قبول وتأكيد حجز هذا الموعد؟")
+      : rawMsg;
+
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    const csrfToken = csrfMeta ? csrfMeta.getAttribute("content") : "";
+
+    const performAction = function () {
       fetch(url, {
         method: "POST",
         headers: {
           "X-Requested-With": "XMLHttpRequest",
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken
         }
       })
       .then(function (response) {
@@ -234,33 +253,88 @@ document.addEventListener("DOMContentLoaded", function () {
       })
       .then(function (data) {
         if (data.success) {
-          const apptsContainer = document.getElementById("appointments-table-container");
-          if (apptsContainer) {
-            const activeLink = document.querySelector(".appointments-ajax-link");
-            const fetchUrl = activeLink ? activeLink.href : window.location.href;
-            fetch(fetchUrl, { headers: { "X-Requested-With": "XMLHttpRequest" } })
-              .then(function (res) { return res.text(); })
-              .then(function (html) { apptsContainer.innerHTML = html; });
+          if (typeof Swal !== "undefined") {
+            Swal.fire({
+              icon: "success",
+              title: isArabic ? "تم الإجراء" : "Completed",
+              text: data.message || (isArabic ? "تم تنفيذ الإجراء بنجاح." : "Action completed successfully."),
+              timer: 1500,
+              showConfirmButton: false
+            }).then(function () {
+              reloadTableOrPage();
+            });
           } else {
-            const patientApptsContainer = document.getElementById("patient-appointments-container");
-            if (patientApptsContainer) {
-              const activeLink = patientApptsContainer.querySelector(".dashboard-ajax-link");
-              const fetchUrl = activeLink ? activeLink.href : window.location.href;
-              fetch(fetchUrl, { headers: { "X-Requested-With": "XMLHttpRequest" } })
-                .then(function (res) { return res.text(); })
-                .then(function (html) { patientApptsContainer.innerHTML = html; });
-            } else {
-              window.location.reload();
-            }
+            reloadTableOrPage();
           }
         } else {
-          alert(data.message || "An error occurred.");
+          if (typeof Swal !== "undefined") {
+            Swal.fire({
+              icon: "error",
+              title: isArabic ? "تنبيه" : "Notice",
+              text: data.message || (isArabic ? "حدث خطأ أثناء تنفيذ الطلب." : "An error occurred."),
+              confirmButtonColor: "#175cdd"
+            });
+          } else {
+            alert(data.message || "An error occurred.");
+          }
         }
       })
       .catch(function (error) {
         console.error(error);
-        alert("Failed to perform action.");
+        if (typeof Swal !== "undefined") {
+          Swal.fire({
+            icon: "error",
+            title: isArabic ? "خطأ" : "Error",
+            text: isArabic ? "حدث خطأ في الاتصال بالخادم." : "Connection error.",
+            confirmButtonColor: "#175cdd"
+          });
+        } else {
+          alert("An error occurred.");
+        }
       });
+    };
+
+    function reloadTableOrPage() {
+      const apptsContainer = document.getElementById("appointments-table-container");
+      if (apptsContainer) {
+        const activeLink = document.querySelector(".appointments-ajax-link");
+        const fetchUrl = activeLink ? activeLink.href : window.location.href;
+        fetch(fetchUrl, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+          .then(function (res) { return res.text(); })
+          .then(function (html) { apptsContainer.innerHTML = html; });
+      } else {
+        const patientApptsContainer = document.getElementById("patient-appointments-container");
+        if (patientApptsContainer) {
+          const activeLink = patientApptsContainer.querySelector(".dashboard-ajax-link");
+          const fetchUrl = activeLink ? activeLink.href : window.location.href;
+          fetch(fetchUrl, { headers: { "X-Requested-With": "XMLHttpRequest" } })
+            .then(function (res) { return res.text(); })
+            .then(function (html) { patientApptsContainer.innerHTML = html; });
+        } else {
+          window.location.reload();
+        }
+      }
+    }
+
+    if (typeof Swal !== "undefined") {
+      Swal.fire({
+        title: titleText,
+        text: alertMsg,
+        icon: isDecline ? "warning" : "question",
+        showCancelButton: true,
+        confirmButtonColor: confirmBtnColor,
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: confirmBtnText,
+        cancelButtonText: isArabic ? "إلغاء" : "Cancel"
+      }).then(function (result) {
+        if (result.isConfirmed) {
+          performAction();
+        }
+      });
+    } else {
+      if (confirm(alertMsg)) {
+        performAction();
+      }
     }
   });
 

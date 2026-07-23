@@ -7,8 +7,20 @@
 
 <!-- Section Title -->
 <div class="container section-title" data-aos="fade-up">
-    <h2>Appearance Settings</h2>
-    <p>Personalize the visual theme and language of your interface.</p>
+    <h2>
+        {% if current_lang == 'ar' %}
+            إعدادات المظهر واللغة
+        {% else %}
+            Appearance Settings
+        {% endif %}
+    </h2>
+    <p>
+        {% if current_lang == 'ar' %}
+            تخصيص الثيم البصري ولغة الواجهة الخاصة بك
+        {% else %}
+            Personalize the visual theme and language of your interface.
+        {% endif %}
+    </p>
 </div>
 
 <section id="nurse-settings-section" class="section">
@@ -23,35 +35,35 @@
                     <div class="settings-tab-header mb-4">
                         <div class="settings-tab-icon"><i class="bi bi-palette"></i></div>
                         <div>
-                            <h4>Theme &amp; Appearance</h4>
-                            <p>Customize the visual theme of the application</p>
+                            <h4>{% if current_lang == 'ar' %}المظهر واللغة{% else %}Theme &amp; Appearance{% endif %}</h4>
+                            <p>{% if current_lang == 'ar' %}تخصيص الثيم البصري للتطبيق{% else %}Customize the visual theme of the application{% endif %}</p>
                         </div>
                     </div>
 
                     <!-- Theme Selector -->
                     <div class="mb-5">
-                        <label class="settings-label d-block mb-3">System Display Theme</label>
+                        <label class="settings-label d-block mb-3">{% if current_lang == 'ar' %}مظهر عرض النظام{% else %}System Display Theme{% endif %}</label>
                         <div class="d-flex gap-3">
                             <button type="button"
                                 class="btn theme-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"
                                 id="theme-light-btn" onclick="setAppTheme('light')"
                                 style="border-radius: 16px; transition: all 0.3s ease;">
                                 <i class="bi bi-sun-fill fs-2 mb-2 text-warning"></i>
-                                <strong style="font-size: 1.05rem;">Light Mode</strong>
+                                <strong style="font-size: 1.05rem;">{% if current_lang == 'ar' %}الوضع الفاتح{% else %}Light Mode{% endif %}</strong>
                             </button>
                             <button type="button"
                                 class="btn theme-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"
                                 id="theme-dark-btn" onclick="setAppTheme('dark')"
                                 style="border-radius: 16px; transition: all 0.3s ease;">
                                 <i class="bi bi-moon-stars-fill fs-2 mb-2 text-primary"></i>
-                                <strong style="font-size: 1.05rem;">Dark Mode</strong>
+                                <strong style="font-size: 1.05rem;">{% if current_lang == 'ar' %}الوضع الداكن{% else %}Dark Mode{% endif %}</strong>
                             </button>
                         </div>
                     </div>
 
                     <!-- Language Selector -->
                     <div class="pt-4 border-top" style="border-top-color: rgba(13, 110, 253, 0.08) !important;">
-                        <label class="settings-label d-block mb-3">System Interface Language</label>
+                        <label class="settings-label d-block mb-3">{% if current_lang == 'ar' %}لغة واجهة النظام{% else %}System Interface Language{% endif %}</label>
                         <div class="d-flex gap-3">
                             <button type="button"
                                 class="btn lang-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"

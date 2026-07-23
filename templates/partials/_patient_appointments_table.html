@@ -83,11 +83,24 @@
 
                 <td>
                     <span class="appointment-status
-                        {% if appointment.status == 'Done' %}status-done
-                        {% elif appointment.status == 'Cancelled' %}status-cancelled
-                        {% elif appointment.status == 'Pending' %}status-pending
+                        {% if appointment.status == 'Done' or appointment.status == 'منجز' %}status-done
+                        {% elif appointment.status == 'Cancelled' or appointment.status == 'ملغي' %}status-cancelled
+                        {% elif appointment.status == 'Pending' or appointment.status == 'قيد التثبيت' %}status-pending
+                        {% elif appointment.status == 'Rejected' or appointment.status == 'تم الرفض' or appointment.status == 'مرفوض' %}status-rejected
                         {% else %}status-scheduled{% endif %}">
-                        {{ appointment.status }}
+                        {% if appointment.status == 'Rejected' %}
+                            {% if current_lang == 'ar' %}تم الرفض{% else %}Rejected{% endif %}
+                        {% elif appointment.status == 'Pending' %}
+                            {% if current_lang == 'ar' %}قيد التثبيت{% else %}Pending{% endif %}
+                        {% elif appointment.status == 'Scheduled' %}
+                            {% if current_lang == 'ar' %}مجدول{% else %}Scheduled{% endif %}
+                        {% elif appointment.status == 'Done' %}
+                            {% if current_lang == 'ar' %}منجز{% else %}Done{% endif %}
+                        {% elif appointment.status == 'Cancelled' %}
+                            {% if current_lang == 'ar' %}ملغي{% else %}Cancelled{% endif %}
+                        {% else %}
+                            {{ appointment.status }}
+                        {% endif %}
                     </span>
                 </td>
 
