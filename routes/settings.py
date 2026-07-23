@@ -436,3 +436,84 @@ def test_telegram():
     body = "Test from Dental Clinic MS. Telegram Bot is working!"
     success, msg = send_telegram_message(chat_id, body, bot_token=bot_token)
     return jsonify({"success": success, "message": msg})
+
+
+@settings_bp.route("/settings/check-update", methods=["POST"])
+@role_required("admin")
+def check_system_update():
+    """Triggers an automated git pull to update system code and dependencies."""
+    from flask import jsonify
+    import subprocess
+    import sys
+    import os
+
+    current_app.logger.info("Manual system update triggered by admin")
+
+    try:
+        # Execute git pull in project root
+        result = subprocess.run(
+            ["git", "pull"],
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+        
+        stdout = result.stdout.strip() if result.stdout else ""
+        stderr = result.stderr.strip() if result.stderr else ""
+
+        if result.returncode != 0:
+            current_app.logger.error(f"Git pull error: {stderr}")
+            return jsonify({
+                "success": False,
+                "message": f"حدث خطأ أثناء التحديث: {stderr or 'فشل سحب التحديثات من المستودع.'}"
+            })
+
+        if "Already up to date" in stdout or "Already up-to-date" in stdout:
+            return jsonify({
+                "success": True,
+                "updated": False,
+                "message": "النظام يعمل بأحدث إصدار بالفعل! لا توجد تحديثات جديدة حالياً. ✅"
+            })
+        else:
+            # Optionally install missing/updated packages
+            try:
+                subprocess.run(
+                    [sys.executable, "-m", "pip", "install", "-r", "requirements.txt"],
+                    capture_output=True,
+                    text=True,
+                    timeout=90
+                )
+            except Exception as pe:
+                current_app.logger.warning(f"Pip install warning during update: {pe}")
+
+            # Touch WSGI file if running on PythonAnywhere to reload app
+            try:
+                wsgi_candidates = [
+                    "/var/www/nasipjr_pythonanywhere_com_wsgi.py",
+                    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "wsgi.py")
+                ]
+                for wsgi_path in wsgi_candidates:
+                    if os.path.exists(wsgi_path):
+                        os.utime(wsgi_path, None)
+                        break
+            except Exception:
+                pass
+
+            return jsonify({
+                "success": True,
+                "updated": True,
+                "message": f"🎉 تم تحديث النظام بنجاح إلى أحدث إصدار!\n{stdout}"
+            })
+
+    except subprocess.TimeoutExpired:
+        return jsonify({
+            "success": False,
+            "message": "انتهت مهلة التحديث (Timeout). يرجى التأكد من الاتصال بالإنترنت والإعادة."
+        })
+    except Exception as e:
+        current_app.logger.exception(f"Unexpected error during system update: {e}")
+        return jsonify({
+            "success": False,
+            "message": f"حدث خطأ أثناء تنفيذ التحديث: {str(e)}"
+        })
+
