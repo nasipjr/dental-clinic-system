@@ -69,6 +69,9 @@
     <div class="topbar d-flex align-items-center dark-background">
       <div class="container d-flex justify-content-between">
         <div class="contact-info d-none d-md-flex align-items-center flex-shrink-0 text-nowrap">
+          <span class="badge rounded-pill bg-info bg-opacity-25 text-info border border-info border-opacity-25 px-3 py-1 me-3 fw-bold" style="font-family: 'Inter', sans-serif; letter-spacing: 0.5px; font-size: 0.78rem;">
+            <i class="bi bi-cpu-fill me-1 text-info"></i>Novus Med
+          </span>
           <i class="bi bi-envelope d-flex align-items-center"><a
               href="mailto:{{ clinic_email }}">{{ clinic_email }}</a></i>
           <i class="bi bi-phone d-flex align-items-center ms-4"><span>{{ clinic_phone }}</span></i>
@@ -98,10 +101,11 @@
     <div class="branding d-flex align-items-cente">
 
       <div class="container position-relative d-flex align-items-center justify-content-between">
-        <a href="/" class="logo d-flex align-items-center">
-          <!-- Uncomment the line below if you also wish to use an image logo -->
-          <!-- <img src="assets/img/logo.webp" alt=""> -->
-          <h1 class="sitename"><bdi dir="auto">{{ clinic_name }}</bdi></h1>
+        <a href="/" class="logo d-flex align-items-center gap-2 text-decoration-none">
+          <span class="badge rounded-pill px-3 py-2 border shadow-sm" style="background: linear-gradient(135deg, #0d6efd 0%, #00d2ff 100%); color: #ffffff; font-family: 'Inter', 'Montserrat', sans-serif; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.5px;">
+            <i class="bi bi-shield-plus me-1"></i>Novus Med
+          </span>
+          <h1 class="sitename mb-0"><bdi dir="auto">{{ clinic_name }}</bdi></h1>
         </a>
 
         <nav id="navmenu" class="navmenu">
@@ -314,7 +318,7 @@
           <div class="copyright text-center text-lg-start">
             <p class="mb-0">
               © <span>2026</span>
-              <strong class="px-1 sitename">Dental Clinic MS</strong>. All rights reserved.
+              <strong class="px-1 text-info fw-bold" style="font-family: 'Inter', sans-serif; letter-spacing: 0.5px;">Novus Med</strong> — {% if current_lang == 'ar' %}نظام إدارة عيادة الأسنان{% else %}Dental Clinic MS{% endif %}. {% if current_lang == 'ar' %}جميع الحقوق محفوظة.{% else %}All rights reserved.{% endif %}
             </p>
           </div>
         </div>
@@ -322,7 +326,7 @@
         <div class="col-lg-6 text-center text-lg-end">
           <div class="legal-links d-inline-flex align-items-center gap-2">
             <i class="bi bi-shield-check text-success"></i>
-            <span class="text-muted small">Built for professional clinic management.</span>
+            <span class="text-muted small">{% if current_lang == 'ar' %}مبني للإدارة الاحترافية للعيادات بواسطة{% else %}Built for professional clinic management by{% endif %} <strong class="text-primary fw-bold" style="font-family: 'Inter', sans-serif;">Novus Med Suite</strong></span>
           </div>
         </div>
 
