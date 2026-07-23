@@ -134,7 +134,7 @@
   <header id="header" class="header d-flex align-items-center sticky-top">
     <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
       <a href="{{ url_for('portal.dashboard') if session.get('role') == 'patient' else '#' }}" class="logo d-flex align-items-center">
-        <h1 class="sitename">{{ clinic_name }} - Portal</h1>
+        <h1 class="sitename"><bdi dir="auto">{{ clinic_name }}</bdi> - Portal</h1>
       </a>
 
       <nav id="navmenu" class="navmenu">

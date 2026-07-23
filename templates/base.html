@@ -101,7 +101,7 @@
         <a href="/" class="logo d-flex align-items-center">
           <!-- Uncomment the line below if you also wish to use an image logo -->
           <!-- <img src="assets/img/logo.webp" alt=""> -->
-          <h1 class="sitename">{{ clinic_name }}</h1>
+          <h1 class="sitename"><bdi dir="auto">{{ clinic_name }}</bdi></h1>
         </a>
 
         <nav id="navmenu" class="navmenu">
@@ -220,7 +220,7 @@
           <div class="brand-section">
             <a href="{{ url_for('dashboard.home') }}" class="logo d-flex align-items-center mb-3 text-decoration-none">
               <i class="fa-solid fa-tooth me-2 fs-3 text-primary footer-logo-glow"></i>
-              <span class="sitename">{{ clinic_name }}</span>
+              <span class="sitename"><bdi dir="auto">{{ clinic_name }}</bdi></span>
             </a>
 
             <p class="brand-description">
@@ -538,7 +538,6 @@
             "Done": "منجز",
             "Done Appointments": "المواعيد المنجزة",
             "Done Today": "منجز اليوم",
-            "Dr": "د.",
             "Due": "مستحق",
             "Edit": "تعديل",
             "Edit Appointment": "تعديل الموعد",
@@ -1052,8 +1051,8 @@
                     node.nodeValue = rawText;
                 }
             } else if (node.nodeType === Node.ELEMENT_NODE) {
-                // Skip translating the script blocks, style blocks, and values inside actual input textareas/selects
-                if (node.tagName === 'SCRIPT' || node.tagName === 'STYLE') return;
+                // Skip translating the script blocks, style blocks, BDI tags, sitename and notranslate elements
+                if (node.tagName === 'SCRIPT' || node.tagName === 'STYLE' || node.tagName === 'BDI' || (node.classList && (node.classList.contains('sitename') || node.classList.contains('notranslate')))) return;
                 
                 // Avoid modifying the value attribute of input fields, but placeholders can be translated
                 const placeholder = node.getAttribute('placeholder');

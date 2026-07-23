@@ -197,7 +197,6 @@ translations = {
     "Done": "منجز",
     "Done Appointments": "المواعيد المنجزة",
     "Done Today": "منجز اليوم",
-    "Dr": "د.",
     "Due": "مستحق",
     "Edit": "تعديل",
     "Edit Appointment": "تعديل الموعد",

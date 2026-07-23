@@ -3534,4 +3534,11 @@ select.form-select:focus,
   color: #60a5fa !important;
 }
 
+/* Fix BIDI text direction for Clinic Name & Doctor titles */
+.sitename, .clinic-name-print, bdi {
+  unicode-bidi: plaintext !important;
+  display: inline-block;
+}
+
+
 

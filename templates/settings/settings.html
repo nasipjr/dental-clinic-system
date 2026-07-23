@@ -229,13 +229,13 @@
                                         applied dynamically to all invoices, payments, and report pages.</div>
                                 </div>
                                 <div class="col-md-12 mt-3">
-                                    <label for="anesthesia_needle_price" class="settings-label">Anesthesia / Needle Price (Per Application)</label>
+                                    <label for="anesthesia_needle_price" class="settings-label">{% if current_lang == 'ar' %}سعر إبرة / جرعة التخدير (لكل تطبيق){% else %}Anesthesia / Needle Price (Per Application){% endif %}</label>
                                     <div class="input-group">
                                         <input type="number" class="form-control settings-input" id="anesthesia_needle_price"
                                             name="anesthesia_needle_price" value="{{ settings.anesthesia_needle_price }}" min="0" required>
                                         <span class="input-group-text">{{ currency_symbol }}</span>
                                     </div>
-                                    <div class="settings-hint"><i class="bi bi-info-circle me-1"></i>This cost will be multiplied by the number of times anesthesia is administered (expressed as needles used).</div>
+                                    <div class="settings-hint"><i class="bi bi-info-circle me-1"></i>{% if current_lang == 'ar' %}يتم ضرب هذه التكلفة في عدد مرات إعطاء التخدير (المعبّر عنها بعدد الإبر المستعملة).{% else %}This cost will be multiplied by the number of times anesthesia is administered (expressed as needles used).{% endif %}</div>
                                 </div>
                             </div>
                         </div>
