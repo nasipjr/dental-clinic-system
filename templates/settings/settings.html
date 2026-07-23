@@ -523,7 +523,7 @@
                                                 <h5 class="fw-bold mb-1">
                                                     <i class="bi bi-shield-check text-warning me-2"></i>
                                                     {% if license_info.license_type == 'trial' %}
-                                                        {% if current_lang == 'ar' %}نسخة تجريبية (30 يوماً){% else %}30-Day Trial Version{% endif %}
+                                                        {% if current_lang == 'ar' %}نسخة تجريبية{% else %}Trial Version{% endif %}
                                                     {% elif license_info.license_type == 'annual' %}
                                                         {% if current_lang == 'ar' %}ترخيص سنوي مفعل{% else %}Active Annual License{% endif %}
                                                     {% elif license_info.license_type == 'lifetime' %}
