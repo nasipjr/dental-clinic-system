@@ -46,8 +46,36 @@ def populate_default_settings():
             if not setting:
                 db.session.add(SystemSetting(key=key, value=val))
         db.session.commit()
-    except Exception:
+
+        # Seed initial 30-day trial license key if none exists
+        active_key_setting = SystemSetting.query.filter_by(key="active_license_key").first()
+        if not active_key_setting or not active_key_setting.value:
+            from utils.license_helper import generate_license_key, verify_license_key
+            trial_key = generate_license_key(days=30, license_type="trial")
+            is_valid, data = verify_license_key(trial_key)
+            if is_valid and isinstance(data, dict):
+                if active_key_setting:
+                    active_key_setting.value = trial_key
+                else:
+                    db.session.add(SystemSetting(key="active_license_key", value=trial_key))
+                
+                lt_setting = SystemSetting.query.filter_by(key="license_type").first()
+                if lt_setting:
+                    lt_setting.value = "trial"
+                else:
+                    db.session.add(SystemSetting(key="license_type", value="trial"))
+
+                exp_setting = SystemSetting.query.filter_by(key="license_expires_at").first()
+                exp_val = data["expires_at"].strftime("%Y-%m-%d %H:%M:%S")
+                if exp_setting:
+                    exp_setting.value = exp_val
+                else:
+                    db.session.add(SystemSetting(key="license_expires_at", value=exp_val))
+                
+                db.session.commit()
+    except Exception as e:
         db.session.rollback()
+        app.logger.error(f"Error initializing default settings or license: {e}")
 
 
 def check_and_add_discount_column():
@@ -316,6 +344,21 @@ def validate_csrf():
     if not csrf_token or (form_token != csrf_token and header_token != csrf_token):
         app.logger.warning(f"CSRF validation failed! method={request.method} path={request.path}")
         return "CSRF Token missing or invalid", 403
+
+
+@app.before_request
+def enforce_system_license():
+    # Exclude static files, activation page, logout, and deploy webhook
+    excluded_endpoints = ("auth.activate_license", "auth.logout", "static", "deploy.deploy")
+    if not request.endpoint or request.endpoint in excluded_endpoints:
+        return
+
+    from utils.license_helper import get_current_license_status
+    license_status = get_current_license_status()
+
+    if not license_status["is_active"]:
+        app.logger.warning(f"System access blocked by license middleware: {license_status['status_code']} - {license_status['message']}")
+        return redirect(url_for("auth.activate_license"))
 
 
 @app.before_request

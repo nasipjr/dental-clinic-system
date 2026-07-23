@@ -69,3 +69,42 @@ def logout():
     }.get(lang, "تم تسجيل الخروج بنجاح.")
     flash(msg, "success")
     return redirect(url_for("auth.login"))
+
+
+@auth_bp.route("/activate", methods=["GET", "POST"])
+def activate_license():
+    """Activation screen for entering and verifying system license keys."""
+    from utils.license_helper import get_current_license_status, verify_license_key
+    from utils.settings_helper import set_setting
+
+    lang = request.cookies.get('lang', 'ar')
+
+    if request.method == "POST":
+        key_input = request.form.get("license_key", "").strip()
+        is_valid, data_or_msg = verify_license_key(key_input)
+
+        if not is_valid:
+            flash(str(data_or_msg), "danger")
+        else:
+            set_setting("active_license_key", data_or_msg["key"])
+            set_setting("license_type", data_or_msg["license_type"])
+            set_setting("license_expires_at", data_or_msg["expires_at"].strftime("%Y-%m-%d %H:%M:%S"))
+
+            success_msg = {
+                "ar": f"🎉 تم تفعيل ترخيص النظام بنجاح! متبقي {data_or_msg['days_remaining']} يوماً.",
+                "en": f"🎉 License activated successfully! {data_or_msg['days_remaining']} days remaining."
+            }.get(lang, "License activated successfully.")
+            
+            flash(success_msg, "success")
+            return redirect(url_for("dashboard.home"))
+
+    status = get_current_license_status()
+    current_lang = request.cookies.get('lang', 'ar')
+
+    return render_template(
+        "auth/activate.html",
+        status_code=status["status_code"],
+        message=status["message"],
+        current_lang=current_lang
+    )
+

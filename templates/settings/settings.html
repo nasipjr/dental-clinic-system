@@ -516,6 +516,40 @@
                                 </div>
 
                                 <div class="col-md-12 mt-4 pt-4 border-top" style="border-top-color: rgba(13, 110, 253, 0.08) !important;">
+                                    <label class="settings-label d-block mb-3">{% if current_lang == 'ar' %}حالة ترخيص النظام واشتراك العيادة{% else %}System License & Subscription Status{% endif %}</label>
+                                    <div class="card p-4 border-0 shadow-sm rounded-4" style="background: rgba(255, 193, 7, 0.05); border: 1px solid rgba(255, 193, 7, 0.25) !important;">
+                                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                                            <div>
+                                                <h5 class="fw-bold mb-1">
+                                                    <i class="bi bi-shield-check text-warning me-2"></i>
+                                                    {% if license_info.license_type == 'trial' %}
+                                                        {% if current_lang == 'ar' %}نسخة تجريبية (30 يوماً){% else %}30-Day Trial Version{% endif %}
+                                                    {% elif license_info.license_type == 'annual' %}
+                                                        {% if current_lang == 'ar' %}ترخيص سنوي مفعل{% else %}Active Annual License{% endif %}
+                                                    {% elif license_info.license_type == 'lifetime' %}
+                                                        {% if current_lang == 'ar' %}ترخيص كامل (مدى الحياة){% else %}Full Lifetime License{% endif %}
+                                                    {% else %}
+                                                        {% if current_lang == 'ar' %}ترخيص النظام{% else %}System License{% endif %}
+                                                    {% endif %}
+                                                </h5>
+                                                <p class="text-muted small mb-0">
+                                                    {% if license_info.is_active %}
+                                                        <span class="badge bg-success me-1">{% if current_lang == 'ar' %}مفعل{% else %}Active{% endif %}</span>
+                                                        {% if current_lang == 'ar' %}متبقي {{ license_info.days_remaining }} يوماً على انتهاء الترخيص (ينتهي بتاريخ {{ license_info.expires_at }}).{% else %}{{ license_info.days_remaining }} days remaining (expires on {{ license_info.expires_at }}).{% endif %}
+                                                    {% else %}
+                                                        <span class="badge bg-danger me-1">{% if current_lang == 'ar' %}منتهي / غير مفعل{% else %}Inactive{% endif %}</span>
+                                                        {{ license_info.message }}
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                            <a href="{{ url_for('auth.activate_license') }}" class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold text-decoration-none">
+                                                <i class="bi bi-key-fill me-1"></i> {% if current_lang == 'ar' %}إدخال مفتاح ترخيص جديد{% else %}Enter New License Key{% endif %}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12 mt-4 pt-4 border-top" style="border-top-color: rgba(13, 110, 253, 0.08) !important;">
                                     <label class="settings-label d-block mb-3">{% if current_lang == 'ar' %}تحديثات النظام البرمجية{% else %}Software System Updates{% endif %}</label>
                                     <div class="card p-4 border-0 shadow-sm rounded-4" style="background: rgba(13, 110, 253, 0.05); border: 1px solid rgba(13, 110, 253, 0.2) !important;">
                                         <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">

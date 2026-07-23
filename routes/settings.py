@@ -155,13 +155,17 @@ def settings_page():
         # Sort backups by date descending (newest first)
         backups_list.sort(key=lambda x: x['mtime'], reverse=True)
     
+    from utils.license_helper import get_current_license_status
+    license_info = get_current_license_status()
+
     return render_template(
         "settings/settings.html",
         settings=settings_data,
         treatment_prices=treatment_prices,
         users=users,
         backups=backups_list,
-        notifications=notifications
+        notifications=notifications,
+        license_info=license_info
     )
 
 

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="{{ session.get('lang', 'ar') }}" dir="{{ 'rtl' if session.get('lang', 'ar') == 'ar' else 'ltr' }}" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if current_lang == 'ar' %}تفعيل ترخيص النظام — عيادة الأسنان{% else %}System License Activation — Dental Clinic MS{% endif %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b1329;
+            --card-bg: rgba(18, 28, 56, 0.85);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --primary-accent: #0d6efd;
+        }
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(13, 110, 253, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(111, 66, 193, 0.15) 0%, transparent 40%);
+            font-family: 'Cairo', 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e2e8f0;
+            padding: 1.5rem;
+        }
+        .activation-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 520px;
+            overflow: hidden;
+        }
+        .activation-header {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.2) 0%, rgba(111, 66, 193, 0.2) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 2.5rem 2rem 2rem 2rem;
+            text-align: center;
+        }
+        .lock-icon-circle {
+            width: 80px;
+            height: 80px;
+            background: rgba(13, 110, 253, 0.15);
+            border: 2px solid rgba(13, 110, 253, 0.4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.25rem auto;
+            color: #3d8bfd;
+            font-size: 2.5rem;
+            box-shadow: 0 0 30px rgba(13, 110, 253, 0.3);
+        }
+        .key-input {
+            background: rgba(15, 23, 42, 0.8) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: #ffffff !important;
+            border-radius: 14px;
+            padding: 0.85rem 1.25rem;
+            font-family: monospace, sans-serif;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        .key-input:focus {
+            border-color: #0d6efd !important;
+            box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.25) !important;
+        }
+        .btn-activate {
+            background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+            border: none;
+            border-radius: 14px;
+            padding: 0.85rem 1.5rem;
+            font-weight: 700;
+            font-size: 1.05rem;
+            box-shadow: 0 8px 20px rgba(13, 110, 253, 0.3);
+            transition: all 0.3s ease;
+        }
+        .btn-activate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(13, 110, 253, 0.4);
+        }
+        .whatsapp-btn {
+            background: rgba(37, 211, 102, 0.15);
+            border: 1px solid rgba(37, 211, 102, 0.3);
+            color: #25D366;
+            border-radius: 14px;
+            padding: 0.75rem 1.25rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        .whatsapp-btn:hover {
+            background: rgba(37, 211, 102, 0.25);
+            color: #25D366;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="activation-card">
+        <div class="activation-header">
+            <div class="lock-icon-circle">
+                <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <h3 class="fw-bold mb-1">
+                {% if current_lang == 'ar' %}تفعيل ترخيص النظام{% else %}License Activation{% endif %}
+            </h3>
+            <p class="text-secondary small mb-0">
+                {% if current_lang == 'ar' %}نظام إدارة عيادة الأسنان المتكامل Dental Clinic MS{% else %}Dental Clinic Management System{% endif %}
+            </p>
+        </div>
+
+        <div class="p-4 p-md-5">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} rounded-3 mb-4" role="alert">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>{{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Current Status Notice -->
+            {% if status_code == 'CLOCK_TAMPERED' %}
+                <div class="alert alert-danger rounded-3 mb-4 border-2">
+                    <h6 class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>{% if current_lang == 'ar' %}تم الكشف عن تلاعب بالوقت{% else %}Clock Tampering Detected{% endif %}</h6>
+                    <small>{{ message }}</small>
+                </div>
+            {% elif status_code == 'EXPIRED_OR_INVALID' %}
+                <div class="alert alert-warning rounded-3 mb-4">
+                    <h6 class="fw-bold mb-1"><i class="bi bi-clock-history me-2"></i>{% if current_lang == 'ar' %}انتهت فترة التجربة المجانية{% else %}Trial Period Expired{% endif %}</h6>
+                    <small>{% if current_lang == 'ar' %}انتهت صلاحية فترة التجربة الخاصة بالعيادة. يرجى تفعيل مفتاح جديد للاستمرار.{% else %}Your trial period has expired. Please enter a valid license key.{% endif %}</small>
+                </div>
+            {% else %}
+                <div class="alert alert-info rounded-3 mb-4">
+                    <small>{% if current_lang == 'ar' %}يرجى إدخال مفتاح الترخيص المكون من 4 أجزاء لتفعيل التطبيق.{% else %}Please enter your 4-part license key to activate the application.{% endif %}</small>
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('auth.activate_license') }}">
+                <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token', '') }}">
+                
+                <div class="mb-4">
+                    <label for="license_key" class="form-label text-secondary fw-semibold small mb-2">
+                        {% if current_lang == 'ar' %}مفتاح الترخيص (License Key){% else %}License Key{% endif %}
+                    </label>
+                    <input type="text" class="form-control key-input" id="license_key" name="license_key" 
+                           placeholder="DCMS-T30-XXXXXX-XXXXXX" required autocomplete="off" autofocus>
+                </div>
+
+                <button type="submit" class="btn btn-activate w-100 mb-3">
+                    <i class="bi bi-key-fill me-2"></i> {% if current_lang == 'ar' %}تفعيل ترخيص العيادة الآن{% else %}Activate Clinic License Now{% endif %}
+                </button>
+            </form>
+
+            <div class="text-center mt-4 pt-3 border-top border-secondary border-opacity-25">
+                <p class="text-secondary small mb-3">
+                    {% if current_lang == 'ar' %}هل تحتاج إلى مفتاح ترخيص جديد أو تمديد التجربة؟{% else %}Need a new license key or trial extension?{% endif %}
+                </p>
+                <a href="https://wa.me/963958968727?text={{ 'مرحباً،%20أحتاج%20إلى%20مفتاح%20تفعيل%20جديد%20لنظام%20عيادة%20الأسنان'|urlencode }}" 
+                   target="_blank" class="whatsapp-btn w-100">
+                    <i class="bi bi-whatsapp fs-5"></i>
+                    <span>{% if current_lang == 'ar' %}التواصل المباشر مع المطوّر للتفعيل (WhatsApp){% else %}Contact Developer via WhatsApp{% endif %}</span>
+                </a>
+            </div>
+
+            {% if session.get('user_id') %}
+            <div class="text-center mt-3">
+                <a href="{{ url_for('auth.logout') }}" class="text-secondary small text-decoration-none">
+                    <i class="bi bi-box-arrow-right me-1"></i> {% if current_lang == 'ar' %}تسجيل الخروج{% else %}Log Out{% endif %}
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</body>
+</html>
