@@ -547,8 +547,11 @@
                                             </a>
                                         </div>
                                         <div class="mt-3 pt-3 border-top border-warning border-opacity-25">
-                                            <label for="developer_whatsapp" class="settings-label small text-muted">{% if current_lang == 'ar' %}رقم واتساب المطوّر المباشر للتفعيل والدعم{% else %}Developer WhatsApp Phone Number for Activation{% endif %}</label>
-                                            <input type="text" class="form-control settings-input mt-1" id="developer_whatsapp" name="developer_whatsapp" value="{{ settings.developer_whatsapp or '963958948727' }}" placeholder="e.g. 963958948727">
+                                            <label class="settings-label small text-muted d-block mb-1">{% if current_lang == 'ar' %}رقم واتساب المطوّر المباشر للتفعيل والدعم{% else %}Developer WhatsApp Phone Number{% endif %}</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-dark border-secondary text-warning"><i class="bi bi-whatsapp"></i></span>
+                                                <input type="text" class="form-control settings-input border-secondary text-light fw-bold" value="+963958948727" readonly style="opacity: 0.9; cursor: not-allowed; direction: ltr; text-align: left;">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
