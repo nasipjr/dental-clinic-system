@@ -58,7 +58,7 @@
                     <button class="settings-nav-item" id="tab-appearance-btn" data-bs-toggle="pill"
                         data-bs-target="#tab-appearance" type="button" role="tab">
                         <i class="bi bi-palette"></i>
-                        <span>Theme & Appearance</span>
+                        <span>{% if current_lang == 'ar' %}المظهر والتحديثات{% else %}Appearance & Updates{% endif %}</span>
                     </button>
                     <button class="settings-nav-item" id="tab-backups-btn" data-bs-toggle="pill"
                         data-bs-target="#tab-backups" type="button" role="tab">
@@ -469,8 +469,8 @@
                             <div class="settings-tab-header">
                                 <div class="settings-tab-icon"><i class="bi bi-palette"></i></div>
                                 <div>
-                                    <h4>{% if current_lang == 'ar' %}المظهر واللغة{% else %}Theme &amp; Appearance{% endif %}</h4>
-                                    <p>{% if current_lang == 'ar' %}تخصيص الثيم البصري وتفضيلات النظام{% else %}Customize the visual theme of the application{% endif %}</p>
+                                    <h4>{% if current_lang == 'ar' %}المظهر والتحديثات{% else %}Appearance &amp; Updates{% endif %}</h4>
+                                    <p>{% if current_lang == 'ar' %}تخصيص المظهر، لغة الواجهة، وتحديثات النظام البرمجية{% else %}Customize visual theme, language, and software updates{% endif %}</p>
                                 </div>
                             </div>
                             <div class="row g-4 pt-3">

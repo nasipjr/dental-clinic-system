@@ -432,7 +432,7 @@ translations = {
     "System Interface Language": "لغة واجهة النظام",
     "System Role": "دور النظام",
     "System Settings": "إعدادات النظام",
-    "Theme & Appearance": "المظهر والثيم",
+    "Theme & Appearance": "المظهر والتحديثات",
     "There are no appointments yet": "لا توجد مواعيد بعد",
     "There are no patients yet": "لا يوجد مرضى بعد",
     "There are no scheduled appointments waiting for today": "لا توجد مواعيد مجدولة بانتظار البدء اليوم",
