@@ -103,13 +103,17 @@ def activate_license():
             else:
                 return redirect(url_for("auth.login"))
 
+    from utils.settings_helper import get_setting
     status = get_current_license_status()
     current_lang = request.cookies.get('lang', 'ar')
+    raw_dev_phone = get_setting("developer_whatsapp", "963958948727")
+    developer_phone = raw_dev_phone.replace(" ", "").replace("+", "").replace("-", "")
 
     return render_template(
         "auth/activate.html",
         status_code=status["status_code"],
         message=status["message"],
-        current_lang=current_lang
+        current_lang=current_lang,
+        developer_phone=developer_phone
     )
 

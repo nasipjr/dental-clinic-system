@@ -172,7 +172,7 @@
                 <p class="text-secondary small mb-3">
                     {% if current_lang == 'ar' %}هل تحتاج إلى مفتاح ترخيص جديد أو تمديد التجربة؟{% else %}Need a new license key or trial extension?{% endif %}
                 </p>
-                <a href="https://wa.me/963958968727?text={{ 'مرحباً،%20أحتاج%20إلى%20مفتاح%20تفعيل%20جديد%20لنظام%20عيادة%20الأسنان'|urlencode }}" 
+                <a href="https://wa.me/{{ developer_phone }}?text={{ 'مرحباً،%20أحتاج%20إلى%20مفتاح%20تفعيل%20جديد%20لنظام%20عيادة%20الأسنان'|urlencode }}" 
                    target="_blank" class="whatsapp-btn w-100">
                     <i class="bi bi-whatsapp fs-5"></i>
                     <span>{% if current_lang == 'ar' %}التواصل المباشر مع المطوّر للتفعيل (WhatsApp){% else %}Contact Developer via WhatsApp{% endif %}</span>

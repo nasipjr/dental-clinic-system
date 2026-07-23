@@ -12,7 +12,7 @@ def settings_page():
         current_app.logger.info("Updating system settings")
         try:
             # 1. Update general, calendar, and billing settings
-            for key in ["clinic_name", "clinic_phone", "clinic_email", "clinic_address", 
+            for key in ["clinic_name", "clinic_phone", "clinic_email", "clinic_address", "developer_whatsapp",
                         "working_hours_start", "working_hours_end", "default_appointment_duration", 
                         "currency_symbol", "booking_window_days", "anesthesia_needle_price"]:
                 val = request.form.get(key, "").strip()

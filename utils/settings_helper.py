@@ -19,6 +19,7 @@ DEFAULT_SETTINGS = {
     "clinic_phone": "+963 958 948 727",
     "clinic_email": "kh.nasipdragon@gmail.com",
     "clinic_address": "Damascus, Syria",
+    "developer_whatsapp": "963958948727",
     "currency_symbol": "$",
     "default_appointment_duration": "30",
     "working_hours_start": "09:00",
