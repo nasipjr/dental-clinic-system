@@ -13,6 +13,15 @@ else:
     BASE_DIR = Path(__file__).resolve().parent
 
 
+def is_port_open(host, port, timeout=1.0):
+    import socket
+    try:
+        with socket.create_connection((host, int(port)), timeout=timeout):
+            return True
+    except Exception:
+        return False
+
+
 def build_database_uri():
     database_url = os.getenv("DATABASE_URL")
 
@@ -25,10 +34,18 @@ def build_database_uri():
     db_port = os.getenv("DB_PORT", "3308")
     db_name = os.getenv("DB_NAME", "dental_clinic")
 
-    return (
-        f"mysql+pymysql://{db_user}:{db_password}"
-        f"@{db_host}:{db_port}/{db_name}"
-    )
+    # If MySQL is configured explicitly or if the MySQL port is open and reachable
+    if os.getenv("DB_ENGINE") == "mysql" or is_port_open(db_host, db_port):
+        return (
+            f"mysql+pymysql://{db_user}:{db_password}"
+            f"@{db_host}:{db_port}/{db_name}"
+        )
+
+    # Fallback to zero-dependency embedded SQLite database
+    instance_dir = BASE_DIR / "instance"
+    instance_dir.mkdir(parents=True, exist_ok=True)
+    db_path = instance_dir / "dental_clinic.db"
+    return f"sqlite:///{db_path.as_posix()}"
 
 
 class Config:

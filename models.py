@@ -36,7 +36,7 @@ class Patient(db.Model):
     medicare_number = db.Column(db.String(100))
     telegram_chat_id = db.Column(db.String(50), nullable=True)
     reminders_enabled = db.Column(db.Boolean, default=True, nullable=False)
-    primary_doctor_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    primary_doctor_id = db.Column(db.Integer, db.ForeignKey("user.id", use_alter=True, name="fk_patient_primary_doctor"), nullable=True)
     primary_doctor = db.relationship("User", foreign_keys=[primary_doctor_id], backref="primary_patients")
 
     appointments = db.relationship(
@@ -460,7 +460,7 @@ class User(db.Model):
     role = db.Column(db.String(20), default="receptionist", nullable=False)  # 'admin', 'doctor', 'receptionist', 'patient'
     first_name = db.Column(db.String(100), nullable=True)
     last_name = db.Column(db.String(100), nullable=True)
-    patient_id = db.Column(db.Integer, db.ForeignKey("patient.id"), nullable=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey("patient.id", use_alter=True, name="fk_user_patient"), nullable=True)
     patient = db.relationship("Patient", foreign_keys=[patient_id], backref=db.backref("user", uselist=False))
     plain_password = db.Column(db.String(255), nullable=True)
 

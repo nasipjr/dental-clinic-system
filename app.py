@@ -30,6 +30,7 @@ static_dir = os.path.join(base_dir, 'static')
 
 app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 app.config.from_object(Config)
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
 
 LOG_DIRECTORY = app.config["LOG_DIRECTORY"]
 LOG_FILE_NAME = app.config["LOG_FILE_NAME"]
@@ -46,36 +47,9 @@ def populate_default_settings():
             if not setting:
                 db.session.add(SystemSetting(key=key, value=val))
         db.session.commit()
-
-        # Seed initial 30-day trial license key if none exists
-        active_key_setting = SystemSetting.query.filter_by(key="active_license_key").first()
-        if not active_key_setting or not active_key_setting.value:
-            from utils.license_helper import generate_license_key, verify_license_key
-            trial_key = generate_license_key(days=30, license_type="trial")
-            is_valid, data = verify_license_key(trial_key)
-            if is_valid and isinstance(data, dict):
-                if active_key_setting:
-                    active_key_setting.value = trial_key
-                else:
-                    db.session.add(SystemSetting(key="active_license_key", value=trial_key))
-                
-                lt_setting = SystemSetting.query.filter_by(key="license_type").first()
-                if lt_setting:
-                    lt_setting.value = "trial"
-                else:
-                    db.session.add(SystemSetting(key="license_type", value="trial"))
-
-                exp_setting = SystemSetting.query.filter_by(key="license_expires_at").first()
-                exp_val = data["expires_at"].strftime("%Y-%m-%d %H:%M:%S")
-                if exp_setting:
-                    exp_setting.value = exp_val
-                else:
-                    db.session.add(SystemSetting(key="license_expires_at", value=exp_val))
-                
-                db.session.commit()
     except Exception as e:
         db.session.rollback()
-        app.logger.error(f"Error initializing default settings or license: {e}")
+        app.logger.error(f"Error initializing default settings: {e}")
 
 
 def check_and_add_discount_column():
@@ -549,5 +523,6 @@ if __name__ == "__main__":
         except Exception as e:
             app.logger.error(f"Failed to start expired appointments cleanup scheduler: {e}")
 
+    debug_mode = os.getenv("FLASK_DEBUG", "False").lower() in ("true", "1")
     app.logger.info("Flask app is running")
-    app.run(debug=True)
+    app.run(debug=debug_mode)
