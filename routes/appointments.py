@@ -16,10 +16,20 @@ appointments_bp = Blueprint("appointments", __name__)
 
 def cancel_expired_appointments():
     try:
-        one_hour_ago = datetime.now() - timedelta(hours=1)
+        from utils.settings_helper import get_setting
+        minutes_str = get_setting("auto_cancel_expired_minutes", "60")
+        try:
+            minutes = int(minutes_str)
+        except (ValueError, TypeError):
+            minutes = 60
+
+        if minutes <= 0:
+            return  # Auto-cancel is disabled
+
+        cutoff_time = datetime.now() - timedelta(minutes=minutes)
         expired = Appointment.query.filter(
             Appointment.status == "Scheduled",
-            Appointment.appointment_date < one_hour_ago,
+            Appointment.appointment_date < cutoff_time,
             Appointment.session_opened_at == None,  # noqa: E711 – skip if session was opened
         ).all()
         if expired:
@@ -30,7 +40,7 @@ def cancel_expired_appointments():
                     cancelled_count += 1
             if cancelled_count > 0:
                 db.session.commit()
-                current_app.logger.info(f"Auto-cancelled {cancelled_count} expired appointments.")
+                current_app.logger.info(f"Auto-cancelled {cancelled_count} expired appointments (cutoff: {minutes} mins).")
     except Exception:
         db.session.rollback()
         current_app.logger.exception("Failed to auto-cancel expired appointments")
@@ -450,23 +460,25 @@ def delete_appointment(appointment_id):
 
     try:
         appointment = Appointment.query.get_or_404(appointment_id)
+        lang = request.cookies.get("lang", "en")
 
         if appointment.status == "Done":
+            err_title = "الإجراء غير مسموح به" if lang == "ar" else "Action Not Allowed"
+            err_msg = "لا يمكن حذف موعد مكتمل لأنه قد يحتوي على سجلات طبية أو مالية مهمة." if lang == "ar" else "Cannot delete a completed appointment because it may contain important medical or payment history."
             return render_template(
                 "error_message.html",
-                title="Action Not Allowed",
-                message=(
-                    "Cannot delete a completed appointment because it may contain "
-                    "important medical or payment history."
-                ),
+                title=err_title,
+                message=err_msg,
                 back_url=url_for("patients.patient_detail", patient_id=appointment.patient_id),
             ), 403
 
         if appointment.treatments:
+            err_title = "الإجراء غير مسموح به" if lang == "ar" else "Action Not Allowed"
+            err_msg = "لا يمكن حذف موعد يحتوي على معالجات مسجلة." if lang == "ar" else "Cannot delete an appointment that has treatments."
             return render_template(
                 "error_message.html",
-                title="Action Not Allowed",
-                message="Cannot delete an appointment that has treatments.",
+                title=err_title,
+                message=err_msg,
                 back_url=url_for("patients.patient_detail", patient_id=appointment.patient_id),
             ), 403
 

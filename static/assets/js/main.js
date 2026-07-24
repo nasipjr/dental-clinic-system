@@ -220,21 +220,41 @@ document.addEventListener("DOMContentLoaded", function () {
     event.preventDefault();
     const url = btn.getAttribute("data-action-url");
     const rawMsg = btn.getAttribute("data-confirm-msg") || "";
-    const isDecline = url && url.includes("/decline");
+    const rawTitle = btn.getAttribute("data-confirm-title") || "";
     const isArabic = document.documentElement.getAttribute("lang") === "ar";
 
-    const titleText = isDecline 
-      ? (isArabic ? "تأكيد رفض طلب الموعد" : "Decline Booking Request") 
-      : (isArabic ? "تأكيد قبول الموعد" : "Confirm Booking Request");
-    
-    const confirmBtnText = isDecline 
-      ? (isArabic ? "نعم، إرفض الموعد" : "Yes, Decline") 
-      : (isArabic ? "نعم، أكد الموعد" : "Yes, Confirm");
-    
-    const confirmBtnColor = isDecline ? "#dc3545" : "#198754";
-    const alertMsg = isArabic 
-      ? (isDecline ? "هل أنت تأكد من إغلاق ورفض هذا الموعد؟" : "هل أنت تأكد من قبول وتأكيد حجز هذا الموعد؟")
-      : rawMsg;
+    const isDecline = url && url.includes("/decline");
+    const isCancel = url && (url.includes("/cancel") || url.includes("/quick-cancel"));
+    const isDone = url && (url.includes("/done") || url.includes("/quick-done"));
+
+    let titleText = "";
+    let confirmBtnText = "";
+    let confirmBtnColor = "#198754";
+    let alertMsg = "";
+
+    if (isDecline) {
+      titleText = isArabic ? "تأكيد رفض طلب الموعد" : "Decline Booking Request";
+      confirmBtnText = isArabic ? "نعم، إرفض الموعد" : "Yes, Decline";
+      confirmBtnColor = "#dc3545";
+      alertMsg = isArabic ? "هل أنت تأكد من إغلاق ورفض هذا الموعد؟" : (rawMsg || "Decline this booking?");
+    } else if (isCancel) {
+      titleText = isArabic ? "تأكيد إلغاء الموعد" : "Cancel Appointment";
+      confirmBtnText = isArabic ? "نعم، إلغاء الموعد" : "Yes, Cancel";
+      confirmBtnColor = "#dc3545";
+      alertMsg = isArabic ? "هل أنت تأكد من إلغاء هذا الموعد؟" : (rawMsg || "Are you sure you want to cancel this appointment?");
+    } else if (isDone) {
+      titleText = isArabic ? "تأكيد إتمام الموعد" : "Complete Appointment";
+      confirmBtnText = isArabic ? "نعم، إتمام الموعد" : "Yes, Complete";
+      confirmBtnColor = "#198754";
+      alertMsg = isArabic ? "هل أنت تأكد من إتمام هذا الموعد؟" : (rawMsg || "Mark this appointment as completed?");
+    } else {
+      titleText = isArabic ? "تأكيد قبول الموعد" : "Confirm Booking Request";
+      confirmBtnText = isArabic ? "نعم، أكد الموعد" : "Yes, Confirm";
+      confirmBtnColor = "#198754";
+      alertMsg = isArabic ? "هل أنت تأكد من قبول وتأكيد حجز هذا الموعد؟" : (rawMsg || "Confirm this booking?");
+    }
+
+    if (rawTitle) titleText = rawTitle;
 
     const csrfMeta = document.querySelector('meta[name="csrf-token"]');
     const csrfToken = csrfMeta ? csrfMeta.getAttribute("content") : "";

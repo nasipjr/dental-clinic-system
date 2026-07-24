@@ -1,6 +1,18 @@
 # -*- coding: utf-8 -*-
 
 translations = {
+    "Action Not Allowed": "الإجراء غير مسموح به",
+    "Cannot delete a completed appointment because it may contain important medical or payment history.": "لا يمكن حذف موعد مكتمل لأنه قد يحتوي على سجلات طبية أو مالية مهمة.",
+    "Cannot delete an appointment that has treatments.": "لا يمكن حذف موعد يحتوي على معالجات مسجلة.",
+    "Cannot delete this treatment because the appointment session is closed or cancelled.": "لا يمكن حذف هذه المعالجة لأن جلسة الموعد مغلقة أو ملغاة.",
+    "Cannot edit this treatment because the appointment session is closed or cancelled.": "لا يمكن تعديل هذه المعالجة لأن جلسة الموعد مغلقة أو ملغاة.",
+    "Cannot delete this patient because they have appointments": "لا يمكن حذف هذا المريض لأن لديه مواعيد مسجلة.",
+    "Cannot delete this patient because they have associated appointments or payments.": "لا يمكن حذف هذا المريض لأن لديه مواعيد أو مدفوعات مسجلة.",
+    "Cannot cancel a completed appointment.": "لا يمكن إلغاء موعد مكتمل بالفعل.",
+    "Cannot cancel an appointment that has treatments.": "لا يمكن إلغاء موعد يحتوي على معالجات مسجلة.",
+    "Cannot delete a paid invoice.": "لا يمكن حذف فاتورة مدفوعة.",
+    "Cannot edit a paid invoice.": "لا يمكن تعديل فاتورة مدفوعة.",
+    "Cannot delete this payment because it is allocated to invoices.": "لا يمكن حذف هذه الدفعة لأنها مخصصة لفواتير.",
     "Doctor": "طبيب",
     "Receptionist": "استقبال",
     "Admin": "مدير",

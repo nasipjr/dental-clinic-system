@@ -150,6 +150,38 @@
                                     </select>
                                 </div>
                                 <div class="col-md-12 mt-3">
+                                    <label for="auto_cancel_expired_minutes" class="settings-label">
+                                        Auto-Cancel Unattended Appointments After
+                                    </label>
+                                    <select class="form-select settings-input" id="auto_cancel_expired_minutes"
+                                        name="auto_cancel_expired_minutes">
+                                        <option value="0" {% if settings.auto_cancel_expired_minutes=='0' %}selected{% endif %}>
+                                            Never (Disabled) / عدم الإلغاء تلقائياً
+                                        </option>
+                                        <option value="15" {% if settings.auto_cancel_expired_minutes=='15' %}selected{% endif %}>
+                                            15 Minutes / 15 دقيقة
+                                        </option>
+                                        <option value="30" {% if settings.auto_cancel_expired_minutes=='30' %}selected{% endif %}>
+                                            30 Minutes / 30 دقيقة
+                                        </option>
+                                        <option value="60" {% if settings.auto_cancel_expired_minutes=='60' or not settings.auto_cancel_expired_minutes %}selected{% endif %}>
+                                            1 Hour (Default) / ساعة واحدة (افتراضي)
+                                        </option>
+                                        <option value="120" {% if settings.auto_cancel_expired_minutes=='120' %}selected{% endif %}>
+                                            2 Hours / ساعتين
+                                        </option>
+                                        <option value="180" {% if settings.auto_cancel_expired_minutes=='180' %}selected{% endif %}>
+                                            3 Hours / 3 ساعات
+                                        </option>
+                                        <option value="360" {% if settings.auto_cancel_expired_minutes=='360' %}selected{% endif %}>
+                                            6 Hours / 6 ساعات
+                                        </option>
+                                        <option value="1440" {% if settings.auto_cancel_expired_minutes=='1440' %}selected{% endif %}>
+                                            24 Hours (Full Day) / 24 ساعة (يوم كامل)
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-md-12 mt-3">
                                     <label class="settings-label d-block">Working Days of the Week</label>
                                     {% set working_days_list = settings.working_days.split(',') if settings.working_days
                                     else ['0','1','2','3','4','6'] %}

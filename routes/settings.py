@@ -14,6 +14,7 @@ def settings_page():
             # 1. Update general, calendar, and billing settings
             for key in ["clinic_name", "clinic_phone", "clinic_email", "clinic_address", 
                         "working_hours_start", "working_hours_end", "default_appointment_duration", 
+                        "auto_cancel_expired_minutes",
                         "currency_symbol", "booking_window_days", "anesthesia_needle_price"]:
                 val = request.form.get(key, "").strip()
                 if key == "booking_window_days":

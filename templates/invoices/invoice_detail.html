@@ -159,7 +159,7 @@
 
                             <td>
                                 <span class="procedure-badge">
-                                    {{ treatment.procedure_type or 'General Treatment' }}
+                                    {{ treatment.procedure_type or 'معالجة عامة' }}
                                 </span>
                                 {% if treatment.use_anesthesia %}
                                     <div class="text-muted small mt-1" style="font-size: 0.78rem;">
@@ -397,7 +397,7 @@
             <tr>
                 <td>{{ loop.index }}</td>
                 <td>
-                    <strong>{{ treatment.procedure_type or 'General Treatment' }}</strong>
+                    <strong>{{ treatment.procedure_type or 'معالجة عامة' }}</strong>
                     {% if treatment.use_anesthesia %}
                         <br>
                         <small class="text-muted" style="font-size: 0.78rem;">
