@@ -116,6 +116,7 @@ def set_setting(key, value):
             setting = SystemSetting(key=key, value=str(value))
             db.session.add(setting)
         db.session.commit()
+        db.session.expire_all()
 
         if has_app_context():
             if not hasattr(g, "system_settings_cache"):

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{% set current_lang = request.cookies.get('lang', 'en') %}
+{% set current_lang = request.cookies.get('lang', 'ar') %}
 <html lang="{{ current_lang }}" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
 
 <head>

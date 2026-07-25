@@ -91,6 +91,41 @@ def get_appointments_context():
     else:
         query = query.filter(Appointment.status != "Pending")
 
+    date_filter = request.args.get("date_filter", "").strip().lower()
+
+    now = datetime.now()
+    today_start = datetime(now.year, now.month, now.day, 0, 0, 0)
+    today_end = today_start + timedelta(days=1)
+    tomorrow_end = today_start + timedelta(days=2)
+
+    base_active = Appointment.query.filter(Appointment.status != "Pending")
+    today_count = base_active.filter(
+        Appointment.appointment_date >= today_start,
+        Appointment.appointment_date < today_end
+    ).count()
+
+    tomorrow_count = base_active.filter(
+        Appointment.appointment_date >= today_end,
+        Appointment.appointment_date < tomorrow_end
+    ).count()
+
+    all_count = base_active.count()
+
+    # Default to today if not specified, unless today has 0 and all has items
+    if not date_filter:
+        date_filter = "today" if today_count > 0 else "all"
+
+    if date_filter == "today":
+        query = query.filter(
+            Appointment.appointment_date >= today_start,
+            Appointment.appointment_date < today_end
+        )
+    elif date_filter == "tomorrow":
+        query = query.filter(
+            Appointment.appointment_date >= today_end,
+            Appointment.appointment_date < tomorrow_end
+        )
+
     sort_columns = {
         "id": Appointment.id,
         "patient": Patient.first_name,
@@ -122,6 +157,10 @@ def get_appointments_context():
         "sort_by": sort_by,
         "order": order,
         "has_cancelled": has_cancelled,
+        "date_filter": date_filter,
+        "today_count": today_count,
+        "tomorrow_count": tomorrow_count,
+        "all_count": all_count,
     }
 
 
@@ -485,6 +524,10 @@ def delete_appointment(appointment_id):
         if request.method == "POST":
             patient_id = appointment.patient_id
             db.session.delete(appointment)
+            db.session.flush()
+
+            from services.payment_service import allocate_patient_payments_to_invoices
+            allocate_patient_payments_to_invoices(patient_id)
             db.session.commit()
 
             current_app.logger.info(

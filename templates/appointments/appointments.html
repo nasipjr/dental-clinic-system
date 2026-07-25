@@ -51,12 +51,10 @@
 
             <div class="d-flex gap-2 align-items-center">
                 {% if has_cancelled and current_user.role in ('admin', 'receptionist') %}
-                <form action="{{ url_for('appointments.delete_all_cancelled') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete all cancelled appointments? This action cannot be undone.');" style="margin: 0;">
-                    <button type="submit" class="btn btn-danger" style="border-radius: 30px; font-weight: 600; padding: 10px 24px;">
-                        <i class="bi bi-trash"></i>
-                        Delete All Cancelled
-                    </button>
-                </form>
+                <button type="button" class="btn btn-outline-danger" style="border-radius: 30px; font-weight: 600; padding: 10px 24px;" data-bs-toggle="modal" data-bs-target="#deleteAllCancelledModal">
+                    <i class="bi bi-trash me-1"></i>
+                    {% if current_lang == 'ar' %}حذف جميع المواعيد الملغاة{% else %}Delete All Cancelled{% endif %}
+                </button>
                 {% endif %}
                 {% if current_user.role in ('admin', 'receptionist', 'doctor') %}
                 <a href="{{ url_for('appointments.add_appointment_direct') }}" class="btn btn-primary" style="border-radius: 30px; font-weight: 600; padding: 10px 24px;">
@@ -71,12 +69,12 @@
         <!-- Tabs Navigation -->
         <ul class="nav nav-tabs custom-tabs mb-4 border-0" id="appointmentsTabs" role="tablist" style="border-bottom: 2px solid color-mix(in srgb, var(--default-color), transparent 90%) !important;">
             <li class="nav-item" role="presentation">
-                <a href="{{ url_for('appointments.appointments') }}" class="nav-link {% if not show_pending %}active fw-bold{% endif %} py-3 px-4 border-0" style="color: {% if not show_pending %}var(--accent-color){% else %}var(--default-color){% endif %}; border-bottom: 3px solid {% if not show_pending %}var(--accent-color){% else %}transparent{% endif %} !important; font-size: 1.05rem; background: transparent;">
+                <a href="{{ url_for('appointments.appointments') }}" class="nav-link appointment-tab-btn {% if not show_pending %}active fw-bold{% endif %} py-3 px-4 border-0" data-tab="scheduled" style="color: {% if not show_pending %}var(--accent-color){% else %}var(--default-color){% endif %}; border-bottom: 3px solid {% if not show_pending %}var(--accent-color){% else %}transparent{% endif %} !important; font-size: 1.05rem; background: transparent;">
                     <i class="bi bi-calendar-check me-2"></i> Scheduled Appointments
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a href="{{ url_for('appointments.appointments', tab='pending') }}" class="nav-link {% if show_pending %}active fw-bold{% endif %} py-3 px-4 border-0" style="color: {% if show_pending %}var(--accent-color){% else %}var(--default-color){% endif %}; border-bottom: 3px solid {% if show_pending %}var(--accent-color){% else %}transparent{% endif %} !important; font-size: 1.05rem; background: transparent;">
+                <a href="{{ url_for('appointments.appointments', tab='pending') }}" class="nav-link appointment-tab-btn {% if show_pending %}active fw-bold{% endif %} py-3 px-4 border-0" data-tab="pending" style="color: {% if show_pending %}var(--accent-color){% else %}var(--default-color){% endif %}; border-bottom: 3px solid {% if show_pending %}var(--accent-color){% else %}transparent{% endif %} !important; font-size: 1.05rem; background: transparent;">
                     <i class="bi bi-clock-history me-2"></i> Pending Requests
                     {% if pending_count > 0 %}
                     <span class="badge bg-danger rounded-pill ms-2">{{ pending_count }}</span>
@@ -85,6 +83,7 @@
             </li>
         </ul>
 
+        <div id="appointments-tab-content-container">
         {% if show_pending %}
             <!-- Pending Requests Tab Content -->
             {% if pending_appointments %}
@@ -107,7 +106,14 @@
                         {% for appointment in pending_appointments %}
                         <tr>
                             <td>
-                                {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else 'No date' }}
+                                {% if appointment.appointment_date %}
+                                    <div class="fw-semibold text-nowrap" style="font-size: 0.93rem;">{{ appointment.appointment_date.strftime('%Y-%m-%d') }}</div>
+                                    <div class="text-muted text-nowrap" style="font-size: 0.82rem; margin-top: 2px;">
+                                        <i class="bi bi-clock me-1" style="font-size: 0.78rem;"></i>{{ appointment.appointment_date.strftime('%I:%M %p') }}
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">No date</span>
+                                {% endif %}
                             </td>
 
                             <td>
@@ -164,19 +170,55 @@
             </div>
             {% endif %}
         {% else %}
-            <!-- Scheduled Appointments Tab Content -->
-            <div class="d-flex justify-content-end mb-3">
-                <div class="btn-group" role="group" aria-label="View Toggle" style="border-radius: 30px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--accent-color), transparent 80%);">
-                    <a href="{{ url_for('appointments.appointments') }}" class="btn btn-primary active px-4 py-2" style="font-weight: 600; border-radius: 0; border: none;">
-                        <i class="bi bi-list-task me-1"></i> List View
-                    </a>
-                    <a href="{{ url_for('appointments.calendar') }}" class="btn btn-outline-primary px-4 py-2" style="font-weight: 600; border-radius: 0; border: none;">
-                        <i class="bi bi-calendar3 me-1"></i> Calendar View
-                    </a>
+            <!-- Date Filter Tabs (Today, Tomorrow, All) -->
+            <div class="card mb-4 border-0 shadow-sm rounded-4 overflow-hidden" style="background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08) !important;">
+                <div class="card-body p-2 d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    
+                    <div class="nav nav-pills gap-2 flex-grow-1" role="tablist">
+                        <!-- Today Tab -->
+                        <a href="{{ url_for('appointments.appointments', date_filter='today', search=search_query, status=status_filter, sort=sort_by, order=order) }}" 
+                           data-filter="today"
+                           class="nav-link date-filter-btn px-4 py-2.5 rounded-pill d-flex align-items-center gap-2 fw-bold transition-all {% if date_filter == 'today' %}btn-primary text-white shadow-sm{% else %}text-light bg-transparent hover-bg-dark{% endif %}" style="font-size: 0.95rem;">
+                            <i class="bi bi-calendar-event fs-5"></i>
+                            <span>{% if current_lang == 'ar' %}مواعيد اليوم{% else %}Today's Appointments{% endif %}</span>
+                            <span class="badge rounded-pill {% if date_filter == 'today' %}bg-white text-primary{% else %}bg-primary text-white{% endif %} px-2.5 py-1 ms-1">{{ today_count }}</span>
+                        </a>
+
+                        <!-- Tomorrow Tab -->
+                        <a href="{{ url_for('appointments.appointments', date_filter='tomorrow', search=search_query, status=status_filter, sort=sort_by, order=order) }}" 
+                           data-filter="tomorrow"
+                           class="nav-link date-filter-btn px-4 py-2.5 rounded-pill d-flex align-items-center gap-2 fw-bold transition-all {% if date_filter == 'tomorrow' %}btn-primary text-white shadow-sm{% else %}text-light bg-transparent hover-bg-dark{% endif %}" style="font-size: 0.95rem;">
+                            <i class="bi bi-calendar-plus fs-5"></i>
+                            <span>{% if current_lang == 'ar' %}مواعيد الغد{% else %}Tomorrow's Appointments{% endif %}</span>
+                            <span class="badge rounded-pill {% if date_filter == 'tomorrow' %}bg-white text-primary{% else %}bg-info text-dark{% endif %} px-2.5 py-1 ms-1">{{ tomorrow_count }}</span>
+                        </a>
+
+                        <!-- All Appointments Tab -->
+                        <a href="{{ url_for('appointments.appointments', date_filter='all', search=search_query, status=status_filter, sort=sort_by, order=order) }}" 
+                           data-filter="all"
+                           class="nav-link date-filter-btn px-4 py-2.5 rounded-pill d-flex align-items-center gap-2 fw-bold transition-all {% if date_filter == 'all' %}btn-primary text-white shadow-sm{% else %}text-light bg-transparent hover-bg-dark{% endif %}" style="font-size: 0.95rem;">
+                            <i class="bi bi-calendar3 fs-5"></i>
+                            <span>{% if current_lang == 'ar' %}جميع المواعيد{% else %}All Appointments{% endif %}</span>
+                            <span class="badge rounded-pill {% if date_filter == 'all' %}bg-white text-primary{% else %}bg-secondary text-white{% endif %} px-2.5 py-1 ms-1">{{ all_count }}</span>
+                        </a>
+                    </div>
+
+                    <!-- View Toggle -->
+                    <div class="d-flex align-items-center gap-1 p-1 bg-dark bg-opacity-40 rounded-pill border border-secondary border-opacity-25">
+                        <a href="{{ url_for('appointments.appointments', date_filter=date_filter) }}" class="btn btn-sm btn-primary rounded-pill px-3 py-1.5 fw-semibold active">
+                            <i class="bi bi-list-task me-1"></i> {% if current_lang == 'ar' %}عرض القائمة{% else %}List View{% endif %}
+                        </a>
+                        <a href="{{ url_for('appointments.calendar') }}" class="btn btn-sm btn-link text-muted text-decoration-none rounded-pill px-3 py-1.5 fw-semibold hover-text-white">
+                            <i class="bi bi-calendar3 me-1"></i> {% if current_lang == 'ar' %}عرض التقويم{% else %}Calendar View{% endif %}
+                        </a>
+                    </div>
+
                 </div>
             </div>
+
             <!-- Filters -->
             <form id="appointments-filter-form" method="GET" action="{{ url_for('appointments.appointments_table') }}" class="appointments-filter-bar mb-4">
+                <input type="hidden" name="date_filter" value="{{ date_filter }}">
                 <div class="row gy-3 align-items-end">
 
                     <div class="col-md-4">
@@ -210,7 +252,7 @@
                             Apply Filter
                         </button>
 
-                        <a href="{{ url_for('appointments.appointments') }}" class="btn btn-outline-secondary">
+                        <a href="{{ url_for('appointments.appointments') }}" id="appointments-reset-btn" class="btn btn-outline-secondary">
                             Reset
                         </a>
                     </div>
@@ -223,17 +265,21 @@
                 {% include "partials/_appointments_table.html" %}
             </div>
         {% endif %}
-
+        </div>
     </div>
 </section>
 <!-- /Appointments Table Section -->
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const tableContainer = document.getElementById("appointments-table-container");
-    const filterForm = document.getElementById("appointments-filter-form");
+    const mainContainer = document.getElementById("appointments-tab-content-container");
 
+    // Load appointments table via AJAX
     function loadAppointmentsTable(url) {
+        const tableContainer = document.getElementById("appointments-table-container");
+        if (!tableContainer) return;
+
+        tableContainer.style.opacity = '0.5';
         fetch(url, {
             headers: {
                 "X-Requested-With": "XMLHttpRequest"
@@ -247,41 +293,215 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(function (html) {
             tableContainer.innerHTML = html;
+            tableContainer.style.opacity = '1';
             if (window.initCustomTooltips) {
                 window.initCustomTooltips();
             }
         })
         .catch(function (error) {
             console.error(error);
+            tableContainer.style.opacity = '1';
             window.location.href = url;
         });
     }
 
-    if (filterForm) {
-        filterForm.addEventListener("submit", function (event) {
-            event.preventDefault();
+    // Load full tab content (Scheduled vs Pending) via AJAX
+    function loadTabContent(url) {
+        if (!mainContainer) return;
+        mainContainer.style.opacity = '0.5';
 
-            const formData = new FormData(filterForm);
-            const queryString = new URLSearchParams(formData).toString();
-            const url = filterForm.getAttribute("action") + "?" + queryString;
+        fetch(url, {
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        })
+        .then(function (response) {
+            if (!response.ok) throw new Error("Failed to load tab content.");
+            return response.text();
+        })
+        .then(function (html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newContent = doc.getElementById('appointments-tab-content-container');
+            const newTabs = doc.getElementById('appointmentsTabs');
 
-            loadAppointmentsTable(url);
+            if (newContent && mainContainer) {
+                mainContainer.innerHTML = newContent.innerHTML;
+            }
+            if (newTabs) {
+                const currentTabs = document.getElementById('appointmentsTabs');
+                if (currentTabs) currentTabs.innerHTML = newTabs.innerHTML;
+            }
+            mainContainer.style.opacity = '1';
+            if (window.initCustomTooltips) window.initCustomTooltips();
+            history.pushState(null, '', url);
+        })
+        .catch(function (error) {
+            console.error(error);
+            if (mainContainer) mainContainer.style.opacity = '1';
+            window.location.href = url;
         });
     }
 
+    // Global Click Delegation
     document.addEventListener("click", function (event) {
-        const link = event.target.closest(".appointments-ajax-link");
-
-        if (!link) {
+        // 1. Top tabs (Scheduled vs Pending)
+        const tabBtn = event.target.closest(".appointment-tab-btn");
+        if (tabBtn) {
+            event.preventDefault();
+            loadTabContent(tabBtn.href);
             return;
         }
 
-        event.preventDefault();
-        loadAppointmentsTable(link.href);
+        // 2. Date Filter buttons (Today, Tomorrow, All)
+        const dateBtn = event.target.closest(".date-filter-btn");
+        if (dateBtn) {
+            event.preventDefault();
+            const filterValue = dateBtn.dataset.filter;
+
+            // Update active styling on date filter buttons
+            document.querySelectorAll(".date-filter-btn").forEach(btn => {
+                const isTarget = (btn === dateBtn);
+                btn.classList.toggle("btn-primary", isTarget);
+                btn.classList.toggle("text-white", isTarget);
+                btn.classList.toggle("shadow-sm", isTarget);
+                btn.classList.toggle("text-light", !isTarget);
+                btn.classList.toggle("bg-transparent", !isTarget);
+                btn.classList.toggle("hover-bg-dark", !isTarget);
+
+                const badge = btn.querySelector(".badge");
+                if (badge) {
+                    if (isTarget) {
+                        badge.className = "badge rounded-pill bg-white text-primary px-2.5 py-1 ms-1";
+                    } else {
+                        const bFilter = btn.dataset.filter;
+                        const badgeColor = bFilter === 'today' ? 'bg-primary text-white' : (bFilter === 'tomorrow' ? 'bg-info text-dark' : 'bg-secondary text-white');
+                        badge.className = "badge rounded-pill " + badgeColor + " px-2.5 py-1 ms-1";
+                    }
+                }
+            });
+
+            // Update hidden input in filter form
+            const filterForm = document.getElementById("appointments-filter-form");
+            if (filterForm) {
+                const dateInput = filterForm.querySelector('input[name="date_filter"]');
+                if (dateInput) dateInput.value = filterValue;
+
+                const formData = new FormData(filterForm);
+                const queryString = new URLSearchParams(formData).toString();
+                const tableUrl = filterForm.getAttribute("action") + "?" + queryString;
+
+                history.pushState(null, '', dateBtn.href);
+                loadAppointmentsTable(tableUrl);
+            } else {
+                loadAppointmentsTable(dateBtn.href);
+            }
+            return;
+        }
+
+        // 3. Reset Button
+        const resetBtn = event.target.closest("#appointments-reset-btn");
+        if (resetBtn) {
+            event.preventDefault();
+            const filterForm = document.getElementById("appointments-filter-form");
+            if (filterForm) {
+                const searchInp = filterForm.querySelector('input[name="search"]');
+                const statusSel = filterForm.querySelector('select[name="status"]');
+                if (searchInp) searchInp.value = '';
+                if (statusSel) statusSel.value = '';
+
+                const formData = new FormData(filterForm);
+                const queryString = new URLSearchParams(formData).toString();
+                const tableUrl = filterForm.getAttribute("action") + "?" + queryString;
+
+                history.pushState(null, '', resetBtn.href);
+                loadAppointmentsTable(tableUrl);
+            }
+            return;
+        }
+
+        // 4. AJAX table links (sort, pagination)
+        const link = event.target.closest(".appointments-ajax-link");
+        if (link) {
+            event.preventDefault();
+            loadAppointmentsTable(link.href);
+            return;
+        }
+    });
+
+    // Handle filter form submit dynamically
+    document.addEventListener("submit", function (event) {
+        if (event.target && event.target.id === "appointments-filter-form") {
+            event.preventDefault();
+            const filterForm = event.target;
+            const formData = new FormData(filterForm);
+            const queryString = new URLSearchParams(formData).toString();
+            const url = filterForm.getAttribute("action") + "?" + queryString;
+            loadAppointmentsTable(url);
+        }
+    });
+
+    // Auto-trigger filter on status dropdown change
+    document.addEventListener("change", function (event) {
+        if (event.target && event.target.name === "status" && event.target.closest("#appointments-filter-form")) {
+            const filterForm = event.target.closest("#appointments-filter-form");
+            const formData = new FormData(filterForm);
+            const queryString = new URLSearchParams(formData).toString();
+            const url = filterForm.getAttribute("action") + "?" + queryString;
+            loadAppointmentsTable(url);
+        }
+    });
+
+    // Support browser back/forward navigation
+    window.addEventListener("popstate", function () {
+        loadTabContent(window.location.href);
     });
 });
-
 </script>
 
+<!-- Delete All Cancelled Appointments Modal -->
+{% if has_cancelled and current_user.role in ('admin', 'receptionist') %}
+<div class="modal fade" id="deleteAllCancelledModal" tabindex="-1" aria-labelledby="deleteAllCancelledModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg" style="background: var(--surface-color, #1e293b); color: var(--default-color, #f8fafc);">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="deleteAllCancelledModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill fs-4 text-danger"></i>
+                    {% if current_lang == 'ar' %}تأكيد حذف المواعيد الملغاة{% else %}Confirm Permanent Delete{% endif %}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <p class="mb-2 fs-6">
+                    {% if current_lang == 'ar' %}
+                        هل أنت متأكد من رغبتك في حذف <strong>جميع المواعيد الملغاة</strong> نهائياً؟
+                    {% else %}
+                        Are you sure you want to permanently delete <strong>all cancelled appointments</strong>?
+                    {% endif %}
+                </p>
+                <div class="p-3 rounded-3 bg-danger bg-opacity-10 border border-danger border-opacity-25 text-danger-emphasis small mt-3">
+                    <i class="bi bi-info-circle-fill me-1"></i>
+                    {% if current_lang == 'ar' %}
+                        هذا الإجراء نهائي ولا يمكن التراجع عنه وسيقوم بإزالة كافة السجلات والبيانات المرتبطة بالمواعيد الملغاة.
+                    {% else %}
+                        This action cannot be undone and will permanently remove all cancelled appointment records.
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                    {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                </button>
+                <form action="{{ url_for('appointments.delete_all_cancelled') }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow">
+                        <i class="bi bi-trash-fill me-1"></i>
+                        {% if current_lang == 'ar' %}تأكيد الحذف النهائي{% else %}Confirm Delete All{% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 {% endblock %}

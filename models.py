@@ -43,18 +43,21 @@ class Patient(db.Model):
         "Appointment",
         backref="patient",
         lazy=True,
+        cascade="all, delete-orphan"
     )
 
     payments = db.relationship(
         "Payment",
         backref="patient",
         lazy=True,
+        cascade="all, delete-orphan"
     )
 
     invoices = db.relationship(
         "Invoice",
         backref="patient",
         lazy=True,
+        cascade="all, delete-orphan"
     )
 
     files = db.relationship(
@@ -124,7 +127,7 @@ class Appointment(db.Model):
 
     patient_id = db.Column(
         db.Integer,
-        db.ForeignKey("patient.id"),
+        db.ForeignKey("patient.id", ondelete="CASCADE"),
         nullable=False
     )
 
@@ -221,7 +224,7 @@ class Treatment(db.Model):
 
     appointment_id = db.Column(
         db.Integer,
-        db.ForeignKey("appointment.id"),
+        db.ForeignKey("appointment.id", ondelete="CASCADE"),
         nullable=False
     )
 
@@ -255,14 +258,14 @@ class Invoice(db.Model):
 
     appointment_id = db.Column(
         db.Integer,
-        db.ForeignKey("appointment.id"),
+        db.ForeignKey("appointment.id", ondelete="CASCADE"),
         nullable=False,
         unique=True
     )
 
     patient_id = db.Column(
         db.Integer,
-        db.ForeignKey("patient.id"),
+        db.ForeignKey("patient.id", ondelete="CASCADE"),
         nullable=False
     )
 
@@ -374,7 +377,7 @@ class Payment(db.Model):
 
     patient_id = db.Column(
         db.Integer,
-        db.ForeignKey("patient.id"),
+        db.ForeignKey("patient.id", ondelete="CASCADE"),
         nullable=False
     )
 
@@ -411,13 +414,13 @@ class PaymentAllocation(db.Model):
 
     payment_id = db.Column(
         db.Integer,
-        db.ForeignKey("payment.id"),
+        db.ForeignKey("payment.id", ondelete="CASCADE"),
         nullable=False
     )
 
     invoice_id = db.Column(
         db.Integer,
-        db.ForeignKey("invoice.id"),
+        db.ForeignKey("invoice.id", ondelete="CASCADE"),
         nullable=False
     )
 
@@ -460,8 +463,8 @@ class User(db.Model):
     role = db.Column(db.String(20), default="receptionist", nullable=False)  # 'admin', 'doctor', 'receptionist', 'patient'
     first_name = db.Column(db.String(100), nullable=True)
     last_name = db.Column(db.String(100), nullable=True)
-    patient_id = db.Column(db.Integer, db.ForeignKey("patient.id", use_alter=True, name="fk_user_patient"), nullable=True)
-    patient = db.relationship("Patient", foreign_keys=[patient_id], backref=db.backref("user", uselist=False))
+    patient_id = db.Column(db.Integer, db.ForeignKey("patient.id", ondelete="CASCADE", use_alter=True, name="fk_user_patient"), nullable=True)
+    patient = db.relationship("Patient", foreign_keys=[patient_id], backref=db.backref("user", uselist=False, cascade="all, delete-orphan"))
     plain_password = db.Column(db.String(255), nullable=True)
 
     def __init__(self, **kwargs):
@@ -491,7 +494,7 @@ class PatientFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(
         db.Integer,
-        db.ForeignKey("patient.id"),
+        db.ForeignKey("patient.id", ondelete="CASCADE"),
         nullable=False
     )
     filename = db.Column(db.String(255), nullable=False)
@@ -543,9 +546,10 @@ class Expense(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String(100), nullable=False)  # e.g., "Materials", "Rent", "Salaries", "Other"
-    amount = db.Column(db.Float, nullable=False)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
     expense_date = db.Column(db.Date, default=datetime.now, nullable=False)
     notes = db.Column(db.Text)
 
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(**kwargs)
+

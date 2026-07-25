@@ -27,7 +27,7 @@ if __name__ == '__main__':
     time.sleep(1.5)
     
     webview.create_window(
-        title='Clinic MS',
+        title='Dental Clinic MS - نظام إدارة عيادة الأسنان',
         url=f'http://127.0.0.1:{PORT}',
         width=1280,
         height=800,

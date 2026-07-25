@@ -1236,7 +1236,7 @@
         let currentCalMonth = new Date().getFullYear() === currentCalYear ? (new Date().getMonth() + 1) : 1; // 1-12
 
         function formatPrice(val) {
-            return Number(val).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            return Math.round(Number(val)).toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
         }
 
         function openDayDetailsModal(year, month, day, dayInfo) {

@@ -19,6 +19,7 @@ def home():
         total_appointments = Appointment.query.count()
         scheduled_appointments = Appointment.query.filter_by(status="Scheduled").count()
         done_appointments = Appointment.query.filter_by(status="Done").count()
+        cancelled_appointments = Appointment.query.filter_by(status="Cancelled").count()
         total_treatments = Treatment.query.count()
 
         today = datetime.now().date()
@@ -108,6 +109,7 @@ def home():
             total_appointments=total_appointments,
             scheduled_appointments=scheduled_appointments,
             done_appointments=done_appointments,
+            cancelled_appointments=cancelled_appointments,
             total_treatments=total_treatments,
             total_revenue=total_revenue,
             total_paid=total_paid,

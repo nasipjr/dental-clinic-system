@@ -1,0 +1,47 @@
+{% set current_lang = current_lang or request.cookies.get('lang', 'ar') %}
+{% for appt in appointments %}
+<tr>
+  <td class="fw-semibold">
+    {% if current_lang == 'ar' %}
+      {{ appt.appointment_date.strftime('%Y-%m-%d %I:%M %p')|replace('AM', 'ص')|replace('PM', 'م') }}
+    {% else %}
+      {{ appt.appointment_date.strftime('%Y-%m-%d %I:%M %p') }}
+    {% endif %}
+  </td>
+  <td>{{ appt.reason|translate }}</td>
+  <td>
+    {% if appt.status == 'Scheduled' %}
+    <span class="badge bg-primary rounded-pill px-3 py-1.5 border border-primary-subtle">{% if current_lang == 'ar' %}مؤكد{% else %}Confirmed{% endif %}</span>
+    {% elif appt.status == 'Pending' %}
+    <span class="badge bg-warning text-dark rounded-pill px-3 py-1.5 border border-warning-subtle"><i class="bi bi-clock-history me-1"></i>{% if current_lang == 'ar' %}قيد التثبيت{% else %}Pending Confirmation{% endif %}</span>
+    {% elif appt.status == 'Done' %}
+    <span class="badge bg-success rounded-pill px-3 py-1.5 border border-success-subtle">{% if current_lang == 'ar' %}منجز{% else %}Done{% endif %}</span>
+    {% elif appt.status == 'Cancelled' %}
+    <span class="badge bg-secondary rounded-pill px-3 py-1.5 border border-secondary-subtle">{% if current_lang == 'ar' %}تم الإلغاء{% else %}Cancelled{% endif %}</span>
+    {% elif appt.status == 'Rejected' %}
+    <span class="badge status-rejected rounded-pill px-3 py-1.5"><i class="bi bi-x-circle me-1"></i>{% if current_lang == 'ar' %}تم الرفض{% else %}Rejected{% endif %}</span>
+    {% else %}
+    <span class="badge bg-secondary rounded-pill px-3 py-1.5">{{ appt.status|translate }}</span>
+    {% endif %}
+  </td>
+  <td>
+    {% if appt.status in ('Scheduled', 'Pending') %}
+    <form action="{{ url_for('portal.cancel_appointment', appointment_id=appt.id) }}" method="POST" class="d-inline" onsubmit="return confirmCancel(event);">
+      <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token') }}">
+      <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+        {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+      </button>
+    </form>
+    {% else %}
+    <span class="text-muted small">-</span>
+    {% endif %}
+  </td>
+</tr>
+{% else %}
+<tr>
+  <td colspan="4" class="text-center py-4 text-secondary">
+    <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
+    {% if current_lang == 'ar' %}لا توجد مواعيد{% else %}No appointments found{% endif %}
+  </td>
+</tr>
+{% endfor %}

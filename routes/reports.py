@@ -19,14 +19,14 @@ def reports_dashboard():
         total_patients = Patient.query.count()
         total_appointments = Appointment.query.count()
         total_invoiced = sum(float(inv.total_amount) for inv in Invoice.query.join(Invoice.appointment).filter(Appointment.status != "Cancelled").all())
-        total_payments = sum(float(pay.amount) for pay in Payment.query.all())
+        total_payments = float(db.session.query(func.coalesce(func.sum(Payment.amount), 0.0)).scalar())
         total_outstanding = max(0.0, total_invoiced - total_payments)
         total_credit = max(0.0, total_payments - total_invoiced)
 
         # Expenses & Net Profit calculations
         expenses = Expense.query.order_by(Expense.expense_date.desc(), Expense.id.desc()).all()
-        total_expenses = sum(float(e.amount) for e in expenses)
-        
+        total_expenses = float(db.session.query(func.coalesce(func.sum(Expense.amount), 0.0)).scalar())
+
         cash_net_profit = total_payments - total_expenses
         accrual_net_profit = total_invoiced - total_expenses
 
@@ -36,9 +36,13 @@ def reports_dashboard():
             "Salaries": 0.0,
             "Other": 0.0
         }
-        for e in expenses:
-            cat = e.category if e.category in expense_categories else "Other"
-            expense_categories[cat] += float(e.amount)
+        exp_cat_rows = db.session.query(
+            Expense.category,
+            func.coalesce(func.sum(Expense.amount), 0.0)
+        ).group_by(Expense.category).all()
+        for cat, amt in exp_cat_rows:
+            c_key = cat if cat in expense_categories else "Other"
+            expense_categories[c_key] += float(amt)
 
         # 2. Last 6 Months Income (Billed vs Paid) - DB Agnostic Python Logic
         today = datetime.now()
@@ -69,10 +73,10 @@ def reports_dashboard():
             billed_month = sum(float(inv.total_amount) for inv in invoices_month)
             monthly_billed.append(billed_month)
 
-            paid_month = db.session.query(func.sum(Payment.amount)).filter(
+            paid_month = db.session.query(func.coalesce(func.sum(Payment.amount), 0.0)).filter(
                 Payment.payment_date >= date_start,
                 Payment.payment_date < date_end
-            ).scalar() or 0.0
+            ).scalar()
             monthly_paid.append(float(paid_month))
 
         # 3. Appointment Status Counts
@@ -107,24 +111,47 @@ def reports_dashboard():
         gender_labels = [g[0] or "Not Specified" for g in gender_counts]
         gender_values = [g[1] for g in gender_counts]
 
-        # 6. Top Debtors (Outstanding Debt per Patient)
-        all_patients = Patient.query.options(
-            subqueryload(Patient.invoices).subqueryload(Invoice.appointment).subqueryload(Appointment.treatments),
-            subqueryload(Patient.payments)
-        ).all()
-        debtors = [
-            {
-                "id": p.id,
-                "name": f"{p.first_name} {p.last_name}",
-                "phone": p.phone or "No phone",
-                "total_billed": p.total_invoice_amount,
-                "total_paid": p.total_payments_amount,
-                "outstanding": p.outstanding_amount
-            }
-            for p in all_patients
-            if p.outstanding_amount > 0
-        ]
-        top_debtors = sorted(debtors, key=lambda x: x["outstanding"], reverse=True)[:5]
+        # 6. Top Debtors (Outstanding Debt per Patient) - Optimized aggregation query
+        patient_invoiced = {}
+        for inv in Invoice.query.join(Invoice.appointment).filter(Appointment.status != "Cancelled").all():
+            patient_invoiced[inv.patient_id] = patient_invoiced.get(inv.patient_id, 0.0) + float(inv.total_amount)
+
+        patient_payments = dict(
+            db.session.query(
+                Payment.patient_id,
+                func.coalesce(func.sum(Payment.amount), 0.0)
+            ).group_by(Payment.patient_id).all()
+        )
+
+        patient_balances = {}
+        for p_id, billed in patient_invoiced.items():
+            paid = float(patient_payments.get(p_id, 0.0))
+            outstanding = billed - paid
+            if outstanding > 0.01:
+                patient_balances[p_id] = {
+                    "billed": billed,
+                    "paid": paid,
+                    "outstanding": outstanding
+                }
+
+        top_debtor_ids = sorted(patient_balances.keys(), key=lambda x: patient_balances[x]["outstanding"], reverse=True)[:5]
+
+        top_debtors = []
+        if top_debtor_ids:
+            top_patients = Patient.query.filter(Patient.id.in_(top_debtor_ids)).all()
+            patient_map = {p.id: p for p in top_patients}
+            for p_id in top_debtor_ids:
+                p = patient_map.get(p_id)
+                if p:
+                    b_data = patient_balances[p_id]
+                    top_debtors.append({
+                        "id": p.id,
+                        "name": f"{p.first_name} {p.last_name}",
+                        "phone": p.phone or "No phone",
+                        "total_billed": b_data["billed"],
+                        "total_paid": b_data["paid"],
+                        "outstanding": b_data["outstanding"]
+                    })
 
         # Available years for filtering
         first_invoice = Invoice.query.order_by(Invoice.issue_date.asc()).first()
@@ -192,12 +219,12 @@ def reports_dashboard():
         doctors_report = []
         for doc in doctors:
             doc_appts = Appointment.query.filter_by(doctor_id=doc.id).count()
-            doc_treatments = Treatment.query.filter_by(doctor_id=doc.id).all()
-            doc_revenue = sum(float(t.total_cost or 0) for t in doc_treatments)
+            doc_treatment_count = Treatment.query.filter_by(doctor_id=doc.id).count()
+            doc_revenue = float(db.session.query(func.coalesce(func.sum(Treatment.total_cost), 0.0)).filter_by(doctor_id=doc.id).scalar())
             doctors_report.append({
                 "doctor": doc,
                 "appointment_count": doc_appts,
-                "treatment_count": len(doc_treatments),
+                "treatment_count": doc_treatment_count,
                 "total_revenue": doc_revenue
             })
 

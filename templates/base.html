@@ -5,11 +5,18 @@
 <head>
   <script>
     (function() {
-      const savedTheme = localStorage.getItem('theme') || 'light';
+      function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+      }
+      const themeCookie = getCookie('theme');
+      const savedTheme = themeCookie || localStorage.getItem('theme') || 'light';
       document.documentElement.setAttribute('data-bs-theme', savedTheme);
+      localStorage.setItem('theme', savedTheme);
       
-      // Sync local storage lang with server side cookie
-      localStorage.setItem('lang', '{{ current_lang }}');
+      const currentLang = getCookie('lang') || '{{ current_lang }}' || 'en';
+      localStorage.setItem('lang', currentLang);
     })();
   </script>
   <meta charset="utf-8">
@@ -911,9 +918,12 @@
             "Sent Time": "وقت الإرسال",
             "Sent": "تم الإرسال",
             "Failed": "فشل",
+            "Patient Portal Access Credentials (Doctor & Admin View Only)": "بيانات دخول بوابة المريض (للعرض فقط للطبيب والمدير)",
+            "Portal Username": "اسم مستخدم البوابة",
+            "Portal Password": "كلمة مرور البوابة",
             "Enable Automated Reminders": "تفعيل التذكيرات التلقائية",
             "Automated Reminder Settings": "إعدادات التذكير التلقائية",
-            "Telegram Chat ID": "معرف تيليغرام",
+            "Telegram Chat ID": "معرّف تيليغرام (Chat ID)",
             "Not Linked": "غير مرتبط",
             "Customize Telegram Messages": "تخصيص رسائل تيليغرام",
             "Customize Email Messages": "تخصيص رسائل البريد الإلكتروني",
@@ -1035,6 +1045,16 @@
             if (node.nodeType === Node.TEXT_NODE) {
                 let rawText = node.nodeValue;
                 let originalText = rawText;
+
+                // Skip translation if parent element is marked notranslate or translate="no"
+                if (node.parentElement && (node.parentElement.closest('[translate="no"]') || node.parentElement.closest('.notranslate'))) {
+                    return;
+                }
+
+                // If text node already contains Arabic characters, skip JS replacement to prevent mangled/double translation
+                if (/[\u0600-\u06FF]/.test(rawText)) {
+                    return;
+                }
                 
                 // Translate key phrases inside text node
                 for (const key of sortedTranslationKeys) {
@@ -1055,7 +1075,7 @@
                 }
             } else if (node.nodeType === Node.ELEMENT_NODE) {
                 // Skip translating the script blocks, style blocks, BDI tags, sitename and notranslate elements
-                if (node.tagName === 'SCRIPT' || node.tagName === 'STYLE' || node.tagName === 'BDI' || (node.classList && (node.classList.contains('sitename') || node.classList.contains('notranslate')))) return;
+                if (node.tagName === 'SCRIPT' || node.tagName === 'STYLE' || node.tagName === 'BDI' || node.getAttribute('translate') === 'no' || (node.classList && (node.classList.contains('sitename') || node.classList.contains('notranslate')))) return;
                 
                 // Avoid modifying the value attribute of input fields, but placeholders can be translated
                 const placeholder = node.getAttribute('placeholder');

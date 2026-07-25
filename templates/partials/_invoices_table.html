@@ -135,7 +135,14 @@
                 </td>
 
                 <td>
-                    {{ invoice.appointment_date.strftime('%Y-%m-%d %I:%M %p') if invoice.appointment_date else 'No date' }}
+                    {% if invoice.appointment_date %}
+                        <div class="fw-semibold text-nowrap" style="font-size: 0.93rem;">{{ invoice.appointment_date.strftime('%Y-%m-%d') }}</div>
+                        <div class="text-muted text-nowrap" style="font-size: 0.82rem; margin-top: 2px;">
+                            <i class="bi bi-clock me-1" style="font-size: 0.78rem;"></i>{{ invoice.appointment_date.strftime('%I:%M %p') }}
+                        </div>
+                    {% else %}
+                        <span class="text-muted">No date</span>
+                    {% endif %}
                 </td>
 
                 <td>

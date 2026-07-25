@@ -48,9 +48,28 @@
             <h4 class="fw-bold mb-1">{% if current_lang == 'ar' %}المواعيد{% else %}Appointments{% endif %}</h4>
             <p class="text-secondary small mb-0">{% if current_lang == 'ar' %}إليك ملخص سجل مواعيدك{% else %}Here is a summary of your appointment history{% endif %}</p>
           </div>
-          <a href="{{ url_for('portal.book_appointment') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
-            <i class="bi bi-calendar-plus me-1"></i> {% if current_lang == 'ar' %}حجز موعد جديد{% else %}Request a New Appointment{% endif %}
-          </a>
+          
+          <div class="d-flex align-items-center gap-2">
+            {% if pagination and pagination.pages > 1 %}
+            <div id="portalPaginationPill" class="d-flex align-items-center me-2 px-3 py-1 bg-primary bg-opacity-20 border border-primary border-opacity-50 rounded-pill shadow-sm">
+              <button type="button" id="portalPrevBtn" onclick="loadPortalPage({{ [pagination.page - 1, 1]|max }})" class="btn btn-sm btn-primary rounded-circle p-1 me-1 d-flex align-items-center justify-content-center {% if pagination.page == 1 %}disabled opacity-50{% endif %}" style="width: 28px; height: 28px;" title="{% if current_lang == 'ar' %}السابق{% else %}Previous{% endif %}" {% if pagination.page == 1 %}disabled{% endif %}>
+                <i class="bi bi-chevron-right fs-6 text-white"></i>
+              </button>
+
+              <span class="px-2 small fw-bold text-white" id="portalPageIndicator">
+                {% if current_lang == 'ar' %}{{ pagination.page }} من {{ pagination.pages }}{% else %}{{ pagination.page }} / {{ pagination.pages }}{% endif %}
+              </span>
+
+              <button type="button" id="portalNextBtn" onclick="loadPortalPage({{ [pagination.page + 1, pagination.pages]|min }})" class="btn btn-sm btn-primary rounded-circle p-1 ms-1 d-flex align-items-center justify-content-center {% if pagination.page == pagination.pages %}disabled opacity-50{% endif %}" style="width: 28px; height: 28px;" title="{% if current_lang == 'ar' %}التالي{% else %}Next{% endif %}" {% if pagination.page == pagination.pages %}disabled{% endif %}>
+                <i class="bi bi-chevron-left fs-6 text-white"></i>
+              </button>
+            </div>
+            {% endif %}
+
+            <a href="{{ url_for('portal.book_appointment') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+              <i class="bi bi-calendar-plus me-1"></i> {% if current_lang == 'ar' %}حجز موعد جديد{% else %}Request a New Appointment{% endif %}
+            </a>
+          </div>
         </div>
         
         <div class="table-responsive">
@@ -63,48 +82,8 @@
                 <th>{% if current_lang == 'ar' %}الإجراء{% else %}Action{% endif %}</th>
               </tr>
             </thead>
-            <tbody>
-              {% for appt in appointments %}
-              <tr>
-                <td class="fw-semibold">
-                  {{ appt.appointment_date.strftime('%Y-%m-%d %I:%M %p') }}
-                </td>
-                <td>{{ appt.reason }}</td>
-                <td>
-                  {% if appt.status == 'Scheduled' %}
-                  <span class="badge bg-primary rounded-pill px-3 py-1.5 border border-primary-subtle">{% if current_lang == 'ar' %}مؤكد{% else %}Confirmed{% endif %}</span>
-                  {% elif appt.status == 'Pending' %}
-                  <span class="badge bg-warning text-dark rounded-pill px-3 py-1.5 border border-warning-subtle"><i class="bi bi-clock-history me-1"></i>{% if current_lang == 'ar' %}قيد التثبيت{% else %}Pending Confirmation{% endif %}</span>
-                  {% elif appt.status == 'Done' %}
-                  <span class="badge bg-success rounded-pill px-3 py-1.5 border border-success-subtle">{% if current_lang == 'ar' %}منجز{% else %}Done{% endif %}</span>
-                  {% elif appt.status == 'Cancelled' %}
-                  <span class="badge bg-secondary rounded-pill px-3 py-1.5 border border-secondary-subtle">{% if current_lang == 'ar' %}تم الإلغاء{% else %}Cancelled{% endif %}</span>
-                  {% elif appt.status == 'Rejected' %}
-                  <span class="badge status-rejected rounded-pill px-3 py-1.5"><i class="bi bi-x-circle me-1"></i>{% if current_lang == 'ar' %}تم الرفض{% else %}Rejected{% endif %}</span>
-                  {% else %}
-                  <span class="badge bg-secondary rounded-pill px-3 py-1.5">{{ appt.status }}</span>
-                  {% endif %}
-                </td>
-                <td>
-                  {% if appt.status in ('Scheduled', 'Pending') %}
-                  <form action="{{ url_for('portal.cancel_appointment', appointment_id=appt.id) }}" method="POST" class="d-inline" onsubmit="return confirmCancel(event);">
-                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
-                      {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
-                    </button>
-                  </form>
-                  {% else %}
-                  <span class="text-muted small">-</span>
-                  {% endif %}
-                </td>
-              </tr>
-              {% else %}
-              <tr>
-                <td colspan="4" class="text-center py-4 text-secondary">
-                  <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
-                  {% if current_lang == 'ar' %}لا توجد مواعيد{% else %}No appointments found{% endif %}
-                </td>
-              </tr>
-              {% endfor %}
+            <tbody id="portalAppointmentsTbody">
+              {% include "portal/_appointments_table_body.html" %}
             </tbody>
           </table>
         </div>
@@ -211,6 +190,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const currentLang = document.documentElement.getAttribute('lang') || 'en';
     const isArabic = currentLang === 'ar';
+
+    window.arabicTranslations = {
+        "Check-up": "فحص طبي",
+        "Cleaning": "تنظيف أسنان",
+        "Filling": "حشوة أسنان",
+        "Root Canal": "علاج عصب السن",
+        "Extraction": "قلع سن",
+        "Crown / Bridge": "تاج / جسر",
+        "Braces / Orthodontics": "تقويم الأسنان",
+        "Whitening": "تبييض الأسنان",
+        "Emergency Pain": "ألم طارئ",
+        "Follow-up": "متابعة ودورية"
+    };
 
     const reasons = {{ reasons | tojson }};
     const doctorsList = [
@@ -425,11 +417,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const selectOptions = {};
             reasons.forEach(r => {
-                let translated = r;
-                if (isArabic && window.arabicTranslations && window.arabicTranslations[r]) {
-                    translated = window.arabicTranslations[r];
-                }
-                selectOptions[r] = translated;
+                selectOptions[r] = (window.arabicTranslations && window.arabicTranslations[r]) ? window.arabicTranslations[r] : r;
             });
 
             const formattedDate = clickedDateStart.toLocaleDateString(isArabic ? 'ar' : undefined);
@@ -664,5 +652,62 @@ document.addEventListener("DOMContentLoaded", function () {
         }, true);
     }
 });
+
+function loadPortalPage(targetPage) {
+    const tbody = document.getElementById('portalAppointmentsTbody');
+    if (!tbody) return;
+    
+    tbody.style.opacity = '0.3';
+    tbody.style.transition = 'opacity 0.15s ease-in-out';
+    
+    fetch(`{{ url_for('portal.dashboard') }}?page=${targetPage}&ajax=1`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            tbody.innerHTML = data.html_rows;
+            
+            const pageIndicator = document.getElementById('portalPageIndicator');
+            if (pageIndicator) {
+                const isAr = document.documentElement.lang === 'ar' || document.documentElement.dir === 'rtl';
+                pageIndicator.textContent = isAr ? `${data.page} من ${data.pages}` : `${data.page} / ${data.pages}`;
+            }
+            
+            const prevBtn = document.getElementById('portalPrevBtn');
+            const nextBtn = document.getElementById('portalNextBtn');
+            
+            if (prevBtn) {
+                const prevPage = Math.max(1, data.page - 1);
+                prevBtn.setAttribute('onclick', `loadPortalPage(${prevPage})`);
+                if (data.page === 1) {
+                    prevBtn.classList.add('disabled', 'opacity-50');
+                    prevBtn.setAttribute('disabled', 'disabled');
+                } else {
+                    prevBtn.classList.remove('disabled', 'opacity-50');
+                    prevBtn.removeAttribute('disabled');
+                }
+            }
+            
+            if (nextBtn) {
+                const nextPage = Math.min(data.pages, data.page + 1);
+                nextBtn.setAttribute('onclick', `loadPortalPage(${nextPage})`);
+                if (data.page === data.pages) {
+                    nextBtn.classList.add('disabled', 'opacity-50');
+                    nextBtn.setAttribute('disabled', 'disabled');
+                } else {
+                    nextBtn.classList.remove('disabled', 'opacity-50');
+                    nextBtn.removeAttribute('disabled');
+                }
+            }
+        }
+    })
+    .catch(err => console.error('Error fetching portal page:', err))
+    .finally(() => {
+        tbody.style.opacity = '1';
+    });
+}
 </script>
 {% endblock %}

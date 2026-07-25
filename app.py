@@ -31,11 +31,29 @@ static_dir = os.path.join(base_dir, 'static')
 app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 app.config.from_object(Config)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+app.jinja_env.auto_reload = True
+app.jinja_env.cache = None
 
 LOG_DIRECTORY = app.config["LOG_DIRECTORY"]
 LOG_FILE_NAME = app.config["LOG_FILE_NAME"]
 
 db.init_app(app)
+
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    import sqlite3
+    if isinstance(dbapi_connection, sqlite3.Connection):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL;")
+        cursor.execute("PRAGMA busy_timeout=30000;")
+        cursor.execute("PRAGMA synchronous=NORMAL;")
+        cursor.close()
+
 
 
 def populate_default_settings():
@@ -292,6 +310,16 @@ def format_price(value):
         return str(value)
 
 
+@app.template_filter("translate")
+@app.template_filter("t")
+def translate_filter(text):
+    if not text:
+        return ""
+    from utils.translator import fast_translate_text
+    return fast_translate_text(str(text))
+
+
+
 @app.before_request
 def load_logged_in_user():
     from models import User
@@ -354,6 +382,11 @@ def process_html_response(response):
     if response.mimetype == "text/html":
         import re
         import secrets
+
+        # Disable browser caching for HTML pages to ensure updates appear immediately
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
         
         # 1. Inject CSRF Token in forms
         csrf_token = session.get("csrf_token")
@@ -523,6 +556,6 @@ if __name__ == "__main__":
         except Exception as e:
             app.logger.error(f"Failed to start expired appointments cleanup scheduler: {e}")
 
-    debug_mode = os.getenv("FLASK_DEBUG", "False").lower() in ("true", "1")
-    app.logger.info("Flask app is running")
+    debug_mode = os.getenv("FLASK_DEBUG", "True").lower() in ("true", "1")
+    app.logger.info(f"Flask app is running (debug={debug_mode})")
     app.run(debug=debug_mode)

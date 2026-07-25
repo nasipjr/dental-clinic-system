@@ -74,6 +74,19 @@ document.addEventListener("DOMContentLoaded", function () {
     const currentLang = document.documentElement.getAttribute('lang') || 'en';
     const isArabic = currentLang === 'ar';
 
+    window.arabicTranslations = {
+        "Check-up": "فحص طبي",
+        "Cleaning": "تنظيف أسنان",
+        "Filling": "حشوة أسنان",
+        "Root Canal": "علاج عصب السن",
+        "Extraction": "قلع سن",
+        "Crown / Bridge": "تاج / جسر",
+        "Braces / Orthodontics": "تقويم الأسنان",
+        "Whitening": "تبييض الأسنان",
+        "Emergency Pain": "ألم طارئ",
+        "Follow-up": "متابعة ودورية"
+    };
+
     const reasons = {{ reasons | tojson }};
     const doctorsList = [
         {% for doc in (doctors or all_doctors) %}
@@ -293,11 +306,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const selectOptions = {};
             reasons.forEach(r => {
-                let translated = r;
-                if (isArabic && window.arabicTranslations && window.arabicTranslations[r]) {
-                    translated = window.arabicTranslations[r];
-                }
-                selectOptions[r] = translated;
+                selectOptions[r] = (window.arabicTranslations && window.arabicTranslations[r]) ? window.arabicTranslations[r] : r;
             });
 
             const formattedDate = clickedDateStart.toLocaleDateString(isArabic ? 'ar' : undefined);

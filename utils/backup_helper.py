@@ -48,6 +48,7 @@ def run_database_backup():
             
     elif db_uri.startswith('sqlite'):
         import re
+        import sqlite3
         match = re.match(r'sqlite:///(.+)', db_uri)
         if match:
             db_path = match.group(1)
@@ -57,7 +58,11 @@ def run_database_backup():
             if os.path.exists(db_path):
                 backup_filename = f"backup_sqlite_{timestamp}.db"
                 backup_path = os.path.join(BACKUP_DIR, backup_filename)
-                shutil.copy2(db_path, backup_path)
+                
+                # Atomic online backup API to prevent database corruption during live writes
+                with sqlite3.connect(db_path) as src_conn:
+                    with sqlite3.connect(backup_path) as dst_conn:
+                        src_conn.backup(dst_conn)
                 
                 rotate_backups()
                 return backup_filename
@@ -117,12 +122,17 @@ def restore_database_backup(backup_filename):
             raise Exception("Invalid MySQL URI format.")
     elif db_uri.startswith('sqlite'):
         import re
+        import sqlite3
         match = re.match(r'sqlite:///(.+)', db_uri)
         if match:
             db_path = match.group(1)
             if not os.path.isabs(db_path):
                 db_path = os.path.abspath(db_path)
-            shutil.copy2(backup_path, db_path)
+                
+            # Atomic online restore API
+            with sqlite3.connect(backup_path) as src_conn:
+                with sqlite3.connect(db_path) as dst_conn:
+                    src_conn.backup(dst_conn)
             return True
         else:
             raise Exception("Invalid SQLite URI format.")

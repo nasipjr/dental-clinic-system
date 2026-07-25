@@ -2280,16 +2280,38 @@ body.calendar-page.scrolled .header {
 }
 
 /* Card buttons theme overrides for Dark Mode setting active selection */
-[data-bs-theme="dark"] .theme-selector-btn {
+.theme-selector-btn, .lang-selector-btn {
+  background-color: rgba(0, 0, 0, 0.03);
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  color: var(--default-color);
+  transition: all 0.25s ease;
+}
+
+[data-bs-theme="dark"] .theme-selector-btn,
+[data-bs-theme="dark"] .lang-selector-btn {
   background-color: #0f172a;
-  border-color: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.1);
   color: #94a3b8;
 }
 
-[data-bs-theme="dark"] .theme-selector-btn:hover {
-  background-color: #1e293b;
-  border-color: rgba(255, 255, 255, 0.2);
-  color: #e2e8f0;
+.theme-selector-btn:hover, .lang-selector-btn:hover {
+  border-color: var(--accent-color) !important;
+  transform: translateY(-2px);
+}
+
+.theme-selector-btn.active, .lang-selector-btn.active,
+[data-bs-theme="dark"] .theme-selector-btn.active,
+[data-bs-theme="dark"] .lang-selector-btn.active {
+  background-color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(13, 110, 253, 0.4) !important;
+}
+
+.theme-selector-btn.active i, .lang-selector-btn.active i,
+.theme-selector-btn.active strong, .lang-selector-btn.active strong,
+.theme-selector-btn.active span, .lang-selector-btn.active span {
+  color: #ffffff !important;
 }
 
 /* Dynamic Analytics Tab Styling overrides */

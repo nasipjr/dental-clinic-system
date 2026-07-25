@@ -84,28 +84,28 @@
                             <div class="settings-tab-header">
                                 <div class="settings-tab-icon"><i class="bi bi-building"></i></div>
                                 <div>
-                                    <h4>Clinic Profile</h4>
-                                    <p>Update your clinic's basic information</p>
+                                    <h4>{% if current_lang == 'ar' %}ملف العيادة{% else %}Clinic Profile{% endif %}</h4>
+                                    <p>{% if current_lang == 'ar' %}تحديث المعلومات الأساسية لعيادتك{% else %}Update your clinic's basic information{% endif %}</p>
                                 </div>
                             </div>
                             <div class="row g-3">
                                 <div class="col-md-12">
-                                    <label for="clinic_name" class="settings-label">Clinic Name</label>
+                                    <label for="clinic_name" class="settings-label">{% if current_lang == 'ar' %}اسم العيادة{% else %}Clinic Name{% endif %}</label>
                                     <input type="text" class="form-control settings-input" id="clinic_name"
                                         name="clinic_name" value="{{ settings.clinic_name }}" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="clinic_phone" class="settings-label">Phone Number</label>
+                                    <label for="clinic_phone" class="settings-label">{% if current_lang == 'ar' %}رقم الهاتف{% else %}Phone Number{% endif %}</label>
                                     <input type="text" class="form-control settings-input" id="clinic_phone"
                                         name="clinic_phone" value="{{ settings.clinic_phone }}">
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="clinic_email" class="settings-label">Email Address</label>
+                                    <label for="clinic_email" class="settings-label">{% if current_lang == 'ar' %}البريد الإلكتروني{% else %}Email Address{% endif %}</label>
                                     <input type="email" class="form-control settings-input" id="clinic_email"
                                         name="clinic_email" value="{{ settings.clinic_email }}">
                                 </div>
                                 <div class="col-md-12">
-                                    <label for="clinic_address" class="settings-label">Address</label>
+                                    <label for="clinic_address" class="settings-label">{% if current_lang == 'ar' %}العنوان{% else %}Address{% endif %}</label>
                                     <textarea class="form-control settings-input" id="clinic_address"
                                         name="clinic_address" rows="3">{{ settings.clinic_address }}</textarea>
                                 </div>
@@ -117,72 +117,65 @@
                             <div class="settings-tab-header">
                                 <div class="settings-tab-icon"><i class="bi bi-calendar-range"></i></div>
                                 <div>
-                                    <h4>Calendar & Appointment Settings</h4>
-                                    <p>Configure working hours and default durations</p>
+                                    <h4>{% if current_lang == 'ar' %}إعدادات التقويم والمواعيد{% else %}Calendar & Appointment Settings{% endif %}</h4>
+                                    <p>{% if current_lang == 'ar' %}تكوين ساعات العمل والمدد الافتراضية{% else %}Configure working hours and default durations{% endif %}</p>
                                 </div>
                             </div>
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label for="working_hours_start" class="settings-label">Daily Working Hours
-                                        Start</label>
+                                    <label for="working_hours_start" class="settings-label">{% if current_lang == 'ar' %}بداية ساعات العمل اليومية{% else %}Daily Working Hours Start{% endif %}</label>
                                     <input type="time" class="form-control settings-input" id="working_hours_start"
                                         name="working_hours_start" value="{{ settings.working_hours_start }}">
                                 </div>
                                 <div class="col-md-6">
-                                    <label for="working_hours_end" class="settings-label">Daily Working Hours
-                                        End</label>
+                                    <label for="working_hours_end" class="settings-label">{% if current_lang == 'ar' %}نهاية ساعات العمل اليومية{% else %}Daily Working Hours End{% endif %}</label>
                                     <input type="time" class="form-control settings-input" id="working_hours_end"
                                         name="working_hours_end" value="{{ settings.working_hours_end }}">
                                 </div>
                                 <div class="col-md-12">
-                                    <label for="default_appointment_duration" class="settings-label">Default Session
-                                        Duration</label>
+                                    <label for="default_appointment_duration" class="settings-label">{% if current_lang == 'ar' %}مدة الجلسة الافتراضية{% else %}Default Session Duration{% endif %}</label>
                                     <select class="form-select settings-input" id="default_appointment_duration"
                                         name="default_appointment_duration">
-                                        <option value="15" {% if settings.default_appointment_duration=='15'
-                                            %}selected{% endif %}>15 Minutes</option>
-                                        <option value="30" {% if settings.default_appointment_duration=='30'
-                                            %}selected{% endif %}>30 Minutes</option>
-                                        <option value="45" {% if settings.default_appointment_duration=='45'
-                                            %}selected{% endif %}>45 Minutes</option>
-                                        <option value="60" {% if settings.default_appointment_duration=='60'
-                                            %}selected{% endif %}>60 Minutes</option>
+                                        <option value="15" {% if settings.default_appointment_duration=='15' %}selected{% endif %}>{% if current_lang == 'ar' %}15 دقيقة{% else %}15 Minutes{% endif %}</option>
+                                        <option value="30" {% if settings.default_appointment_duration=='30' %}selected{% endif %}>{% if current_lang == 'ar' %}30 دقيقة{% else %}30 Minutes{% endif %}</option>
+                                        <option value="45" {% if settings.default_appointment_duration=='45' %}selected{% endif %}>{% if current_lang == 'ar' %}45 دقيقة{% else %}45 Minutes{% endif %}</option>
+                                        <option value="60" {% if settings.default_appointment_duration=='60' %}selected{% endif %}>{% if current_lang == 'ar' %}60 دقيقة{% else %}60 Minutes{% endif %}</option>
                                     </select>
                                 </div>
                                 <div class="col-md-12 mt-3">
                                     <label for="auto_cancel_expired_minutes" class="settings-label">
-                                        Auto-Cancel Unattended Appointments After
+                                        {% if current_lang == 'ar' %}الإلغاء التلقائي للمواعيد غير المحضورة بعد{% else %}Auto-Cancel Unattended Appointments After{% endif %}
                                     </label>
                                     <select class="form-select settings-input" id="auto_cancel_expired_minutes"
                                         name="auto_cancel_expired_minutes">
                                         <option value="0" {% if settings.auto_cancel_expired_minutes=='0' %}selected{% endif %}>
-                                            Never (Disabled) / عدم الإلغاء تلقائياً
+                                            {% if current_lang == 'ar' %}عدم الإلغاء تلقائياً (معطّل){% else %}Never (Disabled){% endif %}
                                         </option>
                                         <option value="15" {% if settings.auto_cancel_expired_minutes=='15' %}selected{% endif %}>
-                                            15 Minutes / 15 دقيقة
+                                            {% if current_lang == 'ar' %}15 دقيقة{% else %}15 Minutes{% endif %}
                                         </option>
                                         <option value="30" {% if settings.auto_cancel_expired_minutes=='30' %}selected{% endif %}>
-                                            30 Minutes / 30 دقيقة
+                                            {% if current_lang == 'ar' %}30 دقيقة{% else %}30 Minutes{% endif %}
                                         </option>
                                         <option value="60" {% if settings.auto_cancel_expired_minutes=='60' or not settings.auto_cancel_expired_minutes %}selected{% endif %}>
-                                            1 Hour (Default) / ساعة واحدة (افتراضي)
+                                            {% if current_lang == 'ar' %}ساعة واحدة (افتراضي){% else %}1 Hour (Default){% endif %}
                                         </option>
                                         <option value="120" {% if settings.auto_cancel_expired_minutes=='120' %}selected{% endif %}>
-                                            2 Hours / ساعتين
+                                            {% if current_lang == 'ar' %}ساعتين{% else %}2 Hours{% endif %}
                                         </option>
                                         <option value="180" {% if settings.auto_cancel_expired_minutes=='180' %}selected{% endif %}>
-                                            3 Hours / 3 ساعات
+                                            {% if current_lang == 'ar' %}3 ساعات{% else %}3 Hours{% endif %}
                                         </option>
                                         <option value="360" {% if settings.auto_cancel_expired_minutes=='360' %}selected{% endif %}>
-                                            6 Hours / 6 ساعات
+                                            {% if current_lang == 'ar' %}6 ساعات{% else %}6 Hours{% endif %}
                                         </option>
                                         <option value="1440" {% if settings.auto_cancel_expired_minutes=='1440' %}selected{% endif %}>
-                                            24 Hours (Full Day) / 24 ساعة (يوم كامل)
+                                            {% if current_lang == 'ar' %}24 ساعة (يوم كامل){% else %}24 Hours (Full Day){% endif %}
                                         </option>
                                     </select>
                                 </div>
                                 <div class="col-md-12 mt-3">
-                                    <label class="settings-label d-block">Working Days of the Week</label>
+                                    <label class="settings-label d-block">{% if current_lang == 'ar' %}أيام العمل في الأسبوع{% else %}Working Days of the Week{% endif %}</label>
                                     {% set working_days_list = settings.working_days.split(',') if settings.working_days
                                     else ['0','1','2','3','4','6'] %}
                                     <div class="d-flex flex-wrap gap-3 mt-2">
@@ -190,54 +183,52 @@
                                             <input class="form-check-input" type="checkbox" name="working_days"
                                                 value="0" id="day-sun" {% if '0' in working_days_list %}checked{% endif
                                                 %}>
-                                            <label class="form-check-label" for="day-sun">Sunday</label>
+                                            <label class="form-check-label" for="day-sun">{% if current_lang == 'ar' %}الأحد{% else %}Sunday{% endif %}</label>
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="working_days"
                                                 value="1" id="day-mon" {% if '1' in working_days_list %}checked{% endif
                                                 %}>
-                                            <label class="form-check-label" for="day-mon">Monday</label>
+                                            <label class="form-check-label" for="day-mon">{% if current_lang == 'ar' %}الإثنين{% else %}Monday{% endif %}</label>
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="working_days"
                                                 value="2" id="day-tue" {% if '2' in working_days_list %}checked{% endif
                                                 %}>
-                                            <label class="form-check-label" for="day-tue">Tuesday</label>
+                                            <label class="form-check-label" for="day-tue">{% if current_lang == 'ar' %}الثلاثاء{% else %}Tuesday{% endif %}</label>
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="working_days"
                                                 value="3" id="day-wed" {% if '3' in working_days_list %}checked{% endif
                                                 %}>
-                                            <label class="form-check-label" for="day-wed">Wednesday</label>
+                                            <label class="form-check-label" for="day-wed">{% if current_lang == 'ar' %}الأربعاء{% else %}Wednesday{% endif %}</label>
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="working_days"
                                                 value="4" id="day-thu" {% if '4' in working_days_list %}checked{% endif
                                                 %}>
-                                            <label class="form-check-label" for="day-thu">Thursday</label>
+                                            <label class="form-check-label" for="day-thu">{% if current_lang == 'ar' %}الخميس{% else %}Thursday{% endif %}</label>
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="working_days"
                                                 value="5" id="day-fri" {% if '5' in working_days_list %}checked{% endif
                                                 %}>
-                                            <label class="form-check-label" for="day-fri">Friday</label>
+                                            <label class="form-check-label" for="day-fri">{% if current_lang == 'ar' %}الجمعة{% else %}Friday{% endif %}</label>
                                         </div>
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" name="working_days"
                                                 value="6" id="day-sat" {% if '6' in working_days_list %}checked{% endif
                                                 %}>
-                                            <label class="form-check-label" for="day-sat">Saturday</label>
+                                            <label class="form-check-label" for="day-sat">{% if current_lang == 'ar' %}السبت{% else %}Saturday{% endif %}</label>
                                         </div>
                                     </div>
-                                    <div class="settings-hint mt-2"><i class="bi bi-info-circle me-1"></i>Checked days
-                                        represent active business days. Unchecked days will be styled as weekends/closed
-                                        days in the interactive calendar and will prevent scheduling appointments.</div>
+                                    <div class="settings-hint mt-2"><i class="bi bi-info-circle me-1"></i>{% if current_lang == 'ar' %}الأيام المحددة تمثل أيام العمل الفعالة. الأيام غير المحددة ستظهر كأيام عطلة/مغلقة في التقويم التفاعلي وتمنع جدولة المواعيد.{% else %}Checked days represent active business days. Unchecked days will be styled as weekends/closed days in the interactive calendar and will prevent scheduling appointments.{% endif %}</div>
                                 </div>
                                 <div class="col-md-12 mt-3">
-                                    <label for="booking_window_days" class="settings-label">Booking Window Days (in advance)</label>
+                                    <label for="booking_window_days" class="settings-label">{% if current_lang == 'ar' %}أيام نافذة الحجز (مسبقاً){% else %}Booking Window Days (in advance){% endif %}</label>
                                     <input type="number" class="form-control settings-input" id="booking_window_days"
                                         name="booking_window_days" value="{{ settings.booking_window_days }}" min="1" required>
-                                    <div class="settings-hint mt-2"><i class="bi bi-info-circle me-1"></i>Number of days in advance patients and staff are allowed to book appointments.</div>
+                                    <div class="settings-hint mt-2"><i class="bi bi-info-circle me-1"></i>{% if current_lang == 'ar' %}عدد الأيام مسبقاً التي يُسمح فيها للمرضى والموظفين بحجز المواعيد.{% else %}Number of days in advance patients and staff are allowed to book appointments.{% endif %}</div>
                                 </div>
                             </div>
                         </div>
@@ -247,27 +238,17 @@
                             <div class="settings-tab-header">
                                 <div class="settings-tab-icon"><i class="bi bi-wallet2"></i></div>
                                 <div>
-                                    <h4>Billing & Finance Settings</h4>
-                                    <p>Set the currency symbol used across invoices and reports</p>
+                                    <h4>{% if current_lang == 'ar' %}إعدادات الفوترة والمالية{% else %}Billing & Finance Settings{% endif %}</h4>
+                                    <p>{% if current_lang == 'ar' %}تحديد رمز العملة المستخدم في الفواتير والتقارير{% else %}Set the currency symbol used across invoices and reports{% endif %}</p>
                                 </div>
                             </div>
                             <div class="row g-3">
                                 <div class="col-md-12">
-                                    <label for="currency_symbol" class="settings-label">Custom Currency Symbol</label>
+                                    <label for="currency_symbol" class="settings-label">{% if current_lang == 'ar' %}رمز العملة المخصص{% else %}Custom Currency Symbol{% endif %}</label>
                                     <input type="text" class="form-control settings-input" id="currency_symbol"
                                         name="currency_symbol" value="{{ settings.currency_symbol }}" required
                                         placeholder="e.g., $, USD, EUR, SAR">
-                                    <div class="settings-hint"><i class="bi bi-info-circle me-1"></i>This symbol will be
-                                        applied dynamically to all invoices, payments, and report pages.</div>
-                                </div>
-                                <div class="col-md-12 mt-3">
-                                    <label for="anesthesia_needle_price" class="settings-label">{% if current_lang == 'ar' %}سعر إبرة / جرعة التخدير (لكل تطبيق){% else %}Anesthesia / Needle Price (Per Application){% endif %}</label>
-                                    <div class="input-group">
-                                        <input type="number" class="form-control settings-input" id="anesthesia_needle_price"
-                                            name="anesthesia_needle_price" value="{{ settings.anesthesia_needle_price }}" min="0" required>
-                                        <span class="input-group-text">{{ currency_symbol }}</span>
-                                    </div>
-                                    <div class="settings-hint"><i class="bi bi-info-circle me-1"></i>{% if current_lang == 'ar' %}يتم ضرب هذه التكلفة في عدد مرات إعطاء التخدير (المعبّر عنها بعدد الإبر المستعملة).{% else %}This cost will be multiplied by the number of times anesthesia is administered (expressed as needles used).{% endif %}</div>
+                                    <div class="settings-hint"><i class="bi bi-info-circle me-1"></i>{% if current_lang == 'ar' %}سيتم تطبيق هذا الرمز ديناميكياً على جميع الفواتير والمدفوعات وصفحات التقارير.{% else %}This symbol will be applied dynamically to all invoices, payments, and report pages.{% endif %}</div>
                                 </div>
                             </div>
                         </div>
@@ -284,6 +265,18 @@
                                     id="add-procedure-btn">
                                     <i class="bi bi-plus-circle me-1"></i> Add New Procedure
                                 </button>
+                            </div>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-12">
+                                    <label for="anesthesia_needle_price" class="settings-label">{% if current_lang == 'ar' %}سعر إبرة / جرعة التخدير (لكل تطبيق){% else %}Anesthesia / Needle Price (Per Application){% endif %}</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control settings-input" id="anesthesia_needle_price"
+                                            name="anesthesia_needle_price" value="{{ settings.anesthesia_needle_price }}" min="0" required>
+                                        <span class="input-group-text">{{ currency_symbol }}</span>
+                                    </div>
+                                    <div class="settings-hint"><i class="bi bi-info-circle me-1"></i>{% if current_lang == 'ar' %}يتم ضرب هذه التكلفة في عدد مرات إعطاء التخدير (المعبّر عنها بعدد الإبر المستعملة).{% else %}This cost will be multiplied by the number of times anesthesia is administered (expressed as needles used).{% endif %}</div>
+                                </div>
                             </div>
 
                             <div class="table-responsive">
@@ -345,12 +338,12 @@
                             <ul class="nav nav-pills mb-4 gap-2 border-bottom pb-3 mt-4" id="user-subtabs" role="tablist">
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link active rounded-pill px-4" id="staff-users-tab" data-bs-toggle="tab" data-bs-target="#staff-users-pane" type="button" role="tab">
-                                        <i class="bi bi-person-workspace me-1"></i> طاقم العمل
+                                        <i class="bi bi-person-workspace me-1"></i> {% if current_lang == 'ar' %}طاقم العمل{% else %}Clinic Staff{% endif %}
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link rounded-pill px-4" id="patient-users-tab" data-bs-toggle="tab" data-bs-target="#patient-users-pane" type="button" role="tab">
-                                        <i class="bi bi-people me-1"></i> حسابات المرضى
+                                        <i class="bi bi-people me-1"></i> {% if current_lang == 'ar' %}حسابات المرضى{% else %}Patient Accounts{% endif %}
                                     </button>
                                 </li>
                             </ul>
@@ -364,7 +357,7 @@
                                                 <span class="input-group-text border-end-0 text-muted ps-3 pe-3" style="border-radius: 50rem 0 0 50rem;">
                                                     <i class="bi bi-search"></i>
                                                 </span>
-                                                <input type="text" class="form-control border-start-0 ps-2" style="border-radius: 0 50rem 50rem 0;" placeholder="بحث باسم الموظف أو اسم المستخدم..." oninput="filterUserTable('staff-table-body', this.value)" onkeyup="filterUserTable('staff-table-body', this.value)">
+                                                <input type="text" class="form-control border-start-0 ps-2" style="border-radius: 0 50rem 50rem 0;" placeholder="{% if current_lang == 'ar' %}بحث باسم الموظف أو اسم المستخدم...{% else %}Search by staff name or username...{% endif %}" oninput="filterUserTable('staff-table-body', this.value)" onkeyup="filterUserTable('staff-table-body', this.value)">
                                             </div>
                                         </div>
                                     </div>
@@ -434,7 +427,7 @@
                                                 <span class="input-group-text border-end-0 text-muted ps-3 pe-3" style="border-radius: 50rem 0 0 50rem;">
                                                     <i class="bi bi-search"></i>
                                                 </span>
-                                                <input type="text" class="form-control border-start-0 ps-2" style="border-radius: 0 50rem 50rem 0;" placeholder="بحث باسم المريض أو اسم المستخدم..." oninput="filterUserTable('patient-table-body', this.value)" onkeyup="filterUserTable('patient-table-body', this.value)">
+                                                <input type="text" class="form-control border-start-0 ps-2" style="border-radius: 0 50rem 50rem 0;" placeholder="{% if current_lang == 'ar' %}بحث باسم المريض أو اسم المستخدم...{% else %}Search by patient name or username...{% endif %}" oninput="filterUserTable('patient-table-body', this.value)" onkeyup="filterUserTable('patient-table-body', this.value)">
                                             </div>
                                         </div>
                                     </div>
@@ -510,14 +503,14 @@
                                     <label class="settings-label d-block mb-3">{% if current_lang == 'ar' %}مظهر عرض النظام{% else %}System Display Theme{% endif %}</label>
                                     <div class="d-flex gap-3">
                                         <button type="button"
-                                            class="btn theme-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"
+                                            class="btn theme-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2 {% if request.cookies.get('theme') != 'dark' %}active{% endif %}"
                                             id="theme-light-btn" onclick="setAppTheme('light')"
                                             style="border-radius: 16px; transition: all 0.3s ease;">
                                             <i class="bi bi-sun-fill fs-2 mb-2 text-warning"></i>
                                             <strong style="font-size: 1.05rem;">{% if current_lang == 'ar' %}الوضع الفاتح{% else %}Light Mode{% endif %}</strong>
                                         </button>
                                         <button type="button"
-                                            class="btn theme-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"
+                                            class="btn theme-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2 {% if request.cookies.get('theme') == 'dark' %}active{% endif %}"
                                             id="theme-dark-btn" onclick="setAppTheme('dark')"
                                             style="border-radius: 16px; transition: all 0.3s ease;">
                                             <i class="bi bi-moon-stars-fill fs-2 mb-2 text-primary"></i>
@@ -531,14 +524,14 @@
                                     <label class="settings-label d-block mb-3">{% if current_lang == 'ar' %}لغة واجهة النظام{% else %}System Interface Language{% endif %}</label>
                                     <div class="d-flex gap-3">
                                         <button type="button"
-                                            class="btn lang-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"
+                                            class="btn lang-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2 {% if current_lang != 'ar' %}active{% endif %}"
                                             id="lang-en-btn" onclick="setAppLang('en')"
                                             style="border-radius: 16px; transition: all 0.3s ease;">
                                             <span class="fs-2 mb-2">🇺🇸</span>
                                             <strong style="font-size: 1.05rem;">English</strong>
                                         </button>
                                         <button type="button"
-                                            class="btn lang-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"
+                                            class="btn lang-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2 {% if current_lang == 'ar' %}active{% endif %}"
                                             id="lang-ar-btn" onclick="setAppLang('ar')"
                                             style="border-radius: 16px; transition: all 0.3s ease;">
                                             <span class="fs-2 mb-2">🇸🇦</span>
@@ -1168,49 +1161,54 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const addBtn = document.getElementById("add-procedure-btn");
+    function runSettingsInit() {
         const tbody = document.getElementById("procedures-list");
         const currencySymbol = "{{ currency_symbol }}";
         const saveWrapper = document.getElementById("save-settings-btn-wrapper");
 
-        // ── Add new procedure row ──
-        if (addBtn) {
-            addBtn.addEventListener("click", function () {
-                const row = document.createElement("tr");
-                row.className = "procedure-row";
-                row.innerHTML = `
-                <td>
-                    <input type="text" name="procedure_names[]" class="form-control settings-input" required placeholder="Procedure Name">
-                </td>
-                <td>
-                    <div class="input-group settings-input-group">
-                        <input type="text" name="procedure_prices[]" class="form-control settings-input" required placeholder="0">
-                        <span class="input-group-text">${currencySymbol}</span>
-                    </div>
-                </td>
-                <td class="text-center">
-                    <button type="button" class="btn btn-outline-danger btn-sm rounded-circle delete-row-btn" data-tooltip="Delete Procedure" style="width:34px;height:34px;padding:0 !important;">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </td>
-            `;
-                tbody.appendChild(row);
-                if (typeof window.initCustomTooltips === "function") {
-                    window.initCustomTooltips();
+        // ── Add new procedure row (Event Delegation) ──
+        document.addEventListener("click", function (e) {
+            const addBtn = e.target.closest("#add-procedure-btn");
+            if (addBtn) {
+                e.preventDefault();
+                const list = document.getElementById("procedures-list");
+                if (list) {
+                    const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
+                    const namePlaceholder = isAr ? 'اسم الإجراء (مثال: تنظيف وتلميع)' : 'Procedure Name (e.g., Cleaning)';
+                    const deleteTooltip = isAr ? 'حذف الإجراء' : 'Delete Procedure';
+                    const row = document.createElement("tr");
+                    row.className = "procedure-row";
+                    row.innerHTML = `
+                    <td>
+                        <input type="text" name="procedure_names[]" class="form-control settings-input" required placeholder="${namePlaceholder}">
+                    </td>
+                    <td>
+                        <div class="input-group settings-input-group">
+                            <input type="text" name="procedure_prices[]" class="form-control settings-input" required placeholder="0">
+                            <span class="input-group-text">${currencySymbol}</span>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-outline-danger btn-sm rounded-circle delete-row-btn" data-tooltip="${deleteTooltip}" style="width:34px;height:34px;padding:0 !important;">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                    list.appendChild(row);
+                    if (typeof window.initCustomTooltips === "function") {
+                        window.initCustomTooltips();
+                    }
                 }
-            });
-        }
+            }
 
-        // ── Delete row from table ──
-        if (tbody) {
-            tbody.addEventListener("click", function (e) {
-                const deleteBtn = e.target.closest(".delete-row-btn");
-                if (deleteBtn) {
-                    deleteBtn.closest("tr").remove();
-                }
-            });
-        }
+            // ── Delete row from table ──
+            const deleteBtn = e.target.closest(".delete-row-btn");
+            if (deleteBtn) {
+                e.preventDefault();
+                const row = deleteBtn.closest("tr");
+                if (row) row.remove();
+            }
+        });
 
         // ── Hash-based tab activation ──
         const hash = window.location.hash;
@@ -1255,6 +1253,7 @@
         window.setAppTheme = function (theme) {
             document.documentElement.setAttribute('data-bs-theme', theme);
             localStorage.setItem('theme', theme);
+            document.cookie = "theme=" + theme + ";path=/;max-age=31536000;SameSite=Lax";
             updateThemeButtons(theme);
         };
 
@@ -1264,31 +1263,17 @@
             if (!lightBtn || !darkBtn) return;
 
             if (theme === 'dark') {
-                darkBtn.classList.remove('btn-outline-secondary', 'border-secondary-subtle');
-                darkBtn.classList.add('btn-primary', 'border-primary', 'shadow-sm');
-                darkBtn.style.backgroundColor = 'var(--accent-color)';
-                darkBtn.style.color = '#ffffff';
-
-                lightBtn.classList.remove('btn-primary', 'border-primary', 'shadow-sm');
-                lightBtn.classList.add('btn-outline-secondary', 'border-secondary-subtle');
-                lightBtn.style.backgroundColor = 'transparent';
-                lightBtn.style.color = 'var(--default-color)';
+                darkBtn.classList.add('active');
+                lightBtn.classList.remove('active');
             } else {
-                lightBtn.classList.remove('btn-outline-secondary', 'border-secondary-subtle');
-                lightBtn.classList.add('btn-primary', 'border-primary', 'shadow-sm');
-                lightBtn.style.backgroundColor = 'var(--accent-color)';
-                lightBtn.style.color = '#ffffff';
-
-                darkBtn.classList.remove('btn-primary', 'border-primary', 'shadow-sm');
-                darkBtn.classList.add('btn-outline-secondary', 'border-secondary-subtle');
-                darkBtn.style.backgroundColor = 'transparent';
-                darkBtn.style.color = 'var(--default-color)';
+                lightBtn.classList.add('active');
+                darkBtn.classList.remove('active');
             }
         }
 
         // ── Language Selector Logic ──
         window.setAppLang = function (lang) {
-            document.cookie = "lang=" + lang + ";path=/;max-age=31536000";
+            document.cookie = "lang=" + lang + ";path=/;max-age=31536000;SameSite=Lax";
             localStorage.setItem('lang', lang);
             updateLangButtons(lang);
             window.location.reload();
@@ -1300,33 +1285,19 @@
             if (!enBtn || !arBtn) return;
 
             if (lang === 'ar') {
-                arBtn.classList.remove('btn-outline-secondary', 'border-secondary-subtle');
-                arBtn.classList.add('btn-primary', 'border-primary', 'shadow-sm');
-                arBtn.style.backgroundColor = 'var(--accent-color)';
-                arBtn.style.color = '#ffffff';
-
-                enBtn.classList.remove('btn-primary', 'border-primary', 'shadow-sm');
-                enBtn.classList.add('btn-outline-secondary', 'border-secondary-subtle');
-                enBtn.style.backgroundColor = 'transparent';
-                enBtn.style.color = 'var(--default-color)';
+                arBtn.classList.add('active');
+                enBtn.classList.remove('active');
             } else {
-                enBtn.classList.remove('btn-outline-secondary', 'border-secondary-subtle');
-                enBtn.classList.add('btn-primary', 'border-primary', 'shadow-sm');
-                enBtn.style.backgroundColor = 'var(--accent-color)';
-                enBtn.style.color = '#ffffff';
-
-                arBtn.classList.remove('btn-primary', 'border-primary', 'shadow-sm');
-                arBtn.classList.add('btn-outline-secondary', 'border-secondary-subtle');
-                arBtn.style.backgroundColor = 'transparent';
-                arBtn.style.color = 'var(--default-color)';
+                enBtn.classList.add('active');
+                arBtn.classList.remove('active');
             }
         }
 
         // Initialize button states based on current theme and language
-        const currentTheme = localStorage.getItem('theme') || 'light';
+        const currentTheme = document.documentElement.getAttribute('data-bs-theme') || localStorage.getItem('theme') || 'light';
         updateThemeButtons(currentTheme);
 
-        const currentLang = localStorage.getItem('lang') || 'en';
+        const currentLang = "{{ current_lang }}";
         updateLangButtons(currentLang);
 
         // Listen for tab changes
@@ -1635,15 +1606,15 @@
                         alert.className = 'alert alert-danger mb-0';
                         alert.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2"></i> ${data.message}`;
                     }
-                })
-                .catch(err => {
-                    btn.disabled = false;
-                    btn.innerHTML = `<i class="bi bi-arrow-clockwise me-1"></i> ${isAr ? 'تحديث النظام الآن' : 'Update System Now'}`;
-                    alert.className = 'alert alert-danger mb-0';
-                    alert.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2"></i> ${isAr ? 'حدث خطأ أثناء التحديث: ' : 'Error during update: '} ${err.message}`;
                 });
             });
         }
-    });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", runSettingsInit);
+    } else {
+        runSettingsInit();
+    }
 </script>
 {% endblock %}

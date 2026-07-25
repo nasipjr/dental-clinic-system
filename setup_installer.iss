@@ -8,7 +8,7 @@ OutputDir=installer_output
 OutputBaseFilename=Setup_Clinic_MS_v1.0
 Compression=lzma
 SolidCompression=yes
-SetupIconFile=static\img\favicon.ico
+SetupIconFile=app_icon.ico
 UninstallDisplayIcon={app}\Clinic MS.exe
 
 [Tasks]

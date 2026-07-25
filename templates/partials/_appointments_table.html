@@ -5,7 +5,7 @@
             <tr>
                 <th>
                     <a class="appointments-ajax-link"
-                        href="{{ url_for('appointments.appointments_table', search=search_query, status=status_filter, sort='id', order='asc' if sort_by != 'id' or order == 'desc' else 'desc') }}">
+                        href="{{ url_for('appointments.appointments_table', date_filter=date_filter, search=search_query, status=status_filter, sort='id', order='asc' if sort_by != 'id' or order == 'desc' else 'desc') }}">
                         ID
                         {% if sort_by == 'id' %}
                         <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
@@ -15,7 +15,7 @@
 
                 <th>
                     <a class="appointments-ajax-link"
-                        href="{{ url_for('appointments.appointments_table', search=search_query, status=status_filter, sort='patient', order='asc' if sort_by != 'patient' or order == 'desc' else 'desc') }}">
+                        href="{{ url_for('appointments.appointments_table', date_filter=date_filter, search=search_query, status=status_filter, sort='patient', order='asc' if sort_by != 'patient' or order == 'desc' else 'desc') }}">
                         Patient
                         {% if sort_by == 'patient' %}
                         <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
@@ -25,7 +25,7 @@
 
                 <th>
                     <a class="appointments-ajax-link"
-                        href="{{ url_for('appointments.appointments_table', search=search_query, status=status_filter, sort='date', order='asc' if sort_by != 'date' or order == 'desc' else 'desc') }}">
+                        href="{{ url_for('appointments.appointments_table', date_filter=date_filter, search=search_query, status=status_filter, sort='date', order='asc' if sort_by != 'date' or order == 'desc' else 'desc') }}">
                         Date & Time
                         {% if sort_by == 'date' %}
                         <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
@@ -35,7 +35,7 @@
 
                 <th>
                     <a class="appointments-ajax-link"
-                        href="{{ url_for('appointments.appointments_table', search=search_query, status=status_filter, sort='reason', order='asc' if sort_by != 'reason' or order == 'desc' else 'desc') }}">
+                        href="{{ url_for('appointments.appointments_table', date_filter=date_filter, search=search_query, status=status_filter, sort='reason', order='asc' if sort_by != 'reason' or order == 'desc' else 'desc') }}">
                         Reason
                         {% if sort_by == 'reason' %}
                         <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
@@ -45,7 +45,7 @@
 
                 <th>
                     <a class="appointments-ajax-link"
-                        href="{{ url_for('appointments.appointments_table', search=search_query, status=status_filter, sort='status', order='asc' if sort_by != 'status' or order == 'desc' else 'desc') }}">
+                        href="{{ url_for('appointments.appointments_table', date_filter=date_filter, search=search_query, status=status_filter, sort='status', order='asc' if sort_by != 'status' or order == 'desc' else 'desc') }}">
                         Status
                         {% if sort_by == 'status' %}
                         <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
@@ -69,7 +69,14 @@
                 </td>
 
                 <td>
-                    {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else 'No date' }}
+                    {% if appointment.appointment_date %}
+                        <div class="fw-semibold text-nowrap" style="font-size: 0.93rem;">{{ appointment.appointment_date.strftime('%Y-%m-%d') }}</div>
+                        <div class="text-muted text-nowrap" style="font-size: 0.82rem; margin-top: 2px;">
+                            <i class="bi bi-clock me-1" style="font-size: 0.78rem;"></i>{{ appointment.appointment_date.strftime('%I:%M %p') }}
+                        </div>
+                    {% else %}
+                        <span class="text-muted">No date</span>
+                    {% endif %}
                 </td>
 
                 <td>
@@ -168,7 +175,7 @@
         <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
             {% if pagination.has_prev %}
             <a class="page-link appointments-ajax-link"
-                href="{{ url_for('appointments.appointments_table', page=pagination.prev_num, search=search_query, status=status_filter, sort=sort_by, order=order) }}">
+                href="{{ url_for('appointments.appointments_table', page=pagination.prev_num, date_filter=date_filter, search=search_query, status=status_filter, sort=sort_by, order=order) }}">
                 Previous
             </a>
             {% else %}
@@ -180,7 +187,7 @@
         {% if page_num %}
         <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
             <a class="page-link appointments-ajax-link"
-                href="{{ url_for('appointments.appointments_table', page=page_num, search=search_query, status=status_filter, sort=sort_by, order=order) }}">
+                href="{{ url_for('appointments.appointments_table', page=page_num, date_filter=date_filter, search=search_query, status=status_filter, sort=sort_by, order=order) }}">
                 {{ page_num }}
             </a>
         </li>
@@ -194,7 +201,7 @@
         <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
             {% if pagination.has_next %}
             <a class="page-link appointments-ajax-link"
-                href="{{ url_for('appointments.appointments_table', page=pagination.next_num, search=search_query, status=status_filter, sort=sort_by, order=order) }}">
+                href="{{ url_for('appointments.appointments_table', page=pagination.next_num, date_filter=date_filter, search=search_query, status=status_filter, sort=sort_by, order=order) }}">
                 Next
             </a>
             {% else %}

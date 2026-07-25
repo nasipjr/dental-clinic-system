@@ -93,8 +93,27 @@ def dashboard():
     patient_id = session.get("patient_id")
     patient = Patient.query.get_or_404(patient_id)
     
-    # Fetch patient appointments ordered by date
-    appointments = Appointment.query.filter_by(patient_id=patient_id).order_by(Appointment.appointment_date.desc()).all()
+    page = request.args.get("page", 1, type=int)
+    per_page = 5
+    
+    pagination = Appointment.query.filter_by(patient_id=patient_id).order_by(Appointment.appointment_date.desc()).paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
+    appointments = pagination.items
+    
+    current_lang = request.cookies.get('lang', 'ar')
+
+    if request.args.get("ajax") == "1" or request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        html_rows = render_template("portal/_appointments_table_body.html", appointments=appointments, current_lang=current_lang)
+        return jsonify({
+            "status": "success",
+            "html_rows": html_rows,
+            "page": pagination.page,
+            "pages": pagination.pages
+        })
+        
     doctors = User.query.filter(User.role.in_(["admin", "doctor"])).all()
     
     from utils.constants import APPOINTMENT_REASONS
@@ -109,6 +128,8 @@ def dashboard():
         "portal/dashboard.html",
         patient=patient,
         appointments=appointments,
+        pagination=pagination,
+        current_lang=current_lang,
         doctors=doctors,
         reasons=list(APPOINTMENT_REASONS),
         working_hours_start=working_hours_start,
@@ -245,10 +266,13 @@ def book_appointment():
     working_hours_end = get_setting("working_hours_end", "21:00")
     working_days = get_setting("working_days", "0,1,2,3,4,6")
     default_appointment_duration = get_setting("default_appointment_duration", "30")
-    booking_window_days = get_setting("booking_window_days", "30")
+    try:
+        booking_window_days_int = int(get_setting("booking_window_days", "30"))
+    except (ValueError, TypeError):
+        booking_window_days_int = 30
 
     now = datetime.now()
-    max_date = now + timedelta(days=booking_window_days)
+    max_date = now + timedelta(days=booking_window_days_int)
     min_datetime_str = now.strftime("%Y-%m-%dT%H:%M")
     max_datetime_str = max_date.strftime("%Y-%m-%dT%H:%M")
 
@@ -264,7 +288,7 @@ def book_appointment():
         working_hours_start=working_hours_start,
         working_hours_end=working_hours_end,
         working_days=working_days,
-        booking_window_days=booking_window_days,
+        booking_window_days=booking_window_days_int,
         default_appointment_duration=default_appointment_duration
     )
 

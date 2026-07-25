@@ -32,7 +32,7 @@ def settings_page():
                             raise ValueError
                     except ValueError:
                         flash("Anesthesia needle price must be a non-negative number.", "danger")
-                        return redirect(url_for("settings.settings_page") + "#tab-billing")
+                        return redirect(url_for("settings.settings_page") + "#tab-treatments")
                 set_setting(key, val)
 
             # 1b. Update notification provider credentials and templates

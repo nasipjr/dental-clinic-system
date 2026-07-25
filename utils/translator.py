@@ -2,27 +2,48 @@
 import re
 from html.parser import HTMLParser
 from html import escape as html_escape
+from functools import lru_cache
 from utils.translations import translations
 
 # Sort keys by length descending to match longer phrases before shorter ones
 sorted_keys = sorted(translations.keys(), key=lambda x: len(x), reverse=True)
+trans_lookup = {k.lower(): v for k, v in translations.items()}
 
-# Precompile regex pattern for each key
-# Match the key only if it is not surrounded by alphanumeric characters (similar to safeReplace JS logic)
-compiled_patterns = []
-for key in sorted_keys:
-    escaped_key = re.escape(key)
-    pattern = re.compile(rf'(?<![a-zA-Z0-9]){escaped_key}(?![a-zA-Z0-9])', re.IGNORECASE)
-    compiled_patterns.append((pattern, translations[key]))
+# Precompile single combined regex pattern for all keys
+escaped_keys = [re.escape(k) for k in sorted_keys if k.strip()]
+if escaped_keys:
+    combined_pattern_str = r'(?<![a-zA-Z0-9])(' + '|'.join(escaped_keys) + r')(?![a-zA-Z0-9])'
+    combined_regex = re.compile(combined_pattern_str, re.IGNORECASE)
+else:
+    combined_regex = None
 
 # Phone pattern to format phone numbers in RTL mode
 phone_pattern = re.compile(r'(\+[\d\s-]{5,18}\d|\b09\d[\d\s-]{4,15}\d)')
+
 
 def format_phone(match):
     m = match.group(0)
     if m.startswith('\u2066') and m.endswith('\u2069'):
         return m
     return '\u2066' + m + '\u2069'
+
+
+def _translate_match(match):
+    matched_str = match.group(1)
+    return trans_lookup.get(matched_str.lower(), matched_str)
+
+
+@lru_cache(maxsize=4096)
+def fast_translate_text(text):
+    if not text or not text.strip():
+        return text
+
+    if combined_regex:
+        text = combined_regex.sub(_translate_match, text)
+
+    # Format phone numbers
+    text = phone_pattern.sub(format_phone, text)
+    return text
 
 
 class HTMLTranslator(HTMLParser):
@@ -35,34 +56,17 @@ class HTMLTranslator(HTMLParser):
     def translate_text(self, text):
         if not text.strip():
             return text
-        
-        # Extract leading and trailing whitespace
+
         leading = re.match(r'^\s*', text).group(0)
         trailing = re.search(r'\s*$', text).group(0)
-        
         middle = text.strip()
-        # Normalize middle whitespace
-        normalized_middle = re.sub(r'\s+', ' ', middle)
-        
-        # Apply translation patterns on normalized middle
-        translated = normalized_middle
-        for pattern, translation in compiled_patterns:
-            translated = pattern.sub(translation, translated)
-            
-        if translated != normalized_middle:
-            return leading + translated + trailing
-            
-        # Fallback to direct matching on original text if no translation was applied
-        for pattern, translation in compiled_patterns:
-            text = pattern.sub(translation, text)
-            
-        # Format phone numbers
-        text = phone_pattern.sub(format_phone, text)
-        return text
+
+        translated_middle = fast_translate_text(middle)
+        return leading + translated_middle + trailing
 
     def handle_starttag(self, tag, attrs):
         self.output.append(f"<{tag}")
-        
+
         is_no_translate = (
             tag.lower() in ('script', 'style') or
             any(name.lower() == 'translate' and value == 'no' for name, value in attrs) or
@@ -104,10 +108,10 @@ class HTMLTranslator(HTMLParser):
 
     def handle_charref(self, name):
         self.output.append(f"&#{name};")
-        
+
     def handle_decl(self, decl):
         self.output.append(f"<!{decl}>")
-        
+
     def handle_pi(self, data):
         self.output.append(f"<?{data}>")
 
@@ -116,6 +120,8 @@ class HTMLTranslator(HTMLParser):
 
 
 def translate_html(html_str):
+    if not html_str:
+        return html_str
     translator = HTMLTranslator()
     translator.feed(html_str)
     translator.close()
