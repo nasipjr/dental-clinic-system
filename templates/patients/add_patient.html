@@ -3,8 +3,6 @@
 {% block title %}Add Patient{% endblock %}
 
 {% block content %}
-<br><br><br><br><br><br>
-
 <section id="add-patient-page" class="section">
     <div class="container" data-aos="fade-up">
         <div class="row justify-content-center">
@@ -25,7 +23,61 @@
                     </div>
                     {% endif %}
 
+                    {% if duplicate_warning %}
+                    <div class="alert alert-warning border-warning shadow-sm mb-4 d-block no-auto-icon" role="alert" id="duplicate-warning-box">
+                        <div class="d-flex align-items-center mb-2 pb-2 border-bottom border-warning border-opacity-25">
+                            <i class="bi bi-exclamation-triangle-fill fs-4 me-2 text-warning"></i>
+                            <strong class="fs-5 text-warning">تحذير: مريض بنفس الاسم موجود مسبقاً!</strong>
+                        </div>
+                        <div class="mb-2">
+                            <span>الاسم الذي أدخلته: </span>
+                            <strong class="text-warning fs-6">«{{ form_data.first_name }} {{ form_data.last_name }}»</strong>
+                        </div>
+                        <p class="mb-2 text-muted small">يوجد مرضى بنفس الاسم مسجلين في النظام. يرجى التأكد لتفادي تكرار السجلات:</p>
+                        <div class="p-3 mb-3 rounded-3" style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255, 193, 7, 0.2);">
+                            <ul class="list-unstyled mb-0">
+                                {% for p in duplicate_patients %}
+                                <li class="d-flex align-items-center flex-wrap gap-2 py-2 {% if not loop.last %}border-bottom border-secondary border-opacity-25{% endif %}">
+                                    <i class="bi bi-person-fill text-warning fs-5"></i>
+                                    <a href="{{ url_for('patients.patient_detail', patient_id=p.id) }}" target="_blank" class="fw-bold text-info text-decoration-none me-2">
+                                        {{ p.first_name }} {{ p.last_name }}
+                                    </a>
+                                    {% if p.phone %}
+                                    <span class="badge bg-secondary bg-opacity-50 text-light me-2">
+                                        <i class="bi bi-telephone me-1"></i>{{ p.phone }}
+                                    </span>
+                                    {% endif %}
+                                    {% if p.date_of_birth %}
+                                    <span class="badge bg-secondary bg-opacity-50 text-light">
+                                        <i class="bi bi-calendar me-1"></i>DOB: {{ p.date_of_birth }}
+                                    </span>
+                                    {% endif %}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="button" onclick="history.back()" class="btn btn-secondary btn-sm px-3">
+                                <i class="bi bi-arrow-right me-1"></i>رجوع وتعديل
+                            </button>
+                            <button type="button" onclick="document.getElementById('force-save-flag').value='1'; document.getElementById('add-patient-form').submit()" class="btn btn-danger btn-sm px-3">
+                                <i class="bi bi-person-plus me-1"></i>إضافة كمريض جديد (على مسؤوليتي)
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Live Duplicate Warning (AJAX) -->
+                    <div id="live-duplicate-alert" class="alert alert-warning mb-3 no-auto-icon" style="display:none;" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2 flex-shrink-0 fs-5 text-warning"></i>
+                        <div>
+                            <strong>تحذير:</strong> يوجد مريض بهذا الاسم:
+                            <span id="live-duplicate-list" class="ms-1"></span>
+                        </div>
+                    </div>
+
                     <form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300">
+                        <input type="hidden" name="force_save" id="force-save-flag" value="0">
                         <div class="row gy-4">
                             <div class="col-md-4">
                                 <label for="title" class="form-label">Title</label>
@@ -41,14 +93,18 @@
 
                             <div class="col-md-4">
                                 <label for="first_name" class="form-label">First Name</label>
-                                <input type="text" id="first_name" name="first_name" class="form-control"
-                                    placeholder="Enter first name" required>
+                                <input type="text" id="first_name" name="first_name" class="form-control {% if duplicate_warning %}border-warning border-2{% endif %}"
+                                    placeholder="Enter first name" required
+                                    value="{{ form_data.first_name if form_data else '' }}"
+                                    autocomplete="off">
                             </div>
 
                             <div class="col-md-4">
                                 <label for="last_name" class="form-label">Last Name</label>
-                                <input type="text" id="last_name" name="last_name" class="form-control"
-                                    placeholder="Enter last name" required>
+                                <input type="text" id="last_name" name="last_name" class="form-control {% if duplicate_warning %}border-warning border-2{% endif %}"
+                                    placeholder="Enter last name" required
+                                    value="{{ form_data.last_name if form_data else '' }}"
+                                    autocomplete="off">
                             </div>
 
                             <div class="col-md-12">
@@ -179,7 +235,12 @@
 document.addEventListener("DOMContentLoaded", function() {
     const phoneInput = document.getElementById("phone");
     const form = document.getElementById("add-patient-form");
-    
+    const firstNameInput = document.getElementById("first_name");
+    const lastNameInput = document.getElementById("last_name");
+    const liveAlert = document.getElementById("live-duplicate-alert");
+    const liveList = document.getElementById("live-duplicate-list");
+
+    // --- Phone Validation ---
     function validatePhone() {
         const val = phoneInput.value.trim();
         if (val === "") {
@@ -195,12 +256,10 @@ document.addEventListener("DOMContentLoaded", function() {
             return true;
         }
     }
-
     if (phoneInput) {
         phoneInput.addEventListener("input", validatePhone);
         phoneInput.addEventListener("blur", validatePhone);
     }
-
     if (form) {
         form.addEventListener("submit", function(e) {
             if (phoneInput && !validatePhone()) {
@@ -210,6 +269,42 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     }
+
+    // --- Live Duplicate Check (AJAX) ---
+    let dupCheckTimer = null;
+
+    function checkDuplicateLive() {
+        const fn = firstNameInput ? firstNameInput.value.trim() : "";
+        const ln = lastNameInput ? lastNameInput.value.trim() : "";
+
+        if (!fn || !ln || fn.length < 3 || ln.length < 3) {
+            if (liveAlert) liveAlert.style.display = "none";
+            return;
+        }
+
+        clearTimeout(dupCheckTimer);
+        dupCheckTimer = setTimeout(function() {
+            fetch(`/patients/check-duplicate?first_name=${encodeURIComponent(fn)}&last_name=${encodeURIComponent(ln)}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.duplicates && data.duplicates.length > 0) {
+                        const links = data.duplicates.map(p => {
+                            const dob = p.date_of_birth ? ` | DOB: ${p.date_of_birth}` : "";
+                            const phone = p.phone ? ` | ${p.phone}` : "";
+                            return `<a href="${p.url}" target="_blank" class="fw-bold">${p.name}</a>${phone}${dob}`;
+                        }).join(" &nbsp;|&nbsp; ");
+                        liveList.innerHTML = " " + links;
+                        if (liveAlert) liveAlert.style.display = "flex";
+                    } else {
+                        if (liveAlert) liveAlert.style.display = "none";
+                    }
+                })
+                .catch(() => { if (liveAlert) liveAlert.style.display = "none"; });
+        }, 500);
+    }
+
+    if (firstNameInput) firstNameInput.addEventListener("input", checkDuplicateLive);
+    if (lastNameInput)  lastNameInput.addEventListener("input",  checkDuplicateLive);
 });
 </script>
 {% endblock %}

@@ -134,7 +134,7 @@
                 <tbody>
                   {% for pay in payments %}
                   <tr>
-                    <td class="fw-bold text-success">PAY-{{ pay.id }}</td>
+                    <td class="fw-bold text-success"><bdi dir="ltr">PAY-{{ "%04d"|format(pay.id) }}</bdi></td>
                     <td>{{ pay.payment_date.strftime('%Y-%m-%d %I:%M %p') }}</td>
                     <td class="text-end fw-semibold text-success">{{ pay.amount | format_price }} {{ currency_symbol }}</td>
                     <td>

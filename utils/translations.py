@@ -374,7 +374,6 @@ translations = {
     "Outstanding Balance": "الرصيد المستحق",
     "Outstanding Balances": "الأرصدة المستحقة",
     "Outstanding Debt": "الديون المستحقة",
-    "PAY": "سداد",
     "Paid": "مدفوع",
     "Paid Ratio": "نسبة المدفوع",
     "Partial": "جزئي",

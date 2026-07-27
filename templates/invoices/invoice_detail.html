@@ -3,8 +3,6 @@
 {% block title %}Invoice Details{% endblock %}
 
 {% block content %}
-<br><br><br><br><br><br><br>
-
 <!-- Section Title -->
 <div class="container section-title" data-aos="fade-up">
     <h2>Invoice Details</h2>
@@ -276,7 +274,7 @@
                         {% for allocation in invoice.payment_allocations %}
                         <tr>
                             <td>
-                                <a href="{{ url_for('payments.view_payment', payment_id=allocation.payment.id) }}" class="fw-bold text-success">PAY-{{ allocation.payment.id }}</a>
+                                <a href="{{ url_for('payments.view_payment', payment_id=allocation.payment.id) }}" class="fw-bold text-success"><bdi dir="ltr">PAY-{{ "%04d"|format(allocation.payment.id) }}</bdi></a>
                             </td>
 
                             <td>
@@ -460,7 +458,7 @@
             <tbody>
                 {% for allocation in invoice.payment_allocations %}
                 <tr>
-                    <td>PAY-{{ allocation.payment.id }}</td>
+                    <td><bdi dir="ltr">PAY-{{ "%04d"|format(allocation.payment.id) }}</bdi></td>
                     <td>{{ allocation.payment.payment_date.strftime('%Y-%m-%d %I:%M %p') }}</td>
                     <td class="text-end">{{ allocation.amount | format_price }} {{ currency_symbol }}</td>
                     <td>{{ allocation.payment.notes or '' }}</td>

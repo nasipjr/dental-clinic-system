@@ -5,14 +5,11 @@
 {% endblock %}
 
 {% block content %}
-<br><br><br><br><br><br><br>
-
 <!-- Section Title -->
 <div class="container section-title d-print-none" data-aos="fade-up">
     <h2>{% if current_lang == 'ar' %}التقارير والإحصائيات{% else %}Reports & Statistics{% endif %}</h2>
     <p>{% if current_lang == 'ar' %}تحليل مالي وتشغيلي شامل ومتقدم لأداء العيادة.{% else %}Comprehensive financial and operational analysis for your clinic.{% endif %}</p>
 </div>
-<!-- End Section Title -->
 
 <section id="reports-dashboard-section" class="find-a-doctor section pt-0" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
     <div class="container" data-aos="fade-up" data-aos-delay="100">
@@ -1228,6 +1225,61 @@
             });
         }
 
+        // ── Tab Switching Fix for Hidden Canvas Charts ──
+        document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tabBtn => {
+            tabBtn.addEventListener('shown.bs.tab', function () {
+                if (typeof Chart !== 'undefined' && Chart.instances) {
+                    Object.values(Chart.instances).forEach(chart => {
+                        chart.resize();
+                        chart.update('none');
+                    });
+                }
+            });
+        });
+
+        // ── Print Mode Contrast Handling & Text Color Fix for Chart.js ──
+        window.addEventListener('beforeprint', function () {
+            if (typeof Chart !== 'undefined' && Chart.instances) {
+                Object.values(Chart.instances).forEach(chart => {
+                    if (chart.options.scales) {
+                        if (chart.options.scales.x && chart.options.scales.x.ticks) {
+                            chart.options.scales.x.ticks.color = '#000000';
+                        }
+                        if (chart.options.scales.y && chart.options.scales.y.ticks) {
+                            chart.options.scales.y.ticks.color = '#000000';
+                        }
+                    }
+                    if (chart.options.plugins && chart.options.plugins.legend && chart.options.plugins.legend.labels) {
+                        chart.options.plugins.legend.labels.color = '#000000';
+                    }
+                    chart.resize();
+                    chart.update('none');
+                });
+            }
+        });
+
+        window.addEventListener('afterprint', function () {
+            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            const textColor = isDark ? '#e2e8f0' : '#475569';
+            if (typeof Chart !== 'undefined' && Chart.instances) {
+                Object.values(Chart.instances).forEach(chart => {
+                    if (chart.options.scales) {
+                        if (chart.options.scales.x && chart.options.scales.x.ticks) {
+                            chart.options.scales.x.ticks.color = textColor;
+                        }
+                        if (chart.options.scales.y && chart.options.scales.y.ticks) {
+                            chart.options.scales.y.ticks.color = textColor;
+                        }
+                    }
+                    if (chart.options.plugins && chart.options.plugins.legend && chart.options.plugins.legend.labels) {
+                        chart.options.plugins.legend.labels.color = textColor;
+                    }
+                    chart.resize();
+                    chart.update('none');
+                });
+            }
+        });
+
         // ── Daily Financial Calendar Logic ──
         const currencySymbol = "{{ currency_symbol }}";
         const invoiceUrlTemplate = "{{ url_for('invoices.view_invoice', invoice_id=0) }}";
@@ -1621,31 +1673,45 @@
             display: none !important;
         }
         
-        body {
+        html, body, main, section, .section, #main, .container, .container-fluid, .row, .col, div, article, .tab-content, .tab-pane, .reports-section {
+            background: #ffffff !important;
             background-color: #ffffff !important;
             color: #000000 !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
+        }
+
+        body {
             font-size: 11pt !important;
             margin: 0 !important;
             padding: 0 !important;
         }
         
-        /* Render BOTH tabs full contents on printed paper! */
-        .tab-content > .tab-pane {
+        h1, h2, h3, h4, h5, h6, p, span, strong, small, label, th, td, div, a, i, b {
+            color: #000000 !important;
+        }
+
+        /* Print ONLY the active tab to prevent overlapping tabs and empty chart boxes */
+        .tab-content > .tab-pane:not(.active) {
+            display: none !important;
+        }
+        .tab-content > .tab-pane.active {
             display: block !important;
             opacity: 1 !important;
             visibility: visible !important;
         }
         
-        .card, .kpi-card, .table-card {
-            border: 1px solid #dee2e6 !important;
+        .card, .kpi-card, .table-card, .chart-card {
+            border: 1px solid #cbd5e1 !important;
             box-shadow: none !important;
             background: #ffffff !important;
+            background-color: #ffffff !important;
             margin-bottom: 25px !important;
             page-break-inside: avoid !important;
         }
         
         .table {
-            border-color: #333333 !important;
+            border-color: #cbd5e1 !important;
         }
         
         .table th {

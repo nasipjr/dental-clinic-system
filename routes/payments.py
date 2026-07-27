@@ -81,12 +81,37 @@ def get_payments_context():
         error_out=False,
     )
 
+    # ── Executive Manager Report & Stats for Payments ──
+    all_payments = Payment.query.all()
+
+    total_payments_count = len(all_payments)
+    total_collected_cash = sum(p.amount for p in all_payments)
+    total_allocated_cash = sum(p.allocated_amount for p in all_payments)
+    total_unallocated_credit = sum(p.unallocated_amount for p in all_payments)
+
+    allocation_rate = float((total_allocated_cash / total_collected_cash * 100)) if total_collected_cash > 0 else 100.0
+    avg_payment = float(total_collected_cash / total_payments_count) if total_payments_count > 0 else 0.0
+
+    # Top 5 largest payments collected in clinic history
+    top_payments = sorted(all_payments, key=lambda p: p.amount, reverse=True)[:5]
+
+    payment_stats = {
+        "total_payments_count": total_payments_count,
+        "total_collected_cash": float(total_collected_cash),
+        "total_allocated_cash": float(total_allocated_cash),
+        "total_unallocated_credit": float(total_unallocated_credit),
+        "allocation_rate": allocation_rate,
+        "avg_payment": avg_payment,
+    }
+
     return {
         "payments": pagination.items,
         "pagination": pagination,
         "search_query": search_query,
         "sort_by": sort_by,
         "order": order,
+        "payment_stats": payment_stats,
+        "top_payments": top_payments,
     }
 
 

@@ -10,7 +10,7 @@
                         sort='id',
                         order='asc' if sort_by != 'id' or order == 'desc' else 'desc'
                     ) }}">
-                        Invoice #
+                        {% if request.cookies.get('lang', 'en') == 'ar' %}رقم الفاتورة{% else %}Invoice #{% endif %}
                         {% if sort_by == 'id' %}
                         <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
@@ -123,7 +123,7 @@
             {% for invoice in invoices %}
             <tr>
                 <td>
-                    <strong>{{ invoice.invoice_number }}</strong>
+                    <a href="{{ url_for('invoices.view_invoice', invoice_id=invoice.id) }}" class="fw-bold text-primary"><bdi dir="ltr">{{ invoice.invoice_number }}</bdi></a>
                 </td>
 
                 <td>

@@ -3,8 +3,6 @@
 {% block title %}Appointment Session{% endblock %}
 
 {% block content %}
-<br><br><br><br><br><br><br>
-
 {% macro render_tooth_svg(i, is_lower) %}
     {% set i = i | int %}
     {% if i in [1, 2, 3, 14, 15, 16, 17, 18, 19, 30, 31, 32] %}
@@ -598,9 +596,7 @@
                         <tbody>
                             {% for treatment in previous_treatments %}
                             <tr>
-                                <td>
-                                    <strong>{{ treatment.id }}</strong>
-                                </td>
+                                <td>{{ treatment.id }}</td>
 
                                 <td>
                                     <a

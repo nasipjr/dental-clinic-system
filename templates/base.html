@@ -204,8 +204,8 @@
 
   </header>
 
-  <main class="main">
-    <div class="container" style="margin-top: 100px; margin-bottom: -80px; position: relative; z-index: 1050;">
+  <main class="main" style="padding-top: 145px;">
+    <div class="container" style="position: relative; z-index: 1050;">
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
           {% for category, message in messages %}
@@ -685,7 +685,6 @@
             "Outstanding Balance": "الرصيد المستحق",
             "Outstanding Balances": "الأرصدة المستحقة",
             "Outstanding Debt": "الديون المستحقة",
-            "PAY": "سداد",
             "Paid": "مدفوع",
             "Paid Ratio": "نسبة المدفوع",
             "Partial": "جزئي",

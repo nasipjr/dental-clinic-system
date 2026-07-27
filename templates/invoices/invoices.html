@@ -3,15 +3,6 @@
 {% block title %}Invoices{% endblock %}
 
 {% block content %}
-</br></br></br></br></br></br></br></br></br></br></br></br></br>
-
-<!-- Section Title -->
-<div class="container section-title" data-aos="fade-up">
-    <h2>Invoices</h2>
-    <p>All invoices generated from appointments with treatments.</p></br>
-</div>
-<!-- End Section Title -->
-
 <section id="invoices-table-section" class="find-a-doctor section">
     <div class="container" data-aos="fade-up" data-aos-delay="100">
 
@@ -58,6 +49,218 @@
 
         <div id="invoices-table-container">
             {% include "partials/_invoices_table.html" %}
+        </div>
+
+    </div>
+</section>
+
+<!-- Executive Manager Summary & Top Unpaid Invoices Section -->
+<section id="executive-invoices-report" class="section pt-0">
+    <div class="container" data-aos="fade-up" data-aos-delay="150">
+        
+        <div class="card border-0 rounded-4 shadow-sm p-4" style="background: var(--surface-color);">
+            
+            <!-- Section Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 border-bottom pb-3">
+                <div>
+                    <h4 class="fw-bold mb-1 text-main d-flex align-items-center gap-2">
+                        <i class="bi bi-briefcase text-primary fs-4"></i>
+                        {% if current_lang == 'ar' %}التقرير الإداري والخلاصة التنفيذية للفواتير{% else %}Executive Invoice Summary & Analytics{% endif %}
+                    </h4>
+                    <p class="text-secondary small mb-0">
+                        {% if current_lang == 'ar' %}مؤشرات الأداء المالي وأكبر الفواتير المستحقة المطلوبة للمتابعة الإدارية.{% else %}Key financial KPI metrics and top outstanding unpaid invoices for management follow-up.{% endif %}
+                    </p>
+                </div>
+
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-semibold">
+                    <i class="bi bi-shield-check me-1"></i>
+                    {% if current_lang == 'ar' %}تقرير الإدارة المالية{% else %}Manager Financial Overview{% endif %}
+                </span>
+            </div>
+
+            <!-- KPI Cards Grid -->
+            <div class="row g-3 mb-4">
+                
+                <!-- Card 1: Total Outstanding Debts -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="p-3 rounded-4 border bg-body-tertiary h-100 d-flex flex-column justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="text-secondary small fw-semibold">
+                                {% if current_lang == 'ar' %}إجمالي الديون المستحقة{% else %}Total Outstanding Debt{% endif %}
+                            </span>
+                            <div class="p-2 rounded-3 bg-danger-subtle text-danger">
+                                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-danger mb-1">
+                                {{ invoice_stats.total_outstanding | format_price }} {{ currency_symbol }}
+                            </h4>
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">
+                                {{ invoice_stats.unpaid_count }} {% if current_lang == 'ar' %}فواتير غير مدفوعة{% else %}Unpaid Invoices{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Collection Rate -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="p-3 rounded-4 border bg-body-tertiary h-100 d-flex flex-column justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="text-secondary small fw-semibold">
+                                {% if current_lang == 'ar' %}نسبة التحصيل المالي{% else %}Collection Efficiency{% endif %}
+                            </span>
+                            <div class="p-2 rounded-3 bg-success-subtle text-success">
+                                <i class="bi bi-pie-chart-fill fs-5"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-success mb-1">
+                                {{ "%.1f"|format(invoice_stats.collection_rate) }}%
+                            </h4>
+                            <div class="progress mt-2" style="height: 6px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ invoice_stats.collection_rate }}%;" aria-valuenow="{{ invoice_stats.collection_rate }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Total Billed Value -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="p-3 rounded-4 border bg-body-tertiary h-100 d-flex flex-column justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="text-secondary small fw-semibold">
+                                {% if current_lang == 'ar' %}إجمالي المفوتر الكلي{% else %}Total Billed Revenue{% endif %}
+                            </span>
+                            <div class="p-2 rounded-3 bg-primary-subtle text-primary">
+                                <i class="bi bi-receipt-cutoff fs-5"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-primary mb-1">
+                                {{ invoice_stats.total_billed | format_price }} {{ currency_symbol }}
+                            </h4>
+                            <span class="text-secondary small">
+                                {{ invoice_stats.total_invoices_count }} {% if current_lang == 'ar' %}فاتورة صادرة{% else %}Total Invoices{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Average Invoice Value -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="p-3 rounded-4 border bg-body-tertiary h-100 d-flex flex-column justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="text-secondary small fw-semibold">
+                                {% if current_lang == 'ar' %}متوسط قيمة الفاتورة{% else %}Average Invoice Value{% endif %}
+                            </span>
+                            <div class="p-2 rounded-3 bg-warning-subtle text-warning">
+                                <i class="bi bi-calculator fs-5"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-warning mb-1">
+                                {{ invoice_stats.avg_invoice | format_price }} {{ currency_symbol }}
+                            </h4>
+                            <span class="text-secondary small">
+                                {% if current_lang == 'ar' %}معدل التكلفة لكل فاتورة{% else %}Average Per Invoice{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Top Unpaid Invoices Subsection -->
+            <div class="mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                        <i class="bi bi-exclamation-octagon text-danger"></i>
+                        {% if current_lang == 'ar' %}أكبر الفواتير المستحقة والغير مدفوعة (للمتابعة التحصيلية){% else %}Top Largest Unpaid / Outstanding Invoices{% endif %}
+                    </h5>
+                    <span class="text-secondary small">
+                        {% if current_lang == 'ar' %}مرتبة بحسب أعلى مبلغ متبقي غير مسدد{% else %}Sorted by highest remaining unpaid balance{% endif %}
+                    </span>
+                </div>
+
+                {% if top_unpaid_invoices %}
+                <div class="table-responsive rounded-3 border">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-body-secondary">
+                            <tr>
+                                <th>{% if current_lang == 'ar' %}رقم الفاتورة{% else %}Invoice #{% endif %}</th>
+                                <th>{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</th>
+                                <th>{% if current_lang == 'ar' %}تاريخ الصدور{% else %}Issue Date{% endif %}</th>
+                                <th>{% if current_lang == 'ar' %}إجمالي الفاتورة{% else %}Total Amount{% endif %}</th>
+                                <th>{% if current_lang == 'ar' %}المبلغ المسدد{% else %}Paid Amount{% endif %}</th>
+                                <th>{% if current_lang == 'ar' %}المتبقي المستحق{% else %}Outstanding Balance{% endif %}</th>
+                                <th>{% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+                                <th class="text-center">{% if current_lang == 'ar' %}الإجراء{% else %}Action{% endif %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for inv in top_unpaid_invoices %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('invoices.view_invoice', invoice_id=inv.id) }}" class="fw-bold text-primary">
+                                        <bdi dir="ltr">{{ inv.invoice_number }}</bdi>
+                                    </a>
+                                </td>
+                                <td>
+                                    <strong>{{ inv.patient.first_name }} {{ inv.patient.last_name }}</strong>
+                                    <br>
+                                    <small class="text-secondary">{{ inv.patient.phone or '' }}</small>
+                                </td>
+                                <td>
+                                    {{ inv.issue_date.strftime('%Y-%m-%d') if inv.issue_date else '' }}
+                                </td>
+                                <td class="fw-semibold">
+                                    {{ inv.total_amount | format_price }} {{ currency_symbol }}
+                                </td>
+                                <td class="text-success fw-semibold">
+                                    {{ inv.total_paid | format_price }} {{ currency_symbol }}
+                                </td>
+                                <td>
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-6 px-2.5 py-1.5 fw-bold">
+                                        {{ inv.outstanding_amount | format_price }} {{ currency_symbol }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if inv.status == 'Unpaid' %}
+                                        <span class="badge bg-danger">{% if current_lang == 'ar' %}غير مدفوع{% else %}Unpaid{% endif %}</span>
+                                    {% elif inv.status == 'Partially Paid' %}
+                                        <span class="badge bg-warning text-dark">{% if current_lang == 'ar' %}دفع جزئي{% else %}Partially Paid{% endif %}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ inv.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-1">
+                                        <a href="{{ url_for('invoices.view_invoice', invoice_id=inv.id) }}" class="table-action-btn view-btn" title="{% if current_lang == 'ar' %}عرض الفاتورة{% else %}View Invoice{% endif %}">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        {% if current_user.role in ('admin', 'receptionist') %}
+                                        <a href="{{ url_for('payments.add_patient_payment', patient_id=inv.patient_id) }}" class="table-action-btn session-btn" title="{% if current_lang == 'ar' %}تسجيل دفعة للمريض{% else %}Record Payment{% endif %}">
+                                            <i class="bi bi-credit-card"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-success d-flex align-items-center mb-0 rounded-3">
+                    <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                    <div>
+                        {% if current_lang == 'ar' %}ممتاز! لا توجد فواتير غير مدفوعة أو مستحقة حالياً في النظام.{% else %}Great! No unpaid or outstanding invoices found.{% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
         </div>
 
     </div>

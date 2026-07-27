@@ -96,12 +96,41 @@ def get_invoices_context():
         error_out=False,
     )
 
+    # ── Executive Manager Report & Stats ──
+    all_invoices = Invoice.query.all()
+
+    total_invoices_count = len(all_invoices)
+    total_billed = sum(inv.total_amount for inv in all_invoices)
+    total_collected = sum(inv.total_paid for inv in all_invoices)
+    total_outstanding = sum(inv.outstanding_amount for inv in all_invoices)
+
+    unpaid_list = [inv for inv in all_invoices if inv.outstanding_amount > 0]
+    unpaid_count = len(unpaid_list)
+
+    collection_rate = float((total_collected / total_billed * 100)) if total_billed > 0 else 100.0
+    avg_invoice = float(total_billed / total_invoices_count) if total_invoices_count > 0 else 0.0
+
+    # Top 5 largest unpaid / partially paid invoices
+    top_unpaid_invoices = sorted(unpaid_list, key=lambda inv: inv.outstanding_amount, reverse=True)[:5]
+
+    invoice_stats = {
+        "total_invoices_count": total_invoices_count,
+        "total_billed": float(total_billed),
+        "total_collected": float(total_collected),
+        "total_outstanding": float(total_outstanding),
+        "unpaid_count": unpaid_count,
+        "collection_rate": collection_rate,
+        "avg_invoice": avg_invoice,
+    }
+
     return {
         "invoices": pagination.items,
         "pagination": pagination,
         "search_query": search_query,
         "sort_by": sort_by,
         "order": order,
+        "invoice_stats": invoice_stats,
+        "top_unpaid_invoices": top_unpaid_invoices,
     }
 
 

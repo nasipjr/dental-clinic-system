@@ -10,7 +10,7 @@
                         invoice_sort='id',
                         invoice_order='asc' if invoice_sort != 'id' or invoice_order == 'desc' else 'desc'
                     ) }}" class="dashboard-ajax-link" data-target="patient-invoices-container">
-                        Invoice #
+                        {% if request.cookies.get('lang', 'en') == 'ar' %}رقم الفاتورة{% else %}Invoice #{% endif %}
                         {% if invoice_sort == 'id' %}
                         <i class="bi {% if invoice_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
@@ -123,7 +123,7 @@
             {% for invoice in invoices %}
             <tr>
                 <td>
-                    <strong>{{ invoice.invoice_number }}</strong>
+                    <a href="{{ url_for('invoices.view_invoice', invoice_id=invoice.id) }}" class="fw-bold text-primary"><bdi dir="ltr">{{ invoice.invoice_number }}</bdi></a>
                 </td>
 
                 <td>

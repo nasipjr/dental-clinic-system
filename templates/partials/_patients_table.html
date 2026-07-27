@@ -5,16 +5,6 @@
             <tr>
                 <th>
                     <a class="patients-ajax-link"
-                        href="{{ url_for('patients.patients_table', search=search_query, sort='id', order='asc' if sort_by != 'id' or order == 'desc' else 'desc') }}">
-                        ID
-                        {% if sort_by == 'id' %}
-                        <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
-                        {% endif %}
-                    </a>
-                </th>
-
-                <th>
-                    <a class="patients-ajax-link"
                         href="{{ url_for('patients.patients_table', search=search_query, sort='first_name', order='asc' if sort_by != 'first_name' or order == 'desc' else 'desc') }}">
                         First Name
                         {% if sort_by == 'first_name' %}
@@ -80,8 +70,6 @@
         <tbody>
             {% for patient in patients %}
             <tr>
-                <td class="fw-bold text-primary" style="font-size: 0.95rem;">{{ patient.id }}</td>
-
                 <td>
                     <span class="fw-bold text-main" style="font-size: 0.95rem;">{{ patient.first_name }}</span>
                 </td>

@@ -128,7 +128,7 @@
                     <tbody>
                         {% for allocation in invoice.payment_allocations %}
                         <tr>
-                            <td class="fw-bold text-success ps-3">PAY-{{ allocation.payment.id }}</td>
+                            <td class="fw-bold text-success ps-3"><bdi dir="ltr">PAY-{{ "%04d"|format(allocation.payment.id) }}</bdi></td>
                             <td>{{ allocation.payment.payment_date.strftime('%Y-%m-%d %I:%M %p') }}</td>
                             <td class="text-end fw-semibold text-success">{{ allocation.amount | format_price }} {{ currency_symbol }}</td>
                             <td class="pe-3"><span class="small" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">{{ allocation.payment.notes or '' }}</span></td>
@@ -236,7 +236,7 @@
             <tbody>
                 {% for allocation in invoice.payment_allocations %}
                 <tr>
-                    <td>PAY-{{ allocation.payment.id }}</td>
+                    <td><bdi dir="ltr">PAY-{{ "%04d"|format(allocation.payment.id) }}</bdi></td>
                     <td>{{ allocation.payment.payment_date.strftime('%Y-%m-%d %I:%M %p') }}</td>
                     <td class="text-end">{{ allocation.amount | format_price }} {{ currency_symbol }}</td>
                     <td>{{ allocation.payment.notes or '' }}</td>

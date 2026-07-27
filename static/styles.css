@@ -3144,36 +3144,32 @@ td.fc-day-past {
 
 /* Print Media styles for high-contrast white pages with black text */
 @media print {
-    html, body, main, section, div, table, tr, td, th, h1, h2, h3, h4, h5, h6, p, span, strong, small {
-        background: #ffffff !important;
-        background-color: #ffffff !important;
-        color: #000000 !important;
-        box-shadow: none !important;
-        text-shadow: none !important;
-    }
-    
     body {
-        font-size: 12pt !important;
+        background-color: #ffffff !important;
+        font-size: 11pt !important;
     }
 
-    #header, #footer, .navbar, .btn, .btn-primary, .btn-outline-main, .sidebar, .no-print, .btn-close, .modal-header .btn-close, .table-action-btn {
+    #header, #footer, .navbar, .btn, .btn-primary, .btn-outline-main, .sidebar, .no-print, .btn-close, .modal-header .btn-close, .table-action-btn, #scroll-top, .d-print-none {
         display: none !important;
     }
 
     /* Clean printing borders */
     .invoice-card, .patient-ledger-card, .table {
-        border: 1px solid #000000 !important;
+        border: 1px solid #cbd5e1 !important;
         margin: 0 !important;
         padding: 0 !important;
     }
 
     th {
-        background-color: #f2f2f2 !important;
+        background-color: #f8f9fa !important;
+        color: #000000 !important;
         border-bottom: 2px solid #000000 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 
     td {
-        border-bottom: 1px solid #dddddd !important;
+        border-bottom: 1px solid #e2e8f0 !important;
     }
 
     /* Prevent page breaks inside tables */
@@ -3457,13 +3453,20 @@ select.form-select:focus,
 .alert {
   border-radius: 16px !important;
   border: 1.5px solid transparent !important;
-  padding: 1rem 1.5rem !important;
+  padding: 1.25rem 1.5rem !important;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05) !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 12px !important;
   backdrop-filter: blur(8px) !important;
   animation: slideInDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.alert:not(.d-block):not(.no-auto-icon) {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.alert.d-block {
+  display: block !important;
 }
 
 @keyframes slideInDown {
@@ -3477,10 +3480,15 @@ select.form-select:focus,
   }
 }
 
-.alert::before {
+.alert:not(.no-auto-icon):not(.d-block)::before {
   font-family: "bootstrap-icons" !important;
   font-size: 1.35rem !important;
   flex-shrink: 0 !important;
+}
+
+.alert.no-auto-icon::before,
+.alert.d-block::before {
+  content: none !important;
 }
 
 /* Success alert styling */
@@ -3489,7 +3497,7 @@ select.form-select:focus,
   border-color: rgba(25, 135, 84, 0.25) !important;
   color: #198754 !important;
 }
-.alert-success::before {
+.alert-success:not(.no-auto-icon):not(.d-block)::before {
   content: "\f272" !important; /* check-circle-fill */
 }
 
@@ -3499,7 +3507,7 @@ select.form-select:focus,
   border-color: rgba(220, 53, 69, 0.25) !important;
   color: #dc3545 !important;
 }
-.alert-danger::before {
+.alert-danger:not(.no-auto-icon):not(.d-block)::before {
   content: "\f33a" !important; /* exclamation-octagon-fill */
 }
 
@@ -3509,7 +3517,7 @@ select.form-select:focus,
   border-color: rgba(255, 193, 7, 0.25) !important;
   color: #ffc107 !important;
 }
-.alert-warning::before {
+.alert-warning:not(.no-auto-icon):not(.d-block)::before {
   content: "\f33b" !important; /* exclamation-triangle-fill */
 }
 
@@ -3519,7 +3527,7 @@ select.form-select:focus,
   border-color: rgba(13, 202, 240, 0.25) !important;
   color: #0dcaf0 !important;
 }
-.alert-info::before {
+.alert-info:not(.no-auto-icon):not(.d-block)::before {
   content: "\f437" !important; /* info-circle-fill */
 }
 
@@ -3560,6 +3568,48 @@ select.form-select:focus,
 .sitename, .clinic-name-print, bdi {
   unicode-bidi: plaintext !important;
   display: inline-block;
+}
+
+/* =============================================
+   COMPACT & ELEGANT UNIFIED PAGE SPACING
+   ============================================= */
+main.main {
+  padding-top: 145px !important;
+}
+
+.hero {
+  min-height: auto !important;
+  padding: 20px 0 !important;
+  display: block !important;
+}
+
+.section-title {
+  text-align: center;
+  padding-bottom: 10px !important;
+  margin-top: 45px !important;
+  margin-bottom: 25px !important;
+}
+
+/* Ensure first section title under navbar doesn't add extra top margin */
+main.main > .container.section-title:first-child,
+main.main > section:first-of-type .section-title {
+  margin-top: 10px !important;
+}
+
+.section-title h2 {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  margin-bottom: 6px !important;
+  padding-bottom: 6px !important;
+}
+
+.section-title p {
+  font-size: 0.92rem !important;
+  margin-bottom: 0 !important;
+}
+
+section, .section {
+  padding: 25px 0 !important;
 }
 
 

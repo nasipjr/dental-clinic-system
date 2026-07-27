@@ -1,4 +1,5 @@
-from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash
+from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash, jsonify
+from sqlalchemy import func
 
 from models import db, Patient, Appointment, Treatment, Payment, Invoice, PatientFile
 from utils.validators import parse_patient_data
@@ -156,6 +157,38 @@ def patients_table():
         return "Error Loading PatientsTable", 500
 
 
+@patients_bp.route("/patients/check-duplicate", methods=["GET"])
+@role_required("admin", "receptionist", "doctor")
+def check_duplicate_patient():
+    """AJAX endpoint: returns existing patients with same first+last name (case-insensitive)."""
+    first_name = request.args.get("first_name", "").strip()
+    last_name = request.args.get("last_name", "").strip()
+    exclude_id = request.args.get("exclude_id", None, type=int)
+
+    if not first_name or not last_name:
+        return jsonify({"duplicates": []})
+
+    query = Patient.query.filter(
+        func.lower(Patient.first_name) == first_name.lower(),
+        func.lower(Patient.last_name) == last_name.lower()
+    )
+    if exclude_id:
+        query = query.filter(Patient.id != exclude_id)
+
+    matches = query.all()
+    result = [
+        {
+            "id": p.id,
+            "name": f"{p.first_name} {p.last_name}",
+            "phone": p.phone or "",
+            "date_of_birth": str(p.date_of_birth) if p.date_of_birth else "",
+            "url": url_for("patients.patient_detail", patient_id=p.id)
+        }
+        for p in matches
+    ]
+    return jsonify({"duplicates": result})
+
+
 @patients_bp.route("/patients/add", methods=["GET", "POST"])
 @role_required("admin", "receptionist")
 def add_patient():
@@ -168,12 +201,34 @@ def add_patient():
                 error_message=patient_error,
             ), 400
 
+        # --- Duplicate Name Check ---
+        force_save = request.form.get("force_save") == "1"
+        if not force_save:
+            first_name = patient_data.get("first_name", "").strip()
+            last_name = patient_data.get("last_name", "").strip()
+            duplicates = Patient.query.filter(
+                func.lower(Patient.first_name) == first_name.lower(),
+                func.lower(Patient.last_name) == last_name.lower()
+            ).all()
+            if duplicates:
+                current_app.logger.warning(
+                    f"Duplicate patient attempt: '{first_name} {last_name}' | matches={[p.id for p in duplicates]}"
+                )
+                return render_template(
+                    "patients/add_patient.html",
+                    duplicate_warning=True,
+                    duplicate_patients=duplicates,
+                    form_data=request.form,
+                ), 200
+        # --- End Duplicate Check ---
+
         try:
             new_patient = Patient(**patient_data)
 
             db.session.add(new_patient)
             db.session.commit()
 
+            current_app.logger.info(f"New patient added | id={new_patient.id} name='{new_patient.first_name} {new_patient.last_name}'")
             return redirect(url_for("patients.patients"))
         except Exception:
             db.session.rollback()
@@ -535,6 +590,29 @@ def edit_patient(patient_id):
                     mode="edit",
                     error_message=patient_error,
                 ), 400
+
+            # --- Duplicate Name Check (exclude current patient) ---
+            force_save = request.form.get("force_save") == "1"
+            if not force_save:
+                first_name = patient_data.get("first_name", "").strip()
+                last_name = patient_data.get("last_name", "").strip()
+                duplicates = Patient.query.filter(
+                    func.lower(Patient.first_name) == first_name.lower(),
+                    func.lower(Patient.last_name) == last_name.lower(),
+                    Patient.id != patient_id
+                ).all()
+                if duplicates:
+                    current_app.logger.warning(
+                        f"Duplicate name on edit: '{first_name} {last_name}' | existing={[p.id for p in duplicates]}"
+                    )
+                    return render_template(
+                        "patients/edit_patient.html",
+                        patient=patient,
+                        mode="edit",
+                        duplicate_warning=True,
+                        duplicate_patients=duplicates,
+                    ), 200
+            # --- End Duplicate Check ---
 
             for field, value in patient_data.items():
                 setattr(patient, field, value)

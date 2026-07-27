@@ -3,16 +3,6 @@
 {% block title %}Payments{% endblock %}
 
 {% block content %}
-<br><br><br><br><br><br><br>
-
-<!-- Section Title -->
-<div class="container section-title" data-aos="fade-up">
-    <h2>Payments</h2>
-    <p>All patient payments recorded in the clinic.</p>
-</div>
-<!-- End Section Title -->
-
-
 <section id="payments-section" class="find-a-doctor section">
     <div class="container" data-aos="fade-up" data-aos-delay="100">
 
@@ -64,6 +54,207 @@
 
         <div id="payments-table-container">
             {% include "partials/_payments_table.html" %}
+        </div>
+
+    </div>
+</section>
+
+<!-- Executive Manager Summary & Top Payments Section -->
+<section id="executive-payments-report" class="section pt-0">
+    <div class="container" data-aos="fade-up" data-aos-delay="150">
+        
+        <div class="card border-0 rounded-4 shadow-sm p-4" style="background: var(--surface-color);">
+            
+            <!-- Section Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 border-bottom pb-3">
+                <div>
+                    <h4 class="fw-bold mb-1 text-main d-flex align-items-center gap-2">
+                        <i class="bi bi-bank text-success fs-4"></i>
+                        {% if current_lang == 'ar' %}التقرير الإداري والخلاصة التنفيذية للمدفوعات{% else %}Executive Payments Summary & Analytics{% endif %}
+                    </h4>
+                    <p class="text-secondary small mb-0">
+                        {% if current_lang == 'ar' %}إحصائيات التدفقات النقدية والمقبوضات وأكبر العمليات المالية المسجلة بالعيادة.{% else %}Cash flow analytics, collections summary, and top financial payment transactions.{% endif %}
+                    </p>
+                </div>
+
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-semibold">
+                    <i class="bi bi-shield-check me-1"></i>
+                    {% if current_lang == 'ar' %}تقرير التدفق النقدي{% else %}Cash Flow Manager Report{% endif %}
+                </span>
+            </div>
+
+            <!-- KPI Cards Grid -->
+            <div class="row g-3 mb-4">
+                
+                <!-- Card 1: Total Collected Cash -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="p-3 rounded-4 border bg-body-tertiary h-100 d-flex flex-column justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="text-secondary small fw-semibold">
+                                {% if current_lang == 'ar' %}إجمالي المقبوضات النقدية{% else %}Total Collected Cash{% endif %}
+                            </span>
+                            <div class="p-2 rounded-3 bg-success-subtle text-success">
+                                <i class="bi bi-cash-coin fs-5"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-success mb-1">
+                                {{ payment_stats.total_collected_cash | format_price }} {{ currency_symbol }}
+                            </h4>
+                            <span class="text-secondary small">
+                                {{ payment_stats.total_payments_count }} {% if current_lang == 'ar' %}عملية دفع مسجلة{% else %}Payment Transactions{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Total Allocated Cash -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="p-3 rounded-4 border bg-body-tertiary h-100 d-flex flex-column justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="text-secondary small fw-semibold">
+                                {% if current_lang == 'ar' %}المبالغ المسددة للفواتير{% else %}Allocated to Invoices{% endif %}
+                            </span>
+                            <div class="p-2 rounded-3 bg-primary-subtle text-primary">
+                                <i class="bi bi-journal-check fs-5"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-primary mb-1">
+                                {{ payment_stats.total_allocated_cash | format_price }} {{ currency_symbol }}
+                            </h4>
+                            <div class="progress mt-2" style="height: 6px;">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ payment_stats.allocation_rate }}%;" aria-valuenow="{{ payment_stats.allocation_rate }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Unallocated Credit -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="p-3 rounded-4 border bg-body-tertiary h-100 d-flex flex-column justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="text-secondary small fw-semibold">
+                                {% if current_lang == 'ar' %}الأرصدة الزائدة للمرضى{% else %}Unallocated Patient Credit{% endif %}
+                            </span>
+                            <div class="p-2 rounded-3 bg-warning-subtle text-warning">
+                                <i class="bi bi-wallet2 fs-5"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-warning mb-1">
+                                {{ payment_stats.total_unallocated_credit | format_price }} {{ currency_symbol }}
+                            </h4>
+                            <span class="text-secondary small">
+                                {% if current_lang == 'ar' %}أرصدة متبقية بحسابات المرضى{% else %}Credit available for future visits{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Average Payment -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="p-3 rounded-4 border bg-body-tertiary h-100 d-flex flex-column justify-content-between">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="text-secondary small fw-semibold">
+                                {% if current_lang == 'ar' %}متوسط قيمة السداد{% else %}Average Payment Amount{% endif %}
+                            </span>
+                            <div class="p-2 rounded-3 bg-info-subtle text-info">
+                                <i class="bi bi-calculator fs-5"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-info mb-1">
+                                {{ payment_stats.avg_payment | format_price }} {{ currency_symbol }}
+                            </h4>
+                            <span class="text-secondary small">
+                                {% if current_lang == 'ar' %}معدل الدفعة للعملية الواحدة{% else %}Average Per Payment{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Top Payments Subsection -->
+            <div class="mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                        <i class="bi bi-trophy text-success"></i>
+                        {% if current_lang == 'ar' %}أكبر 5 مدفوعات نقدية محصلة في سجلات العيادة{% else %}Top 5 Largest Payments Collected{% endif %}
+                    </h5>
+                    <span class="text-secondary small">
+                        {% if current_lang == 'ar' %}مرتبة بحسب أعلى قيمة دفعة مستلمة{% else %}Sorted by highest payment amount{% endif %}
+                    </span>
+                </div>
+
+                {% if top_payments %}
+                <div class="table-responsive rounded-3 border">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-body-secondary">
+                            <tr>
+                                <th>{% if current_lang == 'ar' %}كود الدفعة{% else %}Payment #{% endif %}</th>
+                                <th>{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</th>
+                                <th>{% if current_lang == 'ar' %}تاريخ السداد{% else %}Payment Date{% endif %}</th>
+                                <th>{% if current_lang == 'ar' %}المبلغ المحصل{% else %}Payment Amount{% endif %}</th>
+                                <th>{% if current_lang == 'ar' %}المسدد للفواتير{% else %}Allocated{% endif %}</th>
+                                <th>{% if current_lang == 'ar' %}الرصيد المتبقي{% else %}Unallocated Credit{% endif %}</th>
+                                <th class="text-center">{% if current_lang == 'ar' %}الإجراء{% else %}Action{% endif %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pay in top_payments %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('payments.view_payment', payment_id=pay.id) }}" class="fw-bold text-success">
+                                        <bdi dir="ltr">PAY-{{ "%04d"|format(pay.id) }}</bdi>
+                                    </a>
+                                </td>
+                                <td>
+                                    <strong>{{ pay.patient.first_name }} {{ pay.patient.last_name }}</strong>
+                                    <br>
+                                    <small class="text-secondary">{{ pay.patient.phone or '' }}</small>
+                                </td>
+                                <td>
+                                    {{ pay.payment_date.strftime('%Y-%m-%d %I:%M %p') if pay.payment_date else '' }}
+                                </td>
+                                <td class="fw-bold text-success fs-6">
+                                    {{ pay.amount | format_price }} {{ currency_symbol }}
+                                </td>
+                                <td class="fw-semibold">
+                                    {{ pay.allocated_amount | format_price }} {{ currency_symbol }}
+                                </td>
+                                <td>
+                                    {% if pay.unallocated_amount > 0 %}
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle fs-6 px-2.5 py-1.5 fw-bold">
+                                            {{ pay.unallocated_amount | format_price }} {{ currency_symbol }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                                            0 {{ currency_symbol }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('payments.view_payment', payment_id=pay.id) }}" class="table-action-btn view-btn" title="{% if current_lang == 'ar' %}عرض تفاصيل الدفعة{% else %}View Payment{% endif %}">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info d-flex align-items-center mb-0 rounded-3">
+                    <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                    <div>
+                        {% if current_lang == 'ar' %}لا توجد مدفوعات مسجلة حالياً.{% else %}No payment records found.{% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
         </div>
 
     </div>

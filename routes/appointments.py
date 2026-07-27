@@ -149,6 +149,34 @@ def get_appointments_context():
 
     has_cancelled = Appointment.query.filter(Appointment.status == "Cancelled").first() is not None
 
+    # ── Executive Manager Report & Stats for Appointments ──
+    all_appts = Appointment.query.filter(Appointment.status != "Pending").all()
+    total_appts_count = len(all_appts)
+
+    completed_count = sum(1 for appt in all_appts if appt.status == "Done")
+    scheduled_count = sum(1 for appt in all_appts if appt.status == "Scheduled")
+    checked_in_count = sum(1 for appt in all_appts if appt.status == "Checked In")
+    in_chair_count = sum(1 for appt in all_appts if appt.status == "In Chair")
+    cancelled_count = sum(1 for appt in all_appts if appt.status == "Cancelled")
+
+    active_count = scheduled_count + checked_in_count + in_chair_count
+
+    completion_rate = float((completed_count / total_appts_count * 100)) if total_appts_count > 0 else 100.0
+    cancellation_rate = float((cancelled_count / total_appts_count * 100)) if total_appts_count > 0 else 0.0
+
+    # Top 5 upcoming active appointments
+    upcoming_list = [appt for appt in all_appts if appt.status in ("Scheduled", "Checked In", "In Chair") and appt.appointment_date and appt.appointment_date >= now]
+    top_upcoming_appointments = sorted(upcoming_list, key=lambda appt: appt.appointment_date)[:5]
+
+    appointment_stats = {
+        "total_appts_count": total_appts_count,
+        "completed_count": completed_count,
+        "active_count": active_count,
+        "cancelled_count": cancelled_count,
+        "completion_rate": round(completion_rate, 1),
+        "cancellation_rate": round(cancellation_rate, 1),
+    }
+
     return {
         "appointments": pagination.items,
         "pagination": pagination,
@@ -161,6 +189,8 @@ def get_appointments_context():
         "today_count": today_count,
         "tomorrow_count": tomorrow_count,
         "all_count": all_count,
+        "appointment_stats": appointment_stats,
+        "top_upcoming_appointments": top_upcoming_appointments,
     }
 
 

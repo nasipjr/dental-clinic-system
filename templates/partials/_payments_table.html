@@ -10,7 +10,7 @@
                         sort='id',
                         order='asc' if sort_by != 'id' or order == 'desc' else 'desc'
                     ) }}">
-                        Payment #
+                        {% if request.cookies.get('lang', 'en') == 'ar' %}رقم الدفعة{% else %}Payment #{% endif %}
                         {% if sort_by == 'id' %}
                         <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
@@ -97,7 +97,7 @@
             {% for payment in payments %}
             <tr>
                 <td>
-                    <a href="{{ url_for('payments.view_payment', payment_id=payment.id) }}" class="fw-bold text-primary">PAY-{{ payment.id }}</a>
+                    <a href="{{ url_for('payments.view_payment', payment_id=payment.id) }}" class="fw-bold text-primary"><bdi dir="ltr">PAY-{{ "%04d"|format(payment.id) }}</bdi></a>
                 </td>
 
                 <td>
@@ -148,19 +148,19 @@
 
                         <a href="{{ url_for('payments.view_payment', payment_id=payment.id) }}"
                            class="table-action-btn view-btn"
-                           title="View Payment Details">
+                           title="{% if request.cookies.get('lang', 'en') == 'ar' %}عرض تفاصيل الدفعة{% else %}View Payment Details{% endif %}">
                             <i class="bi bi-eye"></i>
                         </a>
 
                         <a href="{{ url_for('patients.patient_detail', patient_id=payment.patient_id) }}"
                            class="table-action-btn view-btn"
-                           title="Open Patient">
+                           title="{% if request.cookies.get('lang', 'en') == 'ar' %}فتح ملف المريض{% else %}Open Patient Profile{% endif %}">
                             <i class="bi bi-person"></i>
                         </a>
 
                         <a href="{{ url_for('invoices.invoices', search=payment.patient.phone or payment.patient.first_name) }}"
                            class="table-action-btn session-btn"
-                           title="View Patient Invoices">
+                           title="{% if request.cookies.get('lang', 'en') == 'ar' %}عرض فواتير المريض{% else %}View Patient Invoices{% endif %}">
                             <i class="bi bi-receipt"></i>
                         </a>
 

@@ -7,21 +7,6 @@
                     <a href="{{ url_for(
                         'patients.patient_appointments_table',
                         patient_id=patient.id,
-                        appointment_sort='id',
-                        appointment_order='asc' if appointment_sort != 'id' or appointment_order == 'desc' else 'desc'
-                    ) }}" class="dashboard-ajax-link" data-target="patient-appointments-container">
-                        ID
-                        {% if appointment_sort == 'id' %}
-                        <i
-                            class="bi {% if appointment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
-                        {% endif %}
-                    </a>
-                </th>
-
-                <th>
-                    <a href="{{ url_for(
-                        'patients.patient_appointments_table',
-                        patient_id=patient.id,
                         appointment_sort='date',
                         appointment_order='asc' if appointment_sort != 'date' or appointment_order == 'desc' else 'desc'
                     ) }}" class="dashboard-ajax-link" data-target="patient-appointments-container">
@@ -70,8 +55,6 @@
         <tbody>
             {% for appointment in patient_appointments %}
             <tr>
-                <td>{{ appointment.id }}</td>
-
                 <td>
                     {% if appointment.appointment_date %}
                         <div class="fw-semibold text-nowrap" style="font-size: 0.93rem;">{{ appointment.appointment_date.strftime('%Y-%m-%d') }}</div>
@@ -141,7 +124,7 @@
 
                         {% endif %}
 
-                        {% if appointment.status != 'Done' %}
+                        {% if current_user.role == 'admin' and appointment.status != 'Done' and appointment.status != 'منجز' and not appointment.treatments %}
                         <a href="{{ url_for('appointments.delete_appointment', appointment_id=appointment.id) }}"
                             class="table-action-btn delete-table-btn" title="Delete Appointment">
                             <i class="bi bi-trash"></i>
