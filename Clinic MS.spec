@@ -1,11 +1,19 @@
 # -*- mode: python ; coding: utf-8 -*-
+import sys
+sys.path.insert(0, '.')
+from version import APP_VERSION, APP_NAME
 
+EXE_NAME = f"{APP_NAME} v{APP_VERSION}"
 
 a = Analysis(
     ['desktop_app.py'],
     pathex=[],
     binaries=[],
-    datas=[('static', 'static'), ('templates', 'templates')],
+    datas=[
+        ('static', 'static'),
+        ('templates', 'templates'),
+        ('version.py', '.'),
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -22,7 +30,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='Clinic MS',
+    name=EXE_NAME,
     icon='app_icon.ico',
     debug=False,
     bootloader_ignore_signals=False,
