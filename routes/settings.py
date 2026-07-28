@@ -110,6 +110,12 @@ def settings_page():
                             price_val = 0
                         treatment_dict[name] = price_val
                 
+                # Guarantee essential system procedures (like 'قلع سن' and 'معالجة ما بعد القلع') are always preserved
+                if "قلع سن" not in treatment_dict:
+                    treatment_dict["قلع سن"] = 80000
+                if "معالجة ما بعد القلع" not in treatment_dict:
+                    treatment_dict["معالجة ما بعد القلع"] = 30000
+
                 set_setting("treatment_prices", json.dumps(treatment_dict))
             
             is_ar = request.cookies.get("lang") == "ar" or request.cookies.get("lang") != "en"

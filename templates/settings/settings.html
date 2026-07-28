@@ -244,12 +244,12 @@
                             <div class="settings-tab-header">
                                 <div class="settings-tab-icon"><i class="bi bi-clipboard2-pulse"></i></div>
                                 <div>
-                                    <h4>Treatment Services & Prices</h4>
-                                    <p>Manage procedure types and their default pricing</p>
+                                    <h4>{% if current_lang == 'ar' %}خدمات وأسعار المعالجات{% else %}Treatment Services & Prices{% endif %}</h4>
+                                    <p>{% if current_lang == 'ar' %}إدارة أنواع الإجراءات والأسعار الافتراضية لكل إجراء{% else %}Manage procedure types and their default pricing{% endif %}</p>
                                 </div>
                                 <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 ms-auto"
                                     id="add-procedure-btn">
-                                    <i class="bi bi-plus-circle me-1"></i> Add New Procedure
+                                    <i class="bi bi-plus-circle me-1"></i> {% if current_lang == 'ar' %}إضافة إجراء جديد{% else %}Add New Procedure{% endif %}
                                 </button>
                             </div>
 
@@ -270,18 +270,19 @@
                                     style="table-layout: fixed; width: 100%;">
                                     <thead>
                                         <tr>
-                                            <th style="width: 55%;">Procedure Name</th>
-                                            <th style="width: 30%;">Default Price</th>
-                                            <th style="width: 15%;" class="text-center">Actions</th>
+                                            <th style="width: 55%;">{% if current_lang == 'ar' %}اسم الإجراء{% else %}Procedure Name{% endif %}</th>
+                                            <th style="width: 30%;">{% if current_lang == 'ar' %}السعر الافتراضي{% else %}Default Price{% endif %}</th>
+                                            <th style="width: 15%;" class="text-center">{% if current_lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
                                         </tr>
                                     </thead>
                                     <tbody id="procedures-list">
                                         {% for name, price in treatment_prices.items() %}
-                                        <tr class="procedure-row">
+                                        {% set is_essential = (name in ['قلع سن', 'معالجة ما بعد القلع', 'Extraction', 'Tooth Extraction', 'Post-Extraction Treatment']) %}
+                                        <tr class="procedure-row {% if is_essential %}table-active-subtle{% endif %}">
                                             <td>
                                                 <input type="text" name="procedure_names[]"
-                                                    class="form-control settings-input" value="{{ name }}" required
-                                                    placeholder="e.g., Cleaning">
+                                                    class="form-control settings-input {% if is_essential %}bg-light-subtle fw-bold{% endif %}" value="{{ name }}" required
+                                                    placeholder="{% if current_lang == 'ar' %}اسم الإجراء{% else %}e.g., Cleaning{% endif %}" {% if is_essential %}readonly title="{{ 'إجراء أساسي محمي بالنظام' if current_lang == 'ar' else 'Essential procedure name locked' }}"{% endif %}>
                                             </td>
                                             <td>
                                                 <div class="input-group settings-input-group">
@@ -291,13 +292,19 @@
                                                     <span class="input-group-text">{{ currency_symbol }}</span>
                                                 </div>
                                             </td>
-                                            <td class="text-center">
+                                            <td class="text-center align-middle">
+                                                {% if not is_essential %}
                                                 <button type="button"
                                                     class="btn btn-outline-danger btn-sm rounded-circle delete-row-btn"
-                                                    data-tooltip="Delete Procedure"
+                                                    data-tooltip="{% if current_lang == 'ar' %}حذف الإجراء{% else %}Delete Procedure{% endif %}"
                                                     style="width:34px;height:34px;padding:0 !important;">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
+                                                {% else %}
+                                                <span class="badge bg-secondary-subtle text-secondary border px-2.5 py-1 text-xs" title="{% if current_lang == 'ar' %}إجراء أساسي محمي لا يمكن حذفه{% else %}Protected essential procedure{% endif %}">
+                                                    <i class="bi bi-shield-lock me-1 text-primary"></i>{% if current_lang == 'ar' %}محمي{% else %}Protected{% endif %}
+                                                </span>
+                                                {% endif %}
                                             </td>
                                         </tr>
                                         {% endfor %}
@@ -1174,7 +1181,7 @@
                             <span class="input-group-text">${currencySymbol}</span>
                         </div>
                     </td>
-                    <td class="text-center">
+                    <td class="text-center align-middle">
                         <button type="button" class="btn btn-outline-danger btn-sm rounded-circle delete-row-btn" data-tooltip="${deleteTooltip}" style="width:34px;height:34px;padding:0 !important;">
                             <i class="bi bi-trash"></i>
                         </button>
@@ -1183,6 +1190,11 @@
                     list.appendChild(row);
                     if (typeof window.initCustomTooltips === "function") {
                         window.initCustomTooltips();
+                    }
+                    const nameInput = row.querySelector('input[name="procedure_names[]"]');
+                    if (nameInput) {
+                        nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        setTimeout(() => nameInput.focus(), 150);
                     }
                 }
             }

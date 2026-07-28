@@ -145,7 +145,16 @@ def add_treatment_to_appointment(appointment_id):
             else:
                 anesthesia_cost = 0.0
                 
-            total_cost = (TREATMENT_PRICES[procedure_type] * num_teeth) + anesthesia_cost
+            custom_cost_str = request.form.get("custom_cost")
+            if custom_cost_str is not None and custom_cost_str.strip() != "":
+                try:
+                    total_cost = float(custom_cost_str.strip())
+                    if total_cost < 0:
+                        total_cost = 0.0
+                except ValueError:
+                    total_cost = (TREATMENT_PRICES[procedure_type] * num_teeth) + anesthesia_cost
+            else:
+                total_cost = (TREATMENT_PRICES[procedure_type] * num_teeth) + anesthesia_cost
 
             treating_doctor_id = None
             from flask import g

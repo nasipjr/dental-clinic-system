@@ -3528,7 +3528,7 @@ select.form-select:focus,
   color: #0dcaf0 !important;
 }
 .alert-info:not(.no-auto-icon):not(.d-block)::before {
-  content: "\f437" !important; /* info-circle-fill */
+  content: "\f431" !important; /* info-circle-fill */
 }
 
 .alert .btn-close {
@@ -3722,7 +3722,7 @@ section, .section {
   color: #0dcaf0 !important;
 }
 .alert-info:not(.no-auto-icon):not(.d-block)::before {
-  content: "\f437" !important; /* info-circle-fill */
+  content: "\f431" !important; /* info-circle-fill */
 }
 
 .alert .btn-close {

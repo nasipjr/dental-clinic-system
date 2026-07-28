@@ -7,6 +7,7 @@ DEFAULT_TREATMENT_PRICES = {
     "حشوة أسنان": 75000,
     "علاج عصب السن": 150000,
     "قلع سن": 80000,
+    "معالجة ما بعد القلع": 30000,
     "تاج / جسر": 200000,
     "تقويم الأسنان": 300000,
     "تبييض الأسنان": 120000,
@@ -20,6 +21,8 @@ ARABIC_PROCEDURE_NAMES_MAP = {
     "Filling": "حشوة أسنان",
     "Root Canal": "علاج عصب السن",
     "Extraction": "قلع سن",
+    "Post-Extraction Treatment": "معالجة ما بعد القلع",
+    "Post-Extraction Care": "معالجة ما بعد القلع",
     "Crown / Bridge": "تاج / جسر",
     "Braces / Orthodontics": "تقويم الأسنان",
     "Whitening": "تبييض الأسنان",
@@ -149,14 +152,27 @@ def get_treatment_prices():
     if val:
         try:
             prices_dict = json.loads(val)
+            changed = False
             # Automatic migration: If DB contains old English keys, translate them to Arabic
             if any(k in ARABIC_PROCEDURE_NAMES_MAP for k in prices_dict.keys()):
                 updated_dict = {}
                 for k, v in prices_dict.items():
                     new_k = ARABIC_PROCEDURE_NAMES_MAP.get(k, k)
                     updated_dict[new_k] = v
-                set_setting("treatment_prices", json.dumps(updated_dict))
-                return updated_dict
+                prices_dict = updated_dict
+                changed = True
+                
+            # Guarantee essential procedures 'قلع سن' and 'معالجة ما بعد القلع' always exist
+            if "قلع سن" not in prices_dict:
+                prices_dict["قلع سن"] = DEFAULT_TREATMENT_PRICES.get("قلع سن", 80000)
+                changed = True
+            if "معالجة ما بعد القلع" not in prices_dict:
+                prices_dict["معالجة ما بعد القلع"] = DEFAULT_TREATMENT_PRICES.get("معالجة ما بعد القلع", 30000)
+                changed = True
+
+            if changed:
+                set_setting("treatment_prices", json.dumps(prices_dict))
+
             return prices_dict
         except Exception:
             pass
