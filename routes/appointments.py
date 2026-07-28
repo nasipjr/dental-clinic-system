@@ -9,6 +9,7 @@ from utils.validators import (
     booking_lock,
 )
 from utils.auth_helper import role_required
+from utils.constants import TREATMENT_PRICES
 
 
 appointments_bp = Blueprint("appointments", __name__)
@@ -251,6 +252,7 @@ def add_appointment_direct():
                     "appointments/add_appointment.html",
                     patients=patients,
                     doctors=doctors,
+                    treatment_prices=dict(TREATMENT_PRICES),
                     error_message="Patient ID is required.",
                     appointment_min_datetime=appointment_min_datetime,
                     appointment_max_datetime=appointment_max_datetime,
@@ -265,6 +267,7 @@ def add_appointment_direct():
                     "appointments/add_appointment.html",
                     patients=patients,
                     doctors=doctors,
+                    treatment_prices=dict(TREATMENT_PRICES),
                     error_message=appointment_error,
                     appointment_min_datetime=appointment_min_datetime,
                     appointment_max_datetime=appointment_max_datetime,
@@ -281,6 +284,7 @@ def add_appointment_direct():
                         "appointments/add_appointment.html",
                         patients=patients,
                         doctors=doctors,
+                        treatment_prices=dict(TREATMENT_PRICES),
                         error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %I:%M %p')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
                         appointment_min_datetime=appointment_min_datetime,
                         appointment_max_datetime=appointment_max_datetime,
@@ -308,6 +312,7 @@ def add_appointment_direct():
             "appointments/add_appointment.html",
             patients=patients,
             doctors=doctors,
+            treatment_prices=dict(TREATMENT_PRICES),
             appointment_min_datetime=appointment_min_datetime,
             appointment_max_datetime=appointment_max_datetime,
             prefilled_date=prefilled_date,
@@ -338,6 +343,7 @@ def add_appointment(patient_id):
                     "appointments/add_appointment.html",
                     patient=patient,
                     doctors=doctors,
+                    treatment_prices=dict(TREATMENT_PRICES),
                     error_message=appointment_error,
                     appointment_min_datetime=appointment_min_datetime,
                     appointment_max_datetime=appointment_max_datetime,
@@ -353,6 +359,7 @@ def add_appointment(patient_id):
                         "appointments/add_appointment.html",
                         patient=patient,
                         doctors=doctors,
+                        treatment_prices=dict(TREATMENT_PRICES),
                         error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %I:%M %p')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
                         appointment_min_datetime=appointment_min_datetime,
                         appointment_max_datetime=appointment_max_datetime,
@@ -380,6 +387,7 @@ def add_appointment(patient_id):
             "appointments/add_appointment.html",
             patient=patient,
             doctors=doctors,
+            treatment_prices=dict(TREATMENT_PRICES),
             appointment_min_datetime=appointment_min_datetime,
             appointment_max_datetime=appointment_max_datetime,
         )
@@ -424,6 +432,7 @@ def edit_appointment(appointment_id):
                     "appointments/edit_appointment.html",
                     appointment=appointment,
                     doctors=doctors,
+                    treatment_prices=dict(TREATMENT_PRICES),
                     mode="edit",
                     error_message=appointment_error,
                     appointment_min_datetime=appointment_min_datetime,
@@ -437,6 +446,7 @@ def edit_appointment(appointment_id):
                     "appointments/edit_appointment.html",
                     appointment=appointment,
                     doctors=doctors,
+                    treatment_prices=dict(TREATMENT_PRICES),
                     mode="edit",
                     error_message="Invalid appointment status.",
                     appointment_min_datetime=appointment_min_datetime,
@@ -455,6 +465,7 @@ def edit_appointment(appointment_id):
                             "appointments/edit_appointment.html",
                             appointment=appointment,
                             doctors=doctors,
+                            treatment_prices=dict(TREATMENT_PRICES),
                             mode="edit",
                             error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %I:%M %p')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
                             appointment_min_datetime=appointment_min_datetime,
@@ -489,6 +500,7 @@ def edit_appointment(appointment_id):
             "appointments/edit_appointment.html",
             appointment=appointment,
             doctors=doctors,
+            treatment_prices=dict(TREATMENT_PRICES),
             mode="edit",
             appointment_min_datetime=appointment_min_datetime,
             appointment_max_datetime=appointment_max_datetime,

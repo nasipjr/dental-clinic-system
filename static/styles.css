@@ -3612,5 +3612,308 @@ section, .section {
   padding: 25px 0 !important;
 }
 
+/* Appointment Tab Cards (Clear Outline & Visible Card Boundaries) */
+.appointment-tab-card {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 16px !important;
+  padding: 14px 20px !important;
+  transition: all 0.2s ease-in-out !important;
+  text-align: center;
+  cursor: pointer;
+}
 
+.appointment-tab-card:hover {
+  background: rgba(56, 189, 248, 0.08) !important;
+  border-color: #38bdf8 !important;
+}
+
+.appointment-tab-card h2 {
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 4px !important;
+  color: #cbd5e1 !important;
+  border-bottom: 2.5px solid transparent !important;
+  display: inline-block !important;
+  padding-bottom: 2px !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.appointment-tab-card .tab-count-badge {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #f1f5f9 !important;
+  font-size: 0.8rem !important;
+  font-weight: 700 !important;
+  padding: 2px 8px !important;
+  border-radius: 50rem !important;
+  box-shadow: none !important;
+  vertical-align: middle !important;
+  display: inline-block !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* ACTIVE STATE - CLEAR BRIGHT BORDER & GLOW */
+.appointment-tab-card.active {
+  background: rgba(30, 41, 59, 0.95) !important;
+  border: 2px solid #38bdf8 !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.25), 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+.alert.d-block {
+  display: block !important;
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.alert:not(.no-auto-icon):not(.d-block)::before {
+  font-family: "bootstrap-icons" !important;
+  font-size: 1.35rem !important;
+  flex-shrink: 0 !important;
+}
+
+.alert.no-auto-icon::before,
+.alert.d-block::before {
+  content: none !important;
+}
+
+/* Success alert styling */
+.alert-success {
+  background-color: rgba(25, 135, 84, 0.08) !important;
+  border-color: rgba(25, 135, 84, 0.25) !important;
+  color: #198754 !important;
+}
+.alert-success:not(.no-auto-icon):not(.d-block)::before {
+  content: "\f272" !important; /* check-circle-fill */
+}
+
+/* Danger alert styling */
+.alert-danger {
+  background-color: rgba(220, 53, 69, 0.08) !important;
+  border-color: rgba(220, 53, 69, 0.25) !important;
+  color: #dc3545 !important;
+}
+.alert-danger:not(.no-auto-icon):not(.d-block)::before {
+  content: "\f33a" !important; /* exclamation-octagon-fill */
+}
+
+/* Warning alert styling */
+.alert-warning {
+  background-color: rgba(255, 193, 7, 0.08) !important;
+  border-color: rgba(255, 193, 7, 0.25) !important;
+  color: #ffc107 !important;
+}
+.alert-warning:not(.no-auto-icon):not(.d-block)::before {
+  content: "\f33b" !important; /* exclamation-triangle-fill */
+}
+
+/* Info alert styling */
+.alert-info {
+  background-color: rgba(13, 202, 240, 0.08) !important;
+  border-color: rgba(13, 202, 240, 0.25) !important;
+  color: #0dcaf0 !important;
+}
+.alert-info:not(.no-auto-icon):not(.d-block)::before {
+  content: "\f437" !important; /* info-circle-fill */
+}
+
+.alert .btn-close {
+  margin-left: auto !important;
+  padding: 1.25rem !important;
+  background-size: 0.8rem !important;
+}
+
+[dir="rtl"] .alert .btn-close {
+  margin-right: auto !important;
+  margin-left: 0 !important;
+}
+
+/* Dark mode overrides for alerts */
+[data-bs-theme="dark"] .alert-success {
+  background-color: rgba(40, 167, 69, 0.15) !important;
+  border-color: rgba(40, 167, 69, 0.35) !important;
+  color: #34d399 !important;
+}
+[data-bs-theme="dark"] .alert-danger {
+  background-color: rgba(220, 53, 69, 0.15) !important;
+  border-color: rgba(220, 53, 69, 0.35) !important;
+  color: #f87171 !important;
+}
+[data-bs-theme="dark"] .alert-warning {
+  background-color: rgba(255, 193, 7, 0.15) !important;
+  border-color: rgba(255, 193, 7, 0.35) !important;
+  color: #fbbf24 !important;
+}
+[data-bs-theme="dark"] .alert-info {
+  background-color: rgba(13, 202, 240, 0.15) !important;
+  border-color: rgba(13, 202, 240, 0.35) !important;
+  color: #60a5fa !important;
+}
+
+/* Fix BIDI text direction for Clinic Name & Doctor titles */
+.sitename, .clinic-name-print, bdi {
+  unicode-bidi: plaintext !important;
+  display: inline-block;
+}
+
+/* =============================================
+   COMPACT & ELEGANT UNIFIED PAGE SPACING
+   ============================================= */
+main.main {
+  padding-top: 145px !important;
+}
+
+.hero {
+  min-height: auto !important;
+  padding: 20px 0 !important;
+  display: block !important;
+}
+
+.section-title {
+  text-align: center;
+  padding-bottom: 10px !important;
+  margin-top: 45px !important;
+  margin-bottom: 25px !important;
+}
+
+/* Ensure first section title under navbar doesn't add extra top margin */
+main.main > .container.section-title:first-child,
+main.main > section:first-of-type .section-title {
+  margin-top: 10px !important;
+}
+
+.section-title h2 {
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  margin-bottom: 6px !important;
+  padding-bottom: 6px !important;
+}
+
+.section-title p {
+  font-size: 0.92rem !important;
+  margin-bottom: 0 !important;
+}
+
+section, .section {
+  padding: 25px 0 !important;
+}
+
+/* Appointment Tab Cards (Clear Outline & Visible Card Boundaries) */
+.appointment-tab-card {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 16px !important;
+  padding: 14px 20px !important;
+  transition: all 0.2s ease-in-out !important;
+  text-align: center;
+  cursor: pointer;
+}
+
+.appointment-tab-card:hover {
+  background: rgba(56, 189, 248, 0.08) !important;
+  border-color: #38bdf8 !important;
+}
+
+.appointment-tab-card h2 {
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
+  margin-bottom: 4px !important;
+  color: #cbd5e1 !important;
+  border-bottom: 2.5px solid transparent !important;
+  display: inline-block !important;
+  padding-bottom: 2px !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.appointment-tab-card .tab-count-badge {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #f1f5f9 !important;
+  font-size: 0.8rem !important;
+  font-weight: 700 !important;
+  padding: 2px 8px !important;
+  border-radius: 50rem !important;
+  box-shadow: none !important;
+  vertical-align: middle !important;
+  display: inline-block !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* ACTIVE STATE - CLEAR BRIGHT BORDER & GLOW */
+.appointment-tab-card.active {
+  background: rgba(30, 41, 59, 0.95) !important;
+  border: 2px solid #38bdf8 !important;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.25), 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+.appointment-tab-card.active h2 {
+  color: #38bdf8 !important;
+  border-bottom: 2.5px solid #38bdf8 !important;
+}
+
+.appointment-tab-card.active .tab-count-badge {
+  background: #38bdf8 !important;
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.4) !important;
+}
+
+/* Application-wide Unified Table Action Buttons */
+.table-action-btn {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease-in-out !important;
+  border: 1px solid transparent !important;
+  font-size: 1.15rem !important;
+  padding: 0 !important;
+}
+
+.table-action-btn.view-btn {
+  color: #7fd3ff !important;
+  background: rgba(13, 110, 253, 0.12) !important;
+  border-color: rgba(13, 110, 253, 0.25) !important;
+}
+
+.table-action-btn.session-btn, 
+.table-action-btn.appointment-table-btn {
+  color: #4ade80 !important;
+  background: rgba(40, 167, 69, 0.12) !important;
+  border-color: rgba(40, 167, 69, 0.25) !important;
+}
+
+.table-action-btn.edit-btn {
+  color: #ffd666 !important;
+  background: rgba(255, 193, 7, 0.12) !important;
+  border-color: rgba(255, 193, 7, 0.25) !important;
+}
+
+.table-action-btn.whatsapp-btn {
+  color: #25D366 !important;
+  background: rgba(37, 211, 102, 0.12) !important;
+  border-color: rgba(37, 211, 102, 0.25) !important;
+}
+
+.table-action-btn.cancel-btn, 
+.table-action-btn.delete-table-btn {
+  color: #ff7b88 !important;
+  background: rgba(220, 53, 69, 0.12) !important;
+  border-color: rgba(220, 53, 69, 0.25) !important;
+}
+
+.table-action-btn:hover {
+  transform: translateY(-2px) !important;
+  filter: brightness(1.25) !important;
+}
 

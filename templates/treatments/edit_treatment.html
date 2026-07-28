@@ -121,61 +121,14 @@
                                 </div>
 
                                 <div class="col-md-12">
-                                    <label for="procedure_type" class="form-label">Procedure Type</label>
+                                    <label for="procedure_type" class="form-label">{% if request.cookies.get('lang', 'en') == 'ar' %}نوع الإجراء / المعالجة{% else %}Procedure Type{% endif %}</label>
 
                                     <select id="procedure_type" name="procedure_type" class="form-select"
                                         data-prices='{{ treatment_prices|tojson }}' required>
-                                        <option value="">Select a Procedure Type</option>
-
-                                        <option value="Check-up" {% if treatment.procedure_type=='Check-up' %}selected{%
-                                            endif %}>
-                                            Check-up
-                                        </option>
-
-                                        <option value="Cleaning" {% if treatment.procedure_type=='Cleaning' %}selected{%
-                                            endif %}>
-                                            Cleaning
-                                        </option>
-
-                                        <option value="Filling" {% if treatment.procedure_type=='Filling' %}selected{%
-                                            endif %}>
-                                            Filling
-                                        </option>
-
-                                        <option value="Root Canal" {% if treatment.procedure_type=='Root Canal'
-                                            %}selected{% endif %}>
-                                            Root Canal
-                                        </option>
-
-                                        <option value="Extraction" {% if treatment.procedure_type=='Extraction'
-                                            %}selected{% endif %}>
-                                            Extraction
-                                        </option>
-
-                                        <option value="Crown / Bridge" {% if treatment.procedure_type=='Crown / Bridge'
-                                            %}selected{% endif %}>
-                                            Crown / Bridge
-                                        </option>
-
-                                        <option value="Braces / Orthodontics" {% if
-                                            treatment.procedure_type=='Braces / Orthodontics' %}selected{% endif %}>
-                                            Braces / Orthodontics
-                                        </option>
-
-                                        <option value="Whitening" {% if treatment.procedure_type=='Whitening'
-                                            %}selected{% endif %}>
-                                            Whitening
-                                        </option>
-
-                                        <option value="Emergency Pain" {% if treatment.procedure_type=='Emergency Pain'
-                                            %}selected{% endif %}>
-                                            Emergency Pain
-                                        </option>
-
-                                        <option value="Follow-up" {% if treatment.procedure_type=='Follow-up'
-                                            %}selected{% endif %}>
-                                            Follow-up
-                                        </option>
+                                        <option value="">{% if request.cookies.get('lang', 'en') == 'ar' %}-- اختر نوع الإجراء --{% else %}-- Select Procedure Type --{% endif %}</option>
+                                        {% for proc_name in treatment_prices.keys() %}
+                                        <option value="{{ proc_name }}" {% if treatment.procedure_type == proc_name %}selected{% endif %}>{{ proc_name }}</option>
+                                        {% endfor %}
                                     </select>
                                 </div>
 
@@ -302,11 +255,62 @@
                                  transform: rotate(180deg);
                              }
                              .tooth-label-top {
-                                 font-size: 0.8rem;
+                                 font-size: 0.85rem;
                                  font-weight: 700;
+                                 color: #ffffff;
+                                 text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+                             }
+                             /* High contrast Tooltip Styling */
+                             .tooltip-inner {
+                                 background-color: #1e293b !important;
+                                 color: #ffffff !important;
+                                 border: 1px solid rgba(255,255,255,0.15) !important;
+                                 box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important;
+                                 font-size: 0.85rem !important;
+                                 font-weight: 600 !important;
+                                 padding: 8px 12px !important;
+                             }
+                             .tooltip-inner .text-muted {
+                                 color: #cbd5e1 !important;
+                             }
+                             .tooltip-inner .text-success {
+                                 color: #4ade80 !important;
+                             }
+                             .tooltip-inner .text-primary {
+                                 color: #60a5fa !important;
                              }
                              .tooth-label-fdi {
                                  font-size: 0.65rem;
+                             }
+                             .jaw-title-badge {
+                                 display: inline-flex;
+                                 align-items: center;
+                                 padding: 6px 18px;
+                                 border-radius: 50rem;
+                                 font-size: 0.88rem;
+                                 font-weight: 700;
+                                 letter-spacing: 0.3px;
+                                 box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                             }
+                             .jaw-upper-badge {
+                                 background-color: rgba(13, 110, 253, 0.15);
+                                 color: #0d6efd;
+                                 border: 1px solid rgba(13, 110, 253, 0.3);
+                             }
+                             .jaw-lower-badge {
+                                 background-color: rgba(13, 202, 240, 0.15);
+                                 color: #0dcaf0;
+                                 border: 1px solid rgba(13, 202, 240, 0.3);
+                             }
+                             [data-bs-theme="dark"] .jaw-upper-badge {
+                                 background-color: rgba(13, 110, 253, 0.25);
+                                 color: #93c5fd;
+                                 border: 1px solid rgba(147, 197, 253, 0.4);
+                             }
+                             [data-bs-theme="dark"] .jaw-lower-badge {
+                                 background-color: rgba(13, 202, 240, 0.25);
+                                 color: #7dd3fc;
+                                 border: 1px solid rgba(125, 211, 252, 0.4);
                              }
                              @media (max-width: 576px) {
                                  .jaw-arch-container {
@@ -321,10 +325,7 @@
                                      height: 24px !important;
                                  }
                                  .tooth-label-top {
-                                     font-size: 0.7rem !important;
-                                 }
-                                 .tooth-label-fdi {
-                                     font-size: 0.55rem !important;
+                                     font-size: 0.75rem !important;
                                  }
                              }
                              </style>
@@ -332,7 +333,7 @@
                               <div class="col-md-12">
                                   <div class="odontogram-wrapper mb-3">
                                      <div class="text-center text-secondary small mb-3">
-                                         <i class="bi bi-info-circle me-1"></i> Click teeth on the chart to select or deselect.
+                                         <i class="bi bi-info-circle me-1"></i> {% if current_lang == 'ar' %}انقر على الأسنان في المخطط لتحديدها أو إلغاء تحديدها.{% else %}Click teeth on the chart to select or deselect.{% endif %}
                                      </div>
                                      
                                      {% set upper_positions = {
@@ -374,7 +375,12 @@
                                      } %}
 
                                      <div class="jaw upper-jaw text-center mb-4" style="max-width: 600px; margin: 0 auto;">
-                                         <div class="text-uppercase text-secondary fw-semibold small mb-2">Upper Jaw (Maxillary)</div>
+                                         <div class="d-flex justify-content-center mb-3">
+                                             <span class="jaw-title-badge jaw-upper-badge">
+                                                 <i class="bi bi-symmetry-horizontal me-1.5"></i>
+                                                 {% if current_lang == 'ar' %}الفك العلوي{% else %}Upper Jaw (Maxillary){% endif %}
+                                             </span>
+                                         </div>
                                          <div class="jaw-arch-container">
                                              <svg class="jaw-bg-line" viewBox="0 0 100 50">
                                                  <path d="M 6 45 C 6 10, 94 10, 94 45" fill="none" stroke="color-mix(in srgb, var(--accent-color), transparent 88%)" stroke-width="4" stroke-linecap="round" />
@@ -382,17 +388,15 @@
                                              {% for i in range(1, 17) %}
                                              {% set pos = upper_positions[i] %}
                                              <button type="button" class="tooth-select-btn tooth-btn" data-tooth="{{ i }}" style="left: {{ pos.x }}; top: {{ pos.y }}; --rot: {{ pos.r }}; transform: translate(-50%, -50%) rotate({{ pos.r }});" {% if is_locked %}disabled{% endif %}>
-                                                 <span class="tooth-label-top">{{ i }}</span>
+                                                 <span class="tooth-label-top fw-bold">{{ fdi_map[i] }}</span>
                                                  <div class="tooth-svg-container">
                                                      {{ render_tooth_svg(i, false) }}
                                                  </div>
-                                                 <span class="tooth-label-fdi text-muted">({{ fdi_map[i] }})</span>
                                              </button>
                                              {% endfor %}
                                          </div>
                                      </div>
                                      <div class="jaw lower-jaw text-center" style="max-width: 600px; margin: 0 auto;">
-                                         <div class="text-uppercase text-secondary fw-semibold small mb-2">Lower Jaw (Mandibular)</div>
                                          <div class="jaw-arch-container">
                                              <svg class="jaw-bg-line" viewBox="0 0 100 50">
                                                  <path d="M 6 5 C 6 40, 94 40, 94 5" fill="none" stroke="color-mix(in srgb, var(--accent-color), transparent 88%)" stroke-width="4" stroke-linecap="round" />
@@ -400,13 +404,18 @@
                                              {% for i in [32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17] %}
                                              {% set pos = lower_positions[i] %}
                                              <button type="button" class="tooth-select-btn tooth-btn" data-tooth="{{ i }}" style="left: {{ pos.x }}; top: {{ pos.y }}; --rot: {{ pos.r }}; transform: translate(-50%, -50%) rotate({{ pos.r }});" {% if is_locked %}disabled{% endif %}>
-                                                 <span class="tooth-label-top">{{ i }}</span>
+                                                 <span class="tooth-label-top fw-bold">{{ fdi_map[i] }}</span>
                                                  <div class="tooth-svg-container">
                                                      {{ render_tooth_svg(i, true) }}
                                                  </div>
-                                                 <span class="tooth-label-fdi text-muted">({{ fdi_map[i] }})</span>
                                              </button>
                                              {% endfor %}
+                                         </div>
+                                         <div class="d-flex justify-content-center mt-3">
+                                             <span class="jaw-title-badge jaw-lower-badge">
+                                                 <i class="bi bi-symmetry-horizontal me-1.5"></i>
+                                                 {% if current_lang == 'ar' %}الفك السفلي{% else %}Lower Jaw (Mandibular){% endif %}
+                                             </span>
                                          </div>
                                      </div>
                                  </div>
@@ -414,9 +423,9 @@
                              </div>
 
                                  <div class="col-12">
-                                     <label for="notes" class="form-label">Notes</label>
+                                     <label for="notes" class="form-label">{% if current_lang == 'ar' %}ملاحظات العلاج{% else %}Notes{% endif %}</label>
                                      <textarea id="notes" name="notes" class="form-control" rows="5"
-                                         placeholder="Add treatment notes" {% if is_locked %}readonly{% endif %}>{{ treatment.notes or '' }}</textarea>
+                                         placeholder="{% if current_lang == 'ar' %}أضف ملاحظات المعالجة...{% else %}Add treatment notes{% endif %}" {% if is_locked %}readonly{% endif %}>{{ treatment.notes or '' }}</textarea>
                                  </div>
                                  
                                  <div class="col-md-6 d-flex align-items-center mt-3">
@@ -438,7 +447,7 @@
                                  </div>
 
                                  <div class="col-md-12 mt-3">
-                                     <label class="form-label">Procedure Price</label>
+                                     <label class="form-label">{% if current_lang == 'ar' %}تكلفة الإجراء{% else %}Procedure Price{% endif %}</label>
                                      <div id="procedure_price_display" class="form-control readonly-status-field">
                                          {{ (treatment.total_cost or 0) | format_price }} {{ currency_symbol }}
                                      </div>
@@ -451,20 +460,20 @@
                          <div class="col-12 text-center pt-4">
                              {% if not is_locked %}
                              <button type="submit" class="save-patient-btn">
-                                 Save Changes
+                                 {% if current_lang == 'ar' %}حفظ التعديلات{% else %}Save Changes{% endif %}
                              </button>
                              {% endif %}
 
                              {% if current_mode == 'view' and treatment.appointment.status in ('Scheduled', 'Checked In', 'In Chair') %}
                              <a href="{{ url_for('treatments.edit_treatment', treatment_id=treatment.id) }}"
                                  class="btn-primary px-4">
-                                 Edit Treatment
+                                 {% if current_lang == 'ar' %}تعديل المعالجة{% else %}Edit Treatment{% endif %}
                              </a>
                              {% endif %}
 
                              <a href="{{ url_for('treatments.appointment_session', appointment_id=treatment.appointment.id) }}"
                                  class="btn-outline-main px-4 ms-2">
-                                 Back to Session
+                                 {% if current_lang == 'ar' %}العودة للجلسة{% else %}Back to Session{% endif %}
                              </a>
                          </div>
 
@@ -531,7 +540,7 @@
             let tooltipHtml = '';
             const fdiNum = fdiMap[toothStr];
             
-            tooltipHtml += `<strong class="d-block mb-1">${isAr ? 'السن' : 'Tooth'} ${toothStr} (FDI ${fdiNum})</strong>`;
+            tooltipHtml += `<strong class="d-block mb-1">${isAr ? 'السن' : 'Tooth'} ${fdiNum}</strong>`;
             
             if (activeMatches.length > 0) {
                 tooltipHtml += `<div class="text-success small"><i class="bi bi-check-circle-fill me-1"></i>${isAr ? 'جلسة حالية:' : 'Current Session:'}</div>`;

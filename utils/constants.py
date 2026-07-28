@@ -1,14 +1,14 @@
 APPOINTMENT_REASONS = {
-    "Check-up",
-    "Cleaning",
-    "Filling",
-    "Root Canal",
-    "Extraction",
-    "Crown / Bridge",
-    "Braces / Orthodontics",
-    "Whitening",
-    "Emergency Pain",
-    "Follow-up",
+    "فحص دوري",
+    "تنظيف وتلميع",
+    "حشوة أسنان",
+    "علاج عصب السن",
+    "قلع سن",
+    "تاج / جسر",
+    "تقويم الأسنان",
+    "تبييض الأسنان",
+    "ألم طارئ",
+    "متابعة",
 }
 
 

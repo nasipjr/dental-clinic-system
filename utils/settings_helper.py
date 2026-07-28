@@ -2,16 +2,29 @@ import json
 from models import db, SystemSetting
 
 DEFAULT_TREATMENT_PRICES = {
-    "Check-up": 25000,
-    "Cleaning": 50000,
-    "Filling": 75000,
-    "Root Canal": 150000,
-    "Extraction": 80000,
-    "Crown / Bridge": 200000,
-    "Braces / Orthodontics": 300000,
-    "Whitening": 120000,
-    "Emergency Pain": 60000,
-    "Follow-up": 20000
+    "فحص دوري": 25000,
+    "تنظيف وتلميع": 50000,
+    "حشوة أسنان": 75000,
+    "علاج عصب السن": 150000,
+    "قلع سن": 80000,
+    "تاج / جسر": 200000,
+    "تقويم الأسنان": 300000,
+    "تبييض الأسنان": 120000,
+    "ألم طارئ": 60000,
+    "متابعة": 20000
+}
+
+ARABIC_PROCEDURE_NAMES_MAP = {
+    "Check-up": "فحص دوري",
+    "Cleaning": "تنظيف وتلميع",
+    "Filling": "حشوة أسنان",
+    "Root Canal": "علاج عصب السن",
+    "Extraction": "قلع سن",
+    "Crown / Bridge": "تاج / جسر",
+    "Braces / Orthodontics": "تقويم الأسنان",
+    "Whitening": "تبييض الأسنان",
+    "Emergency Pain": "ألم طارئ",
+    "Follow-up": "متابعة",
 }
 
 DEFAULT_SETTINGS = {
@@ -135,7 +148,16 @@ def get_treatment_prices():
     val = get_setting("treatment_prices")
     if val:
         try:
-            return json.loads(val)
+            prices_dict = json.loads(val)
+            # Automatic migration: If DB contains old English keys, translate them to Arabic
+            if any(k in ARABIC_PROCEDURE_NAMES_MAP for k in prices_dict.keys()):
+                updated_dict = {}
+                for k, v in prices_dict.items():
+                    new_k = ARABIC_PROCEDURE_NAMES_MAP.get(k, k)
+                    updated_dict[new_k] = v
+                set_setting("treatment_prices", json.dumps(updated_dict))
+                return updated_dict
+            return prices_dict
         except Exception:
             pass
     return DEFAULT_TREATMENT_PRICES

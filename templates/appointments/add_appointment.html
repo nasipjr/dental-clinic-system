@@ -64,19 +64,12 @@
                         </div><br>
 
                         <div class="col-md-12">
-                            <label for="reason" class="form-label">Reason</label>
+                            <label for="reason" class="form-label">{% if request.cookies.get('lang', 'en') == 'ar' %}السبب / نوع المعالجة{% else %}Reason / Procedure Type{% endif %}</label>
                             <select id="reason" name="reason" class="form-select" required>
-                                <option value="">Select a Reason</option>
-                                <option value="Check-up">Check-up</option>
-                                <option value="Cleaning">Cleaning</option>
-                                <option value="Filling">Filling</option>
-                                <option value="Root Canal">Root Canal</option>
-                                <option value="Extraction">Extraction</option>
-                                <option value="Crown / Bridge">Crown / Bridge</option>
-                                <option value="Braces / Orthodontics">Braces / Orthodontics</option>
-                                <option value="Whitening">Whitening</option>
-                                <option value="Emergency Pain">Emergency Pain</option>
-                                <option value="Follow-up">Follow-up</option>
+                                <option value="">{% if request.cookies.get('lang', 'en') == 'ar' %}-- اختر السبب --{% else %}-- Select Reason --{% endif %}</option>
+                                {% for proc_name in (treatment_prices.keys() if treatment_prices else ['فحص دوري', 'تنظيف وتلميع', 'حشوة أسنان', 'علاج عصب السن', 'قلع سن', 'تاج / جسر', 'تقويم الأسنان', 'تبييض الأسنان', 'ألم طارئ', 'متابعة']) %}
+                                <option value="{{ proc_name }}">{{ proc_name }}</option>
+                                {% endfor %}
                             </select>
                         </div><br>
 

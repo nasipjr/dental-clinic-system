@@ -948,7 +948,7 @@
                 const whatsappBtn = document.getElementById('modal-whatsapp-btn');
                 const remindedRow = document.getElementById('modal-reminded-row');
                 const remindedStatus = document.getElementById('modal-reminded-status');
-                const canSeeWhatsApp = {{ 'true' if current_user.role in ('admin', 'receptionist') else 'false' }};
+                const canSeeWhatsApp = {{ 'true' if current_user.role == 'receptionist' else 'false' }};
 
                 if (canSeeWhatsApp && !isClosed && props.canRemind === true && props.phone && props.phone !== 'No phone') {
                     if (whatsappBtn) whatsappBtn.style.setProperty('display', 'inline-block', 'important');

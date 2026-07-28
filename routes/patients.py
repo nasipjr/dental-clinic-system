@@ -192,6 +192,8 @@ def check_duplicate_patient():
 @patients_bp.route("/patients/add", methods=["GET", "POST"])
 @role_required("admin", "receptionist")
 def add_patient():
+    all_patients = Patient.query.order_by(Patient.first_name, Patient.last_name).all()
+
     if request.method == "POST":
         patient_data, patient_error = parse_patient_data(request.form)
 
@@ -199,6 +201,7 @@ def add_patient():
             return render_template(
                 "patients/add_patient.html",
                 error_message=patient_error,
+                all_patients=all_patients,
             ), 400
 
         # --- Duplicate Name Check ---
@@ -219,6 +222,7 @@ def add_patient():
                     duplicate_warning=True,
                     duplicate_patients=duplicates,
                     form_data=request.form,
+                    all_patients=all_patients,
                 ), 200
         # --- End Duplicate Check ---
 
@@ -236,9 +240,10 @@ def add_patient():
             return render_template(
                 "patients/add_patient.html",
                 error_message="Failed to save patient database record. Please try again.",
+                all_patients=all_patients,
             ), 500
 
-    return render_template("patients/add_patient.html")
+    return render_template("patients/add_patient.html", all_patients=all_patients)
 
 
 @patients_bp.route("/patients/<int:patient_id>")
@@ -579,6 +584,7 @@ def edit_patient(patient_id):
 
     try:
         patient = Patient.query.get_or_404(patient_id)
+        all_patients = Patient.query.filter(Patient.id != patient_id).order_by(Patient.first_name, Patient.last_name).all()
 
         if request.method == "POST":
             patient_data, patient_error = parse_patient_data(request.form)
@@ -589,6 +595,7 @@ def edit_patient(patient_id):
                     patient=patient,
                     mode="edit",
                     error_message=patient_error,
+                    all_patients=all_patients,
                 ), 400
 
             # --- Duplicate Name Check (exclude current patient) ---
@@ -611,6 +618,7 @@ def edit_patient(patient_id):
                         mode="edit",
                         duplicate_warning=True,
                         duplicate_patients=duplicates,
+                        all_patients=all_patients,
                     ), 200
             # --- End Duplicate Check ---
 
@@ -628,6 +636,7 @@ def edit_patient(patient_id):
             "patients/edit_patient.html",
             patient=patient,
             mode="edit",
+            all_patients=all_patients,
         )
 
     except Exception:

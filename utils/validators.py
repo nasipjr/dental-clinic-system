@@ -48,13 +48,12 @@ def parse_patient_data(form):
     if gender not in PATIENT_GENDERS:
         return None, "Invalid gender value."
 
-    if not date_of_birth_raw:
-        return None, "Date of birth is required."
-
-    try:
-        date_of_birth = datetime.strptime(date_of_birth_raw, "%Y-%m-%d").date()
-    except ValueError:
-        return None, "Date of birth must be a valid date."
+    date_of_birth = None
+    if date_of_birth_raw:
+        try:
+            date_of_birth = datetime.strptime(date_of_birth_raw, "%Y-%m-%d").date()
+        except ValueError:
+            return None, "Date of birth must be a valid date."
 
     title = (form.get("title") or "").strip()
     if title and len(title) > 20:
@@ -65,11 +64,19 @@ def parse_patient_data(form):
         return None, "Preferred first name cannot exceed 100 characters."
 
     phone = (form.get("phone") or "").strip()
-    if phone:
-        if not re.match(r'^\+963\d{9}$', phone):
-            return None, "Phone number must start with +963 followed by exactly 9 digits (e.g., +963958948727)."
-        if len(phone) > 20:
-            return None, "Phone number cannot exceed 20 characters."
+    if phone and not phone.startswith("+963"):
+        if phone.startswith("0"):
+            phone = "+963" + phone[1:]
+        else:
+            phone = "+963" + phone
+
+    if not phone or phone == "+963":
+        return None, "Phone number is required."
+
+    if not re.match(r'^\+963\d{9}$', phone):
+        return None, "Phone number must start with +963 followed by exactly 9 digits (e.g., +963958948727)."
+    if len(phone) > 20:
+        return None, "Phone number cannot exceed 20 characters."
 
     email = (form.get("email") or "").strip()
     if email:

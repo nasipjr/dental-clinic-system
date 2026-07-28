@@ -90,13 +90,6 @@
             <a href="{{ url_for('auth.logout') }}" class="topbar-logout-btn text-white ms-auto">
               <i class="bi bi-box-arrow-right me-1"></i><span class="d-none d-sm-inline">Logout</span>
             </a>
-          {% else %}
-            <div class="ms-auto d-flex gap-3">
-              <a href="#!" class="twitter"><i class="bi bi-twitter-x"></i></a>
-              <a href="https://www.facebook.com/nasip.jabbara" class="facebook"><i class="bi bi-facebook"></i></a>
-              <a href="https://www.instagram.com/nasip_j/?hl=en" class="instagram"><i class="bi bi-instagram"></i></a>
-              <a href="#!" class="linkedin"><i class="bi bi-linkedin"></i></a>
-            </div>
           {% endif %}
         </div>
       </div>
@@ -105,13 +98,13 @@
     <div class="branding d-flex align-items-cente">
 
       <div class="container position-relative d-flex align-items-center justify-content-between">
-        <div class="logo d-flex align-items-center gap-2">
-          <span class="badge rounded-pill px-3 py-2 shadow-sm text-white border border-white-50" style="background: linear-gradient(135deg, #0d6efd 0%, #00d2ff 100%); font-family: 'Montserrat', 'Inter', sans-serif; font-size: 0.85rem; font-weight: 800; letter-spacing: 0.6px; pointer-events: none; user-select: none;">
+        <div class="logo d-flex flex-column align-items-start justify-content-center">
+          <a href="/" class="text-decoration-none">
+            <h1 class="sitename mb-0" style="line-height: 1.2;"><bdi dir="auto">{{ clinic_name }}</bdi></h1>
+          </a>
+          <span class="badge rounded-pill px-2.5 py-1 shadow-sm text-white border border-white-50 mt-1" style="background: linear-gradient(135deg, #0d6efd 0%, #00d2ff 100%); font-family: 'Montserrat', 'Inter', sans-serif; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.5px; pointer-events: none; user-select: none;">
             <i class="bi bi-shield-plus me-1"></i>Novus Med
           </span>
-          <a href="/" class="text-decoration-none">
-            <h1 class="sitename mb-0"><bdi dir="auto">{{ clinic_name }}</bdi></h1>
-          </a>
         </div>
 
         <nav id="navmenu" class="navmenu">
@@ -238,12 +231,6 @@
               treatments, and payments in one place.
             </p>
 
-            <div class="footer-social-links d-flex gap-3 mt-4">
-              <a href="https://facebook.com" target="_blank" class="footer-social-icon-btn" title="Facebook"><i class="bi bi-facebook"></i></a>
-              <a href="https://instagram.com" target="_blank" class="footer-social-icon-btn" title="Instagram"><i class="bi bi-instagram"></i></a>
-              <a href="https://linkedin.com" target="_blank" class="footer-social-icon-btn" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
-              <a href="https://wa.me/963958948727" target="_blank" class="footer-social-icon-btn" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
-            </div>
           </div>
         </div>
 
@@ -330,9 +317,19 @@
         </div>
 
         <div class="col-lg-6 text-center text-lg-end">
-          <div class="legal-links d-inline-flex align-items-center gap-2">
-            <i class="bi bi-shield-check text-success"></i>
-            <span class="text-muted small">{% if current_lang == 'ar' %}مبني للإدارة الاحترافية للعيادات بواسطة{% else %}Built for professional clinic management by{% endif %} <strong class="text-primary fw-bold" style="font-family: 'Inter', sans-serif;">Novus Med Suite</strong></span>
+          <div class="legal-links d-inline-flex flex-column align-items-center align-items-lg-end gap-1">
+            <div>
+              <i class="bi bi-shield-check text-success me-1"></i>
+              <span class="text-muted small">{% if current_lang == 'ar' %}مبني للإدارة الاحترافية للعيادات بواسطة{% else %}Built for professional clinic management by{% endif %} <strong class="text-primary fw-bold" style="font-family: 'Inter', sans-serif;">Novus Med Suite</strong></span>
+            </div>
+            <div>
+              <span class="text-muted small">
+                {% if current_lang == 'ar' %}للتفاصيل:{% else %}For details:{% endif %}
+                <a href="https://wa.me/963958948727" target="_blank" class="text-success text-decoration-none fw-semibold ms-1 dir-ltr d-inline-flex align-items-center gap-1">
+                  <i class="bi bi-whatsapp"></i> +963958948727
+                </a>
+              </span>
+            </div>
           </div>
         </div>
 

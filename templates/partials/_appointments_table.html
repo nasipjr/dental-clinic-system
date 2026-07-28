@@ -51,9 +51,11 @@
             {% for appointment in appointments %}
             <tr>
                 <td>
-                    <strong>{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}</strong>
+                    <a href="{{ url_for('patients.patient_detail', patient_id=appointment.patient.id) }}" class="fw-bold text-decoration-none text-primary">
+                        {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                    </a>
                     <br>
-                    <small>{{ appointment.patient.phone or 'No phone' }}</small>
+                    <small class="text-muted">{{ appointment.patient.phone or 'No phone' }}</small>
                 </td>
 
                 <td>
@@ -96,55 +98,66 @@
 
                 <td class="text-center">
                     <div class="appointments-actions">
-                        <!-- View Button (Always visible) -->
+                        <!-- Open/Start Session Button -->
+                        {% if current_user.role == 'admin' or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id and appointment.status != 'Cancelled') %}
+                            {% if appointment.status in ('Done', 'منجز') %}
+                            <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
+                                class="table-action-btn view-btn"
+                                title="{% if current_lang == 'ar' %}فتح الجلسة{% else %}Open Session{% endif %}">
+                                <i class="bi bi-folder-check"></i>
+                            </a>
+                            {% else %}
+                            <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
+                                class="table-action-btn appointment-table-btn"
+                                title="{% if current_lang == 'ar' %}بدء الجلسة{% else %}Start Session{% endif %}">
+                                <i class="bi bi-calendar-plus"></i>
+                            </a>
+                            {% endif %}
+                        {% endif %}
+
+                        <!-- View Button -->
                         <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}"
-                            class="table-action-btn view-btn" title="{% if request.cookies.get('lang', 'en') == 'ar' %}عرض الموعد{% else %}View Appointment{% endif %}">
+                            class="table-action-btn view-btn"
+                            title="{% if current_lang == 'ar' %}عرض الموعد{% else %}View Appointment{% endif %}">
                             <i class="bi bi-eye"></i>
                         </a>
 
-                        <!-- Open Session Button (Allowed for Admin always, or assigned Doctor if not Cancelled) -->
-                        {% if current_user.role == 'admin' or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id and appointment.status != 'Cancelled') %}
-                        <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
-                            class="table-action-btn appointment-table-btn" title="{% if request.cookies.get('lang', 'en') == 'ar' %}فتح الجلسة العلاجية{% else %}Open Session{% endif %}">
-                            <i class="bi bi-clipboard2-pulse"></i>
+                        <!-- Edit Button -->
+                        {% if current_user.role == 'admin' or (appointment.status == 'Scheduled' and (current_user.role == 'receptionist' or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id))) %}
+                        <a href="{{ url_for('appointments.edit_appointment', appointment_id=appointment.id) }}"
+                            class="table-action-btn edit-btn"
+                            title="{% if current_lang == 'ar' %}تعديل الموعد{% else %}Edit Appointment{% endif %}">
+                            <i class="bi bi-pencil-square"></i>
                         </a>
                         {% endif %}
 
-                        <!-- WhatsApp Reminder (Only for Scheduled appointments) -->
-                        {% if appointment.status == 'Scheduled' and current_user.role in ('admin', 'receptionist') %}
+                        <!-- WhatsApp Reminder (Receptionist Only) -->
+                        {% if appointment.status == 'Scheduled' and current_user.role == 'receptionist' %}
                         <button type="button"
-                            class="table-action-btn border-0 bg-transparent p-0"
+                            class="table-action-btn whatsapp-btn border-0"
                             onclick="sendWhatsAppReminder('{{ appointment.patient.phone or '' }}', '{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}', '{{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else '' }}', '{{ clinic_name }}', {{ appointment.id }})"
-                            title="{% if request.cookies.get('lang', 'en') == 'ar' %}إرسال تذكير واتساب{% else %}Send WhatsApp Reminder{% endif %}"
-                            style="color: #25D366 !important; font-size: 1.15rem; margin-right: 6px;">
+                            title="{% if current_lang == 'ar' %}تذكير واتساب{% else %}WhatsApp Reminder{% endif %}">
                             <i class="bi bi-whatsapp"></i>
                         </button>
                         <span class="reminded-status-placeholder" data-appointment-id="{{ appointment.id }}"></span>
                         {% endif %}
 
-                        <!-- Edit Button (Allowed for Admin always, or Receptionist/assigned Doctor if Scheduled) -->
-                        {% if current_user.role == 'admin' or (appointment.status == 'Scheduled' and (current_user.role == 'receptionist' or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id))) %}
-                        <a href="{{ url_for('appointments.edit_appointment', appointment_id=appointment.id) }}"
-                            class="table-action-btn edit-btn" title="{% if request.cookies.get('lang', 'en') == 'ar' %}تعديل الموعد{% else %}Edit Appointment{% endif %}">
-                            <i class="bi bi-pencil-square"></i>
-                        </a>
-                        {% endif %}
-
-                        <!-- Quick Cancel (Only for Scheduled appointments) -->
+                        <!-- Quick Cancel Button -->
                         {% if appointment.status == 'Scheduled' and (current_user.role in ('admin', 'receptionist') or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id)) %}
                         <button type="button"
-                            class="table-action-btn quick-action-btn border-0 bg-transparent p-0"
+                            class="table-action-btn cancel-btn quick-action-btn border-0"
                             data-action-url="{{ url_for('appointments.quick_cancel', appointment_id=appointment.id) }}"
-                            data-confirm-msg="Are you sure you want to cancel this appointment?"
-                            title="{% if request.cookies.get('lang', 'en') == 'ar' %}إلغاء سريع للموعد{% else %}Quick Cancel{% endif %}">
-                            <i class="bi bi-x-circle text-danger"></i>
+                            data-confirm-msg="هل أنت متأكد من رغبتك في إلغاء هذا الموعد؟"
+                            title="{% if current_lang == 'ar' %}إلغاء الموعد{% else %}Cancel Appointment{% endif %}">
+                            <i class="bi bi-x-circle"></i>
                         </button>
                         {% endif %}
 
-                        <!-- Delete Button (Only for Admin, and only if not Done and has no treatments) -->
+                        <!-- Permanent Delete -->
                         {% if current_user.role == 'admin' and appointment.status != 'Done' and appointment.status != 'منجز' and not appointment.treatments %}
                         <a href="{{ url_for('appointments.delete_appointment', appointment_id=appointment.id) }}"
-                            class="table-action-btn delete-table-btn" title="{% if request.cookies.get('lang', 'en') == 'ar' %}حذف الموعد{% else %}Delete Appointment{% endif %}">
+                            class="table-action-btn delete-table-btn"
+                            title="{% if current_lang == 'ar' %}حذف الموعد{% else %}Delete Appointment{% endif %}">
                             <i class="bi bi-trash"></i>
                         </a>
                         {% endif %}

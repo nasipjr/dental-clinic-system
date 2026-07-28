@@ -448,51 +448,10 @@
 
     <!-- Today's Scheduled Appointments Title -->
   <div class="container section-title" data-aos="fade-up">
-    <h2>{% if current_lang == 'ar' %}لوحة متابعة حركة المرضى اليومية{% else %}Today’s Patient Flow & Workspace{% endif %}</h2>
-    <p>{% if current_lang == 'ar' %}تتبع تدفق وحركة المرضى في العيادة وتحديث حالتهم مباشرة.{% else %}Track patient flow, check-ins, and seating status in real-time.{% endif %}</p>
+    <h2>{% if current_lang == 'ar' %}مواعيد اليوم المجدولة{% else %}Today’s Scheduled Appointments{% endif %}</h2>
+    <p>{% if current_lang == 'ar' %}استعراض وإدارة مواعيد اليوم مباشرة.{% else %}View and manage today's scheduled appointments directly.{% endif %}</p>
   </div>
   <!-- /Today's Scheduled Appointments Title -->
-
-  <!-- Flow Metrics Bar -->
-  <div class="container mb-5" data-aos="fade-up">
-    <div class="row g-3">
-      <!-- Metric 4: Scheduled / Remaining -->
-      <div class="col-md-3 col-sm-6">
-        <div class="p-4 border-0 rounded-4 shadow-sm text-center bg-primary bg-opacity-10 text-primary h-100" style="border: 1px solid rgba(13, 110, 253, 0.15) !important;">
-          <i class="bi bi-calendar-event-fill fs-2 mb-2 d-block"></i>
-          <h6 class="mb-1 fw-bold">{% if current_lang == 'ar' %}بانتظار الحضور{% else %}Scheduled{% endif %}</h6>
-          <h2 class="mb-0 fw-extrabold" id="metric-scheduled">{{ today_scheduled }}</h2>
-        </div>
-      </div>
-
-      <!-- Metric 1: Checked In / Waiting -->
-      <div class="col-md-3 col-sm-6">
-        <div class="p-4 border-0 rounded-4 shadow-sm text-center bg-warning bg-opacity-10 text-warning h-100" style="border: 1px solid rgba(255, 193, 7, 0.15) !important;">
-          <i class="bi bi-person-fill-down fs-2 mb-2 d-block"></i>
-          <h6 class="mb-1 fw-bold">{% if current_lang == 'ar' %}في الانتظار{% else %}Waiting{% endif %}</h6>
-          <h2 class="mb-0 fw-extrabold" id="metric-checked-in">{{ today_checked_in }}</h2>
-        </div>
-      </div>
-      
-      <!-- Metric 2: In Chair -->
-      <div class="col-md-3 col-sm-6">
-        <div class="p-4 border-0 rounded-4 shadow-sm text-center bg-info bg-opacity-10 text-info h-100" style="border: 1px solid rgba(13, 202, 240, 0.15) !important;">
-          <i class="bi bi-heart-pulse-fill fs-2 mb-2 d-block"></i>
-          <h6 class="mb-1 fw-bold">{% if current_lang == 'ar' %}على الكرسي{% else %}In Chair{% endif %}</h6>
-          <h2 class="mb-0 fw-extrabold" id="metric-in-chair">{{ today_in_chair }}</h2>
-        </div>
-      </div>
-
-      <!-- Metric 3: Done -->
-      <div class="col-md-3 col-sm-6">
-        <div class="p-4 border-0 rounded-4 shadow-sm text-center bg-success bg-opacity-10 text-success h-100" style="border: 1px solid rgba(25, 135, 84, 0.15) !important;">
-          <i class="bi bi-check-circle-fill fs-2 mb-2 d-block"></i>
-          <h6 class="mb-1 fw-bold">{% if current_lang == 'ar' %}تم الإنجاز{% else %}Completed Today{% endif %}</h6>
-          <h2 class="mb-0 fw-extrabold" id="metric-done">{{ today_done }}</h2>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- Today's Scheduled Appointments Section -->
   <section id="today-scheduled-appointments-section" class="find-a-doctor section">
@@ -508,7 +467,7 @@
               <th>{% if current_lang == 'ar' %}رقم الهاتف{% else %}Phone{% endif %}</th>
               <th>{% if current_lang == 'ar' %}السبب{% else %}Reason{% endif %}</th>
               <th>{% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}</th>
-              <th class="text-center" style="min-width: 260px;">{% if current_lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
+              <th class="text-center" style="min-width: 320px;">{% if current_lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
             </tr>
           </thead>
 
@@ -520,9 +479,9 @@
               </td>
 
               <td>
-                <strong>
+                <a href="{{ url_for('patients.patient_detail', patient_id=appointment.patient.id) }}" class="fw-bold text-decoration-none text-primary">
                   {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
-                </strong>
+                </a>
               </td>
 
               <td>
@@ -562,58 +521,36 @@
               </td>
 
               <td class="text-center">
-                <div class="d-flex align-items-center justify-content-center gap-2">
-                    <!-- Flow Quick Action Buttons -->
-                    <div id="flow-actions-{{ appointment.id }}" class="d-flex gap-1.5">
-                        {% if appointment.status == 'Scheduled' %}
-                            <button onclick="changeFlowStatus({{ appointment.id }}, 'Checked In')" class="btn btn-sm btn-warning text-white rounded-pill px-3 py-1 fw-bold">
-                                <i class="bi bi-person-check-fill me-1"></i>{% if current_lang == 'ar' %}وصول المريض{% else %}Check In{% endif %}
-                            </button>
-                            <button onclick="changeFlowStatus({{ appointment.id }}, 'Cancelled')" class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1 fw-bold">
-                                {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
-                            </button>
-                        {% elif appointment.status == 'Checked In' %}
-                            <button onclick="changeFlowStatus({{ appointment.id }}, 'In Chair')" class="btn btn-sm btn-info text-white rounded-pill px-3 py-1 fw-bold">
-                                <i class="bi bi-heart-pulse-fill me-1"></i>{% if current_lang == 'ar' %}على الكرسي{% else %}Seat Patient{% endif %}
-                            </button>
-                            <button onclick="changeFlowStatus({{ appointment.id }}, 'Scheduled')" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 fw-bold">
-                                {% if current_lang == 'ar' %}تراجع{% else %}Revert{% endif %}
-                            </button>
-                        {% elif appointment.status == 'In Chair' %}
-                            {% if current_user.role in ('admin', 'doctor') %}
-                                <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}" class="btn btn-sm btn-success rounded-pill px-3 py-1 fw-bold">
-                                    <i class="bi bi-clipboard2-pulse-fill me-1"></i>{% if current_lang == 'ar' %}ابدأ الجلسة{% else %}Start Session{% endif %}
-                                </a>
-                            {% else %}
-                                <span class="badge bg-info bg-opacity-10 text-info fw-bold py-1.5 px-3 rounded-pill">{% if current_lang == 'ar' %}في الجلسة{% else %}In Session{% endif %}</span>
-                            {% endif %}
-                            <button onclick="changeFlowStatus({{ appointment.id }}, 'Checked In')" class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 fw-bold">
-                                {% if current_lang == 'ar' %}تراجع{% else %}Revert{% endif %}
-                            </button>
-                        {% elif appointment.status == 'Done' %}
-                            <span class="text-success fw-bold"><i class="bi bi-check-circle me-1"></i>{% if current_lang == 'ar' %}تم الإنجاز{% else %}Completed{% endif %}</span>
-                        {% elif appointment.status == 'Cancelled' %}
-                            <span class="text-muted fw-bold"><i class="bi bi-x-circle me-1"></i>{% if current_lang == 'ar' %}تم الإلغاء{% else %}Cancelled{% endif %}</span>
-                        {% endif %}
-                    </div>
-                    
-                    <!-- Standard Actions -->
-                    <div class="d-flex gap-1 border-start ps-2 align-items-center">
-                        {% if appointment.status not in ('Done', 'Cancelled') and current_user.role in ('admin', 'receptionist') %}
-                        <button type="button"
-                          class="table-action-btn border-0 bg-transparent p-0 me-1"
-                          onclick="sendWhatsAppReminder('{{ appointment.patient.phone or '' }}', '{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}', '{{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else '' }}', '{{ clinic_name }}', {{ appointment.id }})"
-                          title="{% if current_lang == 'ar' %}تذكير عبر واتساب{% else %}Send WhatsApp Reminder{% endif %}"
-                          style="color: #25D366 !important; font-size: 1.15rem;">
-                          <i class="bi bi-whatsapp"></i>
-                        </button>
-                        <span class="reminded-status-placeholder" data-appointment-id="{{ appointment.id }}"></span>
-                        {% endif %}
-                        <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}"
-                          class="table-action-btn view-btn" title="{% if current_lang == 'ar' %}عرض الموعد{% else %}View Appointment{% endif %}">
-                          <i class="bi bi-eye"></i>
-                        </a>
-                    </div>
+                <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
+                  {% if appointment.status not in ('Done', 'Cancelled') %}
+                    {% if current_user.role in ('admin', 'doctor') %}
+                    <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}" class="btn btn-sm btn-success rounded-pill px-3 py-1 fw-bold">
+                      <i class="bi bi-play-circle-fill me-1"></i>{% if current_lang == 'ar' %}بدء الجلسة{% else %}Start Session{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <button onclick="confirmCancelAppointment({{ appointment.id }})" class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1 fw-bold">
+                      <i class="bi bi-x-circle me-1"></i>{% if current_lang == 'ar' %}إلغاء الموعد{% else %}Cancel{% endif %}
+                    </button>
+                  {% elif appointment.status == 'Done' %}
+                    <span class="badge bg-success bg-opacity-10 text-success fw-bold px-3 py-1.5 rounded-pill"><i class="bi bi-check-circle me-1"></i>{% if current_lang == 'ar' %}تم الإنجاز{% else %}Completed{% endif %}</span>
+                  {% elif appointment.status == 'Cancelled' %}
+                    <span class="badge bg-danger bg-opacity-10 text-danger fw-bold px-3 py-1.5 rounded-pill"><i class="bi bi-x-circle me-1"></i>{% if current_lang == 'ar' %}تم الإلغاء{% else %}Cancelled{% endif %}</span>
+                  {% endif %}
+
+                  <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 fw-bold" title="{% if current_lang == 'ar' %}عرض الموعد{% else %}View Appointment{% endif %}">
+                    <i class="bi bi-eye-fill me-1"></i>{% if current_lang == 'ar' %}عرض الموعد{% else %}View Appointment{% endif %}
+                  </a>
+
+                  {% if appointment.status not in ('Done', 'Cancelled') and current_user.role == 'receptionist' %}
+                  <button type="button"
+                    class="btn btn-sm btn-outline-success rounded-pill px-2.5 py-1"
+                    onclick="sendWhatsAppReminder('{{ appointment.patient.phone or '' }}', '{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}', '{{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else '' }}', '{{ clinic_name }}', {{ appointment.id }})"
+                    title="{% if current_lang == 'ar' %}تذكير عبر واتساب{% else %}Send WhatsApp Reminder{% endif %}">
+                    <i class="bi bi-whatsapp"></i>
+                  </button>
+                  <span class="reminded-status-placeholder" data-appointment-id="{{ appointment.id }}"></span>
+                  {% endif %}
                 </div>
               </td>
             </tr>
@@ -668,9 +605,9 @@
               </td>
 
               <td>
-                <strong>
+                <a href="{{ url_for('patients.patient_detail', patient_id=appointment.patient.id) }}" class="fw-bold text-decoration-none text-primary">
                   {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
-                </strong>
+                </a>
               </td>
 
               <td>
@@ -689,7 +626,7 @@
 
               <td class="text-center">
                 <div class="d-flex align-items-center justify-content-center gap-2">
-                    {% if current_user.role in ('admin', 'receptionist') %}
+                    {% if current_user.role == 'receptionist' %}
                     <button type="button"
                       class="btn btn-sm btn-success rounded-pill px-3 py-1.5 fw-bold d-flex align-items-center gap-1.5 text-white"
                       onclick="sendWhatsAppReminder('{{ appointment.patient.phone or '' }}', '{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}', '{{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else '' }}', '{{ clinic_name }}', {{ appointment.id }})"
@@ -813,17 +750,26 @@
               {% endif %}
 
               <td class="text-center">
-                <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}"
-                  class="table-action-btn view-btn" title="View Appointment">
-                  <i class="bi bi-eye"></i>
-                </a>
+                <div class="appointments-actions">
+                  <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}"
+                    class="table-action-btn view-btn" title="{% if current_lang == 'ar' %}عرض الموعد{% else %}View Appointment{% endif %}">
+                    <i class="bi bi-eye"></i>
+                  </a>
 
-                {% if current_user.role in ('admin', 'doctor') %}
-                <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
-                  class="table-action-btn session-btn" title="Open Session">
-                  <i class="bi bi-clipboard2-pulse"></i>
-                </a>
-                {% endif %}
+                  {% if current_user.role in ('admin', 'doctor') %}
+                  <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
+                    class="table-action-btn session-btn" title="{% if current_lang == 'ar' %}فتح الجلسة{% else %}Open Session{% endif %}">
+                    <i class="bi bi-clipboard2-pulse"></i>
+                  </a>
+                  {% endif %}
+
+                  {% if current_user.role in ('admin', 'receptionist') %}
+                  <a href="{{ url_for('payments.add_patient_payment', patient_id=appointment.patient_id) }}"
+                    class="table-action-btn edit-btn" title="{% if current_lang == 'ar' %}إضافة دفعة للمريض{% else %}Add Payment{% endif %}">
+                    <i class="bi bi-cash-coin"></i>
+                  </a>
+                  {% endif %}
+                </div>
               </td>
             </tr>
             {% endfor %}
@@ -1069,6 +1015,29 @@
       todayContainer.style.display = 'block';
       updateClinicStatus();
     });
+
+    window.confirmCancelAppointment = function(apptId) {
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          title: "{% if current_lang == 'ar' %}تأكيد إلغاء الموعد{% else %}Confirm Cancellation{% endif %}",
+          text: "{% if current_lang == 'ar' %}هل أنت تأكد من رغبتك في إلغاء هذا الموعد؟{% else %}Are you sure you want to cancel this appointment?{% endif %}",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: "{% if current_lang == 'ar' %}نعم، إلغاء الموعد{% else %}Yes, cancel appointment{% endif %}",
+          cancelButtonText: "{% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}"
+        }).then((result) => {
+          if (result.isConfirmed) {
+            changeFlowStatus(apptId, 'Cancelled');
+          }
+        });
+      } else {
+        if (confirm("{% if current_lang == 'ar' %}هل أنت تأكد من إلغاء هذا الموعد؟{% else %}Are you sure you want to cancel this appointment?{% endif %}")) {
+          changeFlowStatus(apptId, 'Cancelled');
+        }
+      }
+    };
 
     window.changeFlowStatus = function(apptId, newStatus) {
       const url = `/appointments/${apptId}/update-status`;
