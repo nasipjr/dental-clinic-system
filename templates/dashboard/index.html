@@ -651,9 +651,12 @@
 
       {% else %}
       <div class="empty-state-card text-center">
-        <i class="bi bi-calendar-check text-muted fs-1 mb-3 d-block"></i>
+        <i class="bi bi-calendar-check"></i>
         <h4>{% if current_lang == 'ar' %}لا توجد مواعيد غداً{% else %}No scheduled appointments tomorrow{% endif %}</h4>
         <p class="text-muted">{% if current_lang == 'ar' %}لا توجد أي مواعيد مسجلة ليوم غد حتى الآن.{% else %}There are no scheduled appointments waiting for tomorrow.{% endif %}</p>
+        <a href="{{ url_for('patients.patients') }}" class="btn btn-primary mt-3">
+          {% if current_lang == 'ar' %}إضافة موعد{% else %}Add Appointment{% endif %}
+        </a>
       </div>
       {% endif %}
 

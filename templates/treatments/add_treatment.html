@@ -101,16 +101,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-12">
-                                <label for="procedure_type" class="form-label">{% if request.cookies.get('lang', 'en') == 'ar' %}نوع الإجراء / المعالجة{% else %}Procedure Type{% endif %}</label>
-                                <select id="procedure_type" name="procedure_type" class="form-select"
-                                    data-prices='{{ treatment_prices|tojson }}' required>
-                                    <option value="">{% if request.cookies.get('lang', 'en') == 'ar' %}-- اختر نوع الإجراء --{% else %}-- Select Procedure Type --{% endif %}</option>
-                                    {% for proc_name in treatment_prices.keys() %}
-                                    <option value="{{ proc_name }}">{{ proc_name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
+                            <input type="hidden" id="procedure_type" name="procedure_type" data-prices='{{ treatment_prices|tojson }}' required>
 
                             {% set fdi_map = {
                                 1: 18, 2: 17, 3: 16, 4: 15, 5: 14, 6: 13, 7: 12, 8: 11,
@@ -198,6 +189,69 @@
                              .tooth-label-top {
                                  font-size: 0.85rem;
                                  font-weight: 700;
+                             }
+
+                             .anatomical-chart-wrapper {
+                                 background: rgba(15, 23, 42, 0.5) !important;
+                                 border-radius: 16px !important;
+                                 border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+                                 overflow-x: auto !important;
+                                 padding: 20px 15px !important;
+                             }
+
+                             .anatomical-teeth-container {
+                                 min-width: 820px;
+                                 margin: 0 auto;
+                             }
+
+                             .anatomical-tooth-btn {
+                                 width: 44px !important;
+                                 min-width: 44px !important;
+                                 max-width: 44px !important;
+                                 height: 64px !important;
+                                 display: flex !important;
+                                 flex-direction: column !important;
+                                 align-items: center !important;
+                                 justify-content: center !important;
+                                 background: transparent !important;
+                                 border: 1.5px solid transparent !important;
+                                 border-radius: 10px !important;
+                                 padding: 3px !important;
+                                 margin: 0 1px !important;
+                                 cursor: pointer !important;
+                                 transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                                 flex-shrink: 0 !important;
+                                 position: relative !important;
+                                 transform: none !important;
+                             }
+
+                             .anatomical-tooth-btn:hover:not(:disabled) {
+                                 background: rgba(56, 189, 248, 0.18) !important;
+                                 border-color: #38bdf8 !important;
+                                 transform: translateY(-2px) !important;
+                             }
+
+                             .anatomical-tooth-btn.active {
+                                 background: rgba(40, 167, 69, 0.3) !important;
+                                 border: 2px solid #34d399 !important;
+                                 box-shadow: 0 0 12px rgba(52, 211, 153, 0.5) !important;
+                             }
+
+                             .anatomical-tooth-btn.active .tooth-svg {
+                                 color: #34d399 !important;
+                             }
+
+                             .tooth-fdi-badge {
+                                 font-size: 0.75rem !important;
+                                 font-weight: 800 !important;
+                                 color: #f8fafc !important;
+                                 background: rgba(255, 255, 255, 0.12) !important;
+                                 border-radius: 8px !important;
+                                 padding: 1px 6px !important;
+                                 line-height: 1.2 !important;
+                             }
+                             
+                             .tooth-label-top {
                                  color: #ffffff;
                                  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
                              }
@@ -266,99 +320,36 @@
                                       font-size: 0.75rem !important;
                                   }
                               }
+                               .odontogram-nav-pills {
+                                   background: rgba(15, 23, 42, 0.4);
+                                   padding: 6px;
+                                   border-radius: 50rem;
+                                   border: 1px solid rgba(255, 255, 255, 0.1);
+                                   display: inline-flex;
+                               }
+                               .odontogram-nav-pills .nav-link {
+                                   color: var(--default-color);
+                                   background: transparent;
+                                   border-radius: 50rem;
+                                   padding: 10px 22px;
+                                   font-weight: 700;
+                                   font-size: 0.9rem;
+                                   transition: all 0.25s ease;
+                                   border: none !important;
+                               }
+                               .odontogram-nav-pills .nav-link:hover:not(.active) {
+                                   background: rgba(56, 189, 248, 0.12);
+                                   color: #38bdf8;
+                               }
+                               .odontogram-nav-pills .nav-link.active {
+                                   background: #0d6efd !important;
+                                   color: #ffffff !important;
+                                   box-shadow: 0 4px 15px rgba(13, 110, 253, 0.35);
+                               }
                              </style>
 
                              <div class="col-md-12">
-                                 <div class="odontogram-wrapper mb-3">
-                                     <div class="text-center text-secondary small mb-3">
-                                         <i class="bi bi-info-circle me-1"></i> {% if current_lang == 'ar' %}انقر على الأسنان في المخطط لتحديدها أو إلغاء تحديدها.{% else %}Click teeth on the chart to select or deselect.{% endif %}
-                                     </div>
-                                     
-                                     {% set upper_positions = {
-                                         1:  {'x': '6%',  'y': '85%', 'r': '-65deg'},
-                                         2:  {'x': '9%',  'y': '68%', 'r': '-55deg'},
-                                         3:  {'x': '13%', 'y': '52%', 'r': '-45deg'},
-                                         4:  {'x': '18%', 'y': '38%', 'r': '-35deg'},
-                                         5:  {'x': '24%', 'y': '26%', 'r': '-25deg'},
-                                         6:  {'x': '31%', 'y': '17%', 'r': '-15deg'},
-                                         7:  {'x': '39%', 'y': '11%', 'r': '-5deg'},
-                                         8:  {'x': '47%', 'y': '9%',  'r': '-2deg'},
-                                         9:  {'x': '53%', 'y': '9%',  'r': '2deg'},
-                                         10: {'x': '61%', 'y': '11%', 'r': '5deg'},
-                                         11: {'x': '69%', 'y': '17%', 'r': '15deg'},
-                                         12: {'x': '76%', 'y': '26%', 'r': '25deg'},
-                                         13: {'x': '82%', 'y': '38%', 'r': '35deg'},
-                                         14: {'x': '87%', 'y': '52%', 'r': '45deg'},
-                                         15: {'x': '91%', 'y': '68%', 'r': '55deg'},
-                                         16: {'x': '94%', 'y': '85%', 'r': '65deg'}
-                                     } %}
-
-                                     {% set lower_positions = {
-                                         32: {'x': '6%',  'y': '15%', 'r': '65deg'},
-                                         31: {'x': '9%',  'y': '32%', 'r': '55deg'},
-                                         30: {'x': '13%', 'y': '48%', 'r': '45deg'},
-                                         29: {'x': '18%', 'y': '62%', 'r': '35deg'},
-                                         28: {'x': '24%', 'y': '74%', 'r': '25deg'},
-                                         27: {'x': '31%', 'y': '83%', 'r': '15deg'},
-                                         26: {'x': '39%', 'y': '89%', 'r': '5deg'},
-                                         25: {'x': '47%', 'y': '91%', 'r': '2deg'},
-                                         24: {'x': '53%', 'y': '91%', 'r': '-2deg'},
-                                         23: {'x': '61%', 'y': '89%', 'r': '-5deg'},
-                                         22: {'x': '69%', 'y': '83%', 'r': '-15deg'},
-                                         21: {'x': '76%', 'y': '74%', 'r': '-25deg'},
-                                         20: {'x': '82%', 'y': '62%', 'r': '-35deg'},
-                                         19: {'x': '87%', 'y': '48%', 'r': '-45deg'},
-                                         18: {'x': '91%', 'y': '32%', 'r': '-55deg'},
-                                         17: {'x': '94%', 'y': '15%', 'r': '-65deg'}
-                                     } %}
-
-                                     <div class="jaw upper-jaw text-center mb-4" style="max-width: 600px; margin: 0 auto;">
-                                         <div class="d-flex justify-content-center mb-3">
-                                             <span class="jaw-title-badge jaw-upper-badge">
-                                                 <i class="bi bi-symmetry-horizontal me-1.5"></i>
-                                                 {% if current_lang == 'ar' %}الفك العلوي{% else %}Upper Jaw (Maxillary){% endif %}
-                                             </span>
-                                         </div>
-                                         <div class="jaw-arch-container">
-                                             <svg class="jaw-bg-line" viewBox="0 0 100 50">
-                                                 <path d="M 6 45 C 6 10, 94 10, 94 45" fill="none" stroke="color-mix(in srgb, var(--accent-color), transparent 88%)" stroke-width="4" stroke-linecap="round" />
-                                             </svg>
-                                             {% for i in range(1, 17) %}
-                                             {% set pos = upper_positions[i] %}
-                                             <button type="button" class="tooth-select-btn tooth-btn" data-tooth="{{ i }}" style="left: {{ pos.x }}; top: {{ pos.y }}; --rot: {{ pos.r }}; transform: translate(-50%, -50%) rotate({{ pos.r }});">
-                                                 <span class="tooth-label-top fw-bold">{{ fdi_map[i] }}</span>
-                                                 <div class="tooth-svg-container">
-                                                     {{ render_tooth_svg(i, false) }}
-                                                 </div>
-                                             </button>
-                                             {% endfor %}
-                                         </div>
-                                     </div>
-                                     <div class="jaw lower-jaw text-center" style="max-width: 600px; margin: 0 auto;">
-                                          <div class="jaw-arch-container">
-                                              <svg class="jaw-bg-line" viewBox="0 0 100 50">
-                                                  <path d="M 6 5 C 6 40, 94 40, 94 5" fill="none" stroke="color-mix(in srgb, var(--accent-color), transparent 88%)" stroke-width="4" stroke-linecap="round" />
-                                              </svg>
-                                              {% for i in [32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17] %}
-                                              {% set pos = lower_positions[i] %}
-                                              <button type="button" class="tooth-select-btn tooth-btn" data-tooth="{{ i }}" style="left: {{ pos.x }}; top: {{ pos.y }}; --rot: {{ pos.r }}; transform: translate(-50%, -50%) rotate({{ pos.r }});">
-                                                  <span class="tooth-label-top fw-bold">{{ fdi_map[i] }}</span>
-                                                  <div class="tooth-svg-container">
-                                                      {{ render_tooth_svg(i, true) }}
-                                                  </div>
-                                              </button>
-                                              {% endfor %}
-                                          </div>
-                                          <div class="d-flex justify-content-center mt-3">
-                                              <span class="jaw-title-badge jaw-lower-badge">
-                                                  <i class="bi bi-symmetry-horizontal me-1.5"></i>
-                                                  {% if current_lang == 'ar' %}الفك السفلي{% else %}Lower Jaw (Mandibular){% endif %}
-                                              </span>
-                                          </div>
-                                      </div>
-                                 </div>
-                                  <input type="hidden" id="tooth_number" name="tooth_number">
-                             </div></div>
+                              </div></div>
 
                             <div class="col-12">
                                 <label for="notes" class="form-label">{% if current_lang == 'ar' %}ملاحظات العلاج{% else %}Notes{% endif %}</label>
@@ -551,7 +542,27 @@ document.addEventListener('DOMContentLoaded', function () {
             priceDisplay.textContent = displayVal;
         }
 
-        procedureSelect.addEventListener('change', updateProcedurePrice);
+        const procBtns = document.querySelectorAll('.procedure-quick-btn');
+        procBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                procBtns.forEach(b => {
+                    b.classList.remove('btn-primary', 'active');
+                    b.classList.add('btn-outline-primary');
+                });
+                this.classList.remove('btn-outline-primary');
+                this.classList.add('btn-primary', 'active');
+                
+                if (procedureSelect) {
+                    procedureSelect.value = this.dataset.procedure;
+                    updateProcedurePrice();
+                }
+            });
+        });
+
+        if (procedureSelect) {
+            procedureSelect.addEventListener('change', updateProcedurePrice);
+        }
         
         if (toothInput) {
             toothInput.addEventListener('input', updateProcedurePrice);

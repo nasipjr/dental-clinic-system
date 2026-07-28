@@ -65,13 +65,39 @@ def home():
 
         today_done_appointments = done_query.order_by(Appointment.appointment_date.asc()).all()
 
+        # ─── Per-patient financial breakdown (CRITICAL: never net credit against debt) ───
         from models import Invoice
-        total_revenue = sum(float(inv.total_amount) for inv in Invoice.query.join(Invoice.appointment).filter(Appointment.status != "Cancelled").all())
-        total_paid = sum(float(pay.amount) for pay in Payment.query.all())
 
-        total_remaining = total_revenue - total_paid
-        total_outstanding = max(0.0, total_remaining)
-        total_credit = max(0.0, -total_remaining)
+        # Get all active invoices
+        all_invoices = Invoice.query.join(Invoice.appointment).filter(Appointment.status != "Cancelled").all()
+        all_payments = Payment.query.all()
+
+        # Sum invoice amounts per patient (use Invoice.patient_id directly)
+        patient_invoiced = {}
+        for inv in all_invoices:
+            pid = inv.patient_id
+            patient_invoiced[pid] = patient_invoiced.get(pid, 0.0) + float(inv.total_amount)
+
+        # Sum payments per patient
+        patient_paid = {}
+        for pay in all_payments:
+            pid = pay.patient_id
+            patient_paid[pid] = patient_paid.get(pid, 0.0) + float(pay.amount)
+
+        # Per-patient balance — positives = debt owed to clinic, negatives = clinic credit
+        all_patient_ids = set(list(patient_invoiced.keys()) + list(patient_paid.keys()))
+        total_outstanding = 0.0  # total owed TO the clinic (debts)
+        total_credit = 0.0       # total owed BY the clinic (overpayments)
+        for pid in all_patient_ids:
+            balance = patient_invoiced.get(pid, 0.0) - patient_paid.get(pid, 0.0)
+            if balance > 0:
+                total_outstanding += balance   # patient owes clinic
+            elif balance < 0:
+                total_credit += abs(balance)   # clinic owes patient
+
+        total_revenue = sum(patient_invoiced.values())
+        total_paid    = sum(patient_paid.values())
+        total_remaining = total_outstanding - total_credit  # net for display widget only
 
         today_payments_sum = sum(float(pay.amount) for pay in Payment.query.filter(Payment.payment_date >= today_start, Payment.payment_date <= today_end).all())
         today_revenue_sum = sum(
