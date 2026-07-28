@@ -521,9 +521,14 @@ def view_appointment(appointment_id):
         appointment = Appointment.query.get_or_404(appointment_id)
         appointment_min_datetime, appointment_max_datetime = get_appointment_datetime_limits()
 
+        from models import User
+        from utils.constants import TREATMENT_PRICES
+        doctors = User.query.filter_by(role="doctor").all()
         return render_template(
             "appointments/edit_appointment.html",
             appointment=appointment,
+            doctors=doctors,
+            treatment_prices=dict(TREATMENT_PRICES),
             mode="view",
             appointment_min_datetime=appointment_min_datetime,
             appointment_max_datetime=appointment_max_datetime,
@@ -703,9 +708,8 @@ def appointment_events():
             )
 
             can_edit = (
-                is_admin or (
-                    not is_closed and appt.status == "Scheduled" and
-                    (user_role == "receptionist" or (user_role == "doctor" and appt.doctor_id == user_id))
+                not is_closed and appt.status not in ("Done", "Cancelled") and (
+                    is_admin or user_role == "receptionist" or (user_role == "doctor" and appt.doctor_id == user_id)
                 )
             )
 
@@ -723,6 +727,7 @@ def appointment_events():
                 "color": color,
                 "extendedProps": {
                     "patientName": f"{appt.patient.first_name} {appt.patient.last_name}",
+                    "patientUrl": url_for("patients.patient_detail", patient_id=appt.patient_id),
                     "phone": appt.patient.phone or "No phone",
                     "reason": appt.reason or "No reason",
                     "status": appt.status,

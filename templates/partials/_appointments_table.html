@@ -84,35 +84,26 @@
                             {% if current_lang == 'ar' %}تم الرفض{% else %}Rejected{% endif %}
                         {% elif appointment.status == 'Pending' %}
                             {% if current_lang == 'ar' %}قيد التثبيت{% else %}Pending{% endif %}
-                        {% elif appointment.status == 'Scheduled' %}
-                            {% if current_lang == 'ar' %}مجدول{% else %}Scheduled{% endif %}
-                        {% elif appointment.status == 'Done' %}
+                        {% elif appointment.status in ('Done', 'منجز') %}
                             {% if current_lang == 'ar' %}منجز{% else %}Done{% endif %}
-                        {% elif appointment.status == 'Cancelled' %}
+                        {% elif appointment.status in ('Cancelled', 'ملغي') %}
                             {% if current_lang == 'ar' %}ملغي{% else %}Cancelled{% endif %}
                         {% else %}
-                            {{ appointment.status }}
+                            {% if current_lang == 'ar' %}مجدول{% else %}Scheduled{% endif %}
                         {% endif %}
                     </span>
                 </td>
 
                 <td class="text-center">
                     <div class="appointments-actions">
-                        <!-- Open/Start Session Button -->
+                        <!-- Open Session Button -->
                         {% if current_user.role == 'admin' or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id and appointment.status != 'Cancelled') %}
-                            {% if appointment.status in ('Done', 'منجز') %}
-                            <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
-                                class="table-action-btn view-btn"
-                                title="{% if current_lang == 'ar' %}فتح الجلسة{% else %}Open Session{% endif %}">
-                                <i class="bi bi-folder-check"></i>
-                            </a>
-                            {% else %}
-                            <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
-                                class="table-action-btn appointment-table-btn"
-                                title="{% if current_lang == 'ar' %}بدء الجلسة{% else %}Start Session{% endif %}">
-                                <i class="bi bi-calendar-plus"></i>
-                            </a>
-                            {% endif %}
+                        <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
+                            class="table-action-btn session-btn"
+                            data-bs-toggle="tooltip"
+                            data-bs-title="{% if current_lang == 'ar' %}فتح الجلسة{% else %}Open Session{% endif %}">
+                            <i class="bi bi-clipboard2-pulse"></i>
+                        </a>
                         {% endif %}
 
                         <!-- View Button -->

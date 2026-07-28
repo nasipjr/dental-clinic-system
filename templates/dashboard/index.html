@@ -503,7 +503,7 @@
                   </span>
                 {% elif appointment.status == 'In Chair' %}
                   <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-2.5 py-1.5 fw-semibold">
-                    {% if current_lang == 'ar' %}على الكرسي{% else %}In Chair{% endif %}
+                    {% if current_lang == 'ar' %}قيد الإجراء{% else %}In Progress{% endif %}
                   </span>
                 {% elif appointment.status == 'Done' %}
                   <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2.5 py-1.5 fw-semibold">

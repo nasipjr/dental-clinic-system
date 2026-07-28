@@ -83,17 +83,17 @@
                 </span>
             </div>
 
-            <!-- KPI Cards Grid -->
+            <!-- KPI Cards Grid (Unified Theme) -->
             <div class="row g-3 mb-4">
                 
                 <!-- Card 1: Total Collected Cash -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="p-3 rounded-4 border bg-body-tertiary h-100 d-flex flex-column justify-content-between">
+                    <div class="p-3.5 rounded-4 h-100 d-flex flex-column justify-content-between" style="background: color-mix(in srgb, var(--surface-color), transparent 10%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 85%); shadow-sm;">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <span class="text-secondary small fw-semibold">
                                 {% if current_lang == 'ar' %}إجمالي المقبوضات النقدية{% else %}Total Collected Cash{% endif %}
                             </span>
-                            <div class="p-2 rounded-3 bg-success-subtle text-success">
+                            <div class="p-2 rounded-3" style="background: rgba(40, 167, 69, 0.12); border: 1px solid rgba(40, 167, 69, 0.25); color: #4ade80;">
                                 <i class="bi bi-cash-coin fs-5"></i>
                             </div>
                         </div>
@@ -110,12 +110,12 @@
 
                 <!-- Card 2: Total Allocated Cash -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="p-3 rounded-4 border bg-body-tertiary h-100 d-flex flex-column justify-content-between">
+                    <div class="p-3.5 rounded-4 h-100 d-flex flex-column justify-content-between" style="background: color-mix(in srgb, var(--surface-color), transparent 10%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 85%); shadow-sm;">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <span class="text-secondary small fw-semibold">
                                 {% if current_lang == 'ar' %}المبالغ المسددة للفواتير{% else %}Allocated to Invoices{% endif %}
                             </span>
-                            <div class="p-2 rounded-3 bg-primary-subtle text-primary">
+                            <div class="p-2 rounded-3" style="background: rgba(13, 110, 253, 0.12); border: 1px solid rgba(13, 110, 253, 0.25); color: #7fd3ff;">
                                 <i class="bi bi-journal-check fs-5"></i>
                             </div>
                         </div>
@@ -123,21 +123,22 @@
                             <h4 class="fw-bold text-primary mb-1">
                                 {{ payment_stats.total_allocated_cash | format_price }} {{ currency_symbol }}
                             </h4>
-                            <div class="progress mt-2" style="height: 6px;">
-                                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ payment_stats.allocation_rate }}%;" aria-valuenow="{{ payment_stats.allocation_rate }}" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2.5 py-1 small fw-semibold">
+                                <i class="bi bi-pie-chart-fill me-1"></i>
+                                {{ "%.1f"|format(payment_stats.allocation_rate) }}% {% if current_lang == 'ar' %}مخصصة للفواتير{% else %}Allocated{% endif %}
+                            </span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Card 3: Unallocated Credit -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="p-3 rounded-4 border bg-body-tertiary h-100 d-flex flex-column justify-content-between">
+                    <div class="p-3.5 rounded-4 h-100 d-flex flex-column justify-content-between" style="background: color-mix(in srgb, var(--surface-color), transparent 10%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 85%); shadow-sm;">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <span class="text-secondary small fw-semibold">
                                 {% if current_lang == 'ar' %}الأرصدة الزائدة للمرضى{% else %}Unallocated Patient Credit{% endif %}
                             </span>
-                            <div class="p-2 rounded-3 bg-warning-subtle text-warning">
+                            <div class="p-2 rounded-3" style="background: rgba(255, 193, 7, 0.12); border: 1px solid rgba(255, 193, 7, 0.25); color: #ffd666;">
                                 <i class="bi bi-wallet2 fs-5"></i>
                             </div>
                         </div>
@@ -154,12 +155,12 @@
 
                 <!-- Card 4: Average Payment -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="p-3 rounded-4 border bg-body-tertiary h-100 d-flex flex-column justify-content-between">
+                    <div class="p-3.5 rounded-4 h-100 d-flex flex-column justify-content-between" style="background: color-mix(in srgb, var(--surface-color), transparent 10%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 85%); shadow-sm;">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <span class="text-secondary small fw-semibold">
                                 {% if current_lang == 'ar' %}متوسط قيمة السداد{% else %}Average Payment Amount{% endif %}
                             </span>
-                            <div class="p-2 rounded-3 bg-info-subtle text-info">
+                            <div class="p-2 rounded-3" style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.25); color: #38bdf8;">
                                 <i class="bi bi-calculator fs-5"></i>
                             </div>
                         </div>
@@ -189,54 +190,66 @@
                 </div>
 
                 {% if top_payments %}
-                <div class="table-responsive rounded-3 border">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-body-secondary">
-                            <tr>
-                                <th>{% if current_lang == 'ar' %}كود الدفعة{% else %}Payment #{% endif %}</th>
-                                <th>{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</th>
-                                <th>{% if current_lang == 'ar' %}تاريخ السداد{% else %}Payment Date{% endif %}</th>
-                                <th>{% if current_lang == 'ar' %}المبلغ المحصل{% else %}Payment Amount{% endif %}</th>
-                                <th>{% if current_lang == 'ar' %}المسدد للفواتير{% else %}Allocated{% endif %}</th>
-                                <th>{% if current_lang == 'ar' %}الرصيد المتبقي{% else %}Unallocated Credit{% endif %}</th>
-                                <th class="text-center">{% if current_lang == 'ar' %}الإجراء{% else %}Action{% endif %}</th>
+                <div class="rounded-3 border overflow-hidden">
+                    <table class="table table-hover align-middle mb-0" style="table-layout: auto; width: 100%;">
+                        <thead style="background: color-mix(in srgb, var(--default-color), transparent 95%);">
+                            <tr style="font-size: 0.84rem; text-transform: uppercase; letter-spacing: 0.03em;">
+                                <th style="padding: 10px 12px;">{% if current_lang == 'ar' %}كود الدفعة{% else %}Payment #{% endif %}</th>
+                                <th style="padding: 10px 12px;">{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</th>
+                                <th style="padding: 10px 12px;">{% if current_lang == 'ar' %}تاريخ السداد{% else %}Payment Date{% endif %}</th>
+                                <th style="padding: 10px 12px;">{% if current_lang == 'ar' %}المبلغ المحصل{% else %}Payment Amount{% endif %}</th>
+                                <th style="padding: 10px 12px;">{% if current_lang == 'ar' %}المسدد للفواتير{% else %}Allocated{% endif %}</th>
+                                <th style="padding: 10px 12px;">{% if current_lang == 'ar' %}الرصيد المتبقي{% else %}Unallocated Credit{% endif %}</th>
+                                <th class="text-center" style="padding: 10px 12px;">{% if current_lang == 'ar' %}الإجراء{% else %}Action{% endif %}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for pay in top_payments %}
-                            <tr>
-                                <td>
-                                    <a href="{{ url_for('payments.view_payment', payment_id=pay.id) }}" class="fw-bold text-success">
+                            <tr style="font-size: 0.88rem;">
+                                <td style="padding: 10px 12px;">
+                                    <a href="{{ url_for('payments.view_payment', payment_id=pay.id) }}" class="fw-bold text-success text-nowrap">
                                         <bdi dir="ltr">PAY-{{ "%04d"|format(pay.id) }}</bdi>
                                     </a>
                                 </td>
-                                <td>
-                                    <strong>{{ pay.patient.first_name }} {{ pay.patient.last_name }}</strong>
-                                    <br>
-                                    <small class="text-secondary">{{ pay.patient.phone or '' }}</small>
+                                <td style="padding: 10px 12px;">
+                                    <a href="{{ url_for('patients.patient_detail', patient_id=pay.patient_id) }}"
+                                       class="fw-bold text-main hover-underline text-nowrap"
+                                       title="{% if current_lang == 'ar' %}فتح ملف المريض{% else %}Open Patient Profile{% endif %}"
+                                       data-tooltip="{% if current_lang == 'ar' %}فتح ملف المريض{% else %}Open Patient Profile{% endif %}">
+                                        {{ pay.patient.first_name }} {{ pay.patient.last_name }}
+                                    </a>
+                                    <div class="text-secondary small" style="font-size: 0.78rem;"><bdi dir="ltr">{{ pay.patient.phone or '' }}</bdi></div>
                                 </td>
-                                <td>
-                                    {{ pay.payment_date.strftime('%Y-%m-%d %I:%M %p') if pay.payment_date else '' }}
+                                <td style="padding: 10px 12px;">
+                                    {% if pay.payment_date %}
+                                    <div class="fw-semibold text-nowrap" style="font-size:0.86rem;">{{ pay.payment_date.strftime('%Y-%m-%d') }}</div>
+                                    <div class="text-muted text-nowrap" style="font-size:0.78rem;"><i class="bi bi-clock me-1" style="font-size:0.75rem;"></i>{{ pay.payment_date.strftime('%I:%M %p') }}</div>
+                                    {% else %}
+                                    <span class="text-muted">—</span>
+                                    {% endif %}
                                 </td>
-                                <td class="fw-bold text-success fs-6">
+                                <td style="padding: 10px 12px;" class="fw-bold text-success text-nowrap">
                                     {{ pay.amount | format_price }} {{ currency_symbol }}
                                 </td>
-                                <td class="fw-semibold">
+                                <td style="padding: 10px 12px;" class="fw-semibold text-nowrap">
                                     {{ pay.allocated_amount | format_price }} {{ currency_symbol }}
                                 </td>
-                                <td>
+                                <td style="padding: 10px 12px;" class="text-nowrap">
                                     {% if pay.unallocated_amount > 0 %}
-                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle fs-6 px-2.5 py-1.5 fw-bold">
+                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2.5 py-1 fw-bold">
                                             {{ pay.unallocated_amount | format_price }} {{ currency_symbol }}
                                         </span>
                                     {% else %}
-                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-20 rounded-pill px-2.5 py-1 text-muted" style="font-size: 0.8rem;">
                                             0 {{ currency_symbol }}
                                         </span>
                                     {% endif %}
                                 </td>
-                                <td class="text-center">
-                                    <a href="{{ url_for('payments.view_payment', payment_id=pay.id) }}" class="table-action-btn view-btn" title="{% if current_lang == 'ar' %}عرض تفاصيل الدفعة{% else %}View Payment{% endif %}">
+                                <td style="padding: 10px 12px;" class="text-center text-nowrap">
+                                    <a href="{{ url_for('payments.view_payment', payment_id=pay.id) }}"
+                                       class="table-action-btn view-btn"
+                                       title="{% if current_lang == 'ar' %}عرض تفاصيل الدفعة{% else %}View Payment Details{% endif %}"
+                                       data-tooltip="{% if current_lang == 'ar' %}عرض تفاصيل الدفعة{% else %}View Payment Details{% endif %}">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                 </td>

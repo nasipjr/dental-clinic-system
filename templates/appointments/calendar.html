@@ -94,8 +94,13 @@
                     </div>
                 </div>
                 <div class="px-3">
-                    <p class="mb-3 fs-5" style="color: var(--heading-color);"><strong>Patient:</strong> <span id="modal-patient-name"
-                            class="text-primary" style="font-weight: 700;"></span></p>
+                    <p class="mb-3 fs-5" style="color: var(--heading-color);">
+                        <strong>{% if current_lang == 'ar' %}مريض:{% else %}Patient:{% endif %}</strong> 
+                        <a id="modal-patient-link" href="#" class="text-primary text-decoration-none fw-bold" style="font-weight: 700;">
+                            <span id="modal-patient-name"></span>
+                            <i class="bi bi-box-arrow-up-right me-1" style="font-size: 0.85rem;"></i>
+                        </a>
+                    </p>
                     <div class="p-3 rounded-4" style="background-color: color-mix(in srgb, var(--default-color), transparent 95%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);">
                         <p class="mb-2" style="color: var(--default-color);"><strong style="color: var(--heading-color);">Phone:</strong> <span
                                 id="modal-phone" class="ms-1"></span></p>
@@ -123,7 +128,7 @@
                 </a>
                 <a href="#" id="modal-view-link" class="btn btn-outline-secondary px-4"
                     style="border-radius: 30px; font-weight: 600;">
-                    <i class="bi bi-eye me-1"></i> View Detail
+                    <i class="bi bi-eye me-1"></i> {% if current_lang == 'ar' %}عرض تفاصيل الموعد{% else %}View Appointment Details{% endif %}
                 </a>
                 <a href="#" id="modal-edit-link" class="btn btn-primary px-4"
                     style="background-color: #175cdd; border-color: #175cdd; border-radius: 30px; font-weight: 600; display: none !important;">
@@ -892,6 +897,10 @@
 
                 // Set modal content
                 document.getElementById('modal-patient-name').textContent = props.patientName;
+                const patientLinkEl = document.getElementById('modal-patient-link');
+                if (patientLinkEl && props.patientUrl) {
+                    patientLinkEl.href = props.patientUrl;
+                }
                 document.getElementById('modal-phone').textContent = props.phone;
 
                 // Format datetime cleanly
@@ -901,14 +910,22 @@
 
                 document.getElementById('modal-reason').textContent = props.reason;
 
-                // Status Badge styling
+                // Status Badge styling & translation
                 const statusBadge = document.getElementById('modal-status');
-                statusBadge.textContent = props.status;
+                let displayStatus = props.status;
+                if (typeof currentLang !== 'undefined' && currentLang === 'ar') {
+                    if (props.status === 'Done') displayStatus = 'منجز';
+                    else if (props.status === 'Scheduled') displayStatus = 'مجدول';
+                    else if (props.status === 'Cancelled') displayStatus = 'ملغي';
+                    else if (props.status === 'Pending') displayStatus = 'قيد التثبيت';
+                    else if (props.status === 'Rejected') displayStatus = 'تم الرفض';
+                }
+                statusBadge.textContent = displayStatus;
                 statusBadge.className = 'badge';
 
-                if (props.status === 'Done') {
+                if (props.status === 'Done' || props.status === 'منجز') {
                     statusBadge.classList.add('bg-success');
-                } else if (props.status === 'Cancelled') {
+                } else if (props.status === 'Cancelled' || props.status === 'ملغي') {
                     statusBadge.classList.add('bg-danger');
                 } else {
                     statusBadge.classList.add('bg-primary');
@@ -919,24 +936,59 @@
                 // Configure session link (Server controls canOpenSession based on role & ownership)
                 const sessionBtn = document.getElementById('modal-session-link');
                 if (props.canOpenSession === true && props.sessionUrl) {
-                    sessionBtn.href = props.sessionUrl;
                     sessionBtn.style.setProperty('display', 'inline-block', 'important');
                     if (props.status === 'Done' || props.status === 'منجز') {
-                        sessionBtn.innerHTML = `<i class="bi bi-clipboard2-pulse me-1"></i> ${typeof currentLang !== 'undefined' && currentLang === 'ar' ? 'إعادة فتح الجلسة' : 'Reopen Session'}`;
+                        sessionBtn.innerHTML = `<i class="bi bi-arrow-counterclockwise me-1"></i> ${typeof currentLang !== 'undefined' && currentLang === 'ar' ? 'إعادة فتح الجلسة' : 'Reopen Session'}`;
+                        sessionBtn.removeAttribute('href');
+                        sessionBtn.onclick = function(e) {
+                            e.preventDefault();
+                            Swal.fire({
+                                title: typeof currentLang !== 'undefined' && currentLang === 'ar' ? 'إعادة فتح الجلسة؟' : 'Reopen Session?',
+                                text: typeof currentLang !== 'undefined' && currentLang === 'ar' 
+                                    ? 'هل أنت متأكد من إعادة فتح هذه الجلسة؟ سيتم تفعيل إمكانية إضافة وتعديل المعالجات.'
+                                    : 'Are you sure you want to reopen this session? This will enable adding and editing treatments.',
+                                icon: 'question',
+                                showCancelButton: true,
+                                confirmButtonText: typeof currentLang !== 'undefined' && currentLang === 'ar' ? 'نعم، أعد فتح الجلسة' : 'Yes, reopen',
+                                cancelButtonText: typeof currentLang !== 'undefined' && currentLang === 'ar' ? 'إلغاء' : 'Cancel',
+                                confirmButtonColor: '#175cdd',
+                                cancelButtonColor: '#64748b'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    const form = document.createElement('form');
+                                    form.method = 'POST';
+                                    form.action = `/appointments/${info.event.id}/reopen-session`;
+                                    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+                                    if (csrfMeta && csrfMeta.getAttribute('content')) {
+                                        const csrfInput = document.createElement('input');
+                                        csrfInput.type = 'hidden';
+                                        csrfInput.name = 'csrf_token';
+                                        csrfInput.value = csrfMeta.getAttribute('content');
+                                        form.appendChild(csrfInput);
+                                    }
+                                    document.body.appendChild(form);
+                                    form.submit();
+                                }
+                            });
+                        };
                     } else {
+                        sessionBtn.href = props.sessionUrl;
+                        sessionBtn.onclick = null;
                         sessionBtn.innerHTML = `<i class="bi bi-clipboard2-pulse me-1"></i> ${typeof currentLang !== 'undefined' && currentLang === 'ar' ? 'فتح الجلسة' : 'Open Session'}`;
                     }
                 } else {
                     sessionBtn.style.setProperty('display', 'none', 'important');
                     sessionBtn.removeAttribute('href');
+                    sessionBtn.onclick = null;
                 }
 
                 // Configure view link (always visible)
                 document.getElementById('modal-view-link').href = props.viewUrl;
 
-                // Configure edit link (Server controls canEdit based on role & ownership)
+                // Configure edit link (Strictly hidden for Done/Cancelled/Closed appointments)
                 const editBtn = document.getElementById('modal-edit-link');
-                if (props.canEdit === true && props.editUrl) {
+                const isEditable = !isClosed && props.status !== 'Done' && props.status !== 'Cancelled' && props.status !== 'منجز' && props.status !== 'ملغي';
+                if (props.canEdit === true && props.editUrl && isEditable) {
                     editBtn.href = props.editUrl;
                     editBtn.style.setProperty('display', 'inline-block', 'important');
                 } else {

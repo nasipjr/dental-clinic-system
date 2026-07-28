@@ -267,7 +267,7 @@ def end_appointment_session(appointment_id):
 
 
 @treatments_bp.route("/appointments/<int:appointment_id>/reopen-session", methods=["POST"])
-@role_required("admin", "doctor")
+@role_required("admin")
 def reopen_appointment_session(appointment_id):
     current_app.logger.info(f"Reopen appointment session request | appointment_id={appointment_id}")
     try:
@@ -280,14 +280,6 @@ def reopen_appointment_session(appointment_id):
                 message="Only completed appointments can be reopened.",
                 back_url=url_for("treatments.appointment_session", appointment_id=appointment.id),
             ), 400
-
-        if appointment.invoice and appointment.invoice.total_paid > 0:
-            return render_template(
-                "error_message.html",
-                title="Action Not Allowed",
-                message="Cannot reopen this session because payments have already been made towards its invoice. Please remove payments first.",
-                back_url=url_for("treatments.appointment_session", appointment_id=appointment.id),
-            ), 403
 
         appointment.status = "Scheduled"
         db.session.commit()

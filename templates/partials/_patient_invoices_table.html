@@ -182,25 +182,29 @@
                 </td>
 
                 <td class="text-center">
-                    <div class="appointments-actions">
-
-                        <a href="{{ url_for('invoices.view_invoice', invoice_id=invoice.id) }}"
-                            class="table-action-btn view-btn" title="View Invoice">
-                            <i class="bi bi-receipt"></i>
-                        </a>
-
-                        <a href="{{ url_for('appointments.view_appointment', appointment_id=invoice.appointment_id) }}"
-                            class="table-action-btn session-btn" title="View Appointment">
-                            <i class="bi bi-eye"></i>
-                        </a>
-
+                    <div class="appointments-actions d-flex align-items-center justify-content-center gap-2">
                         {% if current_user.role in ('admin', 'doctor') %}
                         <a href="{{ url_for('treatments.appointment_session', appointment_id=invoice.appointment_id) }}"
-                            class="table-action-btn edit-btn" title="Open Session">
+                           class="table-action-btn session-btn"
+                           title="{% if current_lang == 'ar' %}فتح الجلسة{% else %}Open Session{% endif %}"
+                           data-tooltip="{% if current_lang == 'ar' %}فتح الجلسة{% else %}Open Session{% endif %}">
                             <i class="bi bi-clipboard2-pulse"></i>
                         </a>
                         {% endif %}
 
+                        <a href="{{ url_for('appointments.view_appointment', appointment_id=invoice.appointment_id) }}"
+                           class="table-action-btn view-btn"
+                           title="{% if current_lang == 'ar' %}عرض تفاصيل الموعد{% else %}View Appointment Details{% endif %}"
+                           data-tooltip="{% if current_lang == 'ar' %}عرض تفاصيل الموعد{% else %}View Appointment Details{% endif %}">
+                            <i class="bi bi-eye"></i>
+                        </a>
+
+                        <a href="{{ url_for('invoices.view_invoice', invoice_id=invoice.id) }}"
+                           class="table-action-btn edit-btn"
+                           title="{% if current_lang == 'ar' %}عرض الفاتورة{% else %}View Invoice{% endif %}"
+                           data-tooltip="{% if current_lang == 'ar' %}عرض الفاتورة{% else %}View Invoice{% endif %}">
+                            <i class="bi bi-receipt"></i>
+                        </a>
                     </div>
                 </td>
             </tr>
