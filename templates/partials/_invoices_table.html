@@ -1,3 +1,4 @@
+{% set current_lang = current_lang or request.cookies.get('lang', 'ar') %}
 {% if invoices %}
 <div class="appointments-table-wrapper table-responsive">
     <table class="table appointments-table align-middle">
@@ -127,11 +128,14 @@
                 </td>
 
                 <td>
-                    <strong>
+                    <a href="{{ url_for('patients.patient_detail', patient_id=invoice.patient_id) }}"
+                       class="fw-bold text-main hover-underline"
+                       title="{% if request.cookies.get('lang', 'en') == 'ar' or current_lang == 'ar' %}فتح ملف المريض{% else %}Open Patient Profile{% endif %}"
+                       data-tooltip="{% if request.cookies.get('lang', 'en') == 'ar' or current_lang == 'ar' %}فتح ملف المريض{% else %}Open Patient Profile{% endif %}">
                         {{ invoice.patient.first_name }} {{ invoice.patient.last_name }}
-                    </strong>
+                    </a>
                     <br>
-                    <small>{{ invoice.patient.phone or 'No phone number' }}</small>
+                    <small class="text-secondary">{{ invoice.patient.phone or 'No phone number' }}</small>
                 </td>
 
                 <td>

@@ -5,19 +5,20 @@ from utils.constants import APPOINTMENT_REASONS, PATIENT_GENDERS
 
 
 def parse_treatment_money(total_cost_raw, paid_amount_raw):
+    from decimal import Decimal, InvalidOperation
     total_cost_raw = str(total_cost_raw or "").strip()
     paid_amount_raw = str(paid_amount_raw or "").strip()
 
     try:
-        total_cost = float(total_cost_raw) if total_cost_raw else 0
-        paid_amount = float(paid_amount_raw) if paid_amount_raw else 0
-    except ValueError:
+        total_cost = Decimal(total_cost_raw) if total_cost_raw else Decimal('0.00')
+        paid_amount = Decimal(paid_amount_raw) if paid_amount_raw else Decimal('0.00')
+    except (ValueError, InvalidOperation):
         return None, None, "Total cost and paid amount must be valid numbers."
 
-    if total_cost < 0:
+    if total_cost < Decimal('0.00'):
         return None, None, "Total cost cannot be negative."
 
-    if paid_amount < 0:
+    if paid_amount < Decimal('0.00'):
         return None, None, "Paid amount cannot be negative."
 
     if paid_amount > total_cost:
@@ -253,37 +254,40 @@ def get_appointment_datetime_limits():
 
 
 def parse_payment_amount(payment_amount_raw, remaining_amount):
+    from decimal import Decimal, InvalidOperation
     payment_amount_raw = str(payment_amount_raw or "").strip()
 
     if not payment_amount_raw:
         return None, "Payment amount is required."
 
     try:
-        payment_amount = float(payment_amount_raw)
-    except ValueError:
+        payment_amount = Decimal(payment_amount_raw)
+    except (ValueError, InvalidOperation):
         return None, "Payment amount must be a valid number."
 
-    if payment_amount <= 0:
+    if payment_amount <= Decimal('0.00'):
         return None, "Payment amount must be greater than 0."
 
-    if payment_amount > remaining_amount:
+    remaining = Decimal(str(remaining_amount or 0))
+    if payment_amount > remaining:
         return None, "Payment amount cannot be greater than the remaining amount."
 
     return payment_amount, None
 
 
 def parse_invoice_payment_amount(payment_amount_raw):
+    from decimal import Decimal, InvalidOperation
     payment_amount_raw = str(payment_amount_raw or "").strip()
 
     if not payment_amount_raw:
         return None, "Payment amount is required."
 
     try:
-        payment_amount = float(payment_amount_raw)
-    except ValueError:
+        payment_amount = Decimal(payment_amount_raw)
+    except (ValueError, InvalidOperation):
         return None, "Payment amount must be a valid number."
 
-    if payment_amount <= 0:
+    if payment_amount <= Decimal('0.00'):
         return None, "Payment amount must be greater than 0."
 
     return payment_amount, None

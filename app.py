@@ -298,15 +298,18 @@ app.logger.info("Application started successfully")
 
 @app.template_filter("format_price")
 def format_price(value):
-    if value is None:
+    if value is None or value == "":
         return "0"
     try:
-        val = float(value)
+        from decimal import Decimal, InvalidOperation
+        if isinstance(value, str):
+            value = value.replace(",", "").strip()
+        val = Decimal(str(value))
         # Format with whole number and thousands separator
         formatted = "{:,.0f}".format(val)
         # Replace commas with dots
         return formatted.replace(",", ".")
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, InvalidOperation):
         return str(value)
 
 
@@ -527,34 +530,12 @@ if __name__ == "__main__":
         except Exception:
             app.logger.exception("Failed to create database tables")
 
-        # Start database backup scheduler thread
+        # Start background schedulers using Single-Instance Lock Guard
         try:
-            from utils.backup_helper import schedule_daily_backups
-            schedule_daily_backups(app)
-            app.logger.info("Database backup scheduler thread started successfully")
+            from utils.scheduler_guard import start_app_schedulers
+            start_app_schedulers(app)
         except Exception as e:
-            app.logger.error(f"Failed to start database backup scheduler: {e}")
-
-        try:
-            from utils.notification_helper import schedule_appointment_reminders
-            schedule_appointment_reminders(app)
-            app.logger.info("Appointment reminders scheduler thread started successfully")
-        except Exception as e:
-            app.logger.error(f"Failed to start appointment reminders scheduler: {e}")
-
-        try:
-            from utils.notification_helper import start_telegram_bot_listener
-            start_telegram_bot_listener(app)
-            app.logger.info("Telegram Bot auto-registration listener thread started successfully")
-        except Exception as e:
-            app.logger.error(f"Failed to start Telegram Bot listener: {e}")
-
-        try:
-            from routes.appointments import schedule_expired_appointments_cleanup
-            schedule_expired_appointments_cleanup(app)
-            app.logger.info("Expired appointments cleanup scheduler thread started successfully")
-        except Exception as e:
-            app.logger.error(f"Failed to start expired appointments cleanup scheduler: {e}")
+            app.logger.error(f"Failed to start background schedulers: {e}")
 
     debug_mode = os.getenv("FLASK_DEBUG", "True").lower() in ("true", "1")
     app.logger.info(f"Flask app is running (debug={debug_mode})")

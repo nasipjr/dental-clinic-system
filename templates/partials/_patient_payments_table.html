@@ -122,12 +122,12 @@
                     {% if payment.unallocated_amount > 0 %}
                     <span class="credit-amount">
                         {{ payment.unallocated_amount | format_price }} {{ currency_symbol }}
-                        <span class="credit-badge">Credit</span>
+                        <span class="credit-badge">{% if request.cookies.get('lang', 'en') == 'ar' %}رصيد متبقي{% else %}Credit{% endif %}</span>
                     </span>
                     {% else %}
                     <span class="remaining-clear">
-                        0.00 {{ currency_symbol }}
-                        <span class="paid-badge">No Credit</span>
+                        0 {{ currency_symbol }}
+                        <span class="paid-badge">{% if request.cookies.get('lang', 'en') == 'ar' %}موزّع بالكامل{% else %}Clear{% endif %}</span>
                     </span>
                     {% endif %}
                 </td>

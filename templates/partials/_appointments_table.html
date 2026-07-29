@@ -100,8 +100,8 @@
                         {% if current_user.role == 'admin' or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id and appointment.status != 'Cancelled') %}
                         <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
                             class="table-action-btn session-btn"
-                            data-bs-toggle="tooltip"
-                            data-bs-title="{% if current_lang == 'ar' %}فتح الجلسة{% else %}Open Session{% endif %}">
+                            title="{% if current_lang == 'ar' %}فتح الجلسة{% else %}Open Session{% endif %}"
+                            data-tooltip="{% if current_lang == 'ar' %}فتح الجلسة{% else %}Open Session{% endif %}">
                             <i class="bi bi-clipboard2-pulse"></i>
                         </a>
                         {% endif %}

@@ -21,11 +21,11 @@
                     <a class="payments-ajax-link" href="{{ url_for(
                         'payments.payments_table',
                         search=search_query,
-                        sort='date',
-                        order='asc' if sort_by != 'date' or order == 'desc' else 'desc'
+                        sort='patient',
+                        order='asc' if sort_by != 'patient' or order == 'desc' else 'desc'
                     ) }}">
-                        Date
-                        {% if sort_by == 'date' %}
+                        {% if request.cookies.get('lang', 'en') == 'ar' or current_lang == 'ar' %}المريض{% else %}Patient{% endif %}
+                        {% if sort_by == 'patient' %}
                         <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
                     </a>
@@ -35,11 +35,11 @@
                     <a class="payments-ajax-link" href="{{ url_for(
                         'payments.payments_table',
                         search=search_query,
-                        sort='patient',
-                        order='asc' if sort_by != 'patient' or order == 'desc' else 'desc'
+                        sort='date',
+                        order='asc' if sort_by != 'date' or order == 'desc' else 'desc'
                     ) }}">
-                        Patient
-                        {% if sort_by == 'patient' %}
+                        {% if request.cookies.get('lang', 'en') == 'ar' or current_lang == 'ar' %}التاريخ{% else %}Date{% endif %}
+                        {% if sort_by == 'date' %}
                         <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
                     </a>
@@ -101,10 +101,6 @@
                 </td>
 
                 <td>
-                    {{ payment.payment_date.strftime('%Y-%m-%d %I:%M %p') if payment.payment_date else 'No date' }}
-                </td>
-
-                <td>
                     <a href="{{ url_for('patients.patient_detail', patient_id=payment.patient_id) }}"
                        class="fw-bold text-main hover-underline"
                        title="{% if request.cookies.get('lang', 'en') == 'ar' %}فتح ملف المريض{% else %}Open Patient Profile{% endif %}"
@@ -113,6 +109,10 @@
                     </a>
                     <br>
                     <small class="text-secondary">{{ payment.patient.phone or '' }}</small>
+                </td>
+
+                <td>
+                    {{ payment.payment_date.strftime('%Y-%m-%d %I:%M %p') if payment.payment_date else 'No date' }}
                 </td>
 
                 <td>
@@ -130,14 +130,14 @@
 
                 <td>
                     {% if payment.unallocated_amount > 0 %}
-                    <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-3 py-1.5 fw-bold"
-                          title="{% if request.cookies.get('lang', 'en') == 'ar' %}رصيد متبقي بحساب المريض{% else %}Patient Credit{% endif %}"
-                          data-tooltip="{% if request.cookies.get('lang', 'en') == 'ar' %}رصيد متبقي بحساب المريض{% else %}Patient Credit{% endif %}">
+                    <span class="credit-amount">
                         {{ payment.unallocated_amount | format_price }} {{ currency_symbol }}
+                        <span class="credit-badge">{% if request.cookies.get('lang', 'en') == 'ar' %}رصيد متبقي{% else %}Credit{% endif %}</span>
                     </span>
                     {% else %}
-                    <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-20 rounded-pill px-2.5 py-1 text-muted" style="font-size: 0.82rem;">
+                    <span class="remaining-clear">
                         0 {{ currency_symbol }}
+                        <span class="paid-badge">{% if request.cookies.get('lang', 'en') == 'ar' %}موزّع بالكامل{% else %}Clear{% endif %}</span>
                     </span>
                     {% endif %}
                 </td>

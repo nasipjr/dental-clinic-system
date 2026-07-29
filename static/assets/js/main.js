@@ -371,4 +371,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Run initial tooltips parsing
   window.initCustomTooltips();
+
+  // Universal Smooth Scroll to Top of Table on Pagination Click
+  window.scrollToTableTop = function(triggerEl) {
+    let target = null;
+    if (triggerEl) {
+      target = triggerEl.closest('#appointments-table-container, #patients-table-container, #invoices-table-container, #payments-table-container, #patient-appointments-container, #patient-invoices-container, #patient-payments-table-container, #patient-treatments-table-container, .appointments-table-wrapper, .table-responsive, .table-card, section, table');
+    }
+    if (!target) {
+      target = document.querySelector('.appointments-table-wrapper, .table-responsive, table');
+    }
+    if (target) {
+      const yOffset = -90;
+      const y = target.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+    }
+  };
+
+  document.addEventListener('click', function(e) {
+    const pageLink = e.target.closest('.page-link, .pagination a, [class*="-pagination"] a, .appointments-ajax-link, .patients-ajax-link, .invoices-ajax-link, .payments-ajax-link, .dashboard-ajax-link');
+    if (pageLink && (pageLink.classList.contains('page-link') || pageLink.closest('.pagination') || (pageLink.href && pageLink.href.includes('page=')))) {
+      window.scrollToTableTop(pageLink);
+    }
+  });
 });

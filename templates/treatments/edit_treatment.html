@@ -417,54 +417,19 @@
                              </style>
 
                               <div class="col-md-12">
-                                  <div class="odontogram-wrapper mb-3">
-                                     <div class="text-center text-secondary small mb-3">
-                                         <i class="bi bi-info-circle me-1"></i> {% if current_lang == 'ar' %}انقر على الأسنان في المخطط لتحديدها أو إلغاء تحديدها.{% else %}Click teeth on the chart to select or deselect.{% endif %}
-                                     </div>
-                                     
-                                     {% set upper_positions = {
-                                         1:  {'x': '6%',  'y': '85%', 'r': '-65deg'},
-                                         2:  {'x': '9%',  'y': '68%', 'r': '-55deg'},
-                                         3:  {'x': '13%', 'y': '52%', 'r': '-45deg'},
-                                         4:  {'x': '18%', 'y': '38%', 'r': '-35deg'},
-                                         5:  {'x': '24%', 'y': '26%', 'r': '-25deg'},
-                                         6:  {'x': '31%', 'y': '17%', 'r': '-15deg'},
-                                         7:  {'x': '39%', 'y': '11%', 'r': '-5deg'},
-                                         8:  {'x': '47%', 'y': '9%',  'r': '-2deg'},
-                                         9:  {'x': '53%', 'y': '9%',  'r': '2deg'},
-                                         10: {'x': '61%', 'y': '11%', 'r': '5deg'},
-                                         11: {'x': '69%', 'y': '17%', 'r': '15deg'},
-                                         12: {'x': '76%', 'y': '26%', 'r': '25deg'},
-                                         13: {'x': '82%', 'y': '38%', 'r': '35deg'},
-                                         14: {'x': '87%', 'y': '52%', 'r': '45deg'},
-                                         15: {'x': '91%', 'y': '68%', 'r': '55deg'},
-                                         16: {'x': '94%', 'y': '85%', 'r': '65deg'}
-                                     } %}
-
-                                     {% set lower_positions = {
-                                         32: {'x': '6%',  'y': '15%', 'r': '65deg'},
-                                         31: {'x': '9%',  'y': '32%', 'r': '55deg'},
-                                         30: {'x': '13%', 'y': '48%', 'r': '45deg'},
-                                         29: {'x': '18%', 'y': '62%', 'r': '35deg'},
-                                         28: {'x': '24%', 'y': '74%', 'r': '25deg'},
-                                         27: {'x': '31%', 'y': '83%', 'r': '15deg'},
-                                         26: {'x': '39%', 'y': '89%', 'r': '5deg'},
-                                         25: {'x': '47%', 'y': '91%', 'r': '2deg'},
-                                         24: {'x': '53%', 'y': '91%', 'r': '-2deg'},
-                                         23: {'x': '61%', 'y': '89%', 'r': '-5deg'},
                                   <!-- Odontogram Tabs Bar -->
                                   <div class="d-flex justify-content-center mb-4">
                                       <ul class="nav nav-pills odontogram-nav-pills justify-content-center gap-2" id="odontogramEditTabs" role="tablist">
                                           <li class="nav-item" role="presentation">
                                               <button class="nav-link active" id="universal-edit-tab" data-bs-toggle="pill" data-bs-target="#universal-edit-pane" type="button" role="tab" aria-controls="universal-edit-pane" aria-selected="true">
                                                   <i class="bi bi-symmetry-vertical me-2"></i>
-                                                  {{ 'مخطط الأسنان التفاعلي (التقسيم الأميركي)' if current_lang == 'ar' else 'Interactive Dental Chart (Universal)' }}
+                                                  {{ 'مخطط الأسنان التفاعلي' if current_lang == 'ar' else 'Interactive Dental Chart' }}
                                               </button>
                                           </li>
                                           <li class="nav-item" role="presentation">
                                               <button class="nav-link" id="fdi-edit-tab" data-bs-toggle="pill" data-bs-target="#fdi-edit-pane" type="button" role="tab" aria-controls="fdi-edit-pane" aria-selected="false">
                                                   <i class="bi bi-grid-3x3-gap me-2"></i>
-                                                  {{ 'المخطط التشريحي للأسنان (التقسيم الدولي FDI)' if current_lang == 'ar' else 'Anatomical Dental Chart (FDI)' }}
+                                                  {{ 'المخطط التشريحي للأسنان (FDI)' if current_lang == 'ar' else 'Anatomical Dental Chart (FDI)' }}
                                               </button>
                                           </li>
                                       </ul>
@@ -738,16 +703,23 @@
                              </button>
                              {% endif %}
 
-                             {% if current_mode == 'view' and treatment.appointment.status in ('Scheduled', 'Checked In', 'In Chair') %}
+                             {% if current_mode == 'view' and treatment.appointment.status in ('Scheduled', 'Checked In', 'In Chair') and current_user.role in ('admin', 'doctor') %}
                              <a href="{{ url_for('treatments.edit_treatment', treatment_id=treatment.id) }}"
                                  class="btn-primary px-4">
                                  {% if current_lang == 'ar' %}تعديل المعالجة{% else %}Edit Treatment{% endif %}
                              </a>
                              {% endif %}
 
+                             {% if current_user.role in ('admin', 'doctor') %}
                              <a href="{{ url_for('treatments.appointment_session', appointment_id=treatment.appointment.id) }}"
                                  class="btn-outline-main px-4 ms-2">
                                  {% if current_lang == 'ar' %}العودة للجلسة{% else %}Back to Session{% endif %}
+                             </a>
+                             {% endif %}
+
+                             <a href="{{ url_for('patients.patient_detail', patient_id=treatment.appointment.patient_id) }}"
+                                 class="btn-outline-main px-4 ms-2">
+                                 {% if current_lang == 'ar' %}ملف المريض{% else %}Patient Profile{% endif %}
                              </a>
                          </div>
 
@@ -810,40 +782,10 @@
                 btn.classList.add('history-treatment');
             }
             
-            // Build tooltip title
-            let tooltipHtml = '';
             const fdiNum = fdiMap[toothStr];
-            
-            tooltipHtml += `<strong class="d-block mb-1">${isAr ? 'السن' : 'Tooth'} ${fdiNum}</strong>`;
-            
-            if (activeMatches.length > 0) {
-                tooltipHtml += `<div class="text-success small"><i class="bi bi-check-circle-fill me-1"></i>${isAr ? 'جلسة حالية:' : 'Current Session:'}</div>`;
-                activeMatches.forEach(t => {
-                    tooltipHtml += `<div class="ms-2 small text-nowrap">• ${t.procedure}</div>`;
-                });
-            }
-            if (historyMatches.length > 0) {
-                tooltipHtml += `<div class="text-primary small mt-1"><i class="bi bi-clock-history me-1"></i>${isAr ? 'معالجات سابقة:' : 'Past History:'}</div>`;
-                historyMatches.forEach(t => {
-                    tooltipHtml += `<div class="ms-2 small text-nowrap">• ${t.procedure} (${t.date})</div>`;
-                });
-            }
-            
-            if (activeMatches.length === 0 && historyMatches.length === 0) {
-                tooltipHtml += `<div class="text-muted small">${isAr ? 'سليم / لا يوجد معالجات' : 'Healthy / No treatments'}</div>`;
-            }
-            
-            btn.setAttribute('data-bs-toggle', 'tooltip');
-            btn.setAttribute('data-bs-html', 'true');
-            btn.setAttribute('data-bs-title', tooltipHtml);
+            btn.setAttribute('title', `${isAr ? 'السن' : 'Tooth'} ${fdiNum}`);
         }
     }
-
-    // Initialize Bootstrap tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    });
 
      const procedureSelect = document.getElementById('procedure_type');
      const priceDisplay = document.getElementById('procedure_price_display');

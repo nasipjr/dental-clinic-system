@@ -1,3 +1,4 @@
+from decimal import Decimal
 from models import db, Appointment, Invoice, Payment, PaymentAllocation
 
 
@@ -23,24 +24,24 @@ def allocate_patient_payments_to_invoices(patient_id):
 
     db.session.flush()
 
-    invoice_allocated = {invoice.id: 0.0 for invoice in invoices}
+    invoice_allocated = {invoice.id: Decimal('0.00') for invoice in invoices}
 
     for payment in payments:
-        remaining_payment_amount = float(payment.amount or 0)
+        remaining_payment_amount = Decimal(str(payment.amount or 0))
 
-        if remaining_payment_amount <= 0:
+        if remaining_payment_amount <= Decimal('0.00'):
             continue
 
         for invoice in invoices:
-            invoice_total = float(invoice.total_amount or 0)
+            invoice_total = Decimal(str(invoice.total_amount or 0))
 
-            if invoice_total <= 0:
+            if invoice_total <= Decimal('0.00'):
                 continue
 
             allocated_to_invoice = invoice_allocated[invoice.id]
             outstanding_amount = invoice_total - allocated_to_invoice
 
-            if outstanding_amount <= 0:
+            if outstanding_amount <= Decimal('0.00'):
                 continue
 
             allocation_amount = min(remaining_payment_amount, outstanding_amount)
@@ -55,7 +56,7 @@ def allocate_patient_payments_to_invoices(patient_id):
             invoice_allocated[invoice.id] += allocation_amount
             remaining_payment_amount -= allocation_amount
 
-            if remaining_payment_amount <= 0:
+            if remaining_payment_amount <= Decimal('0.00'):
                 break
 
     db.session.flush()

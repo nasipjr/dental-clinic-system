@@ -86,33 +86,30 @@ class Patient(db.Model):
 
     @property
     def total_invoice_amount(self):
-        return sum(invoice.total_amount for invoice in self.invoices)
+        from decimal import Decimal
+        return sum((Decimal(str(invoice.total_amount or 0)) for invoice in self.invoices), Decimal('0.00'))
 
     @property
     def total_payments_amount(self):
-        return sum(payment.amount for payment in self.payments)
+        from decimal import Decimal
+        return sum((Decimal(str(payment.amount or 0)) for payment in self.payments), Decimal('0.00'))
 
     @property
     def total_allocated_amount(self):
-        return sum(payment.allocated_amount for payment in self.payments)
+        from decimal import Decimal
+        return sum((Decimal(str(payment.allocated_amount or 0)) for payment in self.payments), Decimal('0.00'))
 
     @property
     def outstanding_amount(self):
+        from decimal import Decimal
         balance = self.total_invoice_amount - self.total_payments_amount
-
-        if balance > 0:
-            return balance
-
-        return 0
+        return max(balance, Decimal('0.00'))
 
     @property
     def credit_amount(self):
+        from decimal import Decimal
         credit = self.total_payments_amount - self.total_invoice_amount
-
-        if credit > 0:
-            return credit
-
-        return 0
+        return max(credit, Decimal('0.00'))
 
     @property
     def balance_amount(self):
@@ -250,6 +247,24 @@ class Treatment(db.Model):
         return self.appointment.patient_id
 
 
+class ToothHistory(db.Model):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(
+        db.Integer,
+        db.ForeignKey("patient.id", ondelete="CASCADE"),
+        nullable=False
+    )
+    tooth_number = db.Column(db.String(50), nullable=False)
+    procedure_type = db.Column(db.String(200), nullable=False)
+    notes = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    patient = db.relationship("Patient", backref=db.backref("tooth_histories", cascade="all, delete-orphan"))
+
+
 class Invoice(db.Model):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -301,7 +316,8 @@ class Invoice(db.Model):
 
     @property
     def subtotal(self):
-        return sum(treatment.total_cost for treatment in self.treatments)
+        from decimal import Decimal
+        return sum((Decimal(str(treatment.total_cost or 0)) for treatment in self.treatments), Decimal('0.00'))
 
     @property
     def discount_amount(self):
@@ -327,29 +343,25 @@ class Invoice(db.Model):
 
     @property
     def total_paid(self):
-        return sum(allocation.amount for allocation in self.payment_allocations)
+        from decimal import Decimal
+        return sum((Decimal(str(allocation.amount or 0)) for allocation in self.payment_allocations), Decimal('0.00'))
 
     @property
     def outstanding_amount(self):
-        balance = self.total_amount - self.total_paid
-
-        if balance > 0:
-            return balance
-
-        return 0
+        from decimal import Decimal
+        balance = Decimal(str(self.total_amount)) - Decimal(str(self.total_paid))
+        return max(balance, Decimal('0.00'))
 
     @property
     def balance(self):
-        return self.total_amount - self.total_paid
+        from decimal import Decimal
+        return Decimal(str(self.total_amount)) - Decimal(str(self.total_paid))
 
     @property
     def credit(self):
-        credit = self.total_paid - self.total_amount
-
-        if credit > 0:
-            return credit
-
-        return 0
+        from decimal import Decimal
+        credit = Decimal(str(self.total_paid)) - Decimal(str(self.total_amount))
+        return max(credit, Decimal('0.00'))
 
     @property
     def treatments_count(self):
@@ -394,16 +406,14 @@ class Payment(db.Model):
 
     @property
     def allocated_amount(self):
-        return sum(allocation.amount for allocation in self.allocations)
+        from decimal import Decimal
+        return sum((Decimal(str(allocation.amount or 0)) for allocation in self.allocations), Decimal('0.00'))
 
     @property
     def unallocated_amount(self):
-        unallocated = self.amount - self.allocated_amount
-
-        if unallocated > 0:
-            return unallocated
-
-        return 0
+        from decimal import Decimal
+        unallocated = Decimal(str(self.amount or 0)) - Decimal(str(self.allocated_amount or 0))
+        return max(unallocated, Decimal('0.00'))
 
 
 class PaymentAllocation(db.Model):

@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, render_template, request, redirect, url_for
 
-from models import db, Appointment, Treatment
+from models import db, Appointment, Treatment, ToothHistory
 from services.invoice_service import sync_invoice_for_appointment
 from services.payment_service import allocate_patient_payments_to_invoices
 from utils.constants import TREATMENT_PRICES, TREATMENT_PROCEDURE_TYPES
@@ -64,6 +64,19 @@ def appointment_session(appointment_id):
         total_remaining_sum = appointment.balance
         credit_amount = appointment.credit
 
+        tooth_histories = ToothHistory.query.filter_by(patient_id=appointment.patient_id).order_by(ToothHistory.created_at.desc()).all()
+        tooth_history_dict = {}
+        for th in tooth_histories:
+            tn = str(th.tooth_number)
+            if tn not in tooth_history_dict:
+                tooth_history_dict[tn] = []
+            tooth_history_dict[tn].append({
+                "id": th.id,
+                "procedure": th.procedure_type,
+                "notes": th.notes or "",
+                "created_at": th.created_at.strftime("%Y-%m-%d %I:%M %p")
+            })
+
         return render_template(
             "appointments/appointment_session.html",
             appointment=appointment,
@@ -75,6 +88,8 @@ def appointment_session(appointment_id):
             credit_amount=credit_amount,
             previous_treatments=previous_treatments,
             treatment_prices=dict(TREATMENT_PRICES),
+            treatment_procedure_types=list(TREATMENT_PROCEDURE_TYPES),
+            tooth_history_dict=tooth_history_dict,
             anesthesia_needle_price=float(get_setting("anesthesia_needle_price", 50000)),
         )
 
@@ -135,6 +150,34 @@ def add_treatment_to_appointment(appointment_id):
             # Calculate cost multiplied by the number of teeth selected
             teeth_list = [t.strip() for t in tooth_number.split(',') if t.strip()]
             num_teeth = len(teeth_list) if teeth_list else 1
+
+            # Check extraction rule (prior or clinic extraction)
+            proc_lower = (procedure_type or "").lower()
+            is_post_ext = "ما بعد القلع" in proc_lower or "post-extraction" in proc_lower or "post extraction" in proc_lower
+            if not is_post_ext:
+                for t in teeth_list:
+                    has_prior_ext = ToothHistory.query.filter(
+                        ToothHistory.patient_id == appointment.patient_id,
+                        ToothHistory.tooth_number == t,
+                        (ToothHistory.procedure_type.ilike("%قلع%") | ToothHistory.procedure_type.ilike("%extract%"))
+                    ).first()
+
+                    has_clinic_ext = Treatment.query.join(Treatment.appointment).filter(
+                        Appointment.patient_id == appointment.patient_id,
+                        Appointment.status != "Cancelled",
+                        Treatment.tooth_number == t,
+                        (Treatment.procedure_type.ilike("%قلع%") | Treatment.procedure_type.ilike("%extract%"))
+                    ).first()
+
+                    if has_prior_ext or has_clinic_ext:
+                        err_msg = f"السن {t} مقلوع سابقاً أو في العيادة. لا يمكن إضافة معالجة عليه سوى (معالجة ما بعد القلع)." if request.cookies.get("lang") == "ar" else f"Tooth {t} is extracted. Only post-extraction care can be added."
+                        return render_template(
+                            "treatments/add_treatment.html",
+                            appointment=appointment,
+                            patient=appointment.patient,
+                            treatment_prices=dict(TREATMENT_PRICES),
+                            error_message=err_msg,
+                        ), 400
             
             use_anesthesia = request.form.get("use_anesthesia") == "on"
             anesthesia_needles = int(request.form.get("anesthesia_needles", 0)) if use_anesthesia else 0
@@ -440,7 +483,7 @@ def edit_treatment(treatment_id):
 
 
 @treatments_bp.route("/treatments/<int:treatment_id>/view")
-@role_required("admin", "doctor")
+@role_required("admin", "doctor", "receptionist")
 def view_treatment(treatment_id):
     current_app.logger.info(f"View treatment page opened | treatment_id={treatment_id}")
 

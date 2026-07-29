@@ -14,8 +14,8 @@ class DentalClinicTestCase(unittest.TestCase):
     def test_parse_treatment_money(self):
         total, paid, err = parse_treatment_money(100, 50)
         self.assertIsNone(err)
-        self.assertEqual(total, 100.0)
-        self.assertEqual(paid, 50.0)
+        self.assertEqual(total, Decimal('100.00'))
+        self.assertEqual(paid, Decimal('50.00'))
 
         total, paid, err = parse_treatment_money(-10, 0)
         self.assertIsNone(total)
@@ -26,7 +26,8 @@ class DentalClinicTestCase(unittest.TestCase):
             "first_name": "Sami",
             "last_name": "Karim",
             "gender": "Male",
-            "date_of_birth": "1988-11-20"
+            "date_of_birth": "1988-11-20",
+            "phone": "+963958948727"
         }
         data, err = parse_patient_data(form)
         self.assertIsNone(err)
@@ -58,9 +59,15 @@ class DentalClinicTestCase(unittest.TestCase):
 
     def test_cascade_delete_orphan_rules(self):
         from models import Patient
-        for rel_name in ["appointments", "payments", "invoices", "files"]:
+        for rel_name in ["appointments", "payments", "invoices", "files", "tooth_histories"]:
             rel = getattr(Patient, rel_name).property
             self.assertTrue(rel.cascade.delete_orphan)
+
+    def test_tooth_history_model(self):
+        from models import ToothHistory
+        th = ToothHistory(patient_id=1, tooth_number="21", procedure_type="قلع سن (سابق)", notes="تم القلع خارج العيادة")
+        self.assertEqual(th.tooth_number, "21")
+        self.assertEqual(th.procedure_type, "قلع سن (سابق)")
 
     def test_fast_translation(self):
         from utils.translator import translate_html, fast_translate_text

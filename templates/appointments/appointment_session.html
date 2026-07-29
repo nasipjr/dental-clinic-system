@@ -665,11 +665,15 @@
                             </div>
                             <div class="d-inline-flex align-items-center gap-2">
                                 <span class="legend-dot history-treatment-bg"></span>
-                                <span class="small text-muted">{{ 'سوابق معالجة' if current_lang == 'ar' else 'Treated in history' }}</span>
+                                <span class="small text-muted">{{ 'سوابق معالجة بالعيادة' if current_lang == 'ar' else 'Treated in clinic history' }}</span>
                             </div>
                             <div class="d-inline-flex align-items-center gap-2">
                                 <span class="legend-dot extracted-treatment-bg"></span>
                                 <span class="small text-muted">{{ 'سن مقلوع' if current_lang == 'ar' else 'Extracted Tooth' }}</span>
+                            </div>
+                            <div class="d-inline-flex align-items-center gap-2">
+                                <span class="legend-dot history-external-bg"></span>
+                                <span class="small text-muted">{{ 'سوابق مرضية وخارجية' if current_lang == 'ar' else 'Prior / External Record' }}</span>
                             </div>
                             <div class="d-inline-flex align-items-center gap-2">
                                 <span class="legend-dot no-treatment-bg"></span>
@@ -799,11 +803,15 @@
                             </div>
                             <div class="d-inline-flex align-items-center gap-2">
                                 <span class="legend-dot history-treatment-bg"></span>
-                                <span class="small text-muted">{{ 'سوابق معالجة' if current_lang == 'ar' else 'Treated in history' }}</span>
+                                <span class="small text-muted">{{ 'سوابق معالجة بالعيادة' if current_lang == 'ar' else 'Treated in clinic history' }}</span>
                             </div>
                             <div class="d-inline-flex align-items-center gap-2">
                                 <span class="legend-dot extracted-treatment-bg"></span>
                                 <span class="small text-muted">{{ 'سن مقلوع' if current_lang == 'ar' else 'Extracted Tooth' }}</span>
+                            </div>
+                            <div class="d-inline-flex align-items-center gap-2">
+                                <span class="legend-dot history-external-bg"></span>
+                                <span class="small text-muted">{{ 'سوابق مرضية وخارجية' if current_lang == 'ar' else 'Prior / External Record' }}</span>
                             </div>
                             <div class="d-inline-flex align-items-center gap-2">
                                 <span class="legend-dot no-treatment-bg"></span>
@@ -876,13 +884,6 @@
                         <td>{{ treatment.notes or ('—' ) }}</td>
                         <td class="text-center">
                             <div class="d-flex align-items-center justify-content-center gap-2">
-                                <a href="{{ url_for('treatments.view_treatment', treatment_id=treatment.id) }}"
-                                   class="table-action-btn view-btn"
-                                   title="{{ 'عرض المعالجة' if current_lang == 'ar' else 'View Treatment' }}"
-                                   data-tooltip="{{ 'عرض المعالجة' if current_lang == 'ar' else 'View Treatment' }}">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                {% if appointment.status in ('Scheduled', 'Checked In', 'In Chair') %}
                                 <a href="{{ url_for('treatments.edit_treatment', treatment_id=treatment.id) }}"
                                    class="table-action-btn edit-btn"
                                    title="{{ 'تعديل المعالجة' if current_lang == 'ar' else 'Edit Treatment' }}"
@@ -890,6 +891,7 @@
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
                                 
+                                {% if appointment.status in ('Scheduled', 'Checked In', 'In Chair') or current_user.role == 'admin' %}
                                 {% set proc_lower = (treatment.procedure_type or '') | lower %}
                                 {% if 'قلع' not in proc_lower and 'extract' not in proc_lower %}
                                 <a href="{{ url_for('treatments.delete_treatment', treatment_id=treatment.id) }}"
@@ -1019,11 +1021,6 @@
                                 <td class="text-center">
                                     <div class="appointments-actions">
 
-                                        <a href="{{ url_for('treatments.view_treatment', treatment_id=treatment.id) }}"
-                                            class="table-action-btn view-btn" title="View Treatment">
-                                            <i class="bi bi-eye"></i>
-                                        </a>
-
                                         <a href="{{ url_for('treatments.appointment_session', appointment_id=treatment.appointment.id) }}"
                                             class="table-action-btn session-btn" title="Open Treatment Session">
                                             <i class="bi bi-clipboard2-pulse"></i>
@@ -1063,6 +1060,48 @@
                 <div class="row">
                     <!-- Left Column: History & Current Treatments -->
                     <div class="col-md-6 border-end" id="modal-treatments-column">
+                        <!-- Section: Pre-existing History (السوابق المرضية والتشخيص الأولي) -->
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                                <h6 class="fw-bold mb-0 d-flex align-items-center gap-2" style="color: #c084fc; font-size: 0.9rem;">
+                                    <i class="bi bi-journal-medical flex-shrink-0"></i>
+                                    <span>{% if current_lang == 'ar' %}السوابق المرضية والتشخيص الأولي{% else %}Pre-existing History{% endif %}</span>
+                                </h6>
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-semibold flex-shrink-0 ms-2" id="s-toggle-add-history-btn" style="font-size: 0.78rem; border-width: 1px; white-space: nowrap;">
+                                    <i class="bi bi-plus-circle me-1"></i>{% if current_lang == 'ar' %}إضافة سابقة{% else %}Add History{% endif %}
+                                </button>
+                            </div>
+
+                            <!-- Collapsible Inline Form to Add Prior History Note -->
+                            <div id="s-add-history-form-container" class="card card-body mb-2 p-2.5 border rounded-3 d-none" style="background: rgba(168, 85, 247, 0.05); border-color: rgba(168, 85, 247, 0.25) !important;">
+                                <form method="POST" action="{{ url_for('patients.add_tooth_history', patient_id=patient.id) }}">
+                                    <input type="hidden" name="tooth_number" id="s-history-form-tooth-number" value="">
+                                    <div class="mb-2">
+                                        <select name="procedure_type" class="form-select form-select-sm rounded-3" required style="font-size: 0.8rem;">
+                                            <option value="">{% if current_lang == 'ar' %}-- اختر السابقة المرضية --{% else %}-- Select Procedure --{% endif %}</option>
+                                            {% for proc in treatment_procedure_types %}
+                                            <option value="{{ proc }} (سابق)">{{ proc }} ({% if current_lang == 'ar' %}سابق{% else %}Prior{% endif %})</option>
+                                            {% endfor %}
+                                            <option value="قلع سن (سابق)">{% if current_lang == 'ar' %}قلع سن (سابق){% else %}Prior Tooth Extraction{% endif %}</option>
+                                            <option value="حشوة أسنان (سابقة)">{% if current_lang == 'ar' %}حشوة أسنان (سابقة){% else %}Prior Tooth Filling{% endif %}</option>
+                                            <option value="علاج عصب (سابق)">{% if current_lang == 'ar' %}علاج عصب (سابق){% else %}Prior Root Canal{% endif %}</option>
+                                            <option value="تاج / جسر (سابق)">{% if current_lang == 'ar' %}تاج / جسر (سابق){% else %}Prior Crown / Bridge{% endif %}</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <input type="text" name="notes" class="form-control form-control-sm rounded-3" placeholder="{% if current_lang == 'ar' %}ملاحظات توثيقية سريرية...{% else %}Clinical notes...{% endif %}" style="font-size: 0.8rem;">
+                                    </div>
+                                    <button type="submit" class="btn btn-sm btn-primary w-100 rounded-pill fw-bold py-1" style="font-size: 0.8rem;">
+                                        <i class="bi bi-check2-circle me-1"></i>{% if current_lang == 'ar' %}حفظ السابقة المرضية{% else %}Save Condition{% endif %}
+                                    </button>
+                                </form>
+                            </div>
+
+                            <div id="modal-prior-history-list" class="list-group">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
                         <h6 class="fw-bold mb-3 d-flex align-items-center text-success">
                             <i class="bi bi-clipboard2-pulse me-2"></i>
                             <span id="lbl-current-treatments"></span>
@@ -1231,7 +1270,6 @@ document.addEventListener('DOMContentLoaded', function () {
             cost: "{{ t.total_cost }}",
             use_anesthesia: {{ 'true' if t.use_anesthesia else 'false' }},
             anesthesia_needles: {{ t.anesthesia_needles or 0 }},
-            view_url: "{{ url_for('treatments.view_treatment', treatment_id=t.id) }}",
             edit_url: "{{ url_for('treatments.edit_treatment', treatment_id=t.id) }}",
             delete_url: "{{ url_for('treatments.delete_treatment', treatment_id=t.id) }}"
         }{% if not loop.last %},{% endif %}
@@ -1278,6 +1316,8 @@ document.addEventListener('DOMContentLoaded', function () {
         return name.includes('قلع') || name.includes('extract');
     }
 
+    const toothHistoryDict = {{ tooth_history_dict | tojson }};
+
     // Build tooth data maps and apply styling on page load
     const activeTeeth = {};
     const historyTeeth = {};
@@ -1286,15 +1326,21 @@ document.addEventListener('DOMContentLoaded', function () {
         const toothStr = i.toString();
         activeTeeth[toothStr] = currentTreatments.filter(t => appliesToTooth(t, toothStr));
         historyTeeth[toothStr] = historyTreatments.filter(t => appliesToTooth(t, toothStr));
+        const priorHistories = toothHistoryDict[toothStr] || [];
 
         const hasActiveExtraction = activeTeeth[toothStr].some(t => isExtractionProcedure(t.procedure));
         const hasHistoryExtraction = historyTeeth[toothStr].some(t => isExtractionProcedure(t.procedure));
-        const isExtracted = hasActiveExtraction || hasHistoryExtraction;
+        const hasPriorExtraction = priorHistories.some(h => isExtractionProcedure(h.procedure));
+        const isExtracted = hasActiveExtraction || hasHistoryExtraction || hasPriorExtraction;
         
         const teethElements = document.querySelectorAll(`[data-tooth="${toothStr}"]`);
         teethElements.forEach(el => {
             if (isExtracted) {
-                el.classList.add('extracted-treatment', 'extracted');
+                if (hasPriorExtraction) {
+                    el.classList.add('history-external', 'extracted');
+                } else {
+                    el.classList.add('extracted-treatment', 'extracted');
+                }
                 const svgContainer = el.querySelector('.tooth-svg-container') || el;
                 if (!svgContainer.querySelector('.extracted-badge')) {
                     const badge = document.createElement('div');
@@ -1302,6 +1348,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     badge.innerHTML = '<i class="bi bi-x-lg"></i>';
                     svgContainer.appendChild(badge);
                 }
+            } else if (priorHistories.length > 0) {
+                el.classList.add('history-external');
             } else if (activeTeeth[toothStr].length > 0) {
                 el.classList.add('active-treatment', 'active');
             } else if (historyTeeth[toothStr].length > 0) {
@@ -1310,44 +1358,46 @@ document.addEventListener('DOMContentLoaded', function () {
                 el.classList.add('no-treatment');
             }
             
-            // Build tooltip title
-            let tooltipHtml = '';
             const fdiNum = fdiMap[toothStr];
             const isAr = document.documentElement.lang === 'ar';
-            
-            tooltipHtml += `<strong class="d-block mb-1">${isAr ? 'السن' : 'Tooth'} ${fdiNum}</strong>`;
-            
+
+            let tooltipHtml = `<strong class="d-block mb-1">${isAr ? 'السن' : 'Tooth'} ${fdiNum} (${isAr ? 'أميركي' : 'Univ'} ${toothStr})</strong>`;
             if (isExtracted) {
-                tooltipHtml += `<div class="text-danger small fw-bold mb-1"><i class="bi bi-x-circle-fill me-1"></i>${isAr ? 'تم قلع السن ❌' : 'Tooth Extracted ❌'}</div>`;
+                tooltipHtml += `<div class="text-danger small fw-bold mb-1"><i class="bi bi-x-circle-fill me-1"></i>${isAr ? 'تم قلع السن (سابق/عيادة) ❌' : 'Tooth Extracted ❌'}</div>`;
+            }
+            if (priorHistories.length > 0) {
+                tooltipHtml += `<div class="text-purple small mt-1" style="color:#c084fc;"><i class="bi bi-journal-medical me-1"></i>${isAr ? 'السوابق المرضية:' : 'Pre-existing History:'}</div>`;
+                priorHistories.forEach(h => {
+                    tooltipHtml += `<div class="ms-2 small text-nowrap" style="color:#e9d5ff;">• 🟣 ${h.procedure}</div>`;
+                });
             }
             if (activeTeeth[toothStr].length > 0) {
-                tooltipHtml += `<div class="text-success small"><i class="bi bi-check-circle-fill me-1"></i>${isAr ? 'جلسة حالية:' : 'Current Session:'}</div>`;
+                tooltipHtml += `<div class="text-success small mt-1"><i class="bi bi-clipboard2-pulse me-1"></i>${isAr ? 'الجلسة الحالية:' : 'Current Session:'}</div>`;
                 activeTeeth[toothStr].forEach(t => {
                     tooltipHtml += `<div class="ms-2 small text-nowrap">• ${t.procedure}</div>`;
                 });
             }
             if (historyTeeth[toothStr].length > 0) {
-                tooltipHtml += `<div class="text-primary small mt-1"><i class="bi bi-clock-history me-1"></i>${isAr ? 'معالجات سابقة:' : 'Past History:'}</div>`;
+                tooltipHtml += `<div class="text-info small mt-1"><i class="bi bi-clock-history me-1"></i>${isAr ? 'معالجات سابقة بالعيادة:' : 'Clinic History:'}</div>`;
                 historyTeeth[toothStr].forEach(t => {
-                    tooltipHtml += `<div class="ms-2 small text-nowrap">• ${t.procedure} (${t.date.split(' ')[0]})</div>`;
+                    tooltipHtml += `<div class="ms-2 small text-nowrap">• ${t.procedure} (${t.date})</div>`;
                 });
             }
-            
-            if (activeTeeth[toothStr].length === 0 && historyTeeth[toothStr].length === 0) {
-                tooltipHtml += `<div class="text-muted small">${isAr ? 'سليم / لا يوجد معالجات' : 'Healthy / No treatments'}</div>`;
-            }
-            
+
             el.setAttribute('data-bs-toggle', 'tooltip');
             el.setAttribute('data-bs-html', 'true');
             el.setAttribute('data-bs-title', tooltipHtml);
         });
     }
 
-    // Initialize Bootstrap tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    });
+    // Toggle inline form for adding prior condition during session
+    const sToggleBtn = document.getElementById('s-toggle-add-history-btn');
+    const sFormContainer = document.getElementById('s-add-history-form-container');
+    if (sToggleBtn && sFormContainer) {
+        sToggleBtn.addEventListener('click', function() {
+            sFormContainer.classList.toggle('d-none');
+        });
+    }
 
     // Translation config
     const isAr = document.documentElement.lang === 'ar';
@@ -1376,11 +1426,48 @@ document.addEventListener('DOMContentLoaded', function () {
             // Set Modal Title
             const modalTitle = document.getElementById('toothModalLabel');
             modalTitle.textContent = `${trans.title} ${fdiNum}`;
+
+            // Set hidden tooth input in session prior history form
+            const sHistoryToothInput = document.getElementById('s-history-form-tooth-number');
+            if (sHistoryToothInput) {
+                sHistoryToothInput.value = toothNum;
+            }
             
             // Set Hidden Tooth Input
             const toothInput = document.getElementById('modal-tooth-input');
             if (toothInput) {
                 toothInput.value = toothNum;
+            }
+
+            // Populate Pre-existing History Notes
+            const priorHistories = toothHistoryDict[toothNum] || [];
+            const priorList = document.getElementById('modal-prior-history-list');
+            if (priorList) {
+                priorList.innerHTML = '';
+                if (priorHistories.length === 0) {
+                    priorList.innerHTML = `<div class="small py-2 px-3 rounded-3 text-muted border border-dashed mb-3" style="background: rgba(255,255,255,0.02);">${isAr ? 'لا توجد سوابق مرضية مسجلة.' : 'No pre-existing conditions.'}</div>`;
+                } else {
+                    priorHistories.forEach(h => {
+                        let hHtml = `
+                            <div class="card card-body mb-2 p-2 border rounded-3 shadow-xs mb-2" style="background: rgba(168, 85, 247, 0.08); border-color: rgba(168, 85, 247, 0.25) !important;">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="badge badge-history-external px-2 py-0.5 fw-bold" style="font-size: 0.75rem;">
+                                            <i class="bi bi-journal-medical me-1"></i>${h.procedure}
+                                        </span>
+                                        <p class="mb-0 text-secondary small mt-1" style="font-size: 0.78rem;">${h.notes || (isAr ? 'سجل خارجي (لا توجد ملاحظات)' : 'External record')}</p>
+                                    </div>
+                                    <form method="POST" action="/patients/${appointment.patient_id}/tooth-history/${h.id}/delete" onsubmit="return confirm('${isAr ? 'هل أنت متأكد من حذف هذه السابقة المرضية؟' : 'Delete this history record?'}');">
+                                        <button type="submit" class="btn btn-xs btn-outline-danger rounded-circle p-1" title="${isAr ? 'حذف' : 'Delete'}">
+                                            <i class="bi bi-trash" style="font-size: 0.75rem;"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        `;
+                        priorList.insertAdjacentHTML('beforeend', hHtml);
+                    });
+                }
             }
 
             // Set Static Labels

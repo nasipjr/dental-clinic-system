@@ -453,40 +453,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 btn.classList.add('history-treatment');
             }
             
-            // Build tooltip title
-            let tooltipHtml = '';
             const fdiNum = fdiMap[toothStr];
-            
-            tooltipHtml += `<strong class="d-block mb-1">${isAr ? 'السن' : 'Tooth'} ${fdiNum}</strong>`;
-            
-            if (activeMatches.length > 0) {
-                tooltipHtml += `<div class="text-success small"><i class="bi bi-check-circle-fill me-1"></i>${isAr ? 'جلسة حالية:' : 'Current Session:'}</div>`;
-                activeMatches.forEach(t => {
-                    tooltipHtml += `<div class="ms-2 small text-nowrap">• ${t.procedure}</div>`;
-                });
-            }
-            if (historyMatches.length > 0) {
-                tooltipHtml += `<div class="text-primary small mt-1"><i class="bi bi-clock-history me-1"></i>${isAr ? 'معالجات سابقة:' : 'Past History:'}</div>`;
-                historyMatches.forEach(t => {
-                    tooltipHtml += `<div class="ms-2 small text-nowrap">• ${t.procedure} (${t.date})</div>`;
-                });
-            }
-            
-            if (activeMatches.length === 0 && historyMatches.length === 0) {
-                tooltipHtml += `<div class="text-muted small">${isAr ? 'سليم / لا يوجد معالجات' : 'Healthy / No treatments'}</div>`;
-            }
-            
-            btn.setAttribute('data-bs-toggle', 'tooltip');
-            btn.setAttribute('data-bs-html', 'true');
-            btn.setAttribute('data-bs-title', tooltipHtml);
+            btn.setAttribute('title', `${isAr ? 'السن' : 'Tooth'} ${fdiNum}`);
         }
     }
-
-    // Initialize Bootstrap tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl)
-    });
 
     const procedureSelect = document.getElementById('procedure_type');
     const priceDisplay = document.getElementById('procedure_price_display');

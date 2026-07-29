@@ -290,6 +290,9 @@ document.addEventListener("DOMContentLoaded", function () {
             if (window.initCustomTooltips) {
                 window.initCustomTooltips();
             }
+            if (window.scrollToTableTop) {
+                window.scrollToTableTop(tableContainer);
+            }
         })
         .catch(function (error) {
             console.error(error);

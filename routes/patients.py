@@ -1,9 +1,10 @@
 from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash, jsonify
 from sqlalchemy import func
 
-from models import db, Patient, Appointment, Treatment, Payment, Invoice, PatientFile
+from models import db, Patient, Appointment, Treatment, Payment, Invoice, PatientFile, ToothHistory
 from utils.validators import parse_patient_data
 from utils.auth_helper import role_required
+from utils.constants import TREATMENT_PROCEDURE_TYPES
 
 
 patients_bp = Blueprint("patients", __name__)
@@ -376,6 +377,20 @@ def patient_detail(patient_id):
             running_bal += entry["debit"] - entry["credit"]
             entry["balance"] = running_bal
 
+        # Tooth Pre-existing History / Diagnostic Notes
+        tooth_histories = ToothHistory.query.filter_by(patient_id=patient.id).order_by(ToothHistory.created_at.desc()).all()
+        tooth_history_dict = {}
+        for th in tooth_histories:
+            tn = str(th.tooth_number)
+            if tn not in tooth_history_dict:
+                tooth_history_dict[tn] = []
+            tooth_history_dict[tn].append({
+                "id": th.id,
+                "procedure": th.procedure_type,
+                "notes": th.notes or "",
+                "created_at": th.created_at.strftime("%Y-%m-%d %I:%M %p")
+            })
+
         return render_template(
             "patients/patient_detail.html",
             patient=patient,
@@ -398,6 +413,8 @@ def patient_detail(patient_id):
             invoice_order=invoice_context["invoice_order"],
             active_tab=active_tab,
             ledger_entries=ledger_entries,
+            tooth_history_dict=tooth_history_dict,
+            treatment_procedure_types=list(TREATMENT_PROCEDURE_TYPES),
             bot_username=get_bot_username()
         )
 
@@ -406,6 +423,43 @@ def patient_detail(patient_id):
             f"Error while loading patient detail | patient_id={patient_id}"
         )
         return "Error Loading PatientsInfo", 500
+
+
+@patients_bp.route("/patients/<int:patient_id>/tooth-history/add", methods=["POST"])
+@role_required("admin", "doctor", "receptionist")
+def add_tooth_history(patient_id):
+    patient = Patient.query.get_or_404(patient_id)
+    tooth_number = request.form.get("tooth_number")
+    procedure_type = request.form.get("procedure_type")
+    notes = request.form.get("notes", "").strip()
+
+    if not tooth_number or not procedure_type:
+        flash("يرجى اختيار السن ونوع الإجراء السريري." if request.cookies.get("lang") == "ar" else "Please specify tooth number and procedure type.", "danger")
+        return redirect(url_for("patients.patient_detail", patient_id=patient_id, active_tab="chart"))
+
+    th = ToothHistory(
+        patient_id=patient.id,
+        tooth_number=str(tooth_number),
+        procedure_type=procedure_type,
+        notes=notes
+    )
+    db.session.add(th)
+    db.session.commit()
+
+    flash("تم تسجيل السابقة المرضية بنجاح." if request.cookies.get("lang") == "ar" else "Tooth pre-existing condition recorded successfully.", "success")
+    return redirect(url_for("patients.patient_detail", patient_id=patient_id, active_tab="chart"))
+
+
+@patients_bp.route("/patients/<int:patient_id>/tooth-history/<int:history_id>/delete", methods=["POST"])
+@role_required("admin", "doctor", "receptionist")
+def delete_tooth_history(patient_id, history_id):
+    patient = Patient.query.get_or_404(patient_id)
+    th = ToothHistory.query.filter_by(id=history_id, patient_id=patient.id).first_or_404()
+    db.session.delete(th)
+    db.session.commit()
+
+    flash("تم حذف السابقة المرضية بنجاح." if request.cookies.get("lang") == "ar" else "Tooth condition record deleted successfully.", "success")
+    return redirect(url_for("patients.patient_detail", patient_id=patient_id, active_tab="chart"))
 
 
 @patients_bp.route("/patients/<int:patient_id>/ledger/print")
@@ -438,8 +492,8 @@ def patient_ledger_print(patient_id):
                 "type": "invoice",
                 "ref": inv.invoice_number,
                 "description": desc_str,
-                "debit": float(inv.total_amount),
-                "credit": 0.0,
+                "debit": Decimal(str(inv.total_amount or 0)),
+                "credit": Decimal('0.00'),
             })
             
         payments = Payment.query.filter_by(patient_id=patient_id).all()
@@ -451,13 +505,14 @@ def patient_ledger_print(patient_id):
                 "type": "payment",
                 "ref": f"PAY-{pay.id:04d}",
                 "description": pay.notes or ("Payment received" if request.cookies.get('lang') != 'ar' else "دفعة نقدية مستلمة"),
-                "debit": 0.0,
-                "credit": float(pay.amount),
+                "debit": Decimal('0.00'),
+                "credit": Decimal(str(pay.amount or 0)),
             })
             
         ledger_entries.sort(key=lambda x: (x["date"], 0 if x["type"] == "invoice" else 1))
         
-        running_bal = 0.0
+        from decimal import Decimal
+        running_bal = Decimal('0.00')
         for entry in ledger_entries:
             running_bal += entry["debit"] - entry["credit"]
             entry["balance"] = running_bal

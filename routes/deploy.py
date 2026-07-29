@@ -76,3 +76,46 @@ def deploy():
 
     logger.info("Auto-deploy completed successfully.")
     return jsonify({"status": "ok", "output": result.stdout}), 200
+
+
+@deploy_bp.route("/cron/daily-tasks", methods=["GET", "POST"])
+def run_cron_daily_tasks():
+    """
+    Protected endpoint to trigger daily scheduled tasks (Backup, Reminders, Cleanup)
+    via external cron job or PythonAnywhere scheduled tasks.
+    """
+    secret = os.getenv("DEPLOY_SECRET", "")
+    req_secret = request.args.get("secret") or request.headers.get("X-Cron-Secret")
+    if secret and req_secret != secret:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    results = {}
+    
+    # 1. Database backup
+    try:
+        from utils.backup_helper import run_database_backup
+        backup_file = run_database_backup()
+        results["backup"] = f"Success ({backup_file})"
+    except Exception as e:
+        logger.error(f"Cron DB backup failed: {e}")
+        results["backup"] = f"Error: {e}"
+
+    # 2. Appointment reminders
+    try:
+        from utils.notification_helper import send_appointment_reminders
+        sent_count = send_appointment_reminders()
+        results["reminders"] = f"Success ({sent_count} sent)"
+    except Exception as e:
+        logger.error(f"Cron reminders failed: {e}")
+        results["reminders"] = f"Error: {e}"
+
+    # 3. Expired appointments cleanup
+    try:
+        from routes.appointments import cleanup_expired_pending_appointments
+        cleaned_count = cleanup_expired_pending_appointments()
+        results["cleanup"] = f"Success ({cleaned_count} cleaned)"
+    except Exception as e:
+        logger.error(f"Cron cleanup failed: {e}")
+        results["cleanup"] = f"Error: {e}"
+
+    return jsonify({"status": "completed", "results": results}), 200

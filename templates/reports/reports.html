@@ -267,7 +267,12 @@
                                         {% for debtor in top_debtors %}
                                         <tr>
                                             <td>
-                                                <strong class="text-body">{{ debtor.name }}</strong>
+                                                <a href="{{ url_for('patients.patient_detail', patient_id=debtor.id) }}"
+                                                   class="fw-bold text-main hover-underline"
+                                                   title="{% if current_lang == 'ar' %}فتح ملف المريض{% else %}Open Patient Profile{% endif %}"
+                                                   data-tooltip="{% if current_lang == 'ar' %}فتح ملف المريض{% else %}Open Patient Profile{% endif %}">
+                                                    {{ debtor.name }}
+                                                </a>
                                             </td>
                                             <td>{{ debtor.phone }}</td>
                                             <td class="text-end">{{ debtor.total_billed | format_price }} {{ currency_symbol }}</td>
@@ -278,10 +283,14 @@
                                                 </strong>
                                             </td>
                                             <td class="text-center d-print-none">
-                                                <a href="{{ url_for('patients.patient_detail', patient_id=debtor.id) }}"
-                                                    class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                                    {% if current_lang == 'ar' %}ملف المريض{% else %}Patient Details{% endif %}
-                                                </a>
+                                                <div class="appointments-actions d-flex align-items-center justify-content-center">
+                                                    <a href="{{ url_for('patients.patient_detail', patient_id=debtor.id) }}"
+                                                       class="table-action-btn view-btn"
+                                                       title="{% if current_lang == 'ar' %}ملف المريض{% else %}Patient Details{% endif %}"
+                                                       data-tooltip="{% if current_lang == 'ar' %}ملف المريض{% else %}Patient Details{% endif %}">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                </div>
                                             </td>
                                         </tr>
                                         {% endfor %}
@@ -432,7 +441,7 @@
                                             <td class="text-secondary small">{{ e.notes or '-' }}</td>
                                             <td class="text-center d-print-none">
                                                 <form method="POST" action="{{ url_for('reports.delete_expense', expense_id=e.id) }}" onsubmit="return confirm('{% if current_lang == 'ar' %}هل أنت متأكد من حذف هذا المصروف؟{% else %}Are you sure you want to delete this expense?{% endif %}')" style="display:inline;">
-                                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Delete">
+                                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="{% if current_lang == 'ar' %}حذف{% else %}Delete{% endif %}">
                                                         <i class="bi bi-trash fs-5"></i>
                                                     </button>
                                                 </form>

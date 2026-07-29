@@ -97,27 +97,28 @@ def get_invoices_context():
     )
 
     # ── Executive Manager Report & Stats ──
+    from decimal import Decimal
     all_invoices = Invoice.query.all()
 
     total_invoices_count = len(all_invoices)
-    total_billed = sum(inv.total_amount for inv in all_invoices)
-    total_collected = sum(inv.total_paid for inv in all_invoices)
-    total_outstanding = sum(inv.outstanding_amount for inv in all_invoices)
+    total_billed = sum((Decimal(str(inv.total_amount or 0)) for inv in all_invoices), Decimal('0.00'))
+    total_collected = sum((Decimal(str(inv.total_paid or 0)) for inv in all_invoices), Decimal('0.00'))
+    total_outstanding = sum((Decimal(str(inv.outstanding_amount or 0)) for inv in all_invoices), Decimal('0.00'))
 
-    unpaid_list = [inv for inv in all_invoices if inv.outstanding_amount > 0]
+    unpaid_list = [inv for inv in all_invoices if inv.outstanding_amount > Decimal('0.00')]
     unpaid_count = len(unpaid_list)
 
-    collection_rate = float((total_collected / total_billed * 100)) if total_billed > 0 else 100.0
-    avg_invoice = float(total_billed / total_invoices_count) if total_invoices_count > 0 else 0.0
+    collection_rate = (total_collected / total_billed * Decimal('100.00')).quantize(Decimal('0.01')) if total_billed > Decimal('0.00') else Decimal('100.00')
+    avg_invoice = (total_billed / Decimal(str(total_invoices_count))).quantize(Decimal('0.01')) if total_invoices_count > 0 else Decimal('0.00')
 
     # Top 5 largest unpaid / partially paid invoices
     top_unpaid_invoices = sorted(unpaid_list, key=lambda inv: inv.outstanding_amount, reverse=True)[:5]
 
     invoice_stats = {
         "total_invoices_count": total_invoices_count,
-        "total_billed": float(total_billed),
-        "total_collected": float(total_collected),
-        "total_outstanding": float(total_outstanding),
+        "total_billed": total_billed,
+        "total_collected": total_collected,
+        "total_outstanding": total_outstanding,
         "unpaid_count": unpaid_count,
         "collection_rate": collection_rate,
         "avg_invoice": avg_invoice,
