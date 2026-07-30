@@ -109,14 +109,13 @@
                                 <div class="col-md-4">
                                     <label class="form-label">Title</label>
                                     <select name="title" class="form-select">
-                                        <option value="">Select a Title</option>
-                                        <option value="mr" {% if patient.title=='mr' %}selected{% endif %}>Mr</option>
-                                        <option value="ms" {% if patient.title=='ms' %}selected{% endif %}>Ms</option>
-                                        <option value="dr" {% if patient.title=='dr' %}selected{% endif %}>Dr</option>
-                                        <option value="mrs" {% if patient.title=='mrs' %}selected{% endif %}>Mrs
-                                        </option>
-                                        <option value="miss" {% if patient.title=='miss' %}selected{% endif %}>Miss
-                                        </option>
+                                        <option value="">{% if current_lang == 'ar' %}اختر اللقب{% else %}Select a Title{% endif %}</option>
+                                        <option value="mr" {% if patient.title=='mr' %}selected{% endif %}>{% if current_lang == 'ar' %}السيد{% else %}Mr{% endif %}</option>
+                                        <option value="ms" {% if patient.title=='ms' %}selected{% endif %}>{% if current_lang == 'ar' %}الآنسة{% else %}Ms{% endif %}</option>
+                                        <option value="dr" {% if patient.title=='dr' %}selected{% endif %}>{% if current_lang == 'ar' %}الدكتور{% else %}Doctor{% endif %}</option>
+                                        <option value="dr_f" {% if patient.title=='dr_f' %}selected{% endif %}>{% if current_lang == 'ar' %}الدكتورة{% else %}Doctor (Female){% endif %}</option>
+                                        <option value="mrs" {% if patient.title=='mrs' %}selected{% endif %}>{% if current_lang == 'ar' %}السيدة{% else %}Mrs{% endif %}</option>
+                                        <option value="miss" {% if patient.title=='miss' %}selected{% endif %}>{% if current_lang == 'ar' %}آنسة{% else %}Miss{% endif %}</option>
                                     </select>
                                 </div>
 

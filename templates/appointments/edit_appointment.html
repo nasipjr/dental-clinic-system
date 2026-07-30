@@ -130,10 +130,12 @@
                                 </a>
                                 {% endif %}
 
-                                <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
-                                    class="btn-outline-main px-4">
-                                    Back to Session
-                                </a>
+                                 {% if current_user and current_user.role != 'receptionist' %}
+                                 <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
+                                     class="btn-outline-main px-4">
+                                     Back to Session
+                                 </a>
+                                 {% endif %}
 
                                 <a href="{{ url_for('appointments.appointments') }}" class="btn-outline-main px-4">
                                     Back to Appointments

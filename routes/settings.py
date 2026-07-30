@@ -197,25 +197,37 @@ def add_user():
         flash("Username and Password are required.", "danger")
         return redirect(url_for("settings.settings_page") + "#tab-users")
 
+    is_ar = request.cookies.get('lang', 'ar') != 'en'
+
+    if not username or not password or not role:
+        msg = "جميع الحقول المطلوبة يجب تعبئتها." if is_ar else "All required fields must be provided."
+        flash(msg, "danger")
+        return redirect(url_for("settings.settings_page") + "#tab-users")
+
     if len(username) > 80:
-        flash("Username cannot exceed 80 characters.", "danger")
+        msg = "اسم المستخدم لا يمكن أن يتجاوز 80 حرفاً." if is_ar else "Username cannot exceed 80 characters."
+        flash(msg, "danger")
         return redirect(url_for("settings.settings_page") + "#tab-users")
 
     if len(password) < 6:
-        flash("Password must be at least 6 characters long.", "danger")
+        msg = "كلمة السر يجب أن تكون 6 أحرف على الأقل." if is_ar else "Password must be at least 6 characters long."
+        flash(msg, "danger")
         return redirect(url_for("settings.settings_page") + "#tab-users")
 
     if role not in {"admin", "doctor", "receptionist"}:
-        flash("Invalid user role specified.", "danger")
+        msg = "دور المستخدم غير صالح." if is_ar else "Invalid user role specified."
+        flash(msg, "danger")
         return redirect(url_for("settings.settings_page") + "#tab-users")
 
     if len(first_name) > 100 or len(last_name) > 100:
-        flash("First name and Last name cannot exceed 100 characters.", "danger")
+        msg = "الاسم الأول والاسم الأخير لا يمكن أن يتجاوزا 100 حرف." if is_ar else "First name and Last name cannot exceed 100 characters."
+        flash(msg, "danger")
         return redirect(url_for("settings.settings_page") + "#tab-users")
 
     existing = User.query.filter_by(username=username).first()
     if existing:
-        flash("Username already exists.", "danger")
+        msg = "اسم المستخدم موجود مسبقاً." if is_ar else "Username already exists."
+        flash(msg, "danger")
         return redirect(url_for("settings.settings_page"))
 
     try:
@@ -228,11 +240,13 @@ def add_user():
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
-        flash(f"User account '{username}' created successfully!", "success")
+        msg = f"تم إنشاء حساب المستخدم '{username}' بنجاح!" if is_ar else f"User account '{username}' created successfully!"
+        flash(msg, "success")
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Failed to add user: {e}")
-        flash("Failed to create user account.", "danger")
+        msg = "فشل إنشاء حساب المستخدم." if is_ar else "Failed to create user account."
+        flash(msg, "danger")
 
     return redirect(url_for("settings.settings_page") + "#tab-users")
 
@@ -242,25 +256,30 @@ def add_user():
 def delete_user(user_id):
     from models import db, User
     from flask import session
+    is_ar = request.cookies.get('lang', 'ar') != 'en'
     
     # Prevent deleting oneself
     if session.get("user_id") == user_id:
-        flash("You cannot delete your own account.", "danger")
+        msg = "لا يمكنك حذف حسابك الحالي." if is_ar else "You cannot delete your own account."
+        flash(msg, "danger")
         return redirect(url_for("settings.settings_page") + "#tab-users")
 
     user = User.query.get(user_id)
     if not user:
-        flash("User not found.", "danger")
+        msg = "المستخدم غير موجود." if is_ar else "User not found."
+        flash(msg, "danger")
         return redirect(url_for("settings.settings_page") + "#tab-users")
 
     try:
         db.session.delete(user)
         db.session.commit()
-        flash(f"User account '{user.username}' deleted successfully.", "success")
+        msg = f"تم حذف حساب المستخدم '{user.username}' بنجاح." if is_ar else f"User account '{user.username}' deleted successfully."
+        flash(msg, "success")
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Failed to delete user: {e}")
-        flash("Failed to delete user account.", "danger")
+        msg = "فشل حذف حساب المستخدم." if is_ar else "Failed to delete user account."
+        flash(msg, "danger")
 
     return redirect(url_for("settings.settings_page") + "#tab-users")
 
@@ -270,10 +289,12 @@ def delete_user(user_id):
 def edit_user(user_id):
     from models import db, User
     from flask import session
+    is_ar = request.cookies.get('lang', 'ar') != 'en'
 
     user = User.query.get(user_id)
     if not user:
-        flash("User not found.", "danger")
+        msg = "المستخدم غير موجود." if is_ar else "User not found."
+        flash(msg, "danger")
         return redirect(url_for("settings.settings_page") + "#tab-users")
 
     username = request.form.get("username", "").strip()
@@ -283,29 +304,35 @@ def edit_user(user_id):
     last_name = request.form.get("last_name", "").strip()
 
     if not username:
-        flash("Username is required.", "danger")
+        msg = "اسم المستخدم مطلوب." if is_ar else "Username is required."
+        flash(msg, "danger")
         return redirect(url_for("settings.settings_page") + "#tab-users")
 
     if len(username) > 80:
-        flash("Username cannot exceed 80 characters.", "danger")
+        msg = "اسم المستخدم لا يمكن أن يتجاوز 80 حرفاً." if is_ar else "Username cannot exceed 80 characters."
+        flash(msg, "danger")
         return redirect(url_for("settings.settings_page") + "#tab-users")
 
     if password and len(password) < 6:
-        flash("Password must be at least 6 characters long.", "danger")
+        msg = "كلمة السر يجب أن تكون 6 أحرف على الأقل." if is_ar else "Password must be at least 6 characters long."
+        flash(msg, "danger")
         return redirect(url_for("settings.settings_page") + "#tab-users")
 
-    if role and role not in {"admin", "doctor", "receptionist"}:
-        flash("Invalid user role specified.", "danger")
+    if role and role not in {"admin", "doctor", "receptionist", "patient"}:
+        msg = "دور المستخدم غير صالح." if is_ar else "Invalid user role specified."
+        flash(msg, "danger")
         return redirect(url_for("settings.settings_page") + "#tab-users")
 
     if len(first_name) > 100 or len(last_name) > 100:
-        flash("First name and Last name cannot exceed 100 characters.", "danger")
+        msg = "الاسم الأول والاسم الأخير لا يمكن أن يتجاوزا 100 حرف." if is_ar else "First name and Last name cannot exceed 100 characters."
+        flash(msg, "danger")
         return redirect(url_for("settings.settings_page") + "#tab-users")
 
     # Check if username is taken by another user
     existing = User.query.filter(User.username == username, User.id != user_id).first()
     if existing:
-        flash("Username already taken by another user.", "danger")
+        msg = "اسم المستخدم مستخدم مسبقاً من قِبل حساب آخر." if is_ar else "Username already taken by another user."
+        flash(msg, "danger")
         return redirect(url_for("settings.settings_page") + "#tab-users")
 
     try:
@@ -321,11 +348,13 @@ def edit_user(user_id):
             user.set_password(password)
 
         db.session.commit()
-        flash(f"User account '{username}' updated successfully!", "success")
+        msg = f"تم تحديث حساب المستخدم '{username}' بنجاح!" if is_ar else f"User account '{username}' updated successfully!"
+        flash(msg, "success")
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Failed to update user: {e}")
-        flash("Failed to update user account.", "danger")
+        msg = "فشل تحديث حساب المستخدم." if is_ar else "Failed to update user account."
+        flash(msg, "danger")
 
     return redirect(url_for("settings.settings_page") + "#tab-users")
 
@@ -333,13 +362,16 @@ def edit_user(user_id):
 @settings_bp.route("/settings/backups/create", methods=["POST"])
 @role_required("admin")
 def create_backup():
+    is_ar = request.cookies.get('lang', 'ar') != 'en'
     try:
         from utils.backup_helper import run_database_backup
         filename = run_database_backup()
-        flash(f"Backup created successfully: {filename}", "success")
+        msg = f"تم إنشاء النسخة الاحتياطية بنجاح: {filename}" if is_ar else f"Backup created successfully: {filename}"
+        flash(msg, "success")
     except Exception as e:
         current_app.logger.exception("Failed to create database backup")
-        flash(f"Failed to create database backup: {e}", "danger")
+        msg = f"فشل إنشاء النسخة الاحتياطية: {e}" if is_ar else f"Failed to create database backup: {e}"
+        flash(msg, "danger")
     return redirect(url_for("settings.settings_page") + "#tab-backups")
 
 
@@ -349,6 +381,7 @@ def download_backup(filename):
     import os
     from flask import send_from_directory, abort
     from utils.backup_helper import BACKUP_DIR
+    is_ar = request.cookies.get('lang', 'ar') != 'en'
     
     # Secure filename check to prevent directory traversal
     if '..' in filename or filename.startswith('/') or filename.startswith('\\'):
@@ -358,7 +391,8 @@ def download_backup(filename):
     if os.path.exists(backup_path) and os.path.isfile(backup_path):
         return send_from_directory(BACKUP_DIR, filename, as_attachment=True)
     else:
-        flash("Backup file not found.", "danger")
+        msg = "ملف النسخة الاحتياطية غير موجود." if is_ar else "Backup file not found."
+        flash(msg, "danger")
         return redirect(url_for("settings.settings_page") + "#tab-backups")
 
 
@@ -368,6 +402,7 @@ def delete_backup(filename):
     import os
     from flask import abort
     from utils.backup_helper import BACKUP_DIR
+    is_ar = request.cookies.get('lang', 'ar') != 'en'
     
     # Secure filename check to prevent directory traversal
     if '..' in filename or filename.startswith('/') or filename.startswith('\\'):
@@ -377,13 +412,15 @@ def delete_backup(filename):
     if os.path.exists(backup_path) and os.path.isfile(backup_path):
         try:
             os.remove(backup_path)
-            flash("Backup file deleted successfully.", "success")
+            msg = "تم حذف ملف النسخة الاحتياطية بنجاح." if is_ar else "Backup file deleted successfully."
+            flash(msg, "success")
         except Exception as e:
             current_app.logger.error(f"Failed to delete backup file: {e}")
-            flash("Failed to delete backup file.", "danger")
+            msg = "فشل حذف ملف النسخة الاحتياطية." if is_ar else "Failed to delete backup file."
+            flash(msg, "danger")
     else:
-        flash("Backup file not found.", "danger")
-        
+        msg = "ملف النسخة الاحتياطية غير موجود." if is_ar else "Backup file not found."
+        flash(msg, "danger")
     return redirect(url_for("settings.settings_page") + "#tab-backups")
 
 

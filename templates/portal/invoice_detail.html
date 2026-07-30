@@ -77,7 +77,7 @@
                             <td class="ps-3">{{ loop.index }}</td>
                             <td>{{ treatment.treatment_date.strftime('%Y-%m-%d') }}</td>
                             <td><span class="badge bg-primary bg-opacity-10 text-primary px-2.5 py-1.5 rounded-pill">{{ treatment.procedure_type or 'معالجة عامة' }}</span></td>
-                            <td>{{ treatment.tooth_number or 'N/A' }}</td>
+                            <td>{{ (treatment.tooth_number | format_tooth_number) or 'N/A' }}</td>
                             <td><span class="small" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">{{ treatment.notes or 'No notes available' }}</span></td>
                             <td class="text-end fw-semibold pe-3">{{ treatment.total_cost | format_price }} {{ currency_symbol }}</td>
                         </tr>

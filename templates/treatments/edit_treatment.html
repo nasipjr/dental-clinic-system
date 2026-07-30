@@ -1,12 +1,20 @@
 {% extends "base.html" %}
 
 {% block title %}
-{{ 'View Treatment' if mode|default('edit') == 'view' else 'Edit Treatment' }}
+{{ 'عرض المعالجة' if mode|default('edit') == 'view' else 'تعديل المعالجة' }}
 {% endblock %}
 
 {% block content %}
 {% set current_mode = mode|default('edit') %}
-{% set is_locked = current_mode == 'view' or treatment.appointment.status not in ('Scheduled', 'Checked In', 'In Chair') %}
+{% set is_locked = current_mode == 'view' or treatment.appointment.status in ('Cancelled', 'ملغي') %}
+{% set is_ar = current_lang == 'ar' %}
+
+{% set fdi_map = {
+    1: 18, 2: 17, 3: 16, 4: 15, 5: 14, 6: 13, 7: 12, 8: 11,
+    9: 21, 10: 22, 11: 23, 12: 24, 13: 25, 14: 26, 15: 27, 16: 28,
+    17: 38, 18: 37, 19: 36, 20: 35, 21: 34, 22: 33, 23: 32, 24: 31,
+    25: 41, 26: 42, 27: 43, 28: 44, 29: 45, 30: 46, 31: 47, 32: 48
+} %}
 
 {% macro render_tooth_svg(i, is_lower) %}
     {% set i = i | int %}
@@ -37,904 +45,858 @@
     {% endif %}
 {% endmacro %}
 
-<section id="add-patient-page" class="section">
+<style>
+    .edit-page-card {
+        background: var(--surface-color) !important;
+        border: 1px solid color-mix(in srgb, var(--accent-color), transparent 88%) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25) !important;
+        backdrop-filter: blur(10px);
+    }
+    
+    .edit-section-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--accent-color), transparent 88%);
+        color: var(--accent-color);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .edit-tooth-chart-box {
+        background: rgba(15, 23, 42, 0.75) !important;
+        border: 1.5px solid color-mix(in srgb, var(--accent-color), transparent 82%) !important;
+        border-radius: 16px !important;
+        padding: 20px 15px !important;
+    }
+
+    .edit-teeth-row-container {
+        min-width: 800px;
+        margin: 0 auto;
+    }
+
+    .anatomical-chart-wrapper::-webkit-scrollbar {
+        height: 6px;
+    }
+    .anatomical-chart-wrapper::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.5);
+        border-radius: 10px;
+    }
+    .anatomical-chart-wrapper::-webkit-scrollbar-thumb {
+        background: rgba(56, 189, 248, 0.4);
+        border-radius: 10px;
+    }
+    .anatomical-chart-wrapper::-webkit-scrollbar-thumb:hover {
+        background: rgba(56, 189, 248, 0.7);
+    }
+
+    .edit-tooth-btn {
+        width: 44px !important;
+        min-width: 44px !important;
+        max-width: 44px !important;
+        height: 64px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: transparent !important;
+        border: 1.5px solid transparent !important;
+        border-radius: 10px !important;
+        padding: 3px !important;
+        margin: 0 1px !important;
+        cursor: pointer !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        flex-shrink: 0 !important;
+        position: relative !important;
+    }
+
+    .edit-tooth-btn:hover:not(:disabled) {
+        background: rgba(56, 189, 248, 0.18) !important;
+        border-color: #38bdf8 !important;
+        transform: translateY(-2px) !important;
+    }
+
+    /* Selected state (Currently Picked for Editing) */
+    .edit-tooth-btn.selected-tooth {
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.45), rgba(16, 185, 129, 0.55)) !important;
+        border: 2.5px solid #00ffcc !important;
+        box-shadow: 0 0 22px rgba(0, 255, 204, 0.95), inset 0 0 10px rgba(0, 255, 204, 0.5) !important;
+        transform: scale(1.12) translateY(-4px) !important;
+        z-index: 10 !important;
+    }
+
+    .edit-tooth-btn.selected-tooth .tooth-svg {
+        color: #ffffff !important;
+        filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.9)) !important;
+    }
+
+    .edit-tooth-btn.selected-tooth::after {
+        content: "✓";
+        position: absolute;
+        top: -6px;
+        right: -4px;
+        background: #00ffcc;
+        color: #0f172a;
+        font-size: 0.68rem;
+        font-weight: 900;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 8px rgba(0, 255, 204, 0.9);
+    }
+
+    /* Active treatment in session (Other treatments in current session) */
+    .edit-tooth-btn.active-treatment {
+        background: rgba(16, 185, 129, 0.15) !important;
+        border: 1.5px dashed #34d399 !important;
+    }
+
+    .edit-tooth-btn.active-treatment .tooth-svg {
+        color: #34d399 !important;
+    }
+
+    /* History treatment */
+    .edit-tooth-btn.history-treatment {
+        background: rgba(13, 110, 253, 0.2) !important;
+        border: 1.5px solid #60a5fa !important;
+    }
+
+    .edit-tooth-btn.history-treatment .tooth-svg {
+        color: #60a5fa !important;
+    }
+
+    /* Extracted tooth */
+    .edit-tooth-btn.extracted-treatment {
+        background: rgba(220, 53, 69, 0.25) !important;
+        border: 1.5px solid #f87171 !important;
+        opacity: 0.7;
+    }
+
+    .edit-tooth-btn.extracted-treatment .tooth-svg {
+        color: #f87171 !important;
+    }
+
+    .edit-jaw-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        background: rgba(14, 165, 233, 0.15);
+        border: 1px solid #0ea5e9;
+        color: #38bdf8;
+    }
+
+    .btn-save-edit-gradient {
+        background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+        border: none !important;
+        color: #ffffff !important;
+        border-radius: 14px !important;
+        font-weight: 700 !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 6px 20px rgba(14, 165, 233, 0.35) !important;
+    }
+
+    .btn-save-edit-gradient:hover:not(:disabled) {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(14, 165, 233, 0.5) !important;
+        background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%) !important;
+    }
+
+    .chart-legend-badge {
+        font-size: 0.78rem;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .chart-legend-badge.legend-current {
+        background: rgba(52, 211, 153, 0.12) !important;
+        border: 1px solid rgba(52, 211, 153, 0.4) !important;
+        color: #34d399 !important;
+    }
+
+    .chart-legend-badge.legend-history {
+        background: rgba(56, 189, 248, 0.12) !important;
+        border: 1px solid rgba(56, 189, 248, 0.4) !important;
+        color: #38bdf8 !important;
+    }
+
+    .chart-legend-badge.legend-extracted {
+        background: rgba(248, 113, 113, 0.12) !important;
+        border: 1px solid rgba(248, 113, 113, 0.4) !important;
+        color: #f87171 !important;
+    }
+</style>
+
+<section id="edit-treatment-page" class="section py-4">
     <div class="container" data-aos="fade-up">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="add-patient-wrapper">
-
-                    <div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
-                        <h2>
-                            {{ 'View Treatment' if is_locked else 'Edit Treatment' }}
-                        </h2>
-
-                        <p>
-                            {% if treatment.appointment.status == 'Done' %}
-                            This appointment session is done. Treatment is read-only.
-                            {% elif treatment.appointment.status == 'Cancelled' %}
-                            This appointment is cancelled. Treatment is read-only.
-                            {% elif current_mode == 'view' %}
-                            View treatment information without editing.
-                            {% else %}
-                            Update the treatment information.
-                            {% endif %}
-                        </p>
-                    </div>
-
-                    <div class="add-patient-icon" data-aos="zoom-in" data-aos-delay="200">
-                        <i class="bi {{ 'bi-eye' if is_locked else 'bi-clipboard2-pulse' }}"></i>
-                    </div>
-
-                    {% if error_message %}
-                    <div class="alert alert-danger text-center" role="alert">
-                        {{ error_message }}
-                    </div>
+        
+        <!-- Header Title Banner -->
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+            <div>
+                <h2 class="h3 fw-bold mb-1 text-primary d-flex align-items-center gap-2">
+                    <i class="bi {{ 'bi-eye-fill' if is_locked else 'bi-pencil-square' }}"></i>
+                    <span>{{ 'عرض تفاصيل المعالجة' if is_locked else 'تعديل بيانات المعالجة' }}</span>
+                </h2>
+                <p class="text-muted small mb-0">
+                    {% if treatment.appointment.status == 'Done' %}
+                    {{ 'الجلسة مغلقة ومكتملة. المعالجة للعرض فقط.' if is_ar else 'Appointment session is done. Treatment is read-only.' }}
+                    {% elif treatment.appointment.status == 'Cancelled' %}
+                    {{ 'الموعد ملغى. المعالجة للعرض فقط.' if is_ar else 'Appointment is cancelled. Treatment is read-only.' }}
+                    {% else %}
+                    {{ 'يمكنك تغيير نوع الإجراء، السن، الطبيب المعالج، التخدير، والتكلفة.' if is_ar else 'Update procedure type, tooth, attending doctor, anesthesia, or cost.' }}
                     {% endif %}
+                </p>
+            </div>
+            
+            <div class="d-flex align-items-center gap-2">
+                <a href="{{ url_for('treatments.appointment_session', appointment_id=treatment.appointment_id) }}" 
+                   class="btn btn-outline-secondary rounded-pill px-3.5 py-2 fw-semibold small shadow-xs">
+                    <i class="bi bi-arrow-right me-1.5"></i>
+                    {{ 'العودة للجلسة' if is_ar else 'Back to Session' }}
+                </a>
+            </div>
+        </div>
 
-                    <!-- Appointment Context -->
-                    <div class="patient-info-grid mb-4">
-                        <div class="patient-info-box">
-                            <span class="info-label">Patient</span>
-                            <p>{{ treatment.appointment.patient.first_name }} {{ treatment.appointment.patient.last_name
-                                }}</p>
+        {% if error_message %}
+        <div class="alert alert-danger text-center rounded-3 mb-4 shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error_message }}
+        </div>
+        {% endif %}
+
+        <!-- Patient & Session Context Card with Clean Hyperlinks & Fixed Icons -->
+        <div class="card edit-page-card mb-4">
+            <div class="card-body p-4">
+                <div class="row align-items-center gy-3">
+                    
+                    <!-- Patient Name & Link -->
+                    <div class="col-lg-4 col-md-6 d-flex align-items-center gap-3">
+                        <div class="patient-avatar-circle rounded-circle d-flex align-items-center justify-content-center shadow-xs" 
+                             style="width: 50px; height: 50px; min-width: 50px; background: rgba(14, 165, 233, 0.15) !important; border: 1.5px solid #0ea5e9 !important; color: #38bdf8 !important;">
+                            <i class="bi bi-person-fill fs-4"></i>
                         </div>
-
-                        <div class="patient-info-box">
-                            <span class="info-label">Appointment</span>
-                            <p>
-                                {{ treatment.appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if
-                                treatment.appointment.appointment_date else 'No date' }}
-                            </p>
-                        </div>
-
-                        <div class="patient-info-box">
-                            <span class="info-label">Appointment Reason</span>
-                            <p>{{ treatment.appointment.reason or 'No reason provided' }}</p>
-                        </div>
-
-                        <div class="patient-info-box">
-                            <span class="info-label">Session Status</span>
-                            <p>
-                                <span class="appointment-status
-                                    {% if treatment.appointment.status == 'Done' %}status-done
-                                    {% elif treatment.appointment.status == 'Cancelled' %}status-cancelled
-                                    {% elif treatment.appointment.status == 'Pending' %}status-pending
-                                    {% else %}status-scheduled{% endif %}">
-                                    {{ treatment.appointment.status }}
-                                </span>
-                            </p>
+                        <div>
+                            <span class="text-muted text-uppercase fw-bold small d-block" style="font-size: 0.72rem; letter-spacing: 0.03em;">{{ 'المريض' if is_ar else 'Patient' }}</span>
+                            <h5 class="mb-0 fw-bold">
+                                <a href="{{ url_for('patients.patient_detail', patient_id=treatment.appointment.patient_id) }}" 
+                                   class="text-decoration-none text-primary hover-underline d-inline-flex align-items-center gap-1.5"
+                                   title="{{ 'عرض ملف المريض الكامل' if is_ar else 'View Patient Profile' }}">
+                                    <span>{{ treatment.appointment.patient.first_name }} {{ treatment.appointment.patient.last_name }}</span>
+                                    <i class="bi bi-box-arrow-up-right text-muted" style="font-size: 0.75rem;"></i>
+                                </a>
+                            </h5>
+                            <small class="text-muted" style="font-size: 0.82rem;">{{ treatment.appointment.patient.phone or '' }}</small>
                         </div>
                     </div>
 
-                    <form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300"
-                        class="{% if is_locked %}readonly-form{% endif %}">
+                    <!-- Session ID Hyperlink & Date -->
+                    <div class="col-lg-3 col-md-6">
+                        <span class="text-muted text-uppercase fw-bold small d-block" style="font-size: 0.72rem; letter-spacing: 0.03em;">{{ 'الجلسة والموعد' if is_ar else 'Session & Date' }}</span>
+                        <div class="mt-1 d-flex align-items-center gap-2">
+                            <a href="{{ url_for('treatments.appointment_session', appointment_id=treatment.appointment_id) }}" 
+                               class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold text-decoration-none d-inline-flex align-items-center gap-1.5 transition-all shadow-xs"
+                               style="background: rgba(14, 165, 233, 0.15) !important; border: 1px solid #0ea5e9 !important; color: #38bdf8 !important; font-size: 0.85rem;"
+                               title="{{ 'فتح الجلسة الحالية' if is_ar else 'Open Current Session' }}">
+                                <i class="bi bi-clipboard2-pulse text-info"></i>
+                                <span>{{ 'فتح الجلسة الحالية' if is_ar else 'Open Session' }} (#{{ treatment.appointment_id }})</span>
+                                <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.75rem;"></i>
+                            </a>
+                        </div>
+                        <div class="fw-semibold text-muted mt-1" style="font-size: 0.85rem;">
+                            <i class="bi bi-calendar-event me-1 text-info"></i>
+                            {{ treatment.appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if treatment.appointment.appointment_date else '-' }}
+                        </div>
+                    </div>
 
-                        <fieldset {% if is_locked %}disabled{% endif %}>
-                            <div class="row gy-4">
+                    <!-- Attending Doctor Badge -->
+                    <div class="col-lg-3 col-md-6">
+                        <span class="text-muted text-uppercase fw-bold small d-block" style="font-size: 0.72rem; letter-spacing: 0.03em;">{{ 'الطبيب المعالج الحالي' if is_ar else 'Attending Doctor' }}</span>
+                        <div class="mt-1">
+                            {% set current_doc = treatment.doctor or treatment.appointment.attending_doctor or treatment.appointment.doctor %}
+                            <span id="attending-doctor-badge" class="doctor-badge px-3 py-1.5 fs-6" style="background: rgba(14, 165, 233, 0.12); border: 1px solid rgba(14, 165, 233, 0.3); color: #38bdf8; border-radius: 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                                <i class="bi bi-person-badge"></i>
+                                <span id="attending-doctor-name">{{ current_doc.display_name if current_doc else '-' }}</span>
+                            </span>
+                        </div>
+                    </div>
 
-                                <div class="col-md-12">
-                                    <label class="form-label">Treatment Date</label>
-                                    <div class="form-control readonly-status-field">
-                                        {{ treatment.appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if
-                                        treatment.appointment.appointment_date else 'No date' }}
-                                    </div>
+                    <!-- Status -->
+                    <div class="col-lg-2 col-md-6 text-lg-end">
+                        <span class="text-muted text-uppercase fw-bold small d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.03em;">{{ 'حالة الجلسة' if is_ar else 'Status' }}</span>
+                        <span class="appointment-status 
+                            {% if treatment.appointment.status in ('Done', 'منجز') %}status-done
+                            {% elif treatment.appointment.status in ('Cancelled', 'ملغي') %}status-cancelled
+                            {% else %}status-scheduled{% endif %}">
+                            {{ treatment.appointment.status }}
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Edit Form -->
+        <form id="edit-treatment-form" method="POST" class="{% if is_locked %}readonly-form{% endif %}">
+            <fieldset {% if is_locked %}disabled{% endif %}>
+                
+                <div class="row g-4">
+                    
+                    <!-- Left Column: Procedure & Full Interactive Anatomical Chart -->
+                    <div class="col-lg-7">
+                        <div class="card edit-page-card h-100">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex align-items-center gap-3">
+                                <div class="edit-section-icon">
+                                    <i class="bi bi-capsule"></i>
                                 </div>
-
-                                <div class="col-md-12">
-                                    <label for="procedure_type" class="form-label">{% if request.cookies.get('lang', 'en') == 'ar' %}نوع الإجراء / المعالجة{% else %}Procedure Type{% endif %}</label>
-
-                                    <select id="procedure_type" name="procedure_type" class="form-select"
+                                <div>
+                                    <h5 class="fw-bold mb-0 text-primary">{{ 'بيانات الإجراء والسن المعالج' if is_ar else 'Procedure & Tooth Details' }}</h5>
+                                    <small class="text-muted">{{ 'اختر الإجراء ثم حدد السن المخصص من مخطط الأسنان أدناه' if is_ar else 'Select procedure and pick tooth from chart' }}</small>
+                                </div>
+                            </div>
+                            
+                            <div class="card-body p-4">
+                                
+                                <!-- Procedure Type Select -->
+                                <div class="mb-4">
+                                    <label for="procedure_type" class="form-label text-secondary small fw-bold mb-1.5">
+                                        {{ 'نوع الإجراء / المعالجة' if is_ar else 'Procedure Type' }}
+                                    </label>
+                                    <select id="procedure_type" name="procedure_type" class="form-select settings-input py-2.5 fw-bold"
                                         data-prices='{{ treatment_prices|tojson }}' required>
-                                        <option value="">{% if request.cookies.get('lang', 'en') == 'ar' %}-- اختر نوع الإجراء --{% else %}-- Select Procedure Type --{% endif %}</option>
+                                        <option value="">{{ '-- اختر نوع الإجراء --' if is_ar else '-- Select Procedure --' }}</option>
                                         {% for proc_name in treatment_prices.keys() %}
-                                        <option value="{{ proc_name }}" {% if treatment.procedure_type == proc_name %}selected{% endif %}>{{ proc_name }}</option>
+                                        <option value="{{ proc_name }}" {% if treatment.procedure_type == proc_name %}selected{% endif %}>
+                                            {{ proc_name }} ({{ treatment_prices[proc_name] | format_price }} {{ currency_symbol }})
+                                        </option>
                                         {% endfor %}
                                     </select>
                                 </div>
 
-                            <style>
-                            .odontogram-wrapper {
-                                background: var(--surface-color);
-                                border: 1px solid color-mix(in srgb, var(--accent-color), transparent 88%);
-                                border-radius: 16px;
-                                padding: 20px;
-                            }
-                            .tooth-btn {
-                                width: 34px;
-                                height: 34px;
-                                padding: 0 !important;
-                                font-weight: 700;
-                                border-radius: 8px;
-                                font-size: 0.85rem;
-                                display: inline-flex;
-                                align-items: center;
-                                justify-content: center;
-                                transition: all 0.2s ease;
-                                border: 2px solid color-mix(in srgb, var(--accent-color), transparent 85%);
-                                background: transparent;
-                                color: var(--default-color);
-                            }
-                            .tooth-btn:hover:not(:disabled) {
-                                background: color-mix(in srgb, var(--accent-color), transparent 90%);
-                                border-color: var(--accent-color);
-                                color: var(--accent-color);
-                            }
-                            .tooth-btn.active {
-                                background: var(--accent-color) !important;
-                                border-color: var(--accent-color) !important;
-                                color: #ffffff !important;
-                                box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2);
-                            }
-                            :disabled {
-                                opacity: 0.8;
-                                cursor: not-allowed;
-                            }
-                            </style>
+                                <!-- Selected Tooth Badge Display -->
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                                        <label class="form-label text-secondary small fw-bold mb-0">
+                                            {{ 'السن المعالج المحدد' if is_ar else 'Selected Tooth' }}
+                                        </label>
+                                        
+                                        <span id="selected-tooth-badge" class="badge rounded-pill px-3 py-1.5 fw-bold fs-6"
+                                              style="background: rgba(14, 165, 233, 0.15); border: 1px solid #0ea5e9; color: #38bdf8;">
+                                            {% if treatment.tooth_number %}
+                                                {{ 'السن' if is_ar else 'Tooth' }} {{ treatment.tooth_number | format_tooth_number }}
+                                            {% else %}
+                                                {{ 'معالجة عامة (بدون سن محدد)' if is_ar else 'General (No specific tooth)' }}
+                                            {% endif %}
+                                        </span>
+                                    </div>
 
-                            {% set fdi_map = {
-                                1: 18, 2: 17, 3: 16, 4: 15, 5: 14, 6: 13, 7: 12, 8: 11,
-                                9: 21, 10: 22, 11: 23, 12: 24, 13: 25, 14: 26, 15: 27, 16: 28,
-                                17: 38, 18: 37, 19: 36, 20: 35, 21: 34, 22: 33, 23: 32, 24: 31,
-                                25: 41, 26: 42, 27: 43, 28: 44, 29: 45, 30: 46, 31: 47, 32: 48
-                            } %}
-                            <style>
-                             .odontogram-wrapper {
-                                 background: var(--surface-color);
-                                 border: 1px solid color-mix(in srgb, var(--accent-color), transparent 88%);
-                                 border-radius: 16px;
-                                 padding: 20px;
-                             }
-                             .jaw-arch-container {
-                                 position: relative;
-                                 width: 100%;
-                                 height: 250px;
-                                 margin: 0 auto;
-                             }
-                             .jaw-bg-line {
-                                 position: absolute;
-                                 width: 100%;
-                                 height: 100%;
-                                 top: 0;
-                                 left: 0;
-                                 z-index: 1;
-                                 pointer-events: none;
-                             }
-                             .tooth-select-btn {
-                                 position: absolute;
-                                 z-index: 2;
-                                 display: flex;
-                                 flex-direction: column;
-                                 align-items: center;
-                                 padding: 6px 4px;
-                                 border-radius: 8px;
-                                 border: 1px solid transparent;
-                                 transition: all 0.2s ease;
-                                 cursor: pointer;
-                                 background: transparent;
-                                 color: var(--default-color);
-                                 min-width: 42px;
-                             }
-                             .tooth-select-btn:hover:not(:disabled) {
-                                 transform: translate(-50%, -50%) scale(1.1) rotate(var(--rot, 0deg)) !important;
-                                 background: color-mix(in srgb, var(--accent-color), transparent 93%);
-                                 border-color: color-mix(in srgb, var(--accent-color), transparent 80%);
-                             }
-                             .tooth-select-btn.active {
-                                 background: color-mix(in srgb, #198754, transparent 94%) !important;
-                                 border-color: #198754 !important;
-                                 box-shadow: 0 4px 10px rgba(25, 135, 84, 0.15);
-                             }
-                             .tooth-select-btn.active .tooth-svg {
-                                 color: #198754 !important;
-                                 fill: color-mix(in srgb, #198754, transparent 80%) !important;
-                             }
-                             .tooth-select-btn.active-treatment {
-                                 border-color: color-mix(in srgb, #198754, transparent 70%);
-                                 background: color-mix(in srgb, #198754, transparent 96%);
-                             }
-                             .tooth-select-btn.active-treatment .tooth-svg {
-                                 color: #198754 !important;
-                                 fill: color-mix(in srgb, #198754, transparent 80%) !important;
-                             }
-                             .tooth-select-btn.history-treatment {
-                                 border-color: color-mix(in srgb, #0d6efd, transparent 70%);
-                                 background: color-mix(in srgb, #0d6efd, transparent 96%);
-                             }
-                             .tooth-select-btn.history-treatment .tooth-svg {
-                                 color: #0d6efd !important;
-                                 fill: color-mix(in srgb, #0d6efd, transparent 80%) !important;
-                             }
-                             .tooth-svg-container {
-                                 margin: 2px 0;
-                             }
-                             .tooth-svg {
-                                 color: var(--default-color);
-                                 transition: all 0.2s ease;
-                             }
-                             .tooth-svg.rotate-180 {
-                                 transform: rotate(180deg);
-                             }
-                              .anatomical-chart-wrapper {
-                                  background: rgba(15, 23, 42, 0.5) !important;
-                                  border-radius: 16px !important;
-                                  border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
-                                  overflow-x: auto !important;
-                                  padding: 20px 15px !important;
-                              }
+                                    <input type="hidden" id="tooth_number" name="tooth_number" value="{{ treatment.tooth_number or '' }}">
+                                    <input type="hidden" id="delete_action" name="delete_action" value="0">
+                                </div>
 
-                              .anatomical-teeth-container {
-                                  min-width: 820px;
-                                  margin: 0 auto;
-                              }
+                                <!-- Full Anatomical FDI Tooth Picker Chart with Interactive History & Extractions -->
+                                <div class="edit-tooth-chart-box mb-4">
+                                    
+                                    <!-- Legend Bar -->
+                                    <div class="d-flex align-items-center justify-content-center gap-2 mb-3 flex-wrap border-bottom border-secondary border-opacity-15 pb-2">
+                                        <span class="chart-legend-badge legend-current">
+                                            <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>{{ 'معالج بالجلسة' if is_ar else 'Current Session' }}
+                                        </span>
+                                        <span class="chart-legend-badge legend-history">
+                                            <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>{{ 'معالج سابقاً' if is_ar else 'Clinic History' }}
+                                        </span>
+                                        <span class="chart-legend-badge legend-extracted">
+                                            <i class="bi bi-x-circle-fill me-1" style="font-size: 0.65rem;"></i>{{ 'سن مقلوع ❌' if is_ar else 'Extracted ❌' }}
+                                        </span>
+                                    </div>
 
-                              .anatomical-tooth-btn {
-                                  width: 44px !important;
-                                  min-width: 44px !important;
-                                  max-width: 44px !important;
-                                  height: 64px !important;
-                                  display: flex !important;
-                                  flex-direction: column !important;
-                                  align-items: center !important;
-                                  justify-content: center !important;
-                                  background: transparent !important;
-                                  border: 1.5px solid transparent !important;
-                                  border-radius: 10px !important;
-                                  padding: 3px !important;
-                                  margin: 0 1px !important;
-                                  cursor: pointer !important;
-                                  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-                                  flex-shrink: 0 !important;
-                                  position: relative !important;
-                                  transform: none !important;
-                              }
+                                    <div class="anatomical-chart-wrapper overflow-x-auto" dir="ltr">
+                                        <div class="edit-teeth-row-container">
+                                            
+                                            <!-- Upper Jaw Badge -->
+                                            <div class="d-flex justify-content-center mb-2">
+                                                <span class="edit-jaw-badge">
+                                                    <i class="bi bi-symmetry-horizontal me-1.5"></i>
+                                                    {{ 'الفك العلوي' if is_ar else 'Upper Jaw (Maxillary)' }}
+                                                </span>
+                                            </div>
 
-                              .anatomical-tooth-btn:hover:not(:disabled) {
-                                  background: rgba(56, 189, 248, 0.18) !important;
-                                  border-color: #38bdf8 !important;
-                                  transform: translateY(-2px) !important;
-                              }
+                                            <!-- Upper Teeth Row (1..16 / FDI 18..28) -->
+                                            <div class="d-flex align-items-center justify-content-between position-relative py-1 mb-3">
+                                                <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #38bdf8; z-index: 5; transform: translateX(-50%); opacity: 0.6;"></div>
+                                                {% for i in range(1, 17) %}
+                                                {% set fdi = fdi_map[i] %}
+                                                <button type="button" 
+                                                        class="edit-tooth-btn {% if treatment.tooth_number == i|string or treatment.tooth_number == fdi|string %}selected-tooth{% endif %}"
+                                                        data-tooth="{{ i }}"
+                                                        data-fdi="{{ fdi }}"
+                                                        title="FDI {{ fdi }}"
+                                                        {% if is_locked %}disabled{% endif %}>
+                                                    <div class="tooth-svg-container mb-1">
+                                                        {{ render_tooth_svg(i, false) }}
+                                                    </div>
+                                                    <span class="tooth-fdi-badge">{{ fdi }}</span>
+                                                </button>
+                                                {% endfor %}
+                                            </div>
 
-                              .anatomical-tooth-btn.active {
-                                  background: rgba(40, 167, 69, 0.3) !important;
-                                  border: 2px solid #34d399 !important;
-                                  box-shadow: 0 0 12px rgba(52, 211, 153, 0.5) !important;
-                              }
+                                            <!-- Lower Jaw Badge -->
+                                            <div class="d-flex justify-content-center mb-2 pt-2 border-top border-secondary border-opacity-25">
+                                                <span class="edit-jaw-badge">
+                                                    <i class="bi bi-symmetry-horizontal me-1.5"></i>
+                                                    {{ 'الفك السفلي' if is_ar else 'Lower Jaw (Mandibular)' }}
+                                                </span>
+                                            </div>
 
-                              .anatomical-tooth-btn.active .tooth-svg {
-                                  color: #34d399 !important;
-                              }
+                                            <!-- Lower Teeth Row (32..17 / FDI 48..38) -->
+                                            <div class="d-flex align-items-center justify-content-between position-relative py-1">
+                                                <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #38bdf8; z-index: 5; transform: translateX(-50%); opacity: 0.6;"></div>
+                                                {% for i in range(32, 16, -1) %}
+                                                {% set fdi = fdi_map[i] %}
+                                                <button type="button" 
+                                                        class="edit-tooth-btn {% if treatment.tooth_number == i|string or treatment.tooth_number == fdi|string %}selected-tooth{% endif %}"
+                                                        data-tooth="{{ i }}"
+                                                        data-fdi="{{ fdi }}"
+                                                        title="FDI {{ fdi }}"
+                                                        {% if is_locked %}disabled{% endif %}>
+                                                    <span class="tooth-fdi-badge mb-1">{{ fdi }}</span>
+                                                    <div class="tooth-svg-container">
+                                                        {{ render_tooth_svg(i, true) }}
+                                                    </div>
+                                                </button>
+                                                {% endfor %}
+                                            </div>
 
-                              .tooth-fdi-badge {
-                                  font-size: 0.75rem !important;
-                                  font-weight: 800 !important;
-                                  color: #f8fafc !important;
-                                  background: rgba(255, 255, 255, 0.12) !important;
-                                  border-radius: 8px !important;
-                                  padding: 1px 6px !important;
-                                  line-height: 1.2 !important;
-                              }
+                                        </div>
+                                    </div>
 
-                              .tooth-label-top {
-                                  font-size: 0.85rem;
-                                  font-weight: 700;
-                                  color: #ffffff;
-                                  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-                              }
-                               .odontogram-nav-pills {
-                                   background: rgba(15, 23, 42, 0.4);
-                                   padding: 6px;
-                                   border-radius: 50rem;
-                                   border: 1px solid rgba(255, 255, 255, 0.1);
-                                   display: inline-flex;
-                               }
-                               .odontogram-nav-pills .nav-link {
-                                   color: var(--default-color);
-                                   background: transparent;
-                                   border-radius: 50rem;
-                                   padding: 10px 22px;
-                                   font-weight: 700;
-                                   font-size: 0.9rem;
-                                   transition: all 0.25s ease;
-                                   border: none !important;
-                               }
-                               .odontogram-nav-pills .nav-link:hover:not(.active) {
-                                   background: rgba(56, 189, 248, 0.12);
-                                   color: #38bdf8;
-                               }
-                               .odontogram-nav-pills .nav-link.active {
-                                   background: #0d6efd !important;
-                                   color: #ffffff !important;
-                                   box-shadow: 0 4px 15px rgba(13, 110, 253, 0.35);
-                               }
-                             /* High contrast Tooltip Styling */
-                             .tooltip-inner {
-                                 background-color: #1e293b !important;
-                                 color: #ffffff !important;
-                                 border: 1px solid rgba(255,255,255,0.15) !important;
-                                 box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important;
-                                 font-size: 0.85rem !important;
-                                 font-weight: 600 !important;
-                                 padding: 8px 12px !important;
-                             }
-                             .tooltip-inner .text-muted {
-                                 color: #cbd5e1 !important;
-                             }
-                             .tooltip-inner .text-success {
-                                 color: #4ade80 !important;
-                             }
-                             .tooltip-inner .text-primary {
-                                 color: #60a5fa !important;
-                             }
-                             .tooth-label-fdi {
-                                 font-size: 0.65rem;
-                             }
-                             .jaw-title-badge {
-                                 display: inline-flex;
-                                 align-items: center;
-                                 padding: 6px 18px;
-                                 border-radius: 50rem;
-                                 font-size: 0.88rem;
-                                 font-weight: 700;
-                                 letter-spacing: 0.3px;
-                                 box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-                             }
-                             .jaw-upper-badge {
-                                 background-color: rgba(13, 110, 253, 0.15);
-                                 color: #0d6efd;
-                                 border: 1px solid rgba(13, 110, 253, 0.3);
-                             }
-                             .jaw-lower-badge {
-                                 background-color: rgba(13, 202, 240, 0.15);
-                                 color: #0dcaf0;
-                                 border: 1px solid rgba(13, 202, 240, 0.3);
-                             }
-                             [data-bs-theme="dark"] .jaw-upper-badge {
-                                 background-color: rgba(13, 110, 253, 0.25);
-                                 color: #93c5fd;
-                                 border: 1px solid rgba(147, 197, 253, 0.4);
-                             }
-                             [data-bs-theme="dark"] .jaw-lower-badge {
-                                 background-color: rgba(13, 202, 240, 0.25);
-                                 color: #7dd3fc;
-                                 border: 1px solid rgba(125, 211, 252, 0.4);
-                             }
-                             @media (max-width: 576px) {
-                                 .jaw-arch-container {
-                                     height: 200px;
-                                 }
-                                 .tooth-select-btn {
-                                     min-width: 32px !important;
-                                     padding: 4px 2px !important;
-                                 }
-                                 .tooth-svg {
-                                     width: 16px !important;
-                                     height: 24px !important;
-                                 }
-                                 .tooth-label-top {
-                                     font-size: 0.75rem !important;
-                                 }
-                             }
-                             </style>
+                                    <div class="text-center mt-3 pt-2 border-top border-secondary border-opacity-10">
+                                        <button type="button" id="btn-clear-tooth" class="btn btn-link text-decoration-none text-muted p-0 small" style="font-size: 0.78rem;">
+                                            <i class="bi bi-x-circle me-1"></i>{{ 'إلغاء تحديد السن (إجراء عام على الفم)' if is_ar else 'Clear Tooth (General Treatment)' }}
+                                        </button>
+                                    </div>
+                                </div>
 
-                              <div class="col-md-12">
-                                  <!-- Odontogram Tabs Bar -->
-                                  <div class="d-flex justify-content-center mb-4">
-                                      <ul class="nav nav-pills odontogram-nav-pills justify-content-center gap-2" id="odontogramEditTabs" role="tablist">
-                                          <li class="nav-item" role="presentation">
-                                              <button class="nav-link active" id="universal-edit-tab" data-bs-toggle="pill" data-bs-target="#universal-edit-pane" type="button" role="tab" aria-controls="universal-edit-pane" aria-selected="true">
-                                                  <i class="bi bi-symmetry-vertical me-2"></i>
-                                                  {{ 'مخطط الأسنان التفاعلي' if current_lang == 'ar' else 'Interactive Dental Chart' }}
-                                              </button>
-                                          </li>
-                                          <li class="nav-item" role="presentation">
-                                              <button class="nav-link" id="fdi-edit-tab" data-bs-toggle="pill" data-bs-target="#fdi-edit-pane" type="button" role="tab" aria-controls="fdi-edit-pane" aria-selected="false">
-                                                  <i class="bi bi-grid-3x3-gap me-2"></i>
-                                                  {{ 'المخطط التشريحي للأسنان (FDI)' if current_lang == 'ar' else 'Anatomical Dental Chart (FDI)' }}
-                                              </button>
-                                          </li>
-                                      </ul>
-                                  </div>
+                                <!-- Notes -->
+                                <div>
+                                    <label for="notes" class="form-label text-secondary small fw-bold mb-1.5">
+                                        {{ 'ملاحظات المعالجة' if is_ar else 'Notes' }}
+                                    </label>
+                                    <textarea id="notes" name="notes" class="form-control settings-input" rows="4"
+                                        placeholder="{{ 'أضف ملاحظات تفصيلية عن المعالجة...' if is_ar else 'Add treatment notes...' }}" 
+                                        {% if is_locked %}readonly{% endif %}>{{ treatment.notes or '' }}</textarea>
+                                </div>
 
-                                  <!-- Tab Content -->
-                                  <div class="tab-content" id="odontogramEditTabContent">
-                                      
-                                      <!-- Tab 1: Universal Interactive Chart -->
-                                      <div class="tab-pane fade show active" id="universal-edit-pane" role="tabpanel" aria-labelledby="universal-edit-tab">
-                                          <div class="odontogram-wrapper mb-3">
-                                              <div class="text-center text-secondary small mb-3">
-                                                  <i class="bi bi-info-circle me-1"></i> {% if current_lang == 'ar' %}انقر على الأسنان في المخطط لتحديدها أو إلغاء تحديدها.{% else %}Click teeth on the chart to select or deselect.{% endif %}
-                                              </div>
-                                              
-                                              {% set upper_positions = {
-                                                  1:  {'x': '6%',  'y': '85%', 'r': '-65deg'},
-                                                  2:  {'x': '9%',  'y': '68%', 'r': '-55deg'},
-                                                  3:  {'x': '13%', 'y': '52%', 'r': '-45deg'},
-                                                  4:  {'x': '18%', 'y': '38%', 'r': '-35deg'},
-                                                  5:  {'x': '24%', 'y': '26%', 'r': '-25deg'},
-                                                  6:  {'x': '31%', 'y': '17%', 'r': '-15deg'},
-                                                  7:  {'x': '39%', 'y': '11%', 'r': '-5deg'},
-                                                  8:  {'x': '47%', 'y': '9%',  'r': '-2deg'},
-                                                  9:  {'x': '53%', 'y': '9%',  'r': '2deg'},
-                                                  10: {'x': '61%', 'y': '11%', 'r': '5deg'},
-                                                  11: {'x': '69%', 'y': '17%', 'r': '15deg'},
-                                                  12: {'x': '76%', 'y': '26%', 'r': '25deg'},
-                                                  13: {'x': '82%', 'y': '38%', 'r': '35deg'},
-                                                  14: {'x': '87%', 'y': '52%', 'r': '45deg'},
-                                                  15: {'x': '91%', 'y': '68%', 'r': '55deg'},
-                                                  16: {'x': '94%', 'y': '85%', 'r': '65deg'}
-                                              } %}
+                            </div>
+                        </div>
+                    </div>
 
-                                              {% set lower_positions = {
-                                                  32: {'x': '6%',  'y': '15%', 'r': '65deg'},
-                                                  31: {'x': '9%',  'y': '32%', 'r': '55deg'},
-                                                  30: {'x': '13%', 'y': '48%', 'r': '45deg'},
-                                                  29: {'x': '18%', 'y': '62%', 'r': '35deg'},
-                                                  28: {'x': '24%', 'y': '74%', 'r': '25deg'},
-                                                  27: {'x': '31%', 'y': '83%', 'r': '15deg'},
-                                                  26: {'x': '39%', 'y': '89%', 'r': '5deg'},
-                                                  25: {'x': '47%', 'y': '91%', 'r': '2deg'},
-                                                  24: {'x': '53%', 'y': '91%', 'r': '-2deg'},
-                                                  23: {'x': '61%', 'y': '89%', 'r': '-5deg'},
-                                                  22: {'x': '69%', 'y': '83%', 'r': '-15deg'},
-                                                  21: {'x': '76%', 'y': '74%', 'r': '-25deg'},
-                                                  20: {'x': '82%', 'y': '62%', 'r': '-35deg'},
-                                                  19: {'x': '87%', 'y': '48%', 'r': '-45deg'},
-                                                  18: {'x': '91%', 'y': '32%', 'r': '-55deg'},
-                                                  17: {'x': '94%', 'y': '15%', 'r': '-65deg'}
-                                              } %}
+                    <!-- Right Column: Doctor Select, Anesthesia Toggle & Custom Cost Override -->
+                    <div class="col-lg-5">
+                        <div class="card edit-page-card h-100">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex align-items-center gap-3">
+                                <div class="edit-section-icon">
+                                    <i class="bi bi-person-badge"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-0 text-primary">{{ 'الطبيب المعالج، التخدير والتكلفة' if is_ar else 'Doctor, Anesthesia & Cost' }}</h5>
+                                    <small class="text-muted">{{ 'تغيير الطبيب المعالج وخيارات التخدير والتكلفة' if is_ar else 'Change doctor, anesthesia & cost' }}</small>
+                                </div>
+                            </div>
 
-                                              <div class="jaw upper-jaw text-center mb-4" style="max-width: 600px; margin: 0 auto;">
-                                                  <div class="d-flex justify-content-center mb-3">
-                                                      <span class="jaw-title-badge jaw-upper-badge">
-                                                          <i class="bi bi-symmetry-horizontal me-1.5"></i>
-                                                          {% if current_lang == 'ar' %}الفك العلوي{% else %}Upper Jaw (Maxillary){% endif %}
-                                                      </span>
-                                                  </div>
-                                                  <div class="jaw-arch-container">
-                                                      <svg class="jaw-bg-line" viewBox="0 0 100 50">
-                                                          <path d="M 6 45 C 6 10, 94 10, 94 45" fill="none" stroke="color-mix(in srgb, var(--accent-color), transparent 88%)" stroke-width="4" stroke-linecap="round" />
-                                                      </svg>
-                                                      {% for i in range(1, 17) %}
-                                                      {% set pos = upper_positions[i] %}
-                                                      <button type="button" class="tooth-select-btn tooth-btn" data-tooth="{{ i }}" style="left: {{ pos.x }}; top: {{ pos.y }}; --rot: {{ pos.r }}; transform: translate(-50%, -50%) rotate({{ pos.r }});" {% if is_locked %}disabled{% endif %}>
-                                                          <span class="tooth-label-top fw-bold">{{ fdi_map[i] }}</span>
-                                                          <div class="tooth-svg-container">
-                                                              {{ render_tooth_svg(i, false) }}
-                                                          </div>
-                                                      </button>
-                                                      {% endfor %}
-                                                  </div>
-                                              </div>
-                                              <div class="jaw lower-jaw text-center" style="max-width: 600px; margin: 0 auto;">
-                                                  <div class="jaw-arch-container">
-                                                      <svg class="jaw-bg-line" viewBox="0 0 100 50">
-                                                          <path d="M 6 5 C 6 40, 94 40, 94 5" fill="none" stroke="color-mix(in srgb, var(--accent-color), transparent 88%)" stroke-width="4" stroke-linecap="round" />
-                                                      </svg>
-                                                      {% for i in [32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17] %}
-                                                      {% set pos = lower_positions[i] %}
-                                                      <button type="button" class="tooth-select-btn tooth-btn" data-tooth="{{ i }}" style="left: {{ pos.x }}; top: {{ pos.y }}; --rot: {{ pos.r }}; transform: translate(-50%, -50%) rotate({{ pos.r }});" {% if is_locked %}disabled{% endif %}>
-                                                          <span class="tooth-label-top fw-bold">{{ fdi_map[i] }}</span>
-                                                          <div class="tooth-svg-container">
-                                                              {{ render_tooth_svg(i, true) }}
-                                                          </div>
-                                                      </button>
-                                                      {% endfor %}
-                                                  </div>
-                                                  <div class="d-flex justify-content-center mt-3">
-                                                      <span class="jaw-title-badge jaw-lower-badge">
-                                                          <i class="bi bi-symmetry-horizontal me-1.5"></i>
-                                                          {% if current_lang == 'ar' %}الفك السفلي{% else %}Lower Jaw (Mandibular){% endif %}
-                                                      </span>
-                                                  </div>
-                                              </div>
+                            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                                
+                                <div>
+                                    <!-- Attending Doctor Selection -->
+                                    <div class="mb-4">
+                                        <label for="doctor_id" class="form-label text-secondary small fw-bold mb-1.5 d-flex align-items-center justify-content-between">
+                                            <span>{{ 'الطبيب المعالج' if is_ar else 'Attending Doctor' }}</span>
+                                            <i class="bi bi-person-check text-primary"></i>
+                                        </label>
+                                        <select id="doctor_id" name="doctor_id" class="form-select settings-input py-2.5 fw-bold" {% if is_locked %}disabled{% endif %}>
+                                            {% set current_doc_id = treatment.doctor_id or treatment.appointment.doctor_id %}
+                                            {% for doc in doctors %}
+                                            <option value="{{ doc.id }}" {% if current_doc_id == doc.id %}selected{% endif %}>
+                                                د. {{ doc.display_name }} ({{ doc.username }})
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
 
-                                              <!-- Legend under Chart 1 -->
-                                              <div class="d-flex justify-content-center align-items-center flex-wrap gap-4 mt-4 pt-3 border-top">
-                                                  <div class="d-inline-flex align-items-center gap-2">
-                                                      <span class="legend-dot active-treatment-bg"></span>
-                                                      <span class="small text-muted">{{ 'معالج في هذه الجلسة' if current_lang == 'ar' else 'Treated in current session' }}</span>
-                                                  </div>
-                                                  <div class="d-inline-flex align-items-center gap-2">
-                                                      <span class="legend-dot history-treatment-bg"></span>
-                                                      <span class="small text-muted">{{ 'سوابق معالجة' if current_lang == 'ar' else 'Treated in history' }}</span>
-                                                  </div>
-                                                  <div class="d-inline-flex align-items-center gap-2">
-                                                      <span class="legend-dot no-treatment-bg"></span>
-                                                      <span class="small text-muted">{{ 'سليم / غير معالج' if current_lang == 'ar' else 'Untreated' }}</span>
-                                                  </div>
-                                              </div>
-                                          </div>
-                                      </div>
+                                    <!-- Anesthesia Section with Needle Count Controls -->
+                                    <div class="p-3.5 rounded-4 border mb-4" style="background: rgba(14, 165, 233, 0.06); border-color: rgba(14, 165, 233, 0.25) !important;">
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" id="use_anesthesia" name="use_anesthesia" 
+                                                {% if treatment.use_anesthesia %}checked{% endif %} {% if is_locked %}disabled{% endif %}>
+                                            <label class="form-check-label text-body fw-bold ms-1" for="use_anesthesia">
+                                                <i class="bi bi-shield-fill-plus text-info me-1.5"></i>
+                                                {{ 'استخدام تخدير موضع' if is_ar else 'Use Anesthesia' }}
+                                            </label>
+                                        </div>
 
-                                      <!-- Tab 2: FDI Anatomical Grid Chart -->
-                                      <div class="tab-pane fade" id="fdi-edit-pane" role="tabpanel" aria-labelledby="fdi-edit-tab">
-                                          <div class="card odontogram-card shadow-sm border-0 rounded-4">
-                                              <div class="card-body p-3 text-start">
-                                                  <div class="text-center text-muted small mb-3">
-                                                      <i class="bi bi-info-circle me-1"></i> {% if current_lang == 'ar' %}انقر على الأسنان في المخطط لتحديدها أو إلغاء تحديدها.{% else %}Click teeth on the chart to select or deselect.{% endif %}
-                                                  </div>
+                                        <div id="needles_wrapper" class="mt-3" style="display: {% if treatment.use_anesthesia %}block{% else %}none{% endif %};">
+                                            <label for="anesthesia_needles" class="form-label text-secondary small fw-bold mb-1">
+                                                {{ 'عدد مرات التخدير / الإبر' if is_ar else 'Needles Count' }}
+                                            </label>
+                                            <input type="number" id="anesthesia_needles" name="anesthesia_needles" class="form-control settings-input fw-bold" 
+                                                min="1" value="{{ treatment.anesthesia_needles or 1 }}" {% if is_locked %}readonly{% endif %}>
+                                        </div>
+                                    </div>
 
-                                                  <!-- Anatomical Teeth Grid Container -->
-                                                  <div class="anatomical-chart-wrapper" dir="ltr">
-                                                      <div class="anatomical-teeth-container">
-                                                          
-                                                          <!-- Upper Jaw Header Badge -->
-                                                          <div class="d-flex justify-content-center mb-2">
-                                                              <span class="jaw-title-badge jaw-upper-badge">
-                                                                  <i class="bi bi-symmetry-horizontal me-1.5"></i>
-                                                                  {{ 'الفك العلوي' if current_lang == 'ar' else 'Upper Jaw (Maxillary)' }}
-                                                              </span>
-                                                          </div>
+                                    <!-- Custom Cost Override Field -->
+                                    <div class="mb-4">
+                                        <label for="custom_cost" class="form-label text-secondary small fw-bold d-flex justify-content-between align-items-center mb-1.5">
+                                            <span>{{ 'تكلفة الإجراء النهائي (ليرة سورية)' if is_ar else 'Final Custom Price (SP)' }}</span>
+                                        </label>
+                                        <div class="input-group input-group-lg">
+                                            <input type="number" step="5000" min="0" id="custom_cost" name="custom_cost" class="form-control settings-input fw-bold text-success" 
+                                                style="font-size: 1.35rem;"
+                                                value="{{ (treatment.total_cost or 0) | int }}" {% if is_locked %}readonly{% endif %}>
+                                            <span class="input-group-text fw-bold" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3);">{{ currency_symbol }}</span>
+                                        </div>
+                                        <small id="cost-hint-text" class="form-text text-muted d-block mt-1.5" style="font-size: 0.78rem;">
+                                            {{ '(يمكنك تعديل التكلفة يدوياً بزيادة أو نقصان السعر حسب الجهد والوقت المستغرق)' if is_ar else '(Editable based on time and effort)' }}
+                                        </small>
+                                    </div>
+                                </div>
 
-                                                          <!-- Top Brackets Header -->
-                                                          <div class="d-flex justify-content-between text-center small fw-bold mb-2" style="color: #38bdf8; font-size: 0.8rem;">
-                                                              <div class="d-flex" style="width: 50%;">
-                                                                  <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5" style="width: 37.5%;">{% if current_lang == 'ar' %}أضراس{% else %}Molars{% endif %}</div>
-                                                                  <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1" style="width: 25%;">{% if current_lang == 'ar' %}ضواحك{% else %}Premolars{% endif %}</div>
-                                                                  <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1" style="width: 12.5%;">{% if current_lang == 'ar' %}ناب{% else %}Canine{% endif %}</div>
-                                                                  <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1" style="width: 25%;">{% if current_lang == 'ar' %}قواطع{% else %}Incisors{% endif %}</div>
-                                                              </div>
-                                                              <div class="d-flex ms-2" style="width: 50%;">
-                                                                  <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5" style="width: 25%;">{% if current_lang == 'ar' %}قواطع{% else %}Incisors{% endif %}</div>
-                                                                  <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1" style="width: 12.5%;">{% if current_lang == 'ar' %}ناب{% else %}Canine{% endif %}</div>
-                                                                  <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1" style="width: 25%;">{% if current_lang == 'ar' %}ضواحك{% else %}Premolars{% endif %}</div>
-                                                                  <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1" style="width: 37.5%;">{% if current_lang == 'ar' %}أضراس{% else %}Molars{% endif %}</div>
-                                                              </div>
-                                                          </div>
+                                 <!-- Action Buttons with Hyperlinks -->
+                                <div class="pt-3 border-top border-secondary border-opacity-15">
+                                    {% if not is_locked %}
+                                    <button type="submit" id="save-treatment-btn" class="btn btn-save-edit-gradient w-100 py-3 mb-3 fs-6 d-flex align-items-center justify-content-center gap-2">
+                                        <i class="bi bi-check2-circle fs-5"></i>
+                                        <span>{{ 'حفظ التعديلات' if is_ar else 'Save Changes' }}</span>
+                                    </button>
+                                    {% endif %}
 
-                                                          <!-- Upper Teeth Row -->
-                                                          <div class="d-flex align-items-center justify-content-between position-relative py-1">
-                                                              <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #38bdf8; z-index: 5; transform: translateX(-50%); opacity: 0.7;"></div>
-                                                              {% for i in range(1, 17) %}
-                                                              {% set fdi = fdi_map[i] %}
-                                                              <button type="button" class="tooth-select-btn tooth-btn anatomical-tooth-btn" data-tooth="{{ i }}" {% if is_locked %}disabled{% endif %}>
-                                                                  <div class="tooth-svg-container mb-1">
-                                                                      {{ render_tooth_svg(i, false) }}
-                                                                  </div>
-                                                                  <span class="tooth-fdi-badge">{{ fdi }}</span>
-                                                              </button>
-                                                              {% endfor %}
-                                                          </div>
+                                    <div class="d-flex gap-2 mb-2">
+                                        <a href="{{ url_for('treatments.appointment_session', appointment_id=treatment.appointment_id) }}" 
+                                           class="btn btn-outline-secondary w-100 rounded-3 py-2 fw-semibold small shadow-xs d-flex align-items-center justify-content-center gap-1.5">
+                                            <i class="bi bi-clipboard2-pulse"></i>
+                                            <span>{{ 'العودة للجلسة' if is_ar else 'Session Page' }}</span>
+                                        </a>
+                                        <a href="{{ url_for('patients.patient_detail', patient_id=treatment.appointment.patient_id) }}" 
+                                           class="btn btn-outline-info w-100 rounded-3 py-2 fw-semibold small shadow-xs d-flex align-items-center justify-content-center gap-1.5">
+                                            <i class="bi bi-person"></i>
+                                            <span>{{ 'ملف المريض' if is_ar else 'Patient Profile' }}</span>
+                                        </a>
+                                    </div>
 
-                                                          <div class="my-3" style="height: 2px; background: linear-gradient(to right, transparent, #38bdf8 20%, #38bdf8 80%, transparent); opacity: 0.7;"></div>
+                                    {% if not is_locked %}
+                                    <div class="pt-2 text-center">
+                                        <button type="button" onclick="triggerDeleteTreatment()" class="btn btn-outline-danger btn-sm w-100 rounded-3 py-1.5 fw-semibold shadow-xs d-flex align-items-center justify-content-center gap-1.5" style="font-size: 0.82rem;">
+                                            <i class="bi bi-trash"></i>
+                                            <span>{{ 'حذف وإلغاء هذه المعالجة نهائياً' if is_ar else 'Delete Treatment Completely' }}</span>
+                                        </button>
+                                    </div>
+                                    {% endif %}
+                                </div>
 
-                                                          <!-- Lower Jaw Header Badge -->
-                                                          <div class="d-flex justify-content-center mb-2">
-                                                              <span class="jaw-title-badge jaw-upper-badge" style="background: rgba(14, 165, 233, 0.15); border-color: #0ea5e9; color: #38bdf8;">
-                                                                  <i class="bi bi-symmetry-horizontal me-1.5"></i>
-                                                                  {{ 'الفك السفلي' if current_lang == 'ar' else 'Lower Jaw (Mandibular)' }}
-                                                              </span>
-                                                          </div>
+                            </div>
+                        </div>
+                    </div>
 
-                                                          <!-- Lower Teeth Row -->
-                                                          <div class="d-flex align-items-center justify-content-between position-relative py-1">
-                                                              <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #38bdf8; z-index: 5; transform: translateX(-50%); opacity: 0.7;"></div>
-                                                              {% for i in range(32, 16, -1) %}
-                                                              {% set fdi = fdi_map[i] %}
-                                                              <button type="button" class="tooth-select-btn tooth-btn anatomical-tooth-btn" data-tooth="{{ i }}" {% if is_locked %}disabled{% endif %}>
-                                                                  <span class="tooth-fdi-badge mb-1">{{ fdi }}</span>
-                                                                  <div class="tooth-svg-container">
-                                                                      {{ render_tooth_svg(i, true) }}
-                                                                  </div>
-                                                              </button>
-                                                              {% endfor %}
-                                                          </div>
+                </div>
 
-                                                          <!-- Bottom Brackets Footer -->
-                                                          <div class="d-flex justify-content-between text-center small fw-bold mt-2" style="color: #38bdf8; font-size: 0.8rem;">
-                                                              <div class="d-flex" style="width: 50%;">
-                                                                  <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5" style="width: 37.5%;">{% if current_lang == 'ar' %}أضراس{% else %}Molars{% endif %}</div>
-                                                                  <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1" style="width: 25%;">{% if current_lang == 'ar' %}ضواحك{% else %}Premolars{% endif %}</div>
-                                                                  <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1" style="width: 12.5%;">{% if current_lang == 'ar' %}ناب{% else %}Canine{% endif %}</div>
-                                                                  <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1" style="width: 25%;">{% if current_lang == 'ar' %}قواطع{% else %}Incisors{% endif %}</div>
-                                                              </div>
-                                                              <div class="d-flex ms-2" style="width: 50%;">
-                                                                  <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5" style="width: 25%;">{% if current_lang == 'ar' %}قواطع{% else %}Incisors{% endif %}</div>
-                                                                  <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1" style="width: 12.5%;">{% if current_lang == 'ar' %}ناب{% else %}Canine{% endif %}</div>
-                                                                  <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1" style="width: 25%;">{% if current_lang == 'ar' %}ضواحك{% else %}Premolars{% endif %}</div>
-                                                                  <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1" style="width: 37.5%;">{% if current_lang == 'ar' %}أضراس{% else %}Molars{% endif %}</div>
-                                                              </div>
-                                                          </div>
-                                                      </div>
-                                                  </div>
+            </fieldset>
+        </form>
 
-                                                  <!-- Legend under Chart 2 -->
-                                                  <div class="d-flex justify-content-center align-items-center flex-wrap gap-4 mt-3 pt-2 border-top">
-                                                      <div class="d-inline-flex align-items-center gap-2">
-                                                          <span class="legend-dot active-treatment-bg"></span>
-                                                          <span class="small text-muted">{{ 'معالج في هذه الجلسة' if current_lang == 'ar' else 'Treated in current session' }}</span>
-                                                      </div>
-                                                      <div class="d-inline-flex align-items-center gap-2">
-                                                          <span class="legend-dot history-treatment-bg"></span>
-                                                          <span class="small text-muted">{{ 'سوابق معالجة' if current_lang == 'ar' else 'Treated in history' }}</span>
-                                                      </div>
-                                                      <div class="d-inline-flex align-items-center gap-2">
-                                                          <span class="legend-dot no-treatment-bg"></span>
-                                                          <span class="small text-muted">{{ 'سليم / غير معالج' if current_lang == 'ar' else 'Untreated' }}</span>
-                                                      </div>
-                                                  </div>
-                                              </div>
-                                          </div>
-                                      </div>
+    </div>
+</section>
 
-                                  </div>
-                                  <input type="hidden" id="tooth_number" name="tooth_number" value="{{ treatment.tooth_number or '' }}">
-                             </div>
-
-                                 <div class="col-12">
-                                     <label for="notes" class="form-label">{% if current_lang == 'ar' %}ملاحظات العلاج{% else %}Notes{% endif %}</label>
-                                     <textarea id="notes" name="notes" class="form-control" rows="5"
-                                         placeholder="{% if current_lang == 'ar' %}أضف ملاحظات المعالجة...{% else %}Add treatment notes{% endif %}" {% if is_locked %}readonly{% endif %}>{{ treatment.notes or '' }}</textarea>
-                                 </div>
-                                 
-                                 <div class="col-md-6 d-flex align-items-center mt-3">
-                                     <div class="form-check form-switch">
-                                         <input class="form-check-input" type="checkbox" id="use_anesthesia" name="use_anesthesia" 
-                                             {% if treatment.use_anesthesia %}checked{% endif %} {% if is_locked %}disabled{% endif %}>
-                                         <label class="form-check-label text-secondary small fw-bold ms-1" for="use_anesthesia">
-                                             {{ 'استخدام تخدير' if current_lang == 'ar' else 'Use Anesthesia' }}
-                                         </label>
-                                     </div>
-                                 </div>
-                                 
-                                 <div class="col-md-6 mt-3" id="needles_wrapper" style="display: {% if treatment.use_anesthesia %}block{% else %}none{% endif %};">
-                                     <label for="anesthesia_needles" class="form-label text-secondary small fw-bold">
-                                         {{ 'عدد مرات التخدير / الإبر' if current_lang == 'ar' else 'Needles (Times Anesthetized)' }}
-                                     </label>
-                                     <input type="number" id="anesthesia_needles" name="anesthesia_needles" class="form-control settings-input" 
-                                         min="1" value="{{ treatment.anesthesia_needles or 1 }}" {% if is_locked %}readonly{% endif %}>
-                                 </div>
-
-                                 <div class="col-md-12 mt-3">
-                                     <label class="form-label">{% if current_lang == 'ar' %}تكلفة الإجراء{% else %}Procedure Price{% endif %}</label>
-                                     <div id="procedure_price_display" class="form-control readonly-status-field">
-                                         {{ (treatment.total_cost or 0) | format_price }} {{ currency_symbol }}
-                                     </div>
-                                 </div>
-
-
-                             </div>
-                         </fieldset>
-
-                         <div class="col-12 text-center pt-4">
-                             {% if not is_locked %}
-                             <button type="submit" class="save-patient-btn">
-                                 {% if current_lang == 'ar' %}حفظ التعديلات{% else %}Save Changes{% endif %}
-                             </button>
-                             {% endif %}
-
-                             {% if current_mode == 'view' and treatment.appointment.status in ('Scheduled', 'Checked In', 'In Chair') and current_user.role in ('admin', 'doctor') %}
-                             <a href="{{ url_for('treatments.edit_treatment', treatment_id=treatment.id) }}"
-                                 class="btn-primary px-4">
-                                 {% if current_lang == 'ar' %}تعديل المعالجة{% else %}Edit Treatment{% endif %}
-                             </a>
-                             {% endif %}
-
-                             {% if current_user.role in ('admin', 'doctor') %}
-                             <a href="{{ url_for('treatments.appointment_session', appointment_id=treatment.appointment.id) }}"
-                                 class="btn-outline-main px-4 ms-2">
-                                 {% if current_lang == 'ar' %}العودة للجلسة{% else %}Back to Session{% endif %}
-                             </a>
-                             {% endif %}
-
-                             <a href="{{ url_for('patients.patient_detail', patient_id=treatment.appointment.patient_id) }}"
-                                 class="btn-outline-main px-4 ms-2">
-                                 {% if current_lang == 'ar' %}ملف المريض{% else %}Patient Profile{% endif %}
-                             </a>
-                         </div>
-
-                     </form>
-
-                 </div>
-             </div>
-         </div>
-     </div>
- </section>
- <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    // Parse current treatments
-    const currentTreatments = [
-        {% for t in treatments %}
-        {
-            procedure: "{{ t.procedure_type | escape }}",
-            tooth: "{{ t.tooth_number or '' }}",
-            date: "{{ t.treatment_date.strftime('%Y-%m-%d') if t.treatment_date else '' }}"
-        }{% if not loop.last %},{% endif %}
-        {% endfor %}
-    ];
-
-    // Parse history treatments
-    const historyTreatments = [
-        {% for t in previous_treatments %}
-        {
-            procedure: "{{ t.procedure_type | escape }}",
-            tooth: "{{ t.tooth_number or '' }}",
-            date: "{{ t.treatment_date.strftime('%Y-%m-%d') if t.treatment_date else '' }}"
-        }{% if not loop.last %},{% endif %}
-        {% endfor %}
-    ];
-
-    function appliesToTooth(treatment, toothNum) {
-        if (!treatment.tooth) return false;
-        const teeth = treatment.tooth.split(',').map(s => s.trim());
-        return teeth.includes(toothNum);
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isAr = document.documentElement.lang === 'ar';
+    const isLocked = {{ 'true' if is_locked else 'false' }};
+    const procSelect = document.getElementById('procedure_type');
+    const customCostInput = document.getElementById('custom_cost');
+    const useAnesthesia = document.getElementById('use_anesthesia');
+    const needlesWrapper = document.getElementById('needles_wrapper');
+    const needlesInput = document.getElementById('anesthesia_needles');
+    const toothInput = document.getElementById('tooth_number');
+    const selectedToothBadge = document.getElementById('selected-tooth-badge');
+    const clearToothBtn = document.getElementById('btn-clear-tooth');
+    const deleteActionInput = document.getElementById('delete_action');
+    const needlePrice = parseFloat("{{ anesthesia_needle_price }}") || 50000;
+    const editingTreatmentId = {{ treatment.id }};
+    
+    let prices = {};
+    if (procSelect && procSelect.dataset.prices) {
+        try { prices = JSON.parse(procSelect.dataset.prices); } catch(e) {}
     }
 
     const fdiMap = {
-        '1': '18', '2': '17', '3': '16', '4': '15', '5': '14', '6': '13', '7': '12', '8': '11',
-        '9': '21', '10': '22', '11': '23', '12': '24', '13': '25', '14': '26', '15': '27', '16': '28',
-        '17': '38', '18': '37', '19': '36', '20': '35', '21': '34', '22': '33', '23': '32', '24': '31',
-        '25': '41', '26': '42', '27': '43', '28': '44', '29': '45', '30': '46', '31': '47', '32': '48'
+        1: 18, 2: 17, 3: 16, 4: 15, 5: 14, 6: 13, 7: 12, 8: 11,
+        9: 21, 10: 22, 11: 23, 12: 24, 13: 25, 14: 26, 15: 27, 16: 28,
+        17: 38, 18: 37, 19: 36, 20: 35, 21: 34, 22: 33, 23: 32, 24: 31,
+        25: 41, 26: 42, 27: 43, 28: 44, 29: 45, 30: 46, 31: 47, 32: 48
     };
 
-    const isAr = document.documentElement.lang === 'ar';
+    // Serialize treatment histories for chart styling and extractions check
+    const currentTreatments = [
+        {% for t in treatments %}
+        {
+            id: {{ t.id }},
+            procedure: {{ t.procedure_type | tojson }},
+            tooth: {{ (t.tooth_number or '') | tojson }},
+            doctor: {{ (t.doctor.display_name if t.doctor else (t.appointment.attending_doctor.display_name if t.appointment.attending_doctor else (t.appointment.doctor.display_name if t.appointment.doctor else ''))) | tojson }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    const historyTreatments = [
+        {% for t in previous_treatments %}
+        {
+            id: {{ t.id }},
+            procedure: {{ t.procedure_type | tojson }},
+            tooth: {{ (t.tooth_number or '') | tojson }},
+            date: "{{ t.treatment_date.strftime('%Y-%m-%d') if t.treatment_date else '' }}",
+            doctor: {{ (t.doctor.display_name if t.doctor else (t.appointment.attending_doctor.display_name if t.appointment.attending_doctor else (t.appointment.doctor.display_name if t.appointment.doctor else ''))) | tojson }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    const toothHistoryDict = {{ tooth_history_dict | tojson }};
+
+    const activeTeeth = {};
+    const historyTeeth = {};
+    const extractedTeeth = new Set();
 
     for (let i = 1; i <= 32; i++) {
-        const toothStr = i.toString();
-        const activeMatches = currentTreatments.filter(t => appliesToTooth(t, toothStr));
-        const historyMatches = historyTreatments.filter(t => appliesToTooth(t, toothStr));
-        
-        const btn = document.querySelector(`.tooth-btn[data-tooth="${toothStr}"]`);
-        if (btn) {
-            if (activeMatches.length > 0) {
-                btn.classList.add('active-treatment');
-            } else if (historyMatches.length > 0) {
-                btn.classList.add('history-treatment');
+        activeTeeth[i] = [];
+        historyTeeth[i] = [];
+    }
+
+    // Populate extracted teeth from pre-existing tooth history
+    for (const tn in toothHistoryDict) {
+        toothHistoryDict[tn].forEach(h => {
+            const proc = (h.procedure || '').toLowerCase();
+            if (proc.includes('قلع') || proc.includes('extract')) {
+                extractedTeeth.add(String(tn));
             }
-            
-            const fdiNum = fdiMap[toothStr];
-            btn.setAttribute('title', `${isAr ? 'السن' : 'Tooth'} ${fdiNum}`);
+        });
+    }
+
+    // Populate extracted teeth & history from clinic previous treatments
+    historyTreatments.forEach(t => {
+        const proc = (t.procedure || '').toLowerCase();
+        const isExt = proc.includes('قلع') || proc.includes('extract');
+        if (t.tooth) {
+            t.tooth.split(',').forEach(numStr => {
+                const s = numStr.trim();
+                if (s) {
+                    if (isExt) extractedTeeth.add(s);
+                    if (historyTeeth[s]) historyTeeth[s].push(t);
+                }
+            });
+        }
+    });
+
+    // Populate active treatments in current session
+    currentTreatments.forEach(t => {
+        const proc = (t.procedure || '').toLowerCase();
+        const isExt = proc.includes('قلع') || proc.includes('extract');
+        if (t.tooth) {
+            t.tooth.split(',').forEach(numStr => {
+                const s = numStr.trim();
+                if (s) {
+                    if (isExt && t.id !== editingTreatmentId) extractedTeeth.add(s);
+                    if (activeTeeth[s]) activeTeeth[s].push(t);
+                }
+            });
+        }
+    });
+
+    function setGeneralTreatmentBadge() {
+        if (selectedToothBadge) {
+            selectedToothBadge.className = 'badge rounded-pill px-3 py-1.5 fw-bold fs-6';
+            selectedToothBadge.style = 'background: rgba(14, 165, 233, 0.15); border: 1px solid #0ea5e9; color: #38bdf8;';
+            selectedToothBadge.textContent = isAr ? 'معالجة عامة (بدون سن محدد)' : 'General (No specific tooth)';
         }
     }
 
-     const procedureSelect = document.getElementById('procedure_type');
-     const priceDisplay = document.getElementById('procedure_price_display');
-     const toothInput = document.getElementById('tooth_number');
-     const toothButtons = document.querySelectorAll('.tooth-btn');
-     const useAnesthesiaCheckbox = document.getElementById('use_anesthesia');
-     const needlesWrapper = document.getElementById('needles_wrapper');
-     const needlesInput = document.getElementById('anesthesia_needles');
-     const needlePrice = parseFloat("{{ anesthesia_needle_price }}") || 50000;
+    function setSelectedToothBadge(fdiNum) {
+        if (selectedToothBadge) {
+            selectedToothBadge.className = 'badge rounded-pill px-3 py-1.5 fw-bold fs-6';
+            selectedToothBadge.style = 'background: rgba(14, 165, 233, 0.15); border: 1px solid #0ea5e9; color: #38bdf8;';
+            selectedToothBadge.textContent = (isAr ? 'السن ' : 'Tooth ') + fdiNum;
+        }
+    }
 
-     if (procedureSelect && priceDisplay) {
-         const prices = JSON.parse(procedureSelect.dataset.prices || '{}');
+    // Tooth Click Handler
+    document.querySelectorAll('.edit-tooth-btn').forEach(btn => {
+        const toothStr = btn.dataset.tooth;
+        const fdiNum = fdiMap[toothStr];
+        const isExtracted = extractedTeeth.has(toothStr) || extractedTeeth.has(String(fdiNum));
 
-         function updateProcedurePrice() {
-             const selectedProcedure = procedureSelect.value;
+        if (isExtracted) {
+            btn.classList.add('extracted-treatment');
+        } else if (activeTeeth[toothStr] && activeTeeth[toothStr].length > 0) {
+            btn.classList.add('active-treatment');
+        } else if (historyTeeth[toothStr] && historyTeeth[toothStr].length > 0) {
+            btn.classList.add('history-treatment');
+        }
 
-             if (!selectedProcedure || prices[selectedProcedure] === undefined) {
-                 priceDisplay.textContent = document.documentElement.lang === 'ar' ? 'اختر نوع الإجراء لعرض السعر' : 'Select a procedure type to show price';
-                 return;
-             }
+        // Build Hover Tooltip HTML
+        let tooltipHtml = `<strong class="d-block mb-1">${isAr ? 'السن' : 'Tooth'} ${fdiNum}</strong>`;
+        if (isExtracted) {
+            tooltipHtml += `<div class="text-danger small fw-bold mb-1"><i class="bi bi-x-circle-fill me-1"></i>${isAr ? 'تم قلع السن ❌' : 'Tooth Extracted ❌'}</div>`;
+        }
+        if (activeTeeth[toothStr] && activeTeeth[toothStr].length > 0) {
+            tooltipHtml += `<div class="text-success small mt-1"><i class="bi bi-clipboard2-pulse me-1"></i>${isAr ? 'معالجة بالجلسة الحالية:' : 'Current Session:'}</div>`;
+            activeTeeth[toothStr].forEach(t => {
+                const docText = t.doctor ? ` (${t.doctor})` : '';
+                tooltipHtml += `<div class="ms-2 small text-nowrap">• ${t.procedure}${docText}</div>`;
+            });
+        }
+        if (historyTeeth[toothStr] && historyTeeth[toothStr].length > 0) {
+            tooltipHtml += `<div class="text-info small mt-1"><i class="bi bi-clock-history me-1"></i>${isAr ? 'معالجات سابقة بالعيادة:' : 'Clinic History:'}</div>`;
+            historyTeeth[toothStr].forEach(t => {
+                const docText = t.doctor ? ` - د. ${t.doctor}` : '';
+                tooltipHtml += `<div class="ms-2 small text-nowrap">• ${t.procedure} (${t.date.split(' ')[0]})${docText}</div>`;
+            });
+        }
 
-             let teethCount = 1;
-             if (toothInput) {
-                 const teethList = toothInput.value.split(',')
-                     .map(t => t.trim())
-                     .filter(t => t !== '');
-                 if (teethList.length > 0) {
-                     teethCount = teethList.length;
-                 }
-             }
+        btn.setAttribute('data-bs-toggle', 'tooltip');
+        btn.setAttribute('data-bs-html', 'true');
+        btn.setAttribute('data-bs-title', tooltipHtml);
 
-             const basePrice = parseFloat(prices[selectedProcedure]);
-             const procTotal = basePrice * teethCount;
-             
-             const useAnesthesia = useAnesthesiaCheckbox ? useAnesthesiaCheckbox.checked : false;
-             const needlesCount = needlesInput ? (parseInt(needlesInput.value) || 1) : 0;
-             const anesthesiaCost = useAnesthesia ? needlesCount * needlePrice : 0;
-             
-             const totalPrice = procTotal + anesthesiaCost;
-             
-             const isAr = document.documentElement.lang === 'ar';
-             const toothLabel = isAr ? 'أسنان' : 'teeth';
-             const totalLabel = isAr ? 'المجموع' : 'Total';
-             
-             let displayVal = totalPrice.toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' {{ currency_symbol }}';
-             if (teethCount > 1) {
-                 displayVal += ` (${totalLabel} لـ ${teethCount} ${toothLabel})`;
-             }
-             if (useAnesthesia) {
-                 const incAnesthLabel = isAr ? 'شامل التخدير' : 'inc. anesthesia';
-                 displayVal += ` (${incAnesthLabel})`;
-             }
-             priceDisplay.textContent = displayVal;
-         }
+        btn.addEventListener('click', function() {
+            if (isLocked) return;
 
-         procedureSelect.addEventListener('change', updateProcedurePrice);
-         
-         if (toothInput) {
-             toothInput.addEventListener('input', updateProcedurePrice);
-         }
-         
-         if (useAnesthesiaCheckbox && needlesWrapper) {
-             useAnesthesiaCheckbox.addEventListener('change', function() {
-                 if (this.checked) {
-                     needlesWrapper.style.display = 'block';
-                 } else {
-                     needlesWrapper.style.display = 'none';
-                 }
-                 updateProcedurePrice();
-             });
-         }
-         
-         if (needlesInput) {
-             needlesInput.addEventListener('input', updateProcedurePrice);
-         }
+            const selectedProc = procSelect ? procSelect.value.toLowerCase() : '';
+            const isPostExtraction = selectedProc.includes('بعد القلع') || selectedProc.includes('post-extraction');
 
-         // Initialize price display
-         updateProcedurePrice();
-         window.updateProcedurePrice = updateProcedurePrice; // expose helper
-     }
+            if (isExtracted && !isPostExtraction) {
+                alert(isAr ? `عذراً! السن ${fdiNum} مقلوع سابقاً. لا يمكن إضافة أو تعديل معالجات على سن مقلوع سوى (معالجة ما بعد القلع).` 
+                           : `Tooth ${fdiNum} is extracted. Only post-extraction care can be assigned.`);
+                return;
+            }
 
-    if (toothInput && toothButtons.length > 0) {
-        // Pre-select active teeth on page load
-        function initActiveTeeth() {
-            let val = toothInput.value;
-            let activeTeeth = val.split(',')
-                .map(t => t.trim())
-                .filter(t => t !== '');
-                
-            toothButtons.forEach(btn => {
-                if (activeTeeth.includes(btn.dataset.tooth)) {
-                    btn.classList.add('active');
+            if (toothInput.value === toothStr || toothInput.value === String(fdiNum)) {
+                // Deselect -> Switch to general mouth treatment
+                toothInput.value = '';
+                if (deleteActionInput) deleteActionInput.value = '0';
+                document.querySelectorAll('.edit-tooth-btn').forEach(b => b.classList.remove('selected-tooth'));
+                setGeneralTreatmentBadge();
+            } else {
+                // Select tooth
+                if (deleteActionInput) deleteActionInput.value = '0';
+                document.querySelectorAll('.edit-tooth-btn').forEach(b => b.classList.remove('selected-tooth'));
+                this.classList.add('selected-tooth');
+                toothInput.value = toothStr;
+                setSelectedToothBadge(fdiNum);
+            }
+        });
+    });
+
+    // Initialize Bootstrap tooltips safely
+    if (window.bootstrap && bootstrap.Tooltip) {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+
+    if (clearToothBtn) {
+        clearToothBtn.addEventListener('click', function() {
+            if (isLocked) return;
+            toothInput.value = '';
+            if (deleteActionInput) deleteActionInput.value = '0';
+            document.querySelectorAll('.edit-tooth-btn').forEach(b => b.classList.remove('selected-tooth'));
+            setGeneralTreatmentBadge();
+        });
+    }
+
+    window.triggerDeleteTreatment = function() {
+        if (isLocked) return;
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: isAr ? 'حذف المعالجة' : 'Delete Treatment',
+                text: isAr ? 'هل أنت متأكد من إلغاء وحذف هذه المعالجة نهائياً وتحديث الفاتورة؟' : 'Are you sure you want to permanently delete this treatment and update the invoice?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: isAr ? 'نعم، حذف المعالجة' : 'Yes, delete treatment',
+                cancelButtonText: isAr ? 'إلغاء' : 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    if (deleteActionInput) deleteActionInput.value = '1';
+                    const form = document.getElementById('edit-treatment-form');
+                    if (form) form.submit();
                 }
             });
-            
-            if (window.updateProcedurePrice) {
-                window.updateProcedurePrice();
+        } else {
+            if (confirm(isAr ? 'هل أنت متأكد من إلغاء وحذف هذه المعالجة نهائياً وتحديث الفاتورة؟' : 'Are you sure you want to permanently delete this treatment and update the invoice?')) {
+                if (deleteActionInput) deleteActionInput.value = '1';
+                const form = document.getElementById('edit-treatment-form');
+                if (form) form.submit();
             }
         }
-        initActiveTeeth();
+    };
 
-        toothButtons.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (this.disabled) return;
-                const toothNum = this.dataset.tooth;
-                
-                let selectedTeeth = toothInput.value.split(',')
-                    .map(t => t.trim())
-                    .filter(t => t !== '');
-                    
-                const index = selectedTeeth.indexOf(toothNum);
-                if (index > -1) {
-                    selectedTeeth.splice(index, 1);
-                    this.classList.remove('active');
-                } else {
-                    selectedTeeth.push(toothNum);
-                    this.classList.add('active');
-                }
-                
-                selectedTeeth.sort((a, b) => parseInt(a) - parseInt(b));
-                toothInput.value = selectedTeeth.join(', ');
-                
-                if (window.updateProcedurePrice) {
-                    window.updateProcedurePrice();
-                }
-            });
+    // Anesthesia toggle
+    if (useAnesthesia && needlesWrapper) {
+        useAnesthesia.addEventListener('change', function() {
+            if (isLocked) return;
+            needlesWrapper.style.display = this.checked ? 'block' : 'none';
+            updateDefaultPrice();
         });
+    }
 
-        toothInput.addEventListener('input', function() {
-            let val = this.value;
-            let typedTeeth = val.split(',')
-                .map(t => t.trim())
-                .filter(t => t !== '');
-                
-            toothButtons.forEach(btn => {
-                if (typedTeeth.includes(btn.dataset.tooth)) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-            
-            if (window.updateProcedurePrice) {
-                window.updateProcedurePrice();
+    if (needlesInput) {
+        needlesInput.addEventListener('input', function() {
+            if (isLocked) return;
+            updateDefaultPrice();
+        });
+    }
+
+    if (procSelect) {
+        procSelect.addEventListener('change', function() {
+            if (isLocked) return;
+            updateDefaultPrice();
+        });
+    }
+
+    function updateDefaultPrice() {
+        if (isLocked) return;
+        const proc = procSelect ? procSelect.value : '';
+        if (!proc || prices[proc] === undefined) return;
+
+        const basePrice = parseFloat(prices[proc]) || 0;
+        const withAnesthesia = useAnesthesia ? useAnesthesia.checked : false;
+        const needlesCount = needlesInput ? (parseInt(needlesInput.value) || 1) : 1;
+        const anesthesiaCost = withAnesthesia ? needlesCount * needlePrice : 0;
+        const defaultTotal = basePrice + anesthesiaCost;
+
+        if (customCostInput) {
+            customCostInput.value = Math.round(defaultTotal);
+        }
+    }
+
+    // Doctor Select Live Update
+    const docSelect = document.getElementById('doctor_id');
+    const attendingDocName = document.getElementById('attending-doctor-name');
+    if (docSelect && attendingDocName) {
+        docSelect.addEventListener('change', function() {
+            const selectedOpt = this.options[this.selectedIndex];
+            if (selectedOpt) {
+                attendingDocName.textContent = selectedOpt.text.replace(/^د\.\s*/, '').replace(/\s*\([^)]*\)$/, '');
             }
         });
     }
 });
 </script>
-
 {% endblock %}

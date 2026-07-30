@@ -99,6 +99,22 @@ def check_and_add_discount_column():
             app.logger.error(f"Failed to add discount_type column: {e}")
 
 
+def check_and_add_additional_charges_column():
+    from sqlalchemy import text
+    try:
+        db.session.execute(text("SELECT additional_charges FROM invoice LIMIT 1"))
+    except Exception:
+        db.session.rollback()
+        try:
+            app.logger.info("Adding additional_charges column to invoice table")
+            db.session.execute(text("ALTER TABLE invoice ADD COLUMN additional_charges DECIMAL(10, 2) NOT NULL DEFAULT 0.00"))
+            db.session.commit()
+            app.logger.info("Successfully added additional_charges column")
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Failed to add additional_charges column: {e}")
+
+
 def check_and_add_tax_rate_column():
     from sqlalchemy import text
     try:
@@ -282,6 +298,7 @@ with app.app_context():
     db.create_all()
     populate_default_settings()
     check_and_add_discount_column()
+    check_and_add_additional_charges_column()
     check_and_add_tax_rate_column()
     check_and_add_patient_id_column()
     check_and_add_plain_password_column()
@@ -311,6 +328,31 @@ def format_price(value):
         return formatted.replace(",", ".")
     except (ValueError, TypeError, InvalidOperation):
         return str(value)
+
+
+UNIVERSAL_TO_FDI_MAP = {
+    '1': '18', '2': '17', '3': '16', '4': '15', '5': '14', '6': '13', '7': '12', '8': '11',
+    '9': '21', '10': '22', '11': '23', '12': '24', '13': '25', '14': '26', '15': '27', '16': '28',
+    '17': '38', '18': '37', '19': '36', '20': '35', '21': '34', '22': '33', '23': '32', '24': '31',
+    '25': '41', '26': '42', '27': '43', '28': '44', '29': '45', '30': '46', '31': '47', '32': '48'
+}
+
+@app.template_filter("format_tooth_number")
+@app.template_filter("fdi_tooth")
+def format_tooth_number_filter(value):
+    if not value:
+        return ""
+    val_str = str(value).strip()
+    if not val_str:
+        return ""
+    parts = [p.strip() for p in val_str.split(',') if p.strip()]
+    converted = []
+    for p in parts:
+        if p in UNIVERSAL_TO_FDI_MAP:
+            converted.append(UNIVERSAL_TO_FDI_MAP[p])
+        else:
+            converted.append(p)
+    return ", ".join(converted)
 
 
 @app.template_filter("translate")

@@ -4,32 +4,37 @@
 
 {% block content %}
 {% macro render_tooth_svg(i, is_lower) %}
-    {% set i = i | int %}
-    {% if i in [1, 2, 3, 14, 15, 16, 17, 18, 19, 30, 31, 32] %}
-        <!-- Molar -->
-        <svg viewBox="0 0 20 30" width="20" height="28" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
-            <path d="M 2 7 C 2 3, 18 3, 18 7 C 18 13, 16 17, 15 23 C 14 26, 11 28, 10 28 C 9 28, 6 26, 5 23 C 4 13, 2 7, 2 7 Z" fill="none" stroke="currentColor" stroke-width="1.5" />
-            <path d="M 5 7 Q 10 10 15 7" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4" />
-            <path d="M 10 8 L 10 18" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3" />
-        </svg>
-    {% elif i in [4, 5, 12, 13, 20, 21, 28, 29] %}
-        <!-- Premolar -->
-        <svg viewBox="0 0 20 30" width="18" height="26" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
-            <path d="M 3 8 C 3 4, 17 4, 17 8 C 17 13, 15 17, 14 23 C 13 26, 11 28, 10 28 C 9 28, 7 26, 6 23 C 5 13, 3 8, 3 8 Z" fill="none" stroke="currentColor" stroke-width="1.5" />
-            <path d="M 6 8 Q 10 11 14 8" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4" />
-        </svg>
-    {% elif i in [6, 11, 22, 27] %}
-        <!-- Canine -->
-        <svg viewBox="0 0 20 30" width="16" height="24" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
-            <path d="M 10 2 C 11 2, 16 5, 16 8 C 16 13, 14 17, 13 23 C 12 26, 11 28, 10 28 C 9 28, 8 26, 7 23 C 6 13, 4 8, 4 8 C 4 5, 9 2, 10 2 Z" fill="none" stroke="currentColor" stroke-width="1.5" />
-            <path d="M 6 8 Q 10 11 14 8" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4" />
-        </svg>
-    {% else %}
-        <!-- Incisor -->
-        <svg viewBox="0 0 20 30" width="15" height="22" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
-            <path d="M 4 6 C 4 4, 16 4, 16 6 L 14 22 C 14 25, 12 28, 10 28 C 8 28, 6 25, 6 22 Z" fill="none" stroke="currentColor" stroke-width="1.5" />
-        </svg>
-    {% endif %}
+{% set i = i | int %}
+{% if i in [1, 2, 3, 14, 15, 16, 17, 18, 19, 30, 31, 32] %}
+<!-- Molar -->
+<svg viewBox="0 0 20 30" width="20" height="28" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
+    <path d="M 2 7 C 2 3, 18 3, 18 7 C 18 13, 16 17, 15 23 C 14 26, 11 28, 10 28 C 9 28, 6 26, 5 23 C 4 13, 2 7, 2 7 Z"
+        fill="none" stroke="currentColor" stroke-width="1.5" />
+    <path d="M 5 7 Q 10 10 15 7" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4" />
+    <path d="M 10 8 L 10 18" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3" />
+</svg>
+{% elif i in [4, 5, 12, 13, 20, 21, 28, 29] %}
+<!-- Premolar -->
+<svg viewBox="0 0 20 30" width="18" height="26" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
+    <path d="M 3 8 C 3 4, 17 4, 17 8 C 17 13, 15 17, 14 23 C 13 26, 11 28, 10 28 C 9 28, 7 26, 6 23 C 5 13, 3 8, 3 8 Z"
+        fill="none" stroke="currentColor" stroke-width="1.5" />
+    <path d="M 6 8 Q 10 11 14 8" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4" />
+</svg>
+{% elif i in [6, 11, 22, 27] %}
+<!-- Canine -->
+<svg viewBox="0 0 20 30" width="16" height="24" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
+    <path
+        d="M 10 2 C 11 2, 16 5, 16 8 C 16 13, 14 17, 13 23 C 12 26, 11 28, 10 28 C 9 28, 8 26, 7 23 C 6 13, 4 8, 4 8 C 4 5, 9 2, 10 2 Z"
+        fill="none" stroke="currentColor" stroke-width="1.5" />
+    <path d="M 6 8 Q 10 11 14 8" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4" />
+</svg>
+{% else %}
+<!-- Incisor -->
+<svg viewBox="0 0 20 30" width="15" height="22" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
+    <path d="M 4 6 C 4 4, 16 4, 16 6 L 14 22 C 14 25, 12 28, 10 28 C 8 28, 6 25, 6 22 Z" fill="none"
+        stroke="currentColor" stroke-width="1.5" />
+</svg>
+{% endif %}
 {% endmacro %}
 
 <!-- Section Title -->
@@ -47,11 +52,14 @@
             <div class="profile-header">
                 <div class="doctor-avatar">
                     {% if patient.gender and patient.gender.lower() in ('female', 'f', 'أنثى') %}
-                        <img src="{{ url_for('static', filename='assets/img/person/person-f-5.webp') }}" alt="Patient" class="img-fluid">
+                    <img src="{{ url_for('static', filename='assets/img/person/person-f-5.webp') }}" alt="Patient"
+                        class="img-fluid">
                     {% elif patient.gender and patient.gender.lower() in ('male', 'm', 'ذكر') %}
-                        <img src="{{ url_for('static', filename='assets/img/person/person-m-3.webp') }}" alt="Patient" class="img-fluid">
+                    <img src="{{ url_for('static', filename='assets/img/person/person-m-3.webp') }}" alt="Patient"
+                        class="img-fluid">
                     {% else %}
-                        <img src="{{ url_for('static', filename='assets/my imgs/person.png') }}" alt="Patient" class="img-fluid">
+                    <img src="{{ url_for('static', filename='assets/my imgs/person.png') }}" alt="Patient"
+                        class="img-fluid">
                     {% endif %}
 
                     <div class="status-indicator
@@ -64,7 +72,8 @@
                 <div class="doctor-details">
                     <h4>{{ patient.first_name }} {{ patient.last_name }}</h4>
                     <span class="specialty-tag">
-                        {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else
+                        {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date
+                        else
                         'No date' }}
                     </span>
                 </div>
@@ -90,13 +99,13 @@
                             {% elif appointment.status in ('Pending', 'قيد التثبيت') %}status-pending
                             {% else %}status-scheduled{% endif %}">
                             {% if appointment.status in ('Done', 'منجز') %}
-                                {% if current_lang == 'ar' %}منجز{% else %}Done{% endif %}
+                            {% if current_lang == 'ar' %}منجز{% else %}Done{% endif %}
                             {% elif appointment.status in ('Cancelled', 'ملغي') %}
-                                {% if current_lang == 'ar' %}ملغي{% else %}Cancelled{% endif %}
+                            {% if current_lang == 'ar' %}ملغي{% else %}Cancelled{% endif %}
                             {% elif appointment.status in ('Pending', 'قيد التثبيت') %}
-                                {% if current_lang == 'ar' %}قيد التثبيت{% else %}Pending{% endif %}
+                            {% if current_lang == 'ar' %}قيد التثبيت{% else %}Pending{% endif %}
                             {% else %}
-                                {% if current_lang == 'ar' %}مجدول{% else %}Scheduled{% endif %}
+                            {% if current_lang == 'ar' %}مجدول{% else %}Scheduled{% endif %}
                             {% endif %}
                         </span>
                     </p>
@@ -182,19 +191,22 @@
                 {% endif %}
 
                 {% if appointment.status in ('Scheduled', 'Checked In', 'In Chair') %}
-                <button type="button" class="btn-end-session session-action-btn" data-bs-toggle="modal" data-bs-target="#endSessionModal">
+                <button type="button" class="btn-end-session session-action-btn" data-bs-toggle="modal"
+                    data-bs-target="#endSessionModal">
                     {% if current_lang == 'ar' %}إنهاء الجلسة{% else %}End Session{% endif %}
                 </button>
+                <form method="POST" action="{{ url_for('treatments.revert_session', appointment_id=appointment.id) }}" class="d-inline" id="revertSessionForm">
+                    <button type="button" class="btn btn-warning text-dark rounded-pill px-4 py-2 fw-bold session-action-btn ms-2 shadow-sm" onclick="confirmRevertSession()">
+                        <i class="bi bi-arrow-u-turn-left me-1.5"></i>
+                        {% if current_lang == 'ar' %}التراجع عن فتح الجلسة{% else %}Undo Session Start{% endif %}
+                    </button>
+                </form>
                 {% elif appointment.status in ('Done', 'منجز') and current_user.role == 'admin' %}
-                <button type="button" class="btn btn-warning rounded-pill px-4 py-2 fw-bold text-dark session-action-btn" data-bs-toggle="modal" data-bs-target="#reopenSessionModal">
+                <button type="button"
+                    class="btn btn-warning rounded-pill px-4 py-2 fw-bold text-dark session-action-btn"
+                    data-bs-toggle="modal" data-bs-target="#reopenSessionModal">
                     <i class="bi bi-arrow-counterclockwise me-1.5"></i>
                     {% if current_lang == 'ar' %}إعادة فتح الجلسة{% else %}Reopen Session{% endif %}
-                </button>
-                {% endif %}
-
-                {% if appointment.status == 'Done' and (not appointment.invoice or appointment.invoice.total_paid == 0) %}
-                <button type="button" class="btn-session-primary session-action-btn" data-bs-toggle="modal" data-bs-target="#reopenSessionModal">
-                    Reopen Session
                 </button>
                 {% endif %}
 
@@ -204,369 +216,405 @@
         </div>
 
     </div>
-</section><style>
-.odontogram-card {
-    background: var(--surface-color) !important;
-    border: 1px solid color-mix(in srgb, var(--accent-color), transparent 90%) !important;
-}
-.odontogram-teeth-grid {
-    user-select: none;
-}
-.jaw-arch-container {
-    position: relative;
-    width: 100%;
-    height: 250px;
-    margin: 0 auto;
-}
-.jaw-bg-line {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    z-index: 1;
-    pointer-events: none;
-}
-.tooth-wrapper {
-    position: absolute;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 6px 4px;
-    border-radius: 8px;
-    border: 1px solid transparent;
-    transition: all 0.25s ease;
-    cursor: pointer;
-    min-width: 44px;
-}
-.tooth-wrapper:hover {
-    transform: translate(-50%, -50%) scale(1.1) rotate(var(--rot, 0deg)) !important;
-    background: color-mix(in srgb, var(--accent-color), transparent 93%);
-    border-color: color-mix(in srgb, var(--accent-color), transparent 80%);
-}
-.tooth-svg-container {
-    margin: 2px 0;
-    transition: transform 0.2s ease;
-}
-.tooth-svg {
-    color: var(--default-color);
-    transition: all 0.2s ease;
-}
-.tooth-svg.rotate-180 {
-    transform: rotate(180deg);
-}
+</section>
+<style>
+    .odontogram-card {
+        background: var(--surface-color) !important;
+        border: 1px solid color-mix(in srgb, var(--accent-color), transparent 90%) !important;
+    }
 
-/* Color Coding states */
-.tooth-wrapper.active-treatment .tooth-svg {
-    color: #198754 !important;
-    fill: color-mix(in srgb, #198754, transparent 80%) !important;
-}
-.tooth-wrapper.active-treatment {
-    border-color: color-mix(in srgb, #198754, transparent 70%);
-    background: color-mix(in srgb, #198754, transparent 96%);
-}
-.tooth-wrapper.active-treatment:hover {
-    background: color-mix(in srgb, #198754, transparent 90%);
-    border-color: #198754;
-}
+    .odontogram-teeth-grid {
+        user-select: none;
+    }
 
-.tooth-wrapper.history-treatment .tooth-svg {
-    color: #0d6efd !important;
-    fill: color-mix(in srgb, #0d6efd, transparent 80%) !important;
-}
-.tooth-wrapper.history-treatment {
-    border-color: color-mix(in srgb, #0d6efd, transparent 70%);
-    background: color-mix(in srgb, #0d6efd, transparent 96%);
-}
-.tooth-wrapper.history-treatment:hover {
-    background: color-mix(in srgb, #0d6efd, transparent 90%);
-    border-color: #0d6efd;
-}
-
-.tooth-label-top {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #ffffff;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-}
-
-/* High contrast Tooltip Styling */
-.tooltip-inner {
-    background-color: #1e293b !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(255,255,255,0.15) !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important;
-    font-size: 0.85rem !important;
-    font-weight: 600 !important;
-    padding: 8px 12px !important;
-}
-.tooltip-inner .text-muted {
-    color: #cbd5e1 !important;
-}
-.tooltip-inner .text-success {
-    color: #4ade80 !important;
-}
-.tooltip-inner .text-primary {
-    color: #60a5fa !important;
-}
-
-.jaw-title-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 18px;
-    border-radius: 50rem;
-    font-size: 0.88rem;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-.jaw-upper-badge {
-    background-color: rgba(13, 110, 253, 0.15);
-    color: #0d6efd;
-    border: 1px solid rgba(13, 110, 253, 0.3);
-}
-.jaw-lower-badge {
-    background-color: rgba(13, 202, 240, 0.15);
-    color: #0dcaf0;
-    border: 1px solid rgba(13, 202, 240, 0.3);
-}
-[data-bs-theme="dark"] .jaw-upper-badge {
-    background-color: rgba(13, 110, 253, 0.25);
-    color: #93c5fd;
-    border: 1px solid rgba(147, 197, 253, 0.4);
-}
-[data-bs-theme="dark"] .jaw-lower-badge {
-    background-color: rgba(13, 202, 240, 0.25);
-    color: #7dd3fc;
-    border: 1px solid rgba(125, 211, 252, 0.4);
-}
-
-.legend-dot {
-    display: inline-block;
-    width: 12px;
-    height: 12px;
-    border-radius: 3px;
-    border: 1px solid transparent;
-}
-.active-treatment-bg {
-    background-color: color-mix(in srgb, #198754, transparent 20%);
-    border-color: #198754;
-}
-.history-treatment-bg {
-    background-color: color-mix(in srgb, #0d6efd, transparent 20%);
-    border-color: #0d6efd;
-}
-.extracted-treatment-bg {
-    background-color: rgba(239, 68, 68, 0.4);
-    border-color: #ef4444;
-}
-.no-treatment-bg {
-    background-color: transparent;
-    border-color: color-mix(in srgb, var(--default-color), transparent 70%);
-}
-
-.tooth-svg-container {
-    position: relative !important;
-}
-
-.tooth-wrapper.extracted-treatment,
-.tooth-wrapper.extracted {
-    border-color: rgba(239, 68, 68, 0.6) !important;
-    background: rgba(239, 68, 68, 0.15) !important;
-    opacity: 0.75 !important;
-}
-
-.anatomical-tooth-item.extracted-treatment,
-.anatomical-tooth-btn.extracted-treatment,
-.anatomical-tooth-item.extracted,
-.anatomical-tooth-btn.extracted {
-    background: rgba(239, 68, 68, 0.15) !important;
-    border: 1.5px dashed #ef4444 !important;
-    opacity: 0.75 !important;
-}
-
-.tooth-wrapper.extracted-treatment:hover,
-.anatomical-tooth-item.extracted-treatment:hover,
-.anatomical-tooth-btn.extracted-treatment:hover {
-    opacity: 0.95 !important;
-    border-color: #f43f5e !important;
-    background: rgba(244, 63, 94, 0.25) !important;
-}
-
-.tooth-wrapper.extracted-treatment .tooth-svg,
-.anatomical-tooth-item.extracted-treatment .tooth-svg,
-.anatomical-tooth-btn.extracted-treatment .tooth-svg {
-    color: #f87171 !important;
-    fill: rgba(239, 68, 68, 0.3) !important;
-}
-
-.extracted-badge {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #ef4444;
-    font-size: 1.1rem;
-    font-weight: 900;
-    pointer-events: none;
-    z-index: 10;
-    text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
-}
-
-.form-locked-extracted {
-    opacity: 0.38 !important;
-    pointer-events: none !important;
-    filter: grayscale(85%) !important;
-    user-select: none !important;
-    transition: all 0.3s ease !important;
-}
-
-.anatomical-chart-wrapper {
-    background: rgba(15, 23, 42, 0.5) !important;
-    border-radius: 16px !important;
-    border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
-    overflow-x: auto !important;
-    padding: 20px 15px !important;
-}
-
-.anatomical-teeth-container {
-    min-width: 820px;
-    margin: 0 auto;
-}
-
-.anatomical-tooth-item,
-.anatomical-tooth-btn {
-    width: 44px !important;
-    min-width: 44px !important;
-    max-width: 44px !important;
-    height: 64px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    background: transparent !important;
-    border: 1.5px solid transparent !important;
-    border-radius: 10px !important;
-    padding: 3px !important;
-    cursor: pointer !important;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    flex-shrink: 0 !important;
-}
-
-.anatomical-tooth-item:hover,
-.anatomical-tooth-btn:hover {
-    background: rgba(56, 189, 248, 0.18) !important;
-    border-color: #38bdf8 !important;
-    transform: translateY(-2px) !important;
-}
-
-.anatomical-tooth-item.active,
-.anatomical-tooth-item.active-treatment,
-.anatomical-tooth-btn.active {
-    background: rgba(40, 167, 69, 0.3) !important;
-    border: 2px solid #34d399 !important;
-    box-shadow: 0 0 12px rgba(52, 211, 153, 0.5) !important;
-}
-
-.anatomical-tooth-item.active .tooth-svg,
-.anatomical-tooth-item.active-treatment .tooth-svg,
-.anatomical-tooth-btn.active .tooth-svg {
-    color: #34d399 !important;
-}
-
-.anatomical-tooth-item.history,
-.anatomical-tooth-item.history-treatment,
-.anatomical-tooth-btn.history {
-    background: rgba(13, 110, 253, 0.3) !important;
-    border: 2px solid #60a5fa !important;
-    box-shadow: 0 0 12px rgba(96, 165, 250, 0.5) !important;
-}
-
-.anatomical-tooth-item.history .tooth-svg,
-.anatomical-tooth-item.history-treatment .tooth-svg,
-.anatomical-tooth-btn.history .tooth-svg {
-    color: #60a5fa !important;
-}
-
-.tooth-fdi-badge {
-    font-size: 0.75rem !important;
-    font-weight: 800 !important;
-    color: #f8fafc !important;
-    background: rgba(255, 255, 255, 0.12) !important;
-    border-radius: 8px !important;
-    padding: 1px 6px !important;
-    line-height: 1.2 !important;
-}
-
-@media (max-width: 576px) {
     .jaw-arch-container {
-        height: 200px;
+        position: relative;
+        width: 100%;
+        height: 250px;
+        margin: 0 auto;
     }
+
+    .jaw-bg-line {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        pointer-events: none;
+    }
+
     .tooth-wrapper {
-        min-width: 32px !important;
-        padding: 4px 2px !important;
+        position: absolute;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 6px 4px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        transition: all 0.25s ease;
+        cursor: pointer;
+        min-width: 44px;
     }
+
+    .tooth-wrapper:hover {
+        transform: translate(-50%, -50%) scale(1.1) rotate(var(--rot, 0deg)) !important;
+        background: color-mix(in srgb, var(--accent-color), transparent 93%);
+        border-color: color-mix(in srgb, var(--accent-color), transparent 80%);
+    }
+
+    .tooth-svg-container {
+        margin: 2px 0;
+        transition: transform 0.2s ease;
+    }
+
     .tooth-svg {
-        width: 16px !important;
-        height: 24px !important;
+        color: var(--default-color);
+        transition: all 0.2s ease;
     }
+
+    .tooth-svg.rotate-180 {
+        transform: rotate(180deg);
+    }
+
+    /* Color Coding states */
+    .tooth-wrapper.active-treatment .tooth-svg {
+        color: #198754 !important;
+        fill: color-mix(in srgb, #198754, transparent 80%) !important;
+    }
+
+    .tooth-wrapper.active-treatment {
+        border-color: color-mix(in srgb, #198754, transparent 70%);
+        background: color-mix(in srgb, #198754, transparent 96%);
+    }
+
+    .tooth-wrapper.active-treatment:hover {
+        background: color-mix(in srgb, #198754, transparent 90%);
+        border-color: #198754;
+    }
+
+    .tooth-wrapper.history-treatment .tooth-svg {
+        color: #0d6efd !important;
+        fill: color-mix(in srgb, #0d6efd, transparent 80%) !important;
+    }
+
+    .tooth-wrapper.history-treatment {
+        border-color: color-mix(in srgb, #0d6efd, transparent 70%);
+        background: color-mix(in srgb, #0d6efd, transparent 96%);
+    }
+
+    .tooth-wrapper.history-treatment:hover {
+        background: color-mix(in srgb, #0d6efd, transparent 90%);
+        border-color: #0d6efd;
+    }
+
     .tooth-label-top {
-        font-size: 0.7rem !important;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #ffffff;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     }
-    .tooth-label-fdi {
-        font-size: 0.55rem !important;
+
+    /* High contrast Tooltip Styling */
+    .tooltip-inner {
+        background-color: #1e293b !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        padding: 8px 12px !important;
     }
-}
+
+    .tooltip-inner .text-muted {
+        color: #cbd5e1 !important;
+    }
+
+    .tooltip-inner .text-success {
+        color: #4ade80 !important;
+    }
+
+    .tooltip-inner .text-primary {
+        color: #60a5fa !important;
+    }
+
+    .jaw-title-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 18px;
+        border-radius: 50rem;
+        font-size: 0.88rem;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .jaw-upper-badge {
+        background-color: rgba(13, 110, 253, 0.15);
+        color: #0d6efd;
+        border: 1px solid rgba(13, 110, 253, 0.3);
+    }
+
+    .jaw-lower-badge {
+        background-color: rgba(13, 202, 240, 0.15);
+        color: #0dcaf0;
+        border: 1px solid rgba(13, 202, 240, 0.3);
+    }
+
+    [data-bs-theme="dark"] .jaw-upper-badge {
+        background-color: rgba(13, 110, 253, 0.25);
+        color: #93c5fd;
+        border: 1px solid rgba(147, 197, 253, 0.4);
+    }
+
+    [data-bs-theme="dark"] .jaw-lower-badge {
+        background-color: rgba(13, 202, 240, 0.25);
+        color: #7dd3fc;
+        border: 1px solid rgba(125, 211, 252, 0.4);
+    }
+
+    .legend-dot {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        border: 1px solid transparent;
+    }
+
+    .active-treatment-bg {
+        background-color: color-mix(in srgb, #198754, transparent 20%);
+        border-color: #198754;
+    }
+
+    .history-treatment-bg {
+        background-color: color-mix(in srgb, #0d6efd, transparent 20%);
+        border-color: #0d6efd;
+    }
+
+    .extracted-treatment-bg {
+        background-color: rgba(239, 68, 68, 0.4);
+        border-color: #ef4444;
+    }
+
+    .no-treatment-bg {
+        background-color: transparent;
+        border-color: color-mix(in srgb, var(--default-color), transparent 70%);
+    }
+
+    .tooth-svg-container {
+        position: relative !important;
+    }
+
+    .tooth-wrapper.extracted-treatment,
+    .tooth-wrapper.extracted {
+        border-color: rgba(239, 68, 68, 0.6) !important;
+        background: rgba(239, 68, 68, 0.15) !important;
+        opacity: 0.75 !important;
+    }
+
+    .anatomical-tooth-item.extracted-treatment,
+    .anatomical-tooth-btn.extracted-treatment,
+    .anatomical-tooth-item.extracted,
+    .anatomical-tooth-btn.extracted {
+        background: rgba(239, 68, 68, 0.15) !important;
+        border: 1.5px dashed #ef4444 !important;
+        opacity: 0.75 !important;
+    }
+
+    .tooth-wrapper.extracted-treatment:hover,
+    .anatomical-tooth-item.extracted-treatment:hover,
+    .anatomical-tooth-btn.extracted-treatment:hover {
+        opacity: 0.95 !important;
+        border-color: #f43f5e !important;
+        background: rgba(244, 63, 94, 0.25) !important;
+    }
+
+    .tooth-wrapper.extracted-treatment .tooth-svg,
+    .anatomical-tooth-item.extracted-treatment .tooth-svg,
+    .anatomical-tooth-btn.extracted-treatment .tooth-svg {
+        color: #f87171 !important;
+        fill: rgba(239, 68, 68, 0.3) !important;
+    }
+
+    .extracted-badge {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #ef4444;
+        font-size: 1.1rem;
+        font-weight: 900;
+        pointer-events: none;
+        z-index: 10;
+        text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+    }
+
+    .form-locked-extracted {
+        opacity: 0.38 !important;
+        pointer-events: none !important;
+        filter: grayscale(85%) !important;
+        user-select: none !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .anatomical-chart-wrapper {
+        background: rgba(15, 23, 42, 0.5) !important;
+        border-radius: 16px !important;
+        border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+        overflow-x: auto !important;
+        padding: 20px 15px !important;
+    }
+
+    .anatomical-teeth-container {
+        min-width: 820px;
+        margin: 0 auto;
+    }
+
+    .anatomical-tooth-item,
+    .anatomical-tooth-btn {
+        width: 44px !important;
+        min-width: 44px !important;
+        max-width: 44px !important;
+        height: 64px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: transparent !important;
+        border: 1.5px solid transparent !important;
+        border-radius: 10px !important;
+        padding: 3px !important;
+        cursor: pointer !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        flex-shrink: 0 !important;
+    }
+
+    .anatomical-tooth-item:hover,
+    .anatomical-tooth-btn:hover {
+        background: rgba(56, 189, 248, 0.18) !important;
+        border-color: #38bdf8 !important;
+        transform: translateY(-2px) !important;
+    }
+
+    .anatomical-tooth-item.active,
+    .anatomical-tooth-item.active-treatment,
+    .anatomical-tooth-btn.active {
+        background: rgba(40, 167, 69, 0.3) !important;
+        border: 2px solid #34d399 !important;
+        box-shadow: 0 0 12px rgba(52, 211, 153, 0.5) !important;
+    }
+
+    .anatomical-tooth-item.active .tooth-svg,
+    .anatomical-tooth-item.active-treatment .tooth-svg,
+    .anatomical-tooth-btn.active .tooth-svg {
+        color: #34d399 !important;
+    }
+
+    .anatomical-tooth-item.history,
+    .anatomical-tooth-item.history-treatment,
+    .anatomical-tooth-btn.history {
+        background: rgba(13, 110, 253, 0.3) !important;
+        border: 2px solid #60a5fa !important;
+        box-shadow: 0 0 12px rgba(96, 165, 250, 0.5) !important;
+    }
+
+    .anatomical-tooth-item.history .tooth-svg,
+    .anatomical-tooth-item.history-treatment .tooth-svg,
+    .anatomical-tooth-btn.history .tooth-svg {
+        color: #60a5fa !important;
+    }
+
+    .tooth-fdi-badge {
+        font-size: 0.75rem !important;
+        font-weight: 800 !important;
+        color: #f8fafc !important;
+        background: rgba(255, 255, 255, 0.12) !important;
+        border-radius: 8px !important;
+        padding: 1px 6px !important;
+        line-height: 1.2 !important;
+    }
+
+    @media (max-width: 576px) {
+        .jaw-arch-container {
+            height: 200px;
+        }
+
+        .tooth-wrapper {
+            min-width: 32px !important;
+            padding: 4px 2px !important;
+        }
+
+        .tooth-svg {
+            width: 16px !important;
+            height: 24px !important;
+        }
+
+        .tooth-label-top {
+            font-size: 0.7rem !important;
+        }
+
+        .tooth-label-fdi {
+            font-size: 0.55rem !important;
+        }
+    }
 </style>
 
 <!-- Odontogram (Dental Chart) Section -->
 <section id="odontogram-section" class="section pt-0 pb-4">
     <div class="container" data-aos="fade-up">
         {% set fdi_dict = {
-            1: 18, 2: 17, 3: 16, 4: 15, 5: 14, 6: 13, 7: 12, 8: 11,
-            9: 21, 10: 22, 11: 23, 12: 24, 13: 25, 14: 26, 15: 27, 16: 28,
-            17: 38, 18: 37, 19: 36, 20: 35, 21: 34, 22: 33, 23: 32, 24: 31,
-            25: 41, 26: 42, 27: 43, 28: 44, 29: 45, 30: 46, 31: 47, 32: 48
+        1: 18, 2: 17, 3: 16, 4: 15, 5: 14, 6: 13, 7: 12, 8: 11,
+        9: 21, 10: 22, 11: 23, 12: 24, 13: 25, 14: 26, 15: 27, 16: 28,
+        17: 38, 18: 37, 19: 36, 20: 35, 21: 34, 22: 33, 23: 32, 24: 31,
+        25: 41, 26: 42, 27: 43, 28: 44, 29: 45, 30: 46, 31: 47, 32: 48
         } %}
-        
+
         <!-- Nav Tabs Header -->
         <div class="d-flex justify-content-center mb-4">
-            <ul class="nav nav-pills custom-chart-pills p-1.5 rounded-pill shadow-sm border bg-surface" id="sessionChartTabs" role="tablist" style="background: color-mix(in srgb, var(--surface-color), #ffffff 4%); border-color: color-mix(in srgb, var(--accent-color), transparent 85%) !important;">
+            <ul class="nav nav-pills custom-chart-pills p-1.5 rounded-pill shadow-sm border bg-surface"
+                id="sessionChartTabs" role="tablist"
+                style="background: color-mix(in srgb, var(--surface-color), #ffffff 4%); border-color: color-mix(in srgb, var(--accent-color), transparent 85%) !important;">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2" id="s-anatomical-tab" data-bs-toggle="tab" data-bs-target="#s-anatomical-pane" type="button" role="tab" aria-controls="s-anatomical-pane" aria-selected="true">
+                    <button class="nav-link active rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2"
+                        id="s-anatomical-tab" data-bs-toggle="tab" data-bs-target="#s-anatomical-pane" type="button"
+                        role="tab" aria-controls="s-anatomical-pane" aria-selected="true">
                         <i class="bi bi-grid-3x3-gap-fill fs-5"></i>
                         <span>{{ 'المخطط التشريحي (FDI)' if current_lang == 'ar' else 'Anatomical Chart (FDI)' }}</span>
-                    </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2" id="s-circular-tab" data-bs-toggle="tab" data-bs-target="#s-circular-pane" type="button" role="tab" aria-controls="s-circular-pane" aria-selected="false">
+                    <button class="nav-link rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2"
+                        id="s-circular-tab" data-bs-toggle="tab" data-bs-target="#s-circular-pane" type="button"
+                        role="tab" aria-controls="s-circular-pane" aria-selected="false">
                         <i class="bi bi-circle-aspect-ratio-fill fs-5"></i>
                         <span>{{ 'المخطط الدائري' if current_lang == 'ar' else 'Circular Chart' }}</span>
-                    </button>
                 </li>
             </ul>
         </div>
 
         <div class="tab-content" id="sessionChartTabsContent">
             <!-- Tab 1: Anatomical FDI Chart (Default Active) -->
-            <div class="tab-pane fade show active" id="s-anatomical-pane" role="tabpanel" aria-labelledby="s-anatomical-tab">
+            <div class="tab-pane fade show active" id="s-anatomical-pane" role="tabpanel"
+                aria-labelledby="s-anatomical-tab">
                 <div class="card odontogram-card shadow-sm border-0 rounded-4">
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
                             <h3 class="card-title h5 mb-0 text-primary d-flex align-items-center">
                                 <i class="bi bi-grid-3x3-gap me-2"></i>
-                                {{ 'المخطط التشريحي للأسنان (التقسيم الدولي FDI)' if current_lang == 'ar' else 'Anatomical Dental Chart (FDI System)' }}
+                                {{ 'المخطط التشريحي للأسنان (التقسيم الدولي FDI)' if current_lang == 'ar' else
+                                'Anatomical Dental Chart (FDI System)' }}
                             </h3>
                         </div>
                         <p class="text-muted small mb-4">
-                            {{ 'انقر على أي سن لعرض سجل العلاج أو لإضافة معالجة جديدة للجلسة الحالية.' if current_lang == 'ar' else 'Click on any tooth to view treatment history or add a new treatment for the current session.' }}
+                            {{ 'انقر على أي سن لعرض سجل العلاج أو لإضافة معالجة جديدة للجلسة الحالية.' if current_lang
+                            == 'ar' else 'Click on any tooth to view treatment history or add a new treatment for the
+                            current session.' }}
                         </p>
 
                         <!-- Anatomical Teeth Grid Container -->
                         <div class="anatomical-chart-wrapper" dir="ltr">
                             <div class="anatomical-teeth-container">
-                                
+
                                 <!-- Upper Jaw Header Badge -->
                                 <div class="d-flex justify-content-center mb-2">
                                     <span class="jaw-title-badge jaw-upper-badge">
@@ -576,45 +624,67 @@
                                 </div>
 
                                 <!-- Top Brackets Header -->
-                                <div class="d-flex justify-content-between text-center small fw-bold mb-2" style="color: #38bdf8; font-size: 0.8rem;">
+                                <div class="d-flex justify-content-between text-center small fw-bold mb-2"
+                                    style="color: #38bdf8; font-size: 0.8rem;">
                                     <!-- Right side (18->11) in RTL display -->
                                     <div class="d-flex" style="width: 50%;">
-                                        <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5" style="width: 37.5%;">{% if current_lang == 'ar' %}أضراس{% else %}Molars{% endif %}</div>
-                                        <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1" style="width: 25%;">{% if current_lang == 'ar' %}ضواحك{% else %}Premolars{% endif %}</div>
-                                        <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1" style="width: 12.5%;">{% if current_lang == 'ar' %}ناب{% else %}Canine{% endif %}</div>
-                                        <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1" style="width: 25%;">{% if current_lang == 'ar' %}قواطع{% else %}Incisors{% endif %}</div>
+                                        <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5"
+                                            style="width: 37.5%;">{% if current_lang == 'ar' %}أضراس{% else %}Molars{%
+                                            endif %}</div>
+                                        <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1"
+                                            style="width: 25%;">{% if current_lang == 'ar' %}ضواحك{% else %}Premolars{%
+                                            endif %}</div>
+                                        <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1"
+                                            style="width: 12.5%;">{% if current_lang == 'ar' %}ناب{% else %}Canine{%
+                                            endif %}</div>
+                                        <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1"
+                                            style="width: 25%;">{% if current_lang == 'ar' %}قواطع{% else %}Incisors{%
+                                            endif %}</div>
                                     </div>
                                     <!-- Left side (21->28) in RTL display -->
                                     <div class="d-flex ms-2" style="width: 50%;">
-                                        <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5" style="width: 25%;">{% if current_lang == 'ar' %}قواطع{% else %}Incisors{% endif %}</div>
-                                        <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1" style="width: 12.5%;">{% if current_lang == 'ar' %}ناب{% else %}Canine{% endif %}</div>
-                                        <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1" style="width: 25%;">{% if current_lang == 'ar' %}ضواحك{% else %}Premolars{% endif %}</div>
-                                        <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1" style="width: 37.5%;">{% if current_lang == 'ar' %}أضراس{% else %}Molars{% endif %}</div>
+                                        <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5"
+                                            style="width: 25%;">{% if current_lang == 'ar' %}قواطع{% else %}Incisors{%
+                                            endif %}</div>
+                                        <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1"
+                                            style="width: 12.5%;">{% if current_lang == 'ar' %}ناب{% else %}Canine{%
+                                            endif %}</div>
+                                        <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1"
+                                            style="width: 25%;">{% if current_lang == 'ar' %}ضواحك{% else %}Premolars{%
+                                            endif %}</div>
+                                        <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1"
+                                            style="width: 37.5%;">{% if current_lang == 'ar' %}أضراس{% else %}Molars{%
+                                            endif %}</div>
                                     </div>
                                 </div>
 
                                 <!-- Upper Teeth Row (Teeth 1..16 / FDI 18..28) -->
                                 <div class="d-flex align-items-center justify-content-between position-relative py-1">
                                     <!-- Vertical Center Axis Divider Line -->
-                                    <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #38bdf8; z-index: 5; transform: translateX(-50%); opacity: 0.7;"></div>
-                                    
+                                    <div
+                                        style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #38bdf8; z-index: 5; transform: translateX(-50%); opacity: 0.7;">
+                                    </div>
+
                                     {% for i in range(1, 17) %}
                                     {% set fdi = fdi_dict[i] %}
-                                    <button type="button" class="tooth-select-btn tooth-btn anatomical-tooth-btn" data-tooth="{{ i }}">
+                                    <button type="button" class="tooth-select-btn tooth-btn anatomical-tooth-btn"
+                                        data-tooth="{{ i }}">
                                         <div class="tooth-svg-container mb-1">
                                             {{ render_tooth_svg(i, false) }}
                                         </div>
                                         <span class="tooth-fdi-badge">{{ fdi }}</span>
-                                    </button>
-                                    {% endfor %}
+                                        {% endfor %}
                                 </div>
 
                                 <!-- Center Horizontal Quadrant Line -->
-                                <div class="my-3" style="height: 2px; background: linear-gradient(to right, transparent, #38bdf8 20%, #38bdf8 80%, transparent); opacity: 0.7;"></div>
+                                <div class="my-3"
+                                    style="height: 2px; background: linear-gradient(to right, transparent, #38bdf8 20%, #38bdf8 80%, transparent); opacity: 0.7;">
+                                </div>
 
                                 <!-- Lower Jaw Header Badge -->
                                 <div class="d-flex justify-content-center mb-2">
-                                    <span class="jaw-title-badge jaw-upper-badge" style="background: rgba(14, 165, 233, 0.15); border-color: #0ea5e9; color: #38bdf8;">
+                                    <span class="jaw-title-badge jaw-upper-badge"
+                                        style="background: rgba(14, 165, 233, 0.15); border-color: #0ea5e9; color: #38bdf8;">
                                         <i class="bi bi-symmetry-horizontal me-1.5"></i>
                                         {{ 'الفك السفلي' if current_lang == 'ar' else 'Lower Jaw (Mandibular)' }}
                                     </span>
@@ -623,34 +693,53 @@
                                 <!-- Lower Teeth Row (Teeth 32..17 / FDI 48..38) -->
                                 <div class="d-flex align-items-center justify-content-between position-relative py-1">
                                     <!-- Vertical Center Axis Divider Line -->
-                                    <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #38bdf8; z-index: 5; transform: translateX(-50%); opacity: 0.7;"></div>
+                                    <div
+                                        style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #38bdf8; z-index: 5; transform: translateX(-50%); opacity: 0.7;">
+                                    </div>
 
                                     {% for i in range(32, 16, -1) %}
                                     {% set fdi = fdi_dict[i] %}
-                                    <button type="button" class="tooth-select-btn tooth-btn anatomical-tooth-btn" data-tooth="{{ i }}">
+                                    <button type="button" class="tooth-select-btn tooth-btn anatomical-tooth-btn"
+                                        data-tooth="{{ i }}">
                                         <span class="tooth-fdi-badge mb-1">{{ fdi }}</span>
                                         <div class="tooth-svg-container">
                                             {{ render_tooth_svg(i, true) }}
                                         </div>
-                                    </button>
-                                    {% endfor %}
+                                        {% endfor %}
                                 </div>
 
                                 <!-- Bottom Brackets Footer -->
-                                <div class="d-flex justify-content-between text-center small fw-bold mt-2" style="color: #38bdf8; font-size: 0.8rem;">
+                                <div class="d-flex justify-content-between text-center small fw-bold mt-2"
+                                    style="color: #38bdf8; font-size: 0.8rem;">
                                     <!-- Right side (48->41) -->
                                     <div class="d-flex" style="width: 50%;">
-                                        <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5" style="width: 37.5%;">{% if current_lang == 'ar' %}أضراس{% else %}Molars{% endif %}</div>
-                                        <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1" style="width: 25%;">{% if current_lang == 'ar' %}ضواحك{% else %}Premolars{% endif %}</div>
-                                        <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1" style="width: 12.5%;">{% if current_lang == 'ar' %}ناب{% else %}Canine{% endif %}</div>
-                                        <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1" style="width: 25%;">{% if current_lang == 'ar' %}قواطع{% else %}Incisors{% endif %}</div>
+                                        <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5"
+                                            style="width: 37.5%;">{% if current_lang == 'ar' %}أضراس{% else %}Molars{%
+                                            endif %}</div>
+                                        <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1"
+                                            style="width: 25%;">{% if current_lang == 'ar' %}ضواحك{% else %}Premolars{%
+                                            endif %}</div>
+                                        <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1"
+                                            style="width: 12.5%;">{% if current_lang == 'ar' %}ناب{% else %}Canine{%
+                                            endif %}</div>
+                                        <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1"
+                                            style="width: 25%;">{% if current_lang == 'ar' %}قواطع{% else %}Incisors{%
+                                            endif %}</div>
                                     </div>
                                     <!-- Left side (31->38) -->
                                     <div class="d-flex ms-2" style="width: 50%;">
-                                        <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5" style="width: 25%;">{% if current_lang == 'ar' %}قواطع{% else %}Incisors{% endif %}</div>
-                                        <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1" style="width: 12.5%;">{% if current_lang == 'ar' %}ناب{% else %}Canine{% endif %}</div>
-                                        <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1" style="width: 25%;">{% if current_lang == 'ar' %}ضواحك{% else %}Premolars{% endif %}</div>
-                                        <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1" style="width: 37.5%;">{% if current_lang == 'ar' %}أضراس{% else %}Molars{% endif %}</div>
+                                        <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5"
+                                            style="width: 25%;">{% if current_lang == 'ar' %}قواطع{% else %}Incisors{%
+                                            endif %}</div>
+                                        <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1"
+                                            style="width: 12.5%;">{% if current_lang == 'ar' %}ناب{% else %}Canine{%
+                                            endif %}</div>
+                                        <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1"
+                                            style="width: 25%;">{% if current_lang == 'ar' %}ضواحك{% else %}Premolars{%
+                                            endif %}</div>
+                                        <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1"
+                                            style="width: 37.5%;">{% if current_lang == 'ar' %}أضراس{% else %}Molars{%
+                                            endif %}</div>
                                     </div>
                                 </div>
 
@@ -658,26 +747,32 @@
                         </div>
 
                         <!-- Legend -->
-                        <div class="d-flex justify-content-center align-items-center flex-wrap gap-4 mt-4 pt-3 border-top">
+                        <div
+                            class="d-flex justify-content-center align-items-center flex-wrap gap-4 mt-4 pt-3 border-top">
                             <div class="d-inline-flex align-items-center gap-2">
                                 <span class="legend-dot active-treatment-bg"></span>
-                                <span class="small text-muted">{{ 'معالج في هذه الجلسة' if current_lang == 'ar' else 'Treated in current session' }}</span>
+                                <span class="small text-muted">{{ 'معالج في هذه الجلسة' if current_lang == 'ar' else
+                                    'Treated in current session' }}</span>
                             </div>
                             <div class="d-inline-flex align-items-center gap-2">
                                 <span class="legend-dot history-treatment-bg"></span>
-                                <span class="small text-muted">{{ 'سوابق معالجة بالعيادة' if current_lang == 'ar' else 'Treated in clinic history' }}</span>
+                                <span class="small text-muted">{{ 'سوابق معالجة بالعيادة' if current_lang == 'ar' else
+                                    'Treated in clinic history' }}</span>
                             </div>
                             <div class="d-inline-flex align-items-center gap-2">
                                 <span class="legend-dot extracted-treatment-bg"></span>
-                                <span class="small text-muted">{{ 'سن مقلوع' if current_lang == 'ar' else 'Extracted Tooth' }}</span>
+                                <span class="small text-muted">{{ 'سن مقلوع' if current_lang == 'ar' else 'Extracted
+                                    Tooth' }}</span>
                             </div>
                             <div class="d-inline-flex align-items-center gap-2">
                                 <span class="legend-dot history-external-bg"></span>
-                                <span class="small text-muted">{{ 'سوابق مرضية وخارجية' if current_lang == 'ar' else 'Prior / External Record' }}</span>
+                                <span class="small text-muted">{{ 'سوابق مرضية وخارجية' if current_lang == 'ar' else
+                                    'Prior / External Record' }}</span>
                             </div>
                             <div class="d-inline-flex align-items-center gap-2">
                                 <span class="legend-dot no-treatment-bg"></span>
-                                <span class="small text-muted">{{ 'سليم / غير معالج' if current_lang == 'ar' else 'Untreated' }}</span>
+                                <span class="small text-muted">{{ 'سليم / غير معالج' if current_lang == 'ar' else
+                                    'Untreated' }}</span>
                             </div>
                         </div>
 
@@ -691,131 +786,146 @@
                     <div class="card-body p-4">
                         <h3 class="card-title h5 mb-3 text-primary d-flex align-items-center">
                             <i class="bi bi-circle-aspect-ratio me-2"></i>
-                            {{ 'مخطط الأسنان التفاعلي (التقسيم الدائري)' if current_lang == 'ar' else 'Interactive Circular Dental Chart' }}
+                            {{ 'مخطط الأسنان التفاعلي (التقسيم الدائري)' if current_lang == 'ar' else 'Interactive
+                            Circular Dental Chart' }}
                         </h3>
                         <p class="text-muted small mb-4">
-                            {{ 'انقر على أي سن لعرض سجل العلاج أو لإضافة معالجة جديدة للجلسة الحالية.' if current_lang == 'ar' else 'Click on any tooth to view treatment history or add a new treatment for the current session.' }}
+                            {{ 'انقر على أي سن لعرض سجل العلاج أو لإضافة معالجة جديدة للجلسة الحالية.' if current_lang
+                            == 'ar' else 'Click on any tooth to view treatment history or add a new treatment for the
+                            current session.' }}
                         </p>
-<div class="odontogram-visual-wrapper py-3 d-flex flex-column align-items-center gap-4">
-                    {% set upper_positions = {
-                        1:  {'x': '6%',  'y': '85%', 'r': '-65deg'},
-                        2:  {'x': '9%',  'y': '68%', 'r': '-55deg'},
-                        3:  {'x': '13%', 'y': '52%', 'r': '-45deg'},
-                        4:  {'x': '18%', 'y': '38%', 'r': '-35deg'},
-                        5:  {'x': '24%', 'y': '26%', 'r': '-25deg'},
-                        6:  {'x': '31%', 'y': '17%', 'r': '-15deg'},
-                        7:  {'x': '39%', 'y': '11%', 'r': '-5deg'},
-                        8:  {'x': '47%', 'y': '9%',  'r': '-2deg'},
-                        9:  {'x': '53%', 'y': '9%',  'r': '2deg'},
-                        10: {'x': '61%', 'y': '11%', 'r': '5deg'},
-                        11: {'x': '69%', 'y': '17%', 'r': '15deg'},
-                        12: {'x': '76%', 'y': '26%', 'r': '25deg'},
-                        13: {'x': '82%', 'y': '38%', 'r': '35deg'},
-                        14: {'x': '87%', 'y': '52%', 'r': '45deg'},
-                        15: {'x': '91%', 'y': '68%', 'r': '55deg'},
-                        16: {'x': '94%', 'y': '85%', 'r': '65deg'}
-                    } %}
+                        <div class="odontogram-visual-wrapper py-3 d-flex flex-column align-items-center gap-4">
+                            {% set upper_positions = {
+                            1: {'x': '6%', 'y': '85%', 'r': '-65deg'},
+                            2: {'x': '9%', 'y': '68%', 'r': '-55deg'},
+                            3: {'x': '13%', 'y': '52%', 'r': '-45deg'},
+                            4: {'x': '18%', 'y': '38%', 'r': '-35deg'},
+                            5: {'x': '24%', 'y': '26%', 'r': '-25deg'},
+                            6: {'x': '31%', 'y': '17%', 'r': '-15deg'},
+                            7: {'x': '39%', 'y': '11%', 'r': '-5deg'},
+                            8: {'x': '47%', 'y': '9%', 'r': '-2deg'},
+                            9: {'x': '53%', 'y': '9%', 'r': '2deg'},
+                            10: {'x': '61%', 'y': '11%', 'r': '5deg'},
+                            11: {'x': '69%', 'y': '17%', 'r': '15deg'},
+                            12: {'x': '76%', 'y': '26%', 'r': '25deg'},
+                            13: {'x': '82%', 'y': '38%', 'r': '35deg'},
+                            14: {'x': '87%', 'y': '52%', 'r': '45deg'},
+                            15: {'x': '91%', 'y': '68%', 'r': '55deg'},
+                            16: {'x': '94%', 'y': '85%', 'r': '65deg'}
+                            } %}
 
-                    {% set lower_positions = {
-                        32: {'x': '6%',  'y': '15%', 'r': '65deg'},
-                        31: {'x': '9%',  'y': '32%', 'r': '55deg'},
-                        30: {'x': '13%', 'y': '48%', 'r': '45deg'},
-                        29: {'x': '18%', 'y': '62%', 'r': '35deg'},
-                        28: {'x': '24%', 'y': '74%', 'r': '25deg'},
-                        27: {'x': '31%', 'y': '83%', 'r': '15deg'},
-                        26: {'x': '39%', 'y': '89%', 'r': '5deg'},
-                        25: {'x': '47%', 'y': '91%', 'r': '2deg'},
-                        24: {'x': '53%', 'y': '91%', 'r': '-2deg'},
-                        23: {'x': '61%', 'y': '89%', 'r': '-5deg'},
-                        22: {'x': '69%', 'y': '83%', 'r': '-15deg'},
-                        21: {'x': '76%', 'y': '74%', 'r': '-25deg'},
-                        20: {'x': '82%', 'y': '62%', 'r': '-35deg'},
-                        19: {'x': '87%', 'y': '48%', 'r': '-45deg'},
-                        18: {'x': '91%', 'y': '32%', 'r': '-55deg'},
-                        17: {'x': '94%', 'y': '15%', 'r': '-65deg'}
-                    } %}
+                            {% set lower_positions = {
+                            32: {'x': '6%', 'y': '15%', 'r': '65deg'},
+                            31: {'x': '9%', 'y': '32%', 'r': '55deg'},
+                            30: {'x': '13%', 'y': '48%', 'r': '45deg'},
+                            29: {'x': '18%', 'y': '62%', 'r': '35deg'},
+                            28: {'x': '24%', 'y': '74%', 'r': '25deg'},
+                            27: {'x': '31%', 'y': '83%', 'r': '15deg'},
+                            26: {'x': '39%', 'y': '89%', 'r': '5deg'},
+                            25: {'x': '47%', 'y': '91%', 'r': '2deg'},
+                            24: {'x': '53%', 'y': '91%', 'r': '-2deg'},
+                            23: {'x': '61%', 'y': '89%', 'r': '-5deg'},
+                            22: {'x': '69%', 'y': '83%', 'r': '-15deg'},
+                            21: {'x': '76%', 'y': '74%', 'r': '-25deg'},
+                            20: {'x': '82%', 'y': '62%', 'r': '-35deg'},
+                            19: {'x': '87%', 'y': '48%', 'r': '-45deg'},
+                            18: {'x': '91%', 'y': '32%', 'r': '-55deg'},
+                            17: {'x': '94%', 'y': '15%', 'r': '-65deg'}
+                            } %}
 
-                    {% set fdi_dict = {
-                        1: '18', 2: '17', 3: '16', 4: '15', 5: '14', 6: '13', 7: '12', 8: '11',
-                        9: '21', 10: '22', 11: '23', 12: '24', 13: '25', 14: '26', 15: '27', 16: '28',
-                        17: '38', 18: '37', 19: '36', 20: '35', 21: '34', 22: '33', 23: '32', 24: '31',
-                        25: '41', 26: '42', 27: '43', 28: '44', 29: '45', 30: '46', 31: '47', 32: '48'
-                    } %}
+                            {% set fdi_dict = {
+                            1: '18', 2: '17', 3: '16', 4: '15', 5: '14', 6: '13', 7: '12', 8: '11',
+                            9: '21', 10: '22', 11: '23', 12: '24', 13: '25', 14: '26', 15: '27', 16: '28',
+                            17: '38', 18: '37', 19: '36', 20: '35', 21: '34', 22: '33', 23: '32', 24: '31',
+                            25: '41', 26: '42', 27: '43', 28: '44', 29: '45', 30: '46', 31: '47', 32: '48'
+                            } %}
 
-                    <!-- Upper Jaw -->
-                    <div class="odontogram-row w-100 mb-4" style="max-width: 640px;">
-                        <div class="d-flex justify-content-center mb-3">
-                            <span class="jaw-title-badge jaw-upper-badge">
-                                <i class="bi bi-symmetry-horizontal me-1.5"></i>
-                                {{ 'الفك العلوي' if current_lang == 'ar' else 'Upper Jaw (Maxillary)' }}
-                            </span>
-                        </div>
-                        <div class="jaw-arch-container">
-                            <!-- SVG Gumline Background -->
-                            <svg class="jaw-bg-line" viewBox="0 0 100 50">
-                                <path d="M 6 45 C 6 10, 94 10, 94 45" fill="none" stroke="color-mix(in srgb, var(--accent-color), transparent 88%)" stroke-width="4" stroke-linecap="round" />
-                            </svg>
-                            <!-- Teeth 1 to 16 -->
-                            {% for i in range(1, 17) %}
-                            {% set pos = upper_positions[i] %}
-                            <div class="tooth-wrapper" data-tooth="{{ i }}" style="left: {{ pos.x }}; top: {{ pos.y }}; --rot: {{ pos.r }}; transform: translate(-50%, -50%) rotate({{ pos.r }});">
-                                <span class="tooth-label-top small fw-bold">{{ fdi_dict[i] }}</span>
-                                <div class="tooth-svg-container">
-                                    {{ render_tooth_svg(i, false) }}
+                            <!-- Upper Jaw -->
+                            <div class="odontogram-row w-100 mb-4" style="max-width: 640px;">
+                                <div class="d-flex justify-content-center mb-3">
+                                    <span class="jaw-title-badge jaw-upper-badge">
+                                        <i class="bi bi-symmetry-horizontal me-1.5"></i>
+                                        {{ 'الفك العلوي' if current_lang == 'ar' else 'Upper Jaw (Maxillary)' }}
+                                    </span>
+                                </div>
+                                <div class="jaw-arch-container">
+                                    <!-- SVG Gumline Background -->
+                                    <svg class="jaw-bg-line" viewBox="0 0 100 50">
+                                        <path d="M 6 45 C 6 10, 94 10, 94 45" fill="none"
+                                            stroke="color-mix(in srgb, var(--accent-color), transparent 88%)"
+                                            stroke-width="4" stroke-linecap="round" />
+                                    </svg>
+                                    <!-- Teeth 1 to 16 -->
+                                    {% for i in range(1, 17) %}
+                                    {% set pos = upper_positions[i] %}
+                                    <div class="tooth-wrapper" data-tooth="{{ i }}"
+                                        style="left: {{ pos.x }}; top: {{ pos.y }}; --rot: {{ pos.r }}; transform: translate(-50%, -50%) rotate({{ pos.r }});">
+                                        <span class="tooth-label-top small fw-bold">{{ fdi_dict[i] }}</span>
+                                        <div class="tooth-svg-container">
+                                            {{ render_tooth_svg(i, false) }}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
                                 </div>
                             </div>
-                            {% endfor %}
-                        </div>
-                    </div>
 
-                    <!-- Lower Jaw -->
-                    <div class="odontogram-row w-100" style="max-width: 640px;">
-                        <div class="jaw-arch-container">
-                            <!-- SVG Gumline Background -->
-                            <svg class="jaw-bg-line" viewBox="0 0 100 50">
-                                <path d="M 6 5 C 6 40, 94 40, 94 5" fill="none" stroke="color-mix(in srgb, var(--accent-color), transparent 88%)" stroke-width="4" stroke-linecap="round" />
-                            </svg>
-                            <!-- Teeth 32 to 17 -->
-                            {% for i in [32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17] %}
-                            {% set pos = lower_positions[i] %}
-                            <div class="tooth-wrapper" data-tooth="{{ i }}" style="left: {{ pos.x }}; top: {{ pos.y }}; --rot: {{ pos.r }}; transform: translate(-50%, -50%) rotate({{ pos.r }});">
-                                <span class="tooth-label-top small fw-bold">{{ fdi_dict[i] }}</span>
-                                <div class="tooth-svg-container">
-                                    {{ render_tooth_svg(i, true) }}
+                            <!-- Lower Jaw -->
+                            <div class="odontogram-row w-100" style="max-width: 640px;">
+                                <div class="jaw-arch-container">
+                                    <!-- SVG Gumline Background -->
+                                    <svg class="jaw-bg-line" viewBox="0 0 100 50">
+                                        <path d="M 6 5 C 6 40, 94 40, 94 5" fill="none"
+                                            stroke="color-mix(in srgb, var(--accent-color), transparent 88%)"
+                                            stroke-width="4" stroke-linecap="round" />
+                                    </svg>
+                                    <!-- Teeth 32 to 17 -->
+                                    {% for i in [32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17] %}
+                                    {% set pos = lower_positions[i] %}
+                                    <div class="tooth-wrapper" data-tooth="{{ i }}"
+                                        style="left: {{ pos.x }}; top: {{ pos.y }}; --rot: {{ pos.r }}; transform: translate(-50%, -50%) rotate({{ pos.r }});">
+                                        <span class="tooth-label-top small fw-bold">{{ fdi_dict[i] }}</span>
+                                        <div class="tooth-svg-container">
+                                            {{ render_tooth_svg(i, true) }}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="d-flex justify-content-center mt-3">
+                                    <span class="jaw-title-badge jaw-lower-badge">
+                                        <i class="bi bi-symmetry-horizontal me-1.5"></i>
+                                        {{ 'الفك السفلي' if current_lang == 'ar' else 'Lower Jaw (Mandibular)' }}
+                                    </span>
                                 </div>
                             </div>
-                            {% endfor %}
                         </div>
-                        <div class="d-flex justify-content-center mt-3">
-                            <span class="jaw-title-badge jaw-lower-badge">
-                                <i class="bi bi-symmetry-horizontal me-1.5"></i>
-                                {{ 'الفك السفلي' if current_lang == 'ar' else 'Lower Jaw (Mandibular)' }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
 
                         <!-- Legend -->
-                        <div class="d-flex justify-content-center align-items-center flex-wrap gap-4 mt-4 pt-3 border-top">
+                        <div
+                            class="d-flex justify-content-center align-items-center flex-wrap gap-4 mt-4 pt-3 border-top">
                             <div class="d-inline-flex align-items-center gap-2">
                                 <span class="legend-dot active-treatment-bg"></span>
-                                <span class="small text-muted">{{ 'معالج في هذه الجلسة' if current_lang == 'ar' else 'Treated in current session' }}</span>
+                                <span class="small text-muted">{{ 'معالج في هذه الجلسة' if current_lang == 'ar' else
+                                    'Treated in current session' }}</span>
                             </div>
                             <div class="d-inline-flex align-items-center gap-2">
                                 <span class="legend-dot history-treatment-bg"></span>
-                                <span class="small text-muted">{{ 'سوابق معالجة بالعيادة' if current_lang == 'ar' else 'Treated in clinic history' }}</span>
+                                <span class="small text-muted">{{ 'سوابق معالجة بالعيادة' if current_lang == 'ar' else
+                                    'Treated in clinic history' }}</span>
                             </div>
                             <div class="d-inline-flex align-items-center gap-2">
                                 <span class="legend-dot extracted-treatment-bg"></span>
-                                <span class="small text-muted">{{ 'سن مقلوع' if current_lang == 'ar' else 'Extracted Tooth' }}</span>
+                                <span class="small text-muted">{{ 'سن مقلوع' if current_lang == 'ar' else 'Extracted
+                                    Tooth' }}</span>
                             </div>
                             <div class="d-inline-flex align-items-center gap-2">
                                 <span class="legend-dot history-external-bg"></span>
-                                <span class="small text-muted">{{ 'سوابق مرضية وخارجية' if current_lang == 'ar' else 'Prior / External Record' }}</span>
+                                <span class="small text-muted">{{ 'سوابق مرضية وخارجية' if current_lang == 'ar' else
+                                    'Prior / External Record' }}</span>
                             </div>
                             <div class="d-inline-flex align-items-center gap-2">
                                 <span class="legend-dot no-treatment-bg"></span>
-                                <span class="small text-muted">{{ 'سليم / غير معالج' if current_lang == 'ar' else 'Untreated' }}</span>
+                                <span class="small text-muted">{{ 'سليم / غير معالج' if current_lang == 'ar' else
+                                    'Untreated' }}</span>
                             </div>
                         </div>
 
@@ -833,15 +943,16 @@
 
         <div class="container section-title" data-aos="fade-up">
             <h2>{{ 'معالجات الجلسة' if current_lang == 'ar' else 'Session Treatments' }}</h2>
-            <p>{{ 'جميع المعالجات المسجلة خلال جلسة الموعد هذه.' if current_lang == 'ar' else 'All treatments recorded during this appointment session.' }}</p>
+            <p>{{ 'جميع المعالجات المسجلة خلال جلسة الموعد هذه.' if current_lang == 'ar' else 'All treatments recorded
+                during this appointment session.' }}</p>
         </div>
 
         {% set session_actual_treatments = [] %}
         {% for t in treatments %}
-            {% set t_notes = (t.notes or '') | lower %}
-            {% if 'خارج العيادة' not in t_notes and 'outside clinic' not in t_notes %}
-                {% set _ = session_actual_treatments.append(t) %}
-            {% endif %}
+        {% set t_notes = (t.notes or '') | lower %}
+        {% if 'خارج العيادة' not in t_notes and 'outside clinic' not in t_notes %}
+        {% set _ = session_actual_treatments.append(t) %}
+        {% endif %}
         {% endfor %}
 
         {% if session_actual_treatments %}
@@ -852,6 +963,7 @@
                         <th>{{ 'التاريخ' if current_lang == 'ar' else 'Date' }}</th>
                         <th>{{ 'نوع الإجراء' if current_lang == 'ar' else 'Procedure' }}</th>
                         <th>{{ 'رقم السن' if current_lang == 'ar' else 'Tooth' }}</th>
+                        <th>{{ 'الطبيب المعالج' if current_lang == 'ar' else 'Attending Doctor' }}</th>
                         <th>{{ 'ملاحظات' if current_lang == 'ar' else 'Notes' }}</th>
                         <th class="text-center">{{ 'الإجراءات' if current_lang == 'ar' else 'Actions' }}</th>
                     </tr>
@@ -861,47 +973,59 @@
                     <tr>
                         <td>
                             {% if treatment.treatment_date %}
-                            <div class="fw-semibold text-nowrap" style="font-size:0.93rem;">{{ treatment.treatment_date.strftime('%Y-%m-%d') }}</div>
+                            <div class="fw-semibold text-nowrap" style="font-size:0.93rem;">{{
+                                treatment.treatment_date.strftime('%Y-%m-%d') }}</div>
                             <div class="text-muted text-nowrap" style="font-size:0.82rem; margin-top:2px;">
-                                <i class="bi bi-clock me-1" style="font-size:0.78rem;"></i>{{ treatment.treatment_date.strftime('%I:%M %p') }}
+                                <i class="bi bi-clock me-1" style="font-size:0.78rem;"></i>{{
+                                treatment.treatment_date.strftime('%I:%M %p') }}
                             </div>
                             {% else %}
                             <span class="text-muted">{{ 'لا يوجد تاريخ' if current_lang == 'ar' else 'No date' }}</span>
                             {% endif %}
                         </td>
                         <td>
-                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1 fw-semibold">
+                            <span
+                                class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1 fw-semibold">
                                 {{ treatment.procedure_type or ('معالجة عامة' if current_lang == 'ar' else 'General') }}
                             </span>
                         </td>
                         <td>
                             {% if treatment.tooth_number %}
-                            <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-1 fw-semibold">{{ treatment.tooth_number }}</span>
+                            <span
+                                class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-3 py-1 fw-semibold">{{
+                                treatment.tooth_number | format_tooth_number }}</span>
                             {% else %}
                             <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set doc = treatment.doctor or treatment.appointment.attending_doctor or treatment.appointment.doctor %}
+                            {% if doc %}
+                            <span class="doctor-badge">
+                                <i class="bi bi-person-badge"></i>{{ doc.display_name }}
+                            </span>
+                            {% else %}
+                            <span class="text-muted" style="font-size: 0.82rem;">-</span>
                             {% endif %}
                         </td>
                         <td>{{ treatment.notes or ('—' ) }}</td>
                         <td class="text-center">
                             <div class="d-flex align-items-center justify-content-center gap-2">
                                 <a href="{{ url_for('treatments.edit_treatment', treatment_id=treatment.id) }}"
-                                   class="table-action-btn edit-btn"
-                                   title="{{ 'تعديل المعالجة' if current_lang == 'ar' else 'Edit Treatment' }}"
-                                   data-tooltip="{{ 'تعديل المعالجة' if current_lang == 'ar' else 'Edit Treatment' }}">
+                                    class="table-action-btn edit-btn"
+                                    title="{{ 'تعديل المعالجة' if current_lang == 'ar' else 'Edit Treatment' }}"
+                                    data-tooltip="{{ 'تعديل المعالجة' if current_lang == 'ar' else 'Edit Treatment' }}">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
-                                
+
                                 {% if appointment.status in ('Scheduled', 'Checked In', 'In Chair') or current_user.role == 'admin' %}
-                                {% set proc_lower = (treatment.procedure_type or '') | lower %}
-                                {% if 'قلع' not in proc_lower and 'extract' not in proc_lower %}
                                 <a href="{{ url_for('treatments.delete_treatment', treatment_id=treatment.id) }}"
-                                   class="table-action-btn delete-table-btn"
-                                   title="{{ 'حذف المعالجة' if current_lang == 'ar' else 'Delete Treatment' }}"
-                                   data-tooltip="{{ 'حذف المعالجة' if current_lang == 'ar' else 'Delete Treatment' }}"
-                                   onclick="return confirm('{% if current_lang == 'ar' %}هل أنت متأكد من حذف هذه المعالجة؟{% else %}Are you sure you want to delete this treatment?{% endif %}');">
+                                    class="table-action-btn delete-table-btn"
+                                    title="{{ 'حذف المعالجة' if current_lang == 'ar' else 'Delete Treatment' }}"
+                                    data-tooltip="{{ 'حذف المعالجة' if current_lang == 'ar' else 'Delete Treatment' }}"
+                                    onclick="return confirmDelete(event, '{% if current_lang == 'ar' %}هل أنت متأكد من حذف هذه المعالجة؟{% else %}Are you sure you want to delete this treatment?{% endif %}');">
                                     <i class="bi bi-trash3"></i>
                                 </a>
-                                {% endif %}
                                 {% endif %}
                             </div>
                         </td>
@@ -916,9 +1040,10 @@
             <i class="bi bi-clipboard-x"></i>
             <h4>{{ 'لم يتم تسجيل أي معالجات بعد' if current_lang == 'ar' else 'No treatments recorded yet' }}</h4>
             {% if appointment.status in ('Scheduled', 'Checked In', 'In Chair') %}
-            <p class="text-muted" style="font-size:0.9rem; margin-bottom: 18px;">{{ 'انقر على أي سن في المخطط أعلاه لإضافة معالجة جديدة مباشرةً.' if current_lang == 'ar' else 'Click on any tooth in the chart above to add a treatment directly.' }}</p>
-            <div class="d-inline-flex align-items-center gap-2 px-4 py-2 rounded-pill fw-semibold"
-                 style="background: color-mix(in srgb, var(--accent-color), transparent 88%);
+            <p class="text-muted" style="font-size:0.9rem; margin-bottom: 18px;">{{ 'انقر على أي سن في المخطط أعلاه
+                لإضافة معالجة جديدة مباشرةً.' if current_lang == 'ar' else 'Click on any tooth in the chart above to add
+                a treatment directly.' }}</p>
+            <div class="d-inline-flex align-items-center gap-2 px-4 py-2 rounded-pill fw-semibold" style="background: color-mix(in srgb, var(--accent-color), transparent 88%);
                         border: 1.5px solid color-mix(in srgb, var(--accent-color), transparent 70%);
                         color: var(--accent-color);
                         font-size: 0.88rem;
@@ -927,9 +1052,11 @@
                 <span>{{ 'انقر على السن في المخطط' if current_lang == 'ar' else 'Tap a tooth on the chart' }}</span>
             </div>
             {% elif appointment.status == 'Done' %}
-            <p>{{ 'تم إنهاء هذه الجلسة دون تسجيل معالجات.' if current_lang == 'ar' else 'This session was ended without recorded treatments.' }}</p>
+            <p>{{ 'تم إنهاء هذه الجلسة دون تسجيل معالجات.' if current_lang == 'ar' else 'This session was ended without
+                recorded treatments.' }}</p>
             {% elif appointment.status == 'Cancelled' %}
-            <p>{{ 'تم إلغاء هذا الموعد. لا يمكن إضافة معالجات.' if current_lang == 'ar' else 'This appointment is cancelled. Treatments cannot be added.' }}</p>
+            <p>{{ 'تم إلغاء هذا الموعد. لا يمكن إضافة معالجات.' if current_lang == 'ar' else 'This appointment is
+                cancelled. Treatments cannot be added.' }}</p>
             {% endif %}
         </div>
         {% endif %}
@@ -941,7 +1068,8 @@
 <!-- Previous Treatments Title -->
 <div class="container section-title" style="margin-top: 70px;" data-aos="fade-up">
     <h2>{{ 'المعالجات السابقة' if current_lang == 'ar' else 'Previous Treatments' }}</h2>
-    <p>{{ 'جميع المعالجات السابقة المسجلة لهذا المريض، مرتبة من الأحدث إلى الأقدم.' if current_lang == 'ar' else 'All previous treatments recorded for this patient, ordered from newest to oldest.' }}</p>
+    <p>{{ 'جميع المعالجات السابقة المسجلة لهذا المريض، مرتبة من الأحدث إلى الأقدم.' if current_lang == 'ar' else 'All
+        previous treatments recorded for this patient, ordered from newest to oldest.' }}</p>
 </div>
 <!-- /Previous Treatments Title -->
 
@@ -949,100 +1077,113 @@
 <section id="previous-treatments-section" class="find-a-doctor section">
     <div class="container" data-aos="fade-up" data-aos-delay="100">
 
-                {% if previous_treatments %}
-                <div class="appointments-table-wrapper table-responsive">
-                    <table class="table appointments-table align-middle">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Appointment</th>
-                                <th>Treatment Date</th>
-                                <th>Procedure Type</th>
-                                <th>Tooth</th>
-                                <th>Notes</th>
-                                <th class="text-center">Actions</th>
-                            </tr>
-                        </thead>
+        {% if previous_treatments %}
+        <div class="appointments-table-wrapper table-responsive">
+            <table class="table appointments-table align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>{{ 'الموعد' if current_lang == 'ar' else 'Appointment' }}</th>
+                        <th>{{ 'تاريخ المعالجة' if current_lang == 'ar' else 'Treatment Date' }}</th>
+                        <th>{{ 'نوع الإجراء' if current_lang == 'ar' else 'Procedure Type' }}</th>
+                        <th>{{ 'السن' if current_lang == 'ar' else 'Tooth' }}</th>
+                        <th>{{ 'الطبيب المعالج' if current_lang == 'ar' else 'Attending Doctor' }}</th>
+                        <th>{{ 'ملاحظات' if current_lang == 'ar' else 'Notes' }}</th>
+                        <th class="text-center">{{ 'الإجراءات' if current_lang == 'ar' else 'Actions' }}</th>
+                    </tr>
+                </thead>
 
-                        <tbody>
-                            {% for treatment in previous_treatments %}
-                            <tr>
-                                <td>{{ treatment.id }}</td>
+                <tbody>
+                    {% for treatment in previous_treatments %}
+                    <tr>
+                        <td>{{ treatment.id }}</td>
 
-                                <td>
-                                    <a
-                                        href="{{ url_for('treatments.appointment_session', appointment_id=treatment.appointment.id) }}">
-                                        <strong>#{{ treatment.appointment.id }}</strong>
-                                    </a>
-                                    <br>
-                                    <small>
-                                        {{ treatment.appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if
-                                        treatment.appointment.appointment_date else 'No date' }}
-                                    </small>
-                                    <br>
-                                    <span class="appointment-status
+                        <td>
+                            <a
+                                href="{{ url_for('treatments.appointment_session', appointment_id=treatment.appointment.id) }}">
+                                <strong>#{{ treatment.appointment.id }}</strong>
+                            </a>
+                            <br>
+                            <small>
+                                {{ treatment.appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if
+                                treatment.appointment.appointment_date else 'No date' }}
+                            </small>
+                            <br>
+                            <span class="appointment-status
                                 {% if treatment.appointment.status == 'Done' %}status-done
                                 {% elif treatment.appointment.status == 'Cancelled' %}status-cancelled
                                 {% elif treatment.appointment.status == 'Pending' %}status-pending
                                 {% else %}status-scheduled{% endif %}">
-                                        {{ treatment.appointment.status }}
-                                    </span>
-                                </td>
+                                {{ treatment.appointment.status }}
+                            </span>
+                        </td>
 
-                                <td>
-                                    {{ treatment.treatment_date.strftime('%Y-%m-%d %I:%M %p') if treatment.treatment_date
-                                    else 'No date' }}
-                                </td>
+                        <td>
+                            {{ treatment.treatment_date.strftime('%Y-%m-%d %I:%M %p') if treatment.treatment_date
+                            else 'No date' }}
+                        </td>
 
-                                <td>
-                                    <span class="procedure-badge">
-                                        {{ treatment.procedure_type or 'معالجة عامة' }}
-                                    </span>
-                                </td>
+                        <td>
+                            <span class="procedure-badge">
+                                {{ treatment.procedure_type or 'معالجة عامة' }}
+                            </span>
+                        </td>
 
-                                <td>
-                                    {% if treatment.tooth_number %}
-                                    <span class="tooth-badge">
-                                        {{ treatment.tooth_number }}
-                                    </span>
-                                    {% else %}
-                                    <span class="text-muted">N/A</span>
-                                    {% endif %}
-                                </td>
+                        <td>
+                            {% if treatment.tooth_number %}
+                            <span class="tooth-badge">
+                                {{ treatment.tooth_number | format_tooth_number }}
+                            </span>
+                            {% else %}
+                            <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
 
-                                <td>
-                                    {% if treatment.notes %}
-                                    {{ treatment.notes }}
-                                    {% else %}
-                                    <span class="text-muted">No notes available</span>
-                                    {% endif %}
-                                </td>
+                        <td>
+                            {% set doc = treatment.doctor or treatment.appointment.attending_doctor or treatment.appointment.doctor %}
+                            {% if doc %}
+                            <span class="doctor-badge">
+                                <i class="bi bi-person-badge"></i>{{ doc.display_name }}
+                            </span>
+                            {% else %}
+                            <span class="text-muted" style="font-size: 0.82rem;">-</span>
+                            {% endif %}
+                        </td>
 
-                                <td class="text-center">
-                                    <div class="appointments-actions">
+                        <td>
+                            {% if treatment.notes %}
+                            {{ treatment.notes }}
+                            {% else %}
+                            <span class="text-muted">No notes available</span>
+                            {% endif %}
+                        </td>
 
-                                        <a href="{{ url_for('treatments.appointment_session', appointment_id=treatment.appointment.id) }}"
-                                            class="table-action-btn session-btn" title="Open Treatment Session">
-                                            <i class="bi bi-clipboard2-pulse"></i>
-                                        </a>
+                        <td class="text-center">
+                            <div class="appointments-actions">
 
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                                <a href="{{ url_for('treatments.appointment_session', appointment_id=treatment.appointment.id) }}"
+                                    class="table-action-btn session-btn" title="Open Treatment Session">
+                                    <i class="bi bi-clipboard2-pulse"></i>
+                                </a>
 
-                {% else %}
-                <div class="empty-state-card text-center">
-                    <i class="bi bi-clock-history"></i>
-                    <h4>{{ 'لا توجد معالجات سابقة' if current_lang == 'ar' else 'No previous treatments' }}</h4>
-                    <p>{{ 'لا توجد معالجات سابقة مسجلة لهذا المريض.' if current_lang == 'ar' else 'This patient has no treatments from previous appointments.' }}</p>
-                </div>
-                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-            </div>
+        {% else %}
+        <div class="empty-state-card text-center">
+            <i class="bi bi-clock-history"></i>
+            <h4>{{ 'لا توجد معالجات سابقة' if current_lang == 'ar' else 'No previous treatments' }}</h4>
+            <p>{{ 'لا توجد معالجات سابقة مسجلة لهذا المريض.' if current_lang == 'ar' else 'This patient has no
+                treatments from previous appointments.' }}</p>
+        </div>
+        {% endif %}
+
+    </div>
 </section>
 <!-- /Previous Treatments Section -->
 
@@ -1050,8 +1191,8 @@
 <div class="modal fade" id="toothModal" tabindex="-1" aria-labelledby="toothModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow-lg" style="background: var(--surface-color);">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold text-primary" id="toothModalLabel">
+            <div class="modal-header border-0 pb-0 d-flex justify-content-between align-items-center px-4 pt-4">
+                <h5 class="modal-title fw-bold text-primary mb-0" id="toothModalLabel">
                     <!-- Populated dynamically -->
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1063,37 +1204,48 @@
                         <!-- Section: Pre-existing History (السوابق المرضية والتشخيص الأولي) -->
                         <div class="mb-4">
                             <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
-                                <h6 class="fw-bold mb-0 d-flex align-items-center gap-2" style="color: #c084fc; font-size: 0.9rem;">
+                                <h6 class="fw-bold mb-0 d-flex align-items-center gap-2"
+                                    style="color: #c084fc; font-size: 0.9rem;">
                                     <i class="bi bi-journal-medical flex-shrink-0"></i>
-                                    <span>{% if current_lang == 'ar' %}السوابق المرضية والتشخيص الأولي{% else %}Pre-existing History{% endif %}</span>
+                                    <span>{% if current_lang == 'ar' %}السوابق المرضية والتشخيص الأولي{% else
+                                        %}Pre-existing History{% endif %}</span>
                                 </h6>
-                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-semibold flex-shrink-0 ms-2" id="s-toggle-add-history-btn" style="font-size: 0.78rem; border-width: 1px; white-space: nowrap;">
-                                    <i class="bi bi-plus-circle me-1"></i>{% if current_lang == 'ar' %}إضافة سابقة{% else %}Add History{% endif %}
-                                </button>
+                                <button type="button"
+                                    class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-semibold flex-shrink-0 ms-2"
+                                    id="s-toggle-add-history-btn"
+                                    style="font-size: 0.78rem; border-width: 1px; white-space: nowrap;">
+                                    <i class="bi bi-plus-circle me-1"></i>{% if current_lang == 'ar' %}إضافة سابقة{%
+                                    else %}Add History{% endif %}
                             </div>
 
                             <!-- Collapsible Inline Form to Add Prior History Note -->
-                            <div id="s-add-history-form-container" class="card card-body mb-2 p-2.5 border rounded-3 d-none" style="background: rgba(168, 85, 247, 0.05); border-color: rgba(168, 85, 247, 0.25) !important;">
-                                <form method="POST" action="{{ url_for('patients.add_tooth_history', patient_id=patient.id) }}">
+                            <div id="s-add-history-form-container"
+                                class="card card-body mb-2 p-2.5 border rounded-3 d-none"
+                                style="background: rgba(168, 85, 247, 0.05); border-color: rgba(168, 85, 247, 0.25) !important;">
+                                <form method="POST"
+                                    action="{{ url_for('patients.add_tooth_history', patient_id=patient.id) }}">
+                                    <input type="hidden" name="appointment_id" value="{{ appointment.id }}">
                                     <input type="hidden" name="tooth_number" id="s-history-form-tooth-number" value="">
                                     <div class="mb-2">
-                                        <select name="procedure_type" class="form-select form-select-sm rounded-3" required style="font-size: 0.8rem;">
-                                            <option value="">{% if current_lang == 'ar' %}-- اختر السابقة المرضية --{% else %}-- Select Procedure --{% endif %}</option>
+                                        <select name="procedure_type" class="form-select form-select-sm rounded-3"
+                                            required style="font-size: 0.8rem;">
+                                            <option value="">{% if current_lang == 'ar' %}-- اختر السابقة المرضية --{%
+                                                else %}-- Select Procedure --{% endif %}</option>
                                             {% for proc in treatment_procedure_types %}
-                                            <option value="{{ proc }} (سابق)">{{ proc }} ({% if current_lang == 'ar' %}سابق{% else %}Prior{% endif %})</option>
+                                            <option value="{{ proc }} (سابق)">{{ proc }} ({% if current_lang == 'ar'
+                                                %}سابق{% else %}Prior{% endif %})</option>
                                             {% endfor %}
-                                            <option value="قلع سن (سابق)">{% if current_lang == 'ar' %}قلع سن (سابق){% else %}Prior Tooth Extraction{% endif %}</option>
-                                            <option value="حشوة أسنان (سابقة)">{% if current_lang == 'ar' %}حشوة أسنان (سابقة){% else %}Prior Tooth Filling{% endif %}</option>
-                                            <option value="علاج عصب (سابق)">{% if current_lang == 'ar' %}علاج عصب (سابق){% else %}Prior Root Canal{% endif %}</option>
-                                            <option value="تاج / جسر (سابق)">{% if current_lang == 'ar' %}تاج / جسر (سابق){% else %}Prior Crown / Bridge{% endif %}</option>
                                         </select>
                                     </div>
                                     <div class="mb-2">
-                                        <input type="text" name="notes" class="form-control form-control-sm rounded-3" placeholder="{% if current_lang == 'ar' %}ملاحظات توثيقية سريرية...{% else %}Clinical notes...{% endif %}" style="font-size: 0.8rem;">
+                                        <input type="text" name="notes" class="form-control form-control-sm rounded-3"
+                                            placeholder="{% if current_lang == 'ar' %}ملاحظات توثيقية سريرية...{% else %}Clinical notes...{% endif %}"
+                                            style="font-size: 0.8rem;">
                                     </div>
-                                    <button type="submit" class="btn btn-sm btn-primary w-100 rounded-pill fw-bold py-1" style="font-size: 0.8rem;">
-                                        <i class="bi bi-check2-circle me-1"></i>{% if current_lang == 'ar' %}حفظ السابقة المرضية{% else %}Save Condition{% endif %}
-                                    </button>
+                                    <button type="submit" class="btn btn-sm btn-primary w-100 rounded-pill fw-bold py-1"
+                                        style="font-size: 0.8rem;">
+                                        <i class="bi bi-check2-circle me-1"></i>{% if current_lang == 'ar' %}حفظ السابقة
+                                        المرضية{% else %}Save Condition{% endif %}
                                 </form>
                             </div>
 
@@ -1126,65 +1278,73 @@
                             <i class="bi bi-plus-circle me-2"></i>
                             <span id="lbl-add-treatment"></span>
                         </h6>
-                        <form id="modal-add-treatment-form" method="POST" action="{{ url_for('treatments.add_treatment_to_appointment', appointment_id=appointment.id) }}">
+                        <form id="modal-add-treatment-form" method="POST"
+                            action="{{ url_for('treatments.add_treatment_to_appointment', appointment_id=appointment.id) }}">
                             <input type="hidden" name="tooth_number" id="modal-tooth-input">
                             <input type="hidden" name="custom_cost" id="modal-custom-cost-input" value="">
                             <div class="mb-3">
-                                <label for="modal-procedure-type" class="form-label text-secondary small fw-bold" id="lbl-form-procedure"></label>
-                                <select id="modal-procedure-type" name="procedure_type" class="form-select settings-input" required>
+                                <label for="modal-procedure-type" class="form-label text-secondary small fw-bold"
+                                    id="lbl-form-procedure"></label>
+                                <select id="modal-procedure-type" name="procedure_type"
+                                    class="form-select settings-input" required>
                                     <option value="" id="opt-select-procedure"></option>
                                     {% for proc in treatment_prices.keys() %}
                                     <option value="{{ proc }}">{{ proc }}</option>
                                     {% endfor %}
                                 </select>
-                                <div class="mt-3" id="external-extraction-btn-container">
-                                    <button type="button" class="btn btn-outline-info bg-info bg-opacity-10 border border-info border-opacity-25 w-100 rounded-3 py-2.5 px-3 d-flex align-items-center justify-content-center gap-2 text-info fw-bold shadow-xs" id="btn-set-external-extraction" style="transition: all 0.2s ease;">
-                                        <i class="bi bi-shield-check fs-5"></i>
-                                        <span>{{ 'تم القلع خارج العيادة' if current_lang == 'ar' else 'Extracted Outside Clinic' }}</span>
-                                    </button>
-                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="modal-notes" class="form-label text-secondary small fw-bold" id="lbl-form-notes"></label>
-                                <textarea id="modal-notes" name="notes" class="form-control" rows="4"></textarea>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-6 d-flex align-items-center">
-                                    <div class="form-check form-switch mt-2">
-                                        <input class="form-check-input" type="checkbox" id="modal-use-anesthesia" name="use_anesthesia">
-                                        <label class="form-check-label text-secondary small fw-bold ms-1" for="modal-use-anesthesia">
-                                            {{ 'استخدام تخدير' if current_lang == 'ar' else 'Use Anesthesia' }}
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6" id="modal-needles-wrapper" style="display: none;">
-                                    <label for="modal-needles" class="form-label text-secondary small fw-bold">
-                                        {{ 'عدد مرات التخدير / الإبر' if current_lang == 'ar' else 'Needles (Times Anesthetized)' }}
-                                    </label>
-                                    <input type="number" id="modal-needles" name="anesthesia_needles" class="form-control settings-input" min="1" value="1">
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-secondary small fw-bold" id="lbl-form-price"></label>
-                                <div id="modal-procedure-price-display" class="form-control readonly-status-field">
-                                    <!-- Populated dynamically -->
-                                </div>
-                            </div>
-                            <div class="text-end mt-4">
-                                <button type="submit" class="save-patient-btn w-100 py-2.5 fs-6" id="btn-save-treatment"></button>
-                            </div>
-                        </form>
-                        {% else %}
-                        <div class="alert alert-warning text-center rounded-3 py-4">
-                            <i class="bi bi-lock-fill fs-3 mb-2 d-block"></i>
-                            {{ 'جلسة العلاج هذه مغلقة. لا يمكن إضافة معالجات جديدة.' if current_lang == 'ar' else 'This treatment session is closed. No new treatments can be added.' }}
-                        </div>
-                        {% endif %}
                     </div>
+                    <div class="mb-3">
+                        <label for="modal-notes" class="form-label text-secondary small fw-bold"
+                            id="lbl-form-notes"></label>
+                        <textarea id="modal-notes" name="notes" class="form-control" rows="4"></textarea>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6 d-flex align-items-center">
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" id="modal-use-anesthesia"
+                                    name="use_anesthesia">
+                                <label class="form-check-label text-secondary small fw-bold ms-1"
+                                    for="modal-use-anesthesia">
+                                    {{ 'استخدام تخدير' if current_lang == 'ar' else 'Use Anesthesia' }}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="modal-needles-wrapper" style="display: none;">
+                            <label for="modal-needles" class="form-label text-secondary small fw-bold">
+                                {{ 'عدد مرات التخدير / الإبر' if current_lang == 'ar' else 'Needles (Times
+                                Anesthetized)' }}
+                            </label>
+                            <input type="number" id="modal-needles" name="anesthesia_needles"
+                                class="form-control settings-input" min="1" value="1">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-bold" id="lbl-form-price"></label>
+                        <div id="modal-procedure-price-display" class="form-control readonly-status-field">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button type="submit" id="btn-save-treatment"
+                            class="btn btn-primary w-100 rounded-3 py-2.5 fw-bold shadow-xs">
+                            <i class="bi bi-check2-circle me-1.5"></i>
+                            {% if current_lang == 'ar' %}حفظ المعالجة{% else %}Save Treatment{% endif %}
+                        </button>
+                    </div>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-warning text-center rounded-3 py-4">
+                        <i class="bi bi-lock-fill fs-3 mb-2 d-block"></i>
+                        {{ 'جلسة العلاج هذه مغلقة. لا يمكن إضافة معالجات جديدة.' if current_lang == 'ar' else 'This
+                        treatment session is closed. No new treatments can be added.' }}
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
+</div>
 </div>
 
 <!-- End Session Confirmation Modal -->
@@ -1192,27 +1352,29 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow-lg" style="background: var(--surface-color);">
             <div class="modal-header border-0 pb-0 justify-content-end">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center px-4 pb-4">
-                <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle mb-3" style="width: 70px; height: 70px;">
+                <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle mb-3"
+                    style="width: 70px; height: 70px;">
                     <i class="bi bi-exclamation-triangle fs-1"></i>
                 </div>
                 <h4 class="fw-bold mb-2">
                     {{ 'إنهاء جلسة الموعد' if current_lang == 'ar' else 'End Appointment Session' }}
                 </h4>
                 <p class="text-secondary mb-4">
-                    {{ 'هل أنت متأكد من إنهاء هذه الجلسة؟ ستصبح حالة الموعد "مكتمل" وتصبح المعالجات للقراءة فقط ولا يمكن تعديلها.' if current_lang == 'ar' else 'Are you sure you want to end this session? The appointment status will change to "Done" and treatments will become read-only.' }}
+                    {{ 'هل أنت متأكد من إنهاء هذه الجلسة؟ ستصبح حالة الموعد "مكتمل" وتصبح المعالجات للقراءة فقط ولا يمكن
+                    تعديلها.' if current_lang == 'ar' else 'Are you sure you want to end this session? The appointment
+                    status will change to "Done" and treatments will become read-only.' }}
                 </p>
-                <form method="POST" action="{{ url_for('treatments.end_appointment_session', appointment_id=appointment.id) }}">
+                <form method="POST"
+                    action="{{ url_for('treatments.end_appointment_session', appointment_id=appointment.id) }}">
                     <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token') }}">
                     <div class="d-flex justify-content-center gap-3">
-                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4"
+                            data-bs-dismiss="modal">
                             {{ 'إلغاء' if current_lang == 'ar' else 'Cancel' }}
-                        </button>
-                        <button type="submit" class="btn btn-danger rounded-pill px-4 fw-semibold">
-                            {{ 'إنهاء الجلسة' if current_lang == 'ar' else 'End Session' }}
-                        </button>
+                            <button type="submit" class="btn btn-danger rounded-pill px-4 fw-semibold">
+                                {{ 'إنهاء الجلسة' if current_lang == 'ar' else 'End Session' }}
                     </div>
                 </form>
             </div>
@@ -1221,31 +1383,34 @@
 </div>
 
 <!-- Reopen Session Confirmation Modal -->
-<div class="modal fade" id="reopenSessionModal" tabindex="-1" aria-labelledby="reopenSessionModalLabel" aria-hidden="true">
+<div class="modal fade" id="reopenSessionModal" tabindex="-1" aria-labelledby="reopenSessionModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow-lg" style="background: var(--surface-color);">
             <div class="modal-header border-0 pb-0 justify-content-end">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body text-center px-4 pb-4">
-                <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle mb-3" style="width: 70px; height: 70px;">
+                <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle mb-3"
+                    style="width: 70px; height: 70px;">
                     <i class="bi bi-arrow-counterclockwise fs-1"></i>
                 </div>
                 <h4 class="fw-bold mb-2">
                     {{ 'إعادة فتح الجلسة' if current_lang == 'ar' else 'Reopen Appointment Session' }}
                 </h4>
                 <p class="text-secondary mb-4">
-                    {{ 'هل أنت متأكد من إعادة فتح هذه الجلسة؟ سيتم تفعيل إمكانية إضافة وتعديل المعالجات.' if current_lang == 'ar' else 'Are you sure you want to reopen this session? This will enable adding and editing treatments.' }}
+                    {{ 'هل أنت متأكد من إعادة فتح هذه الجلسة؟ سيتم تفعيل إمكانية إضافة وتعديل المعالجات.' if
+                    current_lang == 'ar' else 'Are you sure you want to reopen this session? This will enable adding and
+                    editing treatments.' }}
                 </p>
-                <form method="POST" action="{{ url_for('treatments.reopen_appointment_session', appointment_id=appointment.id) }}">
+                <form method="POST"
+                    action="{{ url_for('treatments.reopen_appointment_session', appointment_id=appointment.id) }}">
                     <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token') }}">
                     <div class="d-flex justify-content-center gap-3">
-                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4"
+                            data-bs-dismiss="modal">
                             {{ 'إلغاء' if current_lang == 'ar' else 'Cancel' }}
-                        </button>
-                        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-semibold text-white">
-                            {{ 'إعادة فتح' if current_lang == 'ar' else 'Reopen Session' }}
-                        </button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-semibold text-white">
+                                {{ 'إعادة فتح' if current_lang == 'ar' else 'Reopen Session' }}
                     </div>
                 </form>
             </div>
@@ -1254,44 +1419,47 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const prices = JSON.parse('{{ treatment_prices | tojson | safe }}');
-    const currency = "{{ currency_symbol }}";
-    
-    // Parse current treatments
-    const currentTreatments = [
-        {% for t in treatments %}
-        {
-            id: {{ t.id }},
-            date: "{{ t.treatment_date.strftime('%Y-%m-%d %I:%M %p') if t.treatment_date else '' }}",
-            procedure: "{{ t.procedure_type | escape }}",
-            tooth: "{{ t.tooth_number or '' }}",
-            notes: "{{ (t.notes or '') | replace('\n', ' ') | replace('\r', '') | escape }}",
-            cost: "{{ t.total_cost }}",
-            use_anesthesia: {{ 'true' if t.use_anesthesia else 'false' }},
-            anesthesia_needles: {{ t.anesthesia_needles or 0 }},
-            edit_url: "{{ url_for('treatments.edit_treatment', treatment_id=t.id) }}",
-            delete_url: "{{ url_for('treatments.delete_treatment', treatment_id=t.id) }}"
-        }{% if not loop.last %},{% endif %}
-        {% endfor %}
-    ];
+    document.addEventListener('DOMContentLoaded', function () {
+        const isAr = document.documentElement.lang === 'ar';
+        const prices = JSON.parse('{{ treatment_prices | tojson | safe }}');
+        const currency = "{{ currency_symbol }}";
 
-    // Parse history treatments
-    const historyTreatments = [
-        {% for t in previous_treatments %}
-        {
-            id: {{ t.id }},
-            appointment_id: {{ t.appointment.id }},
-            date: "{{ t.treatment_date.strftime('%Y-%m-%d %I:%M %p') if t.treatment_date else '' }}",
-            procedure: "{{ t.procedure_type | escape }}",
-            tooth: "{{ t.tooth_number or '' }}",
-            notes: "{{ (t.notes or '') | replace('\n', ' ') | replace('\r', '') | escape }}",
-            use_anesthesia: {{ 'true' if t.use_anesthesia else 'false' }},
-            anesthesia_needles: {{ t.anesthesia_needles or 0 }},
-            cost: "{{ t.total_cost }}"
-        }{% if not loop.last %},{% endif %}
-        {% endfor %}
-    ];
+        // Parse current treatments
+        const currentTreatments = [
+            {% for t in treatments %}
+            {
+                id: {{ t.id }},
+                date: "{{ t.treatment_date.strftime('%Y-%m-%d %I:%M %p') if t.treatment_date else '' }}",
+                procedure: "{{ t.procedure_type | escape }}",
+                tooth: "{{ t.tooth_number or '' }}",
+                notes: "{{ (t.notes or '') | replace('\n', ' ') | replace('\r', '') | escape }}",
+                doctor: "{{ (t.doctor or t.appointment.attending_doctor or t.appointment.doctor).display_name if (t.doctor or t.appointment.attending_doctor or t.appointment.doctor) else '' }}",
+                cost: "{{ t.total_cost }}",
+                use_anesthesia: {{ 'true' if t.use_anesthesia else 'false' }},
+                anesthesia_needles: {{ t.anesthesia_needles or 0 }},
+                edit_url: "{{ url_for('treatments.edit_treatment', treatment_id=t.id) }}",
+                delete_url: "{{ url_for('treatments.delete_treatment', treatment_id=t.id) }}"
+            }{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        ];
+
+        // Parse history treatments
+        const historyTreatments = [
+            {% for t in previous_treatments %}
+            {
+                id: {{ t.id }},
+                appointment_id: {{ t.appointment.id }},
+                date: "{{ t.treatment_date.strftime('%Y-%m-%d %I:%M %p') if t.treatment_date else '' }}",
+                procedure: "{{ t.procedure_type | escape }}",
+                tooth: "{{ t.tooth_number or '' }}",
+                notes: "{{ (t.notes or '') | replace('\n', ' ') | replace('\r', '') | escape }}",
+                doctor: "{{ (t.doctor or t.appointment.attending_doctor or t.appointment.doctor).display_name if (t.doctor or t.appointment.attending_doctor or t.appointment.doctor) else '' }}",
+                use_anesthesia: {{ 'true' if t.use_anesthesia else 'false' }},
+                anesthesia_needles: {{ t.anesthesia_needles or 0 }},
+                cost: "{{ t.total_cost }}"
+            }{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        ];
 
     // FDI Mapping
     const fdiMap = {
@@ -1301,11 +1469,12 @@ document.addEventListener('DOMContentLoaded', function () {
         '25': '41', '26': '42', '27': '43', '28': '44', '29': '45', '30': '46', '31': '47', '32': '48'
     };
 
-    // Helper to check if a treatment applies to a specific tooth
+    // Helper to check if a treatment applies to a specific tooth (supports Universal 1-32 & FDI 11-48)
     function appliesToTooth(treatment, toothNum) {
         if (!treatment.tooth) return false;
         const teeth = treatment.tooth.split(',').map(s => s.trim());
-        return teeth.includes(toothNum);
+        const fdiNum = fdiMap[toothNum];
+        return teeth.includes(toothNum) || (fdiNum && teeth.includes(fdiNum));
     }
 
     // Helper to check if a treatment is tooth extraction
@@ -1324,23 +1493,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
     for (let i = 1; i <= 32; i++) {
         const toothStr = i.toString();
+        const fdiNum = fdiMap[toothStr];
         activeTeeth[toothStr] = currentTreatments.filter(t => appliesToTooth(t, toothStr));
         historyTeeth[toothStr] = historyTreatments.filter(t => appliesToTooth(t, toothStr));
-        const priorHistories = toothHistoryDict[toothStr] || [];
+
+        const listUniv = toothHistoryDict[toothStr] || [];
+        const listFdi = (fdiNum && toothHistoryDict[fdiNum]) ? toothHistoryDict[fdiNum] : [];
+        const priorHistoriesMap = {};
+        [...listUniv, ...listFdi].forEach(h => { priorHistoriesMap[h.id] = h; });
+        const priorHistories = Object.values(priorHistoriesMap);
 
         const hasActiveExtraction = activeTeeth[toothStr].some(t => isExtractionProcedure(t.procedure));
         const hasHistoryExtraction = historyTeeth[toothStr].some(t => isExtractionProcedure(t.procedure));
         const hasPriorExtraction = priorHistories.some(h => isExtractionProcedure(h.procedure));
         const isExtracted = hasActiveExtraction || hasHistoryExtraction || hasPriorExtraction;
-        
+
         const teethElements = document.querySelectorAll(`[data-tooth="${toothStr}"]`);
         teethElements.forEach(el => {
             if (isExtracted) {
-                if (hasPriorExtraction) {
-                    el.classList.add('history-external', 'extracted');
-                } else {
-                    el.classList.add('extracted-treatment', 'extracted');
-                }
+                el.classList.add('extracted-treatment', 'extracted');
                 const svgContainer = el.querySelector('.tooth-svg-container') || el;
                 if (!svgContainer.querySelector('.extracted-badge')) {
                     const badge = document.createElement('div');
@@ -1348,8 +1519,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     badge.innerHTML = '<i class="bi bi-x-lg"></i>';
                     svgContainer.appendChild(badge);
                 }
-            } else if (priorHistories.length > 0) {
-                el.classList.add('history-external');
             } else if (activeTeeth[toothStr].length > 0) {
                 el.classList.add('active-treatment', 'active');
             } else if (historyTeeth[toothStr].length > 0) {
@@ -1357,11 +1526,22 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 el.classList.add('no-treatment');
             }
-            
-            const fdiNum = fdiMap[toothStr];
-            const isAr = document.documentElement.lang === 'ar';
 
-            let tooltipHtml = `<strong class="d-block mb-1">${isAr ? 'السن' : 'Tooth'} ${fdiNum} (${isAr ? 'أميركي' : 'Univ'} ${toothStr})</strong>`;
+            if (priorHistories.length > 0) {
+                el.classList.add('history-external');
+                const svgContainer = el.querySelector('.tooth-svg-container') || el;
+                if (!svgContainer.querySelector('.prior-history-indicator')) {
+                    const starDot = document.createElement('span');
+                    starDot.className = 'prior-history-indicator';
+                    starDot.title = isAr ? 'سوابق مرضية وخارجية' : 'Pre-existing Condition';
+                    starDot.innerHTML = '<i class="bi bi-star-fill"></i>';
+                    svgContainer.appendChild(starDot);
+                }
+            }
+
+            const fdiNum = fdiMap[toothStr];
+
+            let tooltipHtml = `<strong class="d-block mb-1">${isAr ? 'السن' : 'Tooth'} ${fdiNum}</strong>`;
             if (isExtracted) {
                 tooltipHtml += `<div class="text-danger small fw-bold mb-1"><i class="bi bi-x-circle-fill me-1"></i>${isAr ? 'تم قلع السن (سابق/عيادة) ❌' : 'Tooth Extracted ❌'}</div>`;
             }
@@ -1374,13 +1554,15 @@ document.addEventListener('DOMContentLoaded', function () {
             if (activeTeeth[toothStr].length > 0) {
                 tooltipHtml += `<div class="text-success small mt-1"><i class="bi bi-clipboard2-pulse me-1"></i>${isAr ? 'الجلسة الحالية:' : 'Current Session:'}</div>`;
                 activeTeeth[toothStr].forEach(t => {
-                    tooltipHtml += `<div class="ms-2 small text-nowrap">• ${t.procedure}</div>`;
+                    const docText = t.doctor ? ` (${t.doctor})` : '';
+                    tooltipHtml += `<div class="ms-2 small text-nowrap">• ${t.procedure}${docText}</div>`;
                 });
             }
             if (historyTeeth[toothStr].length > 0) {
                 tooltipHtml += `<div class="text-info small mt-1"><i class="bi bi-clock-history me-1"></i>${isAr ? 'معالجات سابقة بالعيادة:' : 'Clinic History:'}</div>`;
                 historyTeeth[toothStr].forEach(t => {
-                    tooltipHtml += `<div class="ms-2 small text-nowrap">• ${t.procedure} (${t.date})</div>`;
+                    const docText = t.doctor ? ` - د. ${t.doctor}` : '';
+                    tooltipHtml += `<div class="ms-2 small text-nowrap">• ${t.procedure} (${t.date.split(' ')[0]})${docText}</div>`;
                 });
             }
 
@@ -1394,13 +1576,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const sToggleBtn = document.getElementById('s-toggle-add-history-btn');
     const sFormContainer = document.getElementById('s-add-history-form-container');
     if (sToggleBtn && sFormContainer) {
-        sToggleBtn.addEventListener('click', function() {
+        sToggleBtn.addEventListener('click', function () {
             sFormContainer.classList.toggle('d-none');
         });
     }
 
     // Translation config
-    const isAr = document.documentElement.lang === 'ar';
     const trans = {
         title: isAr ? 'تفاصيل وإجراءات السن' : 'Tooth Details & Actions',
         currentTreatments: isAr ? 'معالجات الجلسة الحالية' : 'Current Session Treatments',
@@ -1419,10 +1600,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Handle Tooth Click across both charts
     document.querySelectorAll('.tooth-wrapper, .anatomical-tooth-item, .anatomical-tooth-btn').forEach(wrapper => {
-        wrapper.addEventListener('click', function() {
+        wrapper.addEventListener('click', function () {
             const toothNum = this.dataset.tooth;
             const fdiNum = fdiMap[toothNum];
-            
+
             // Set Modal Title
             const modalTitle = document.getElementById('toothModalLabel');
             modalTitle.textContent = `${trans.title} ${fdiNum}`;
@@ -1430,17 +1611,21 @@ document.addEventListener('DOMContentLoaded', function () {
             // Set hidden tooth input in session prior history form
             const sHistoryToothInput = document.getElementById('s-history-form-tooth-number');
             if (sHistoryToothInput) {
-                sHistoryToothInput.value = toothNum;
+                sHistoryToothInput.value = fdiNum || toothNum;
             }
-            
+
             // Set Hidden Tooth Input
             const toothInput = document.getElementById('modal-tooth-input');
             if (toothInput) {
-                toothInput.value = toothNum;
+                toothInput.value = fdiNum || toothNum;
             }
 
-            // Populate Pre-existing History Notes
-            const priorHistories = toothHistoryDict[toothNum] || [];
+            // Populate Pre-existing History Notes (supporting Universal index and FDI number)
+            const listUniv = toothHistoryDict[toothNum] || [];
+            const listFdi = (fdiNum && toothHistoryDict[fdiNum]) ? toothHistoryDict[fdiNum] : [];
+            const priorHistoriesMap = {};
+            [...listUniv, ...listFdi].forEach(h => { priorHistoriesMap[h.id] = h; });
+            const priorHistories = Object.values(priorHistoriesMap);
             const priorList = document.getElementById('modal-prior-history-list');
             if (priorList) {
                 priorList.innerHTML = '';
@@ -1457,10 +1642,10 @@ document.addEventListener('DOMContentLoaded', function () {
                                         </span>
                                         <p class="mb-0 text-secondary small mt-1" style="font-size: 0.78rem;">${h.notes || (isAr ? 'سجل خارجي (لا توجد ملاحظات)' : 'External record')}</p>
                                     </div>
-                                    <form method="POST" action="/patients/${appointment.patient_id}/tooth-history/${h.id}/delete" onsubmit="return confirm('${isAr ? 'هل أنت متأكد من حذف هذه السابقة المرضية؟' : 'Delete this history record?'}');">
+                                    <form method="POST" action="/patients/{{ appointment.patient_id }}/tooth-history/${h.id}/delete" onsubmit="return confirmDelete(event, '${isAr ? 'هل أنت متأكد من حذف هذه السابقة المرضية؟' : 'Delete this history record?'}');">
+                                        <input type="hidden" name="appointment_id" value="{{ appointment.id }}">
                                         <button type="submit" class="btn btn-xs btn-outline-danger rounded-circle p-1" title="${isAr ? 'حذف' : 'Delete'}">
                                             <i class="bi bi-trash" style="font-size: 0.75rem;"></i>
-                                        </button>
                                     </form>
                                 </div>
                             </div>
@@ -1473,25 +1658,25 @@ document.addEventListener('DOMContentLoaded', function () {
             // Set Static Labels
             document.getElementById('lbl-current-treatments').textContent = trans.currentTreatments;
             document.getElementById('lbl-history-treatments').textContent = trans.historyTreatments;
-            
+
             const lblAdd = document.getElementById('lbl-add-treatment');
             if (lblAdd) lblAdd.textContent = trans.addTreatment;
-            
+
             const lblFormProc = document.getElementById('lbl-form-procedure');
             if (lblFormProc) lblFormProc.textContent = trans.procedureType;
-            
+
             const optSelect = document.getElementById('opt-select-procedure');
             if (optSelect) optSelect.textContent = trans.selectProcedure;
-            
+
             const lblFormNotes = document.getElementById('lbl-form-notes');
             if (lblFormNotes) lblFormNotes.textContent = trans.notes;
-            
+
             const txtNotes = document.getElementById('modal-notes');
             if (txtNotes) txtNotes.placeholder = trans.notesPlaceholder;
-            
+
             const lblFormPrice = document.getElementById('lbl-form-price');
             if (lblFormPrice) lblFormPrice.textContent = trans.price;
-            
+
             const btnSave = document.getElementById('btn-save-treatment');
             if (btnSave) btnSave.textContent = trans.save;
 
@@ -1503,7 +1688,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 currentList.innerHTML = `<div class="small py-2.5 px-3 rounded-3" style="background: color-mix(in srgb, var(--default-color), transparent 95%); color: color-mix(in srgb, var(--default-color), transparent 45%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);">${trans.noCurrent}</div>`;
             } else {
                 activeItems.forEach(t => {
-                    const formattedCost = parseFloat(t.cost).toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                    const formattedCost = parseFloat(t.cost).toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
                     let anesthesiaText = '';
                     if (t.use_anesthesia) {
                         const needlesLabel = isAr ? 'حقنة' : 'injection';
@@ -1512,11 +1697,15 @@ document.addEventListener('DOMContentLoaded', function () {
                         const label = isAr ? `+ تخدير (${t.anesthesia_needles} ${suffix})` : `+ Anesthesia (${t.anesthesia_needles} ${t.anesthesia_needles > 1 ? needlesLabelPl : needlesLabel})`;
                         anesthesiaText = `<div class="text-secondary small mt-0.5" style="font-size: 0.8rem; font-weight: 500;"><i class="bi bi-shield-fill-plus me-1 text-info"></i>${label}</div>`;
                     }
+                    let docBadge = t.doctor ? `<span class="doctor-badge ms-2" style="font-size:0.75rem; padding: 2px 8px;"><i class="bi bi-person-badge me-1"></i>${t.doctor}</span>` : '';
                     let html = `
                         <div class="list-group-item border rounded-3 mb-2 p-3 bg-light-subtle shadow-xs">
                             <div class="d-flex w-100 justify-content-between align-items-center mb-1">
                                 <div class="d-flex flex-column">
-                                    <h6 class="mb-0 fw-bold text-success">${t.procedure}</h6>
+                                    <div class="d-flex align-items-center flex-wrap gap-1">
+                                        <h6 class="mb-0 fw-bold text-success">${t.procedure}</h6>
+                                        ${docBadge}
+                                    </div>
                                     ${anesthesiaText}
                                 </div>
                                 <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">${formattedCost} ${currency}</span>
@@ -1524,7 +1713,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             <p class="mb-2 text-secondary small">${t.notes || (isAr ? 'بلا ملاحظات' : 'No notes available')}</p>
                             <div class="d-flex gap-2 justify-content-end border-top pt-2 mt-2">
                                 <a href="${t.edit_url}" class="btn btn-xs btn-outline-primary px-2.5 py-1 text-xs fw-semibold" style="font-size: 0.75rem;"><i class="bi bi-pencil-square me-1"></i>${isAr ? 'تعديل' : 'Edit'}</a>
-                                <a href="${t.delete_url}" class="btn btn-xs btn-outline-danger px-2.5 py-1 text-xs fw-semibold" style="font-size: 0.75rem;"><i class="bi bi-trash me-1"></i>${isAr ? 'حذف' : 'Delete'}</a>
+                                <a href="${t.delete_url}" onclick="return confirmDelete(event, '${isAr ? 'هل أنت متأكد من حذف هذه المعالجة؟' : 'Are you sure you want to delete this treatment?'}');" class="btn btn-xs btn-outline-danger px-2.5 py-1 text-xs fw-semibold" style="font-size: 0.75rem;"><i class="bi bi-trash me-1"></i>${isAr ? 'حذف' : 'Delete'}</a>
                             </div>
                         </div>
                     `;
@@ -1540,7 +1729,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 historyList.innerHTML = `<div class="small py-2.5 px-3 rounded-3" style="background: color-mix(in srgb, var(--default-color), transparent 95%); color: color-mix(in srgb, var(--default-color), transparent 45%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);">${trans.noHistory}</div>`;
             } else {
                 historyItems.forEach(t => {
-                    const formattedCost = parseFloat(t.cost).toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                    const formattedCost = parseFloat(t.cost).toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
                     let anesthesiaText = '';
                     if (t.use_anesthesia) {
                         const needlesLabel = isAr ? 'حقنة' : 'injection';
@@ -1549,11 +1738,15 @@ document.addEventListener('DOMContentLoaded', function () {
                         const label = isAr ? `+ تخدير (${t.anesthesia_needles} ${suffix})` : `+ Anesthesia (${t.anesthesia_needles} ${t.anesthesia_needles > 1 ? needlesLabelPl : needlesLabel})`;
                         anesthesiaText = `<div class="text-secondary small mt-0.5" style="font-size: 0.8rem; font-weight: 500;"><i class="bi bi-shield-fill-plus me-1 text-info"></i>${label}</div>`;
                     }
+                    let docBadge = t.doctor ? `<span class="doctor-badge ms-2" style="font-size:0.75rem; padding: 2px 8px;"><i class="bi bi-person-badge me-1"></i>${t.doctor}</span>` : '';
                     let html = `
                         <div class="list-group-item border rounded-3 mb-2 p-3 bg-light-subtle shadow-xs">
                             <div class="d-flex w-100 justify-content-between align-items-center mb-1">
                                 <div class="d-flex flex-column">
-                                    <h6 class="mb-0 fw-semibold text-primary">${t.procedure}</h6>
+                                    <div class="d-flex align-items-center flex-wrap gap-1">
+                                        <h6 class="mb-0 fw-semibold text-primary">${t.procedure}</h6>
+                                        ${docBadge}
+                                    </div>
                                     ${anesthesiaText}
                                 </div>
                                 <small class="text-muted fw-bold">${t.date.split(' ')[0]}</small>
@@ -1579,10 +1772,18 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             // Check if tooth is extracted & restrict procedure options to Post-Extraction Treatment
-            const isToothExtracted = activeTeeth[toothNum].some(t => isExtractionProcedure(t.procedure)) || historyTeeth[toothNum].some(t => isExtractionProcedure(t.procedure));
+            const listUnivModal = toothHistoryDict[toothNum] || [];
+            const listFdiModal = (fdiNum && toothHistoryDict[fdiNum]) ? toothHistoryDict[fdiNum] : [];
+            const priorHistoriesMapModal = {};
+            [...listUnivModal, ...listFdiModal].forEach(h => { priorHistoriesMapModal[h.id] = h; });
+            const priorHistoriesModal = Object.values(priorHistoriesMapModal);
+
+            const isToothExtracted = (activeTeeth[toothNum] || []).some(t => isExtractionProcedure(t.procedure)) ||
+                (historyTeeth[toothNum] || []).some(t => isExtractionProcedure(t.procedure)) ||
+                priorHistoriesModal.some(h => isExtractionProcedure(h.procedure));
             let extBanner = document.getElementById('extracted-tooth-banner');
             const modalProcSelectEl = document.getElementById('modal-procedure-type');
-            
+
             if (isToothExtracted) {
                 if (!extBanner && form) {
                     extBanner = document.createElement('div');
@@ -1593,7 +1794,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     extBanner.className = 'alert alert-info no-auto-icon d-flex align-items-center py-2.5 px-3 small rounded-3 mb-3 shadow-xs border border-info-subtle';
                     extBanner.innerHTML = `<i class="bi bi-info-circle-fill me-2.5 fs-4 text-info flex-shrink-0"></i><div><strong class="d-block">${isAr ? 'هذا السن تم قلعه 🔒' : 'Tooth Extracted 🔒'}</strong><span class="small opacity-75">${isAr ? 'يُسمح فقط بإضافة إجراء "معالجة ما بعد القلع" لهذا السن.' : 'Only "Post-Extraction Treatment" can be added for this tooth.'}</span></div>`;
                 }
-                
+
                 // Restrict procedure select box to ONLY Post-Extraction Treatment
                 if (modalProcSelectEl) {
                     let autoSelectVal = '';
@@ -1634,16 +1835,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
 
-            // Clinical Rule: Only show "تم القلع خارج العيادة" button if this tooth has NO treatments recorded in our clinic!
-            const extBtnContainer = document.getElementById('external-extraction-btn-container');
-            const hasTreatmentsInClinic = (activeTeeth[toothNum] && activeTeeth[toothNum].length > 0) || (historyTeeth[toothNum] && historyTeeth[toothNum].length > 0);
-            if (extBtnContainer) {
-                if (hasTreatmentsInClinic) {
-                    extBtnContainer.style.display = 'none';
-                } else {
-                    extBtnContainer.style.display = 'block';
-                }
-            }
+
 
             // Show Modal
             const toothModal = new bootstrap.Modal(document.getElementById('toothModal'));
@@ -1665,14 +1857,14 @@ document.addEventListener('DOMContentLoaded', function () {
             modalPriceDisplay.textContent = trans.priceSelect;
             return;
         }
-        
+
         const procPrice = parseFloat(prices[selectedProc]);
         const useAnesthesia = modalUseAnesthesia.checked;
         const needlesCount = parseInt(modalNeedlesInput.value) || 1;
         const anesthesiaCost = useAnesthesia ? needlesCount * needlePrice : 0;
         const total = procPrice + anesthesiaCost;
-        
-        let displayVal = total.toLocaleString('de-DE', {minimumFractionDigits: 0, maximumFractionDigits: 0}) + ' ' + currency;
+
+        let displayVal = total.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' ' + currency;
         if (useAnesthesia) {
             const isAr = document.documentElement.lang === 'ar';
             const procLabel = isAr ? 'شامل التخدير' : 'inc. anesthesia';
@@ -1682,7 +1874,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (modalUseAnesthesia && modalNeedlesWrapper) {
-        modalUseAnesthesia.addEventListener('change', function() {
+        modalUseAnesthesia.addEventListener('change', function () {
             if (this.checked) {
                 modalNeedlesWrapper.style.display = 'block';
             } else {
@@ -1697,41 +1889,33 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (modalProcSelect && modalPriceDisplay) {
-        modalProcSelect.addEventListener('change', function() {
+        modalProcSelect.addEventListener('change', function () {
             const customCostInput = document.getElementById('modal-custom-cost-input');
             if (customCostInput) customCostInput.value = '';
             updateModalPrice();
         });
     }
 
-    const btnExtExtraction = document.getElementById('btn-set-external-extraction');
-    if (btnExtExtraction && modalProcSelect) {
-        btnExtExtraction.addEventListener('click', function() {
-            let foundProc = '';
-            Array.from(modalProcSelect.options).forEach(opt => {
-                if (!opt.value) return;
-                const val = opt.value.toLowerCase();
-                if (val.includes('قلع') || val.includes('extract')) {
-                    if (!val.includes('ما بعد القلع') && !val.includes('post-extraction')) {
-                        foundProc = opt.value;
-                    }
-                }
-            });
-            if (foundProc) {
-                modalProcSelect.value = foundProc;
-                const customCostInput = document.getElementById('modal-custom-cost-input');
-                if (customCostInput) customCostInput.value = '0';
-                const notesInput = document.getElementById('modal-notes');
-                if (notesInput && !notesInput.value) {
-                    notesInput.value = isAr ? 'تم القلع خارج العيادة (سجل مرضي سابق)' : 'Extracted outside clinic prior to visit';
-                }
-                if (modalPriceDisplay) {
-                    modalPriceDisplay.innerHTML = `<span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1.5 fs-6"><i class="bi bi-shield-check me-1.5"></i>0 ${currency} (${isAr ? 'تم القلع خارج العيادة - مجاني' : 'Extracted Outside Clinic - Free'})</span>`;
-                }
-            }
-        });
-    }
+
 });
+
+function confirmRevertSession() {
+    const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
+    Swal.fire({
+        title: isAr ? 'التراجع عن فتح الجلسة؟' : 'Undo Session Start?',
+        text: isAr ? 'هل أنت تأكد من الخروج والتراجع عن بدء الجلسة لإعادة الموعد كـ "مجدول" بدون أي تعديل؟' : 'Are you sure you want to exit and revert this session back to Scheduled status?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: isAr ? 'نعم، تراجع عن الجلسة' : 'Yes, Undo Session',
+        cancelButtonText: isAr ? 'إلغاء' : 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('revertSessionForm').submit();
+        }
+    });
+}
 </script>
 
 {% endblock %}

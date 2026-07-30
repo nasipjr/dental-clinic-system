@@ -448,6 +448,7 @@ def view_invoice(invoice_id):
 @role_required("admin", "receptionist")
 def update_invoice_discount(invoice_id):
     current_app.logger.info(f"Update discount request | invoice_id={invoice_id}")
+    is_ar = request.cookies.get("lang", "ar") == "ar"
     try:
         invoice = Invoice.query.get_or_404(invoice_id)
         
@@ -463,15 +464,18 @@ def update_invoice_discount(invoice_id):
                 if discount_val < 0:
                     discount_val = 0.0
             except ValueError:
-                flash("Invalid discount amount.", "danger")
-                return redirect(url_for("invoices.view_invoice", invoice_id=invoice.id))
+                flash("قيمة الخصم غير صحيحة." if is_ar else "Invalid discount amount.", "danger")
+                redirect_url = request.referrer or url_for("invoices.view_invoice", invoice_id=invoice_id)
+                return redirect(redirect_url)
         
         if discount_type == "percentage" and discount_val > 100.0:
-            flash("Discount percentage cannot exceed 100%.", "danger")
-            return redirect(url_for("invoices.view_invoice", invoice_id=invoice.id))
+            flash("لا يمكن أن تتجاوز نسبة الخصم 100%." if is_ar else "Discount percentage cannot exceed 100%.", "danger")
+            redirect_url = request.referrer or url_for("invoices.view_invoice", invoice_id=invoice_id)
+            return redirect(redirect_url)
         elif discount_type == "value" and discount_val > float(invoice.subtotal):
-            flash("Discount cannot exceed the subtotal.", "danger")
-            return redirect(url_for("invoices.view_invoice", invoice_id=invoice.id))
+            flash("لا يمكن أن يتجاوز الخصم المجموع الفرعي." if is_ar else "Discount cannot exceed the subtotal.", "danger")
+            redirect_url = request.referrer or url_for("invoices.view_invoice", invoice_id=invoice_id)
+            return redirect(redirect_url)
             
         from decimal import Decimal
         invoice.discount = Decimal(str(discount_val))
@@ -482,11 +486,50 @@ def update_invoice_discount(invoice_id):
         allocate_patient_payments_to_invoices(invoice.patient_id)
         db.session.commit()
         
-        flash("Discount updated successfully!", "success")
+        flash("تم تحديث الخصم بنجاح!" if is_ar else "Discount updated successfully!", "success")
     except Exception:
         db.session.rollback()
         current_app.logger.exception(f"Failed to update discount for invoice {invoice_id}")
-        flash("Failed to update discount.", "danger")
+        flash("فشل في تحديث الخصم." if is_ar else "Failed to update discount.", "danger")
         
-    return redirect(url_for("invoices.view_invoice", invoice_id=invoice_id))
+    redirect_url = request.referrer or url_for("invoices.view_invoice", invoice_id=invoice_id)
+    return redirect(redirect_url)
+
+
+@invoices_bp.route("/invoices/<int:invoice_id>/additional-charges", methods=["POST"])
+@role_required("admin", "receptionist")
+def update_invoice_additional_charges(invoice_id):
+    current_app.logger.info(f"Update additional charges request | invoice_id={invoice_id}")
+    is_ar = request.cookies.get("lang", "ar") == "ar"
+    try:
+        invoice = Invoice.query.get_or_404(invoice_id)
+        
+        charges_raw = request.form.get("additional_charges", "0").strip()
+        charges_val = 0.0
+        if charges_raw:
+            try:
+                charges_val = float(charges_raw)
+                if charges_val < 0:
+                    charges_val = 0.0
+            except ValueError:
+                flash("قيمة التكاليف الإضافية غير صحيحة." if is_ar else "Invalid additional charges amount.", "danger")
+                redirect_url = request.referrer or url_for("invoices.view_invoice", invoice_id=invoice_id)
+                return redirect(redirect_url)
+            
+        from decimal import Decimal
+        invoice.additional_charges = Decimal(str(charges_val))
+        db.session.flush()
+        
+        # Recalculate allocations for the patient since invoice total has changed
+        allocate_patient_payments_to_invoices(invoice.patient_id)
+        db.session.commit()
+        
+        flash("تم تحديث التكاليف الإضافية بنجاح!" if is_ar else "Additional charges updated successfully!", "success")
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(f"Failed to update additional charges for invoice {invoice_id}")
+        flash("فشل في تحديث التكاليف الإضافية." if is_ar else "Failed to update additional charges.", "danger")
+        
+    redirect_url = request.referrer or url_for("invoices.view_invoice", invoice_id=invoice_id)
+    return redirect(redirect_url)
 

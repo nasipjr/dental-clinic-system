@@ -111,7 +111,7 @@ def reports_dashboard():
         gender_labels = [g[0] or "Not Specified" for g in gender_counts]
         gender_values = [g[1] for g in gender_counts]
 
-        # 6. Top Debtors (Outstanding Debt per Patient) - Optimized aggregation query
+        # 6. Patient Balances: All Debtors and All Credited Patients
         patient_invoiced = {}
         for inv in Invoice.query.join(Invoice.appointment).filter(Appointment.status != "Cancelled").all():
             patient_invoiced[inv.patient_id] = patient_invoiced.get(inv.patient_id, 0.0) + float(inv.total_amount)
@@ -123,35 +123,40 @@ def reports_dashboard():
             ).group_by(Payment.patient_id).all()
         )
 
-        patient_balances = {}
-        for p_id, billed in patient_invoiced.items():
+        all_patient_ids = set(patient_invoiced.keys()).union(set(patient_payments.keys()))
+        all_patients_map = {p.id: p for p in Patient.query.filter(Patient.id.in_(all_patient_ids)).all()} if all_patient_ids else {}
+
+        all_debtors = []
+        all_credited_patients = []
+
+        for p_id, p in all_patients_map.items():
+            billed = float(patient_invoiced.get(p_id, 0.0))
             paid = float(patient_payments.get(p_id, 0.0))
-            outstanding = billed - paid
-            if outstanding > 0.01:
-                patient_balances[p_id] = {
-                    "billed": billed,
-                    "paid": paid,
-                    "outstanding": outstanding
-                }
+            diff = billed - paid
 
-        top_debtor_ids = sorted(patient_balances.keys(), key=lambda x: patient_balances[x]["outstanding"], reverse=True)[:5]
+            p_data = {
+                "id": p.id,
+                "name": f"{p.first_name} {p.last_name}",
+                "first_name": p.first_name,
+                "last_name": p.last_name,
+                "phone": p.phone or "No phone",
+                "total_billed": billed,
+                "total_paid": paid,
+                "outstanding": max(0.0, diff),
+                "credit": max(0.0, -diff)
+            }
 
-        top_debtors = []
-        if top_debtor_ids:
-            top_patients = Patient.query.filter(Patient.id.in_(top_debtor_ids)).all()
-            patient_map = {p.id: p for p in top_patients}
-            for p_id in top_debtor_ids:
-                p = patient_map.get(p_id)
-                if p:
-                    b_data = patient_balances[p_id]
-                    top_debtors.append({
-                        "id": p.id,
-                        "name": f"{p.first_name} {p.last_name}",
-                        "phone": p.phone or "No phone",
-                        "total_billed": b_data["billed"],
-                        "total_paid": b_data["paid"],
-                        "outstanding": b_data["outstanding"]
-                    })
+            if diff > 0.01:
+                all_debtors.append(p_data)
+            elif diff < -0.01:
+                all_credited_patients.append(p_data)
+
+        all_debtors.sort(key=lambda x: x["outstanding"], reverse=True)
+        all_credited_patients.sort(key=lambda x: x["credit"], reverse=True)
+        top_debtors = all_debtors[:5]
+
+        total_outstanding = sum(x["outstanding"] for x in all_debtors)
+        total_credit = sum(x["credit"] for x in all_credited_patients)
 
         # Available years for filtering
         first_invoice = Invoice.query.order_by(Invoice.issue_date.asc()).first()
@@ -248,6 +253,8 @@ def reports_dashboard():
             gender_labels=gender_labels,
             gender_values=gender_values,
             top_debtors=top_debtors,
+            all_debtors=all_debtors,
+            all_credited_patients=all_credited_patients,
             expenses=expenses,
             total_expenses=total_expenses,
             cash_net_profit=cash_net_profit,

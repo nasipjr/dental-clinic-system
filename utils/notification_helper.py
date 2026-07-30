@@ -486,15 +486,21 @@ def _send_telegram_bot_reply(bot_token, chat_id, text, reply_markup=None):
 
 
 _bot_username_cache = None
+_bot_username_cache_time = 0
 
 def get_bot_username():
     """Retrieve and cache the bot username from Telegram API to generate dynamic links."""
-    global _bot_username_cache
-    if _bot_username_cache:
+    global _bot_username_cache, _bot_username_cache_time
+    import time
+    now = time.time()
+
+    if _bot_username_cache_time and (now - _bot_username_cache_time < 300):
         return _bot_username_cache
 
     token = get_setting("telegram_bot_token", "")
     if not token:
+        _bot_username_cache = None
+        _bot_username_cache_time = now
         return None
 
     import urllib.request
@@ -507,7 +513,12 @@ def get_bot_username():
             if data.get("ok"):
                 username = data["result"].get("username")
                 _bot_username_cache = username
+                _bot_username_cache_time = now
                 return username
     except Exception:
         pass
+
+    _bot_username_cache = None
+    _bot_username_cache_time = now
     return None
+

@@ -147,6 +147,53 @@ class DentalClinicTestCase(unittest.TestCase):
             response_book = client.get('/portal/book')
             self.assertEqual(response_book.status_code, 200)
 
+    def test_tooth_history_redirect_to_appointment_session(self):
+        from app import app, db
+        from models import Patient, Appointment, ToothHistory
+        with app.app_context():
+            p = Patient.query.first()
+            if not p:
+                p = Patient(first_name="TestHistory", last_name="Patient", phone="0511111111")
+                db.session.add(p)
+                db.session.commit()
+            apt = Appointment.query.filter_by(patient_id=p.id).first()
+            if not apt:
+                apt = Appointment(patient_id=p.id, appointment_date=datetime.now(), status="Scheduled")
+                db.session.add(apt)
+                db.session.commit()
+            patient_id = p.id
+            appointment_id = apt.id
+
+        with app.test_client() as client:
+            with client.session_transaction() as sess:
+                sess['user_id'] = 1
+                sess['role'] = 'admin'
+                sess['csrf_token'] = 'test_csrf'
+            
+            # Post adding tooth history with appointment_id
+            resp = client.post(f'/patients/{patient_id}/tooth-history/add', data={
+                'tooth_number': '11',
+                'procedure_type': 'حشوة أسنان (سابقة)',
+                'notes': 'Test prior history note',
+                'appointment_id': str(appointment_id),
+                'csrf_token': 'test_csrf'
+            })
+            self.assertEqual(resp.status_code, 302)
+            self.assertIn(f'/appointments/{appointment_id}/session', resp.location)
+
+            # Test delete with appointment_id
+            with app.app_context():
+                th = ToothHistory.query.filter_by(patient_id=patient_id, tooth_number='11').first()
+                th_id = th.id if th else None
+
+            if th_id:
+                resp_del = client.post(f'/patients/{patient_id}/tooth-history/{th_id}/delete', data={
+                    'appointment_id': str(appointment_id),
+                    'csrf_token': 'test_csrf'
+                })
+                self.assertEqual(resp_del.status_code, 302)
+                self.assertIn(f'/appointments/{appointment_id}/session', resp_del.location)
+
 
 if __name__ == "__main__":
     unittest.main()

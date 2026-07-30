@@ -1,7 +1,7 @@
 from flask import Blueprint, current_app, render_template, request, redirect, url_for, jsonify
 from datetime import datetime, timedelta
 
-from models import db, Patient, Appointment
+from models import db, Patient, Appointment, User
 from utils.validators import (
     get_appointment_datetime_limits,
     parse_appointment_data,
@@ -13,6 +13,7 @@ from utils.constants import TREATMENT_PRICES
 
 
 appointments_bp = Blueprint("appointments", __name__)
+
 
 
 def cancel_expired_appointments():
@@ -65,6 +66,7 @@ def schedule_expired_appointments_cleanup(app, interval_seconds=900):
 
 
 def get_appointments_context():
+    cancel_expired_appointments()
     search_query = request.args.get("search", "")
     status_filter = request.args.get("status", "")
     sort_by = request.args.get("sort", "date")
@@ -135,7 +137,11 @@ def get_appointments_context():
         "reason": Appointment.reason,
     }
 
-    sort_column = sort_columns.get(sort_by, Appointment.appointment_date)
+    if sort_by == "doctor":
+        query = query.outerjoin(User, Appointment.doctor_id == User.id)
+        sort_column = User.first_name
+    else:
+        sort_column = sort_columns.get(sort_by, Appointment.appointment_date)
 
     if order == "asc":
         query = query.order_by(sort_column.asc())
@@ -280,12 +286,17 @@ def add_appointment_direct():
                     doctor_id=appointment_data.get("doctor_id")
                 )
                 if conflict:
+                    lang = request.cookies.get("lang", "en")
+                    if lang == "ar":
+                        err_msg = f"تعارض في الموعد: يوجد موعد آخر مجدول في هذا الوقت ({conflict.appointment_date.strftime('%Y-%m-%d %I:%M %p')} للمريض {conflict.patient.first_name} {conflict.patient.last_name})."
+                    else:
+                        err_msg = f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %I:%M %p')} for patient {conflict.patient.first_name} {conflict.patient.last_name})."
                     return render_template(
                         "appointments/add_appointment.html",
                         patients=patients,
                         doctors=doctors,
                         treatment_prices=dict(TREATMENT_PRICES),
-                        error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %I:%M %p')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
+                        error_message=err_msg,
                         appointment_min_datetime=appointment_min_datetime,
                         appointment_max_datetime=appointment_max_datetime,
                         prefilled_date=prefilled_date,
@@ -355,12 +366,17 @@ def add_appointment(patient_id):
                     doctor_id=appointment_data.get("doctor_id")
                 )
                 if conflict:
+                    lang = request.cookies.get("lang", "en")
+                    if lang == "ar":
+                        err_msg = f"تعارض في الموعد: يوجد موعد آخر مجدول في هذا الوقت ({conflict.appointment_date.strftime('%Y-%m-%d %I:%M %p')} للمريض {conflict.patient.first_name} {conflict.patient.last_name})."
+                    else:
+                        err_msg = f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %I:%M %p')} for patient {conflict.patient.first_name} {conflict.patient.last_name})."
                     return render_template(
                         "appointments/add_appointment.html",
                         patient=patient,
                         doctors=doctors,
                         treatment_prices=dict(TREATMENT_PRICES),
-                        error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %I:%M %p')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
+                        error_message=err_msg,
                         appointment_min_datetime=appointment_min_datetime,
                         appointment_max_datetime=appointment_max_datetime,
                     ), 400
@@ -461,13 +477,18 @@ def edit_appointment(appointment_id):
                         doctor_id=appointment_data.get("doctor_id")
                     )
                     if conflict:
+                        lang = request.cookies.get("lang", "en")
+                        if lang == "ar":
+                            err_msg = f"تعارض في الموعد: يوجد موعد آخر مجدول في هذا الوقت ({conflict.appointment_date.strftime('%Y-%m-%d %I:%M %p')} للمريض {conflict.patient.first_name} {conflict.patient.last_name})."
+                        else:
+                            err_msg = f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %I:%M %p')} for patient {conflict.patient.first_name} {conflict.patient.last_name})."
                         return render_template(
                             "appointments/edit_appointment.html",
                             appointment=appointment,
                             doctors=doctors,
                             treatment_prices=dict(TREATMENT_PRICES),
                             mode="edit",
-                            error_message=f"Conflict: There is another scheduled appointment at this time ({conflict.appointment_date.strftime('%Y-%m-%d %I:%M %p')} for patient {conflict.patient.first_name} {conflict.patient.last_name}).",
+                            error_message=err_msg,
                             appointment_min_datetime=appointment_min_datetime,
                             appointment_max_datetime=appointment_max_datetime,
                         ), 400
@@ -674,6 +695,7 @@ def calendar():
 def appointment_events():
     current_app.logger.info("Appointment events requested")
     try:
+        cancel_expired_appointments()
         from utils.settings_helper import get_setting
         try:
             duration = int(get_setting("default_appointment_duration", "30"))

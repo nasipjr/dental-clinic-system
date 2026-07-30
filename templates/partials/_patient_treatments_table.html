@@ -66,6 +66,19 @@
                 </th>
 
                 <th>Notes</th>
+                <th>
+                    <a href="{{ url_for(
+                        'patients.patient_treatments_table',
+                        patient_id=patient.id,
+                        treatment_sort='doctor',
+                        treatment_order='asc' if treatment_sort != 'doctor' or treatment_order == 'desc' else 'desc'
+                    ) }}" class="dashboard-ajax-link" data-target="patient-treatments-container">
+                        {% if current_lang == 'ar' %}الطبيب المعالج{% else %}Doctor{% endif %}
+                        {% if treatment_sort == 'doctor' %}
+                        <i class="bi {% if treatment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        {% endif %}
+                    </a>
+                </th>
             </tr>
         </thead>
 
@@ -75,9 +88,14 @@
                 <td>{{ treatment.id }}</td>
 
                 <td>
-                    <a href="{{ url_for('treatments.appointment_session', appointment_id=treatment.appointment.id) }}">
-                        #{{ treatment.appointment.id }}
-                    </a>
+                    {% set doc = treatment.doctor or treatment.appointment.doctor %}
+                    {% if current_user.role == 'admin' or (current_user.role == 'doctor' and (not treatment.appointment.doctor_id or treatment.appointment.doctor_id == current_user.id) and treatment.appointment.status != 'Cancelled') %}
+                        <a href="{{ url_for('treatments.appointment_session', appointment_id=treatment.appointment.id) }}">
+                            #{{ treatment.appointment.id }}
+                        </a>
+                    {% else %}
+                        <span class="text-secondary fw-semibold">#{{ treatment.appointment.id }}</span>
+                    {% endif %}
                     <br>
                     <small>
                         {{ treatment.appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if
@@ -94,11 +112,22 @@
                 </td>
 
                 <td>
-                    {{ treatment.tooth_number or 'N/A' }}
+                    {{ (treatment.tooth_number | format_tooth_number) or 'N/A' }}
                 </td>
 
                 <td>
                     {{ treatment.notes or 'No notes available' }}
+                </td>
+
+                <td>
+                    {% set doc = treatment.doctor or treatment.appointment.doctor %}
+                    {% if doc %}
+                        <span class="doctor-badge">
+                            <i class="bi bi-person-badge"></i>{{ doc.display_name }}
+                        </span>
+                    {% else %}
+                        <span class="text-muted" style="font-size: 0.82rem;">-</span>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}

@@ -151,6 +151,14 @@ class Appointment(db.Model):
     )
 
     @property
+    def attending_doctor(self):
+        if self.treatments:
+            for t in reversed(self.treatments):
+                if t.doctor:
+                    return t.doctor
+        return self.doctor
+
+    @property
     def invoice_total(self):
         if self.invoice:
             return self.invoice.total_amount
@@ -239,6 +247,13 @@ class Treatment(db.Model):
     doctor = db.relationship("User", foreign_keys=[doctor_id], backref="doctor_treatments")
 
     @property
+    def procedure_cost(self):
+        if self.use_anesthesia and self.anesthesia_cost and self.anesthesia_cost > 0:
+            cost = (self.total_cost or 0) - self.anesthesia_cost
+            return max(cost, 0)
+        return self.total_cost or 0
+
+    @property
     def patient(self):
         return self.appointment.patient
 
@@ -287,6 +302,7 @@ class Invoice(db.Model):
     issue_date = db.Column(db.DateTime, default=datetime.now, nullable=False)
     discount = db.Column(db.Numeric(10, 2), default=0.00, nullable=False)
     discount_type = db.Column(db.String(20), default="value", nullable=False)
+    additional_charges = db.Column(db.Numeric(10, 2), default=0.00, nullable=False)
     tax_rate = db.Column(db.Numeric(5, 2), default=0.00, nullable=False)
 
     payment_allocations = db.relationship(
@@ -329,6 +345,11 @@ class Invoice(db.Model):
         return disc
 
     @property
+    def additional_charges_amount(self):
+        from decimal import Decimal
+        return Decimal(str(self.additional_charges or 0))
+
+    @property
     def tax_amount(self):
         from decimal import Decimal
         return Decimal('0.00')
@@ -338,7 +359,8 @@ class Invoice(db.Model):
         from decimal import Decimal
         sub = Decimal(str(self.subtotal or 0))
         disc_amt = Decimal(str(self.discount_amount or 0))
-        net = max(sub - disc_amt, Decimal('0.00'))
+        add_charges = Decimal(str(self.additional_charges_amount or 0))
+        net = max(sub - disc_amt + add_charges, Decimal('0.00'))
         return net
 
     @property

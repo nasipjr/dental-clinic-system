@@ -48,6 +48,20 @@
                     </a>
                 </th>
 
+                <th>
+                    <a href="{{ url_for(
+                        'patients.patient_appointments_table',
+                        patient_id=patient.id,
+                        appointment_sort='doctor',
+                        appointment_order='asc' if appointment_sort != 'doctor' or appointment_order == 'desc' else 'desc'
+                    ) }}" class="dashboard-ajax-link" data-target="patient-appointments-container">
+                        {% if current_lang == 'ar' %}الطبيب المعالج{% else %}Doctor{% endif %}
+                        {% if appointment_sort == 'doctor' %}
+                        <i class="bi {% if appointment_order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                        {% endif %}
+                    </a>
+                </th>
+
                 <th class="text-center">Actions</th>
             </tr>
         </thead>
@@ -91,6 +105,17 @@
                     </span>
                 </td>
 
+                <td>
+                    {% set doc = appointment.attending_doctor or appointment.doctor %}
+                    {% if doc %}
+                        <span class="doctor-badge">
+                            <i class="bi bi-person-badge"></i>{{ doc.display_name }}
+                        </span>
+                    {% else %}
+                        <span class="text-muted" style="font-size: 0.82rem;">-</span>
+                    {% endif %}
+                </td>
+
                 <td class="text-center">
                     <div class="appointments-actions">
 
@@ -99,7 +124,7 @@
                             <i class="bi bi-eye"></i>
                         </a>
 
-                        {% if current_user.role in ('admin', 'doctor') %}
+                        {% if appointment.status not in ('Cancelled', 'ملغي') and (current_user.role in ('admin', 'receptionist') or (current_user.role == 'doctor' and (not appointment.doctor_id or appointment.doctor_id == current_user.id))) %}
                         <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
                             class="table-action-btn session-btn"
                             title="{% if current_lang == 'ar' %}فتح الجلسة{% else %}Open Session{% endif %}"
@@ -108,7 +133,7 @@
                         </a>
                         {% endif %}
 
-                        {% if appointment.status == 'Scheduled' %}
+                        {% if appointment.status not in ('Cancelled', 'ملغي', 'Done', 'منجز') and appointment.status == 'Scheduled' %}
                         <a href="{{ url_for('appointments.edit_appointment', appointment_id=appointment.id) }}"
                             class="table-action-btn edit-btn" title="Edit Appointment">
                             <i class="bi bi-pencil-square"></i>
@@ -121,10 +146,9 @@
                             title="Quick Cancel">
                             <i class="bi bi-x-circle text-danger"></i>
                         </button>
-
                         {% endif %}
 
-                        {% if current_user.role == 'admin' and appointment.status != 'Done' and appointment.status != 'منجز' and not appointment.treatments %}
+                        {% if current_user.role in ('admin', 'receptionist') and appointment.status != 'Done' and appointment.status != 'منجز' and not appointment.treatments %}
                         <a href="{{ url_for('appointments.delete_appointment', appointment_id=appointment.id) }}"
                             class="table-action-btn delete-table-btn" title="Delete Appointment">
                             <i class="bi bi-trash"></i>

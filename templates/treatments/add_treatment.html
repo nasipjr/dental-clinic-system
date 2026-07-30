@@ -563,17 +563,18 @@ document.addEventListener('DOMContentLoaded', function () {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
                 const toothNum = this.dataset.tooth;
+                const valToUse = fdiMap[toothNum] || toothNum;
                 
                 let selectedTeeth = toothInput.value.split(',')
                     .map(t => t.trim())
                     .filter(t => t !== '');
                     
-                const index = selectedTeeth.indexOf(toothNum);
+                const index = selectedTeeth.indexOf(valToUse);
                 if (index > -1) {
                     selectedTeeth.splice(index, 1);
                     this.classList.remove('active');
                 } else {
-                    selectedTeeth.push(toothNum);
+                    selectedTeeth.push(valToUse);
                     this.classList.add('active');
                 }
                 

@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <i class="bi bi-shield-check"></i> {% if current_lang == 'ar' %}نشط{% else %}Enabled{% endif %}
                         </p>
                         <small class="text-muted d-block mb-2">{% if current_lang == 'ar' %}اسم المستخدم{% else %}Username{% endif %}: <strong>{{ patient.user.username }}</strong></small>
-                        <form method="POST" action="{{ url_for('patients.delete_portal_account', patient_id=patient.id) }}" onsubmit="return confirm('{% if current_lang == 'ar' %}هل أنت متأكد من إلغاء تفعيل البوابة لهذا المريض؟ سيتم حذف حساب الدخول الخاص به.{% else %}Are you sure you want to revoke portal access for this patient? This will delete their portal login.{% endif %}');">
+                        <form method="POST" action="{{ url_for('patients.delete_portal_account', patient_id=patient.id) }}" onsubmit="return confirmDelete(event, '{% if current_lang == 'ar' %}هل أنت متأكد من إلغاء تفعيل البوابة لهذا المريض؟ سيتم حذف حساب الدخول الخاص به.{% else %}Are you sure you want to revoke portal access for this patient? This will delete their portal login.{% endif %}');">
                             <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2 fw-semibold" style="font-size: 0.72rem; border-radius: 4px; border-width: 1px;">
                                 <i class="bi bi-shield-x"></i> {% if current_lang == 'ar' %}إلغاء الصلاحية{% else %}Revoke Access{% endif %}
                             </button>
@@ -1136,7 +1136,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                             <a href="{{ url_for('static', filename=clean_filepath) }}" target="_blank" class="btn btn-link btn-sm p-0 fw-semibold text-decoration-none" style="color: var(--nav-hover-color, #3fbbc0); font-size: 0.85rem;">
                                                 <i class="bi bi-eye"></i> {% if current_lang == 'ar' %}عرض بالكامل{% else %}View Full{% endif %}
                                             </a>
-                                            <form method="POST" action="{{ url_for('patients.delete_patient_file', patient_id=patient.id, file_id=file.id) }}" onsubmit="return confirm('{% if current_lang == 'ar' %}هل أنت متأكد من حذف هذا الملف نهائياً؟{% else %}Are you sure you want to permanently delete this file?{% endif %}');" class="mb-0">
+                                            <form method="POST" action="{{ url_for('patients.delete_patient_file', patient_id=patient.id, file_id=file.id) }}" onsubmit="return confirmDelete(event, '{% if current_lang == 'ar' %}هل أنت متأكد من حذف هذا الملف نهائياً؟{% else %}Are you sure you want to permanently delete this file?{% endif %}');" class="mb-0">
                                                 <button type="submit" class="btn btn-link btn-sm text-danger p-0 text-decoration-none" style="font-size: 0.85rem;">
                                                     <i class="bi bi-trash"></i> {% if current_lang == 'ar' %}حذف{% else %}Delete{% endif %}
                                                 </button>
@@ -1860,10 +1860,6 @@ document.addEventListener("DOMContentLoaded", function() {
                                         {% for proc in treatment_procedure_types %}
                                         <option value="{{ proc }} (سابق)">{{ proc }} ({% if current_lang == 'ar' %}سابق{% else %}Prior{% endif %})</option>
                                         {% endfor %}
-                                        <option value="قلع سن (سابق)">{% if current_lang == 'ar' %}قلع سن (سابق){% else %}Prior Tooth Extraction{% endif %}</option>
-                                        <option value="حشوة أسنان (سابقة)">{% if current_lang == 'ar' %}حشوة أسنان (سابقة){% else %}Prior Tooth Filling{% endif %}</option>
-                                        <option value="علاج عصب (سابق)">{% if current_lang == 'ar' %}علاج عصب (سابق){% else %}Prior Root Canal{% endif %}</option>
-                                        <option value="تاج / جسر (سابق)">{% if current_lang == 'ar' %}تاج / جسر (سابق){% else %}Prior Crown / Bridge{% endif %}</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
@@ -1939,7 +1935,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function appliesToTooth(treatment, toothNum) {
         if (!treatment.tooth) return false;
         const teeth = treatment.tooth.split(',').map(s => s.trim());
-        return teeth.includes(toothNum);
+        const fdiNum = fdiMap[toothNum];
+        return teeth.includes(toothNum) || (fdiNum && teeth.includes(fdiNum));
     }
 
     function isExtractionProcedure(procName) {
@@ -1953,8 +1950,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     for (let i = 1; i <= 32; i++) {
         const toothStr = i.toString();
+        const fdiNum = fdiMap[toothStr];
         patientTeethData[toothStr] = patientTreatments.filter(t => appliesToTooth(t, toothStr));
-        const priorHistories = toothHistoryDict[toothStr] || [];
+        
+        const listUniv = toothHistoryDict[toothStr] || [];
+        const listFdi = (fdiNum && toothHistoryDict[fdiNum]) ? toothHistoryDict[fdiNum] : [];
+        const priorHistoriesMap = {};
+        [...listUniv, ...listFdi].forEach(h => { priorHistoriesMap[h.id] = h; });
+        const priorHistories = Object.values(priorHistoriesMap);
 
         const isClinicExtracted = patientTeethData[toothStr].some(t => isExtractionProcedure(t.procedure));
         const isPriorExtracted = priorHistories.some(h => isExtractionProcedure(h.procedure));
@@ -1963,11 +1966,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const teethElements = document.querySelectorAll(`[data-patient-tooth="${toothStr}"]`);
         teethElements.forEach(el => {
             if (isExtracted) {
-                if (isPriorExtracted) {
-                    el.classList.add('history-external', 'extracted');
-                } else {
-                    el.classList.add('extracted-treatment', 'extracted');
-                }
+                el.classList.add('extracted-treatment', 'extracted');
                 const svgContainer = el.querySelector('.tooth-svg-container') || el;
                 if (!svgContainer.querySelector('.extracted-badge')) {
                     const badge = document.createElement('div');
@@ -1975,12 +1974,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     badge.innerHTML = '<i class="bi bi-x-lg"></i>';
                     svgContainer.appendChild(badge);
                 }
-            } else if (priorHistories.length > 0) {
-                el.classList.add('history-external');
             } else if (patientTeethData[toothStr].length > 0) {
                 el.classList.add('history-treatment', 'history');
             } else {
                 el.classList.add('no-treatment');
+            }
+
+            if (priorHistories.length > 0) {
+                el.classList.add('history-external');
+                const svgContainer = el.querySelector('.tooth-svg-container') || el;
+                if (!svgContainer.querySelector('.prior-history-indicator')) {
+                    const starDot = document.createElement('span');
+                    starDot.className = 'prior-history-indicator';
+                    starDot.title = isAr ? 'سوابق مرضية وخارجية' : 'Pre-existing Condition';
+                    starDot.innerHTML = '<i class="bi bi-star-fill"></i>';
+                    svgContainer.appendChild(starDot);
+                }
             }
 
             // Build Tooltip
@@ -2028,7 +2037,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Set hidden tooth number input in history form
             const formToothInput = document.getElementById('history-form-tooth-number');
             if (formToothInput) {
-                formToothInput.value = toothNum;
+                formToothInput.value = fdiNum || toothNum;
             }
             
             const modalTitle = document.getElementById('patientToothModalLabel');
@@ -2036,7 +2045,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 modalTitle.textContent = `${isAr ? 'تفاصيل وسجل المعالجات للسن' : 'Tooth Details & Documentation'} ${fdiNum}`;
             }
 
-            const priorHistories = toothHistoryDict[toothNum] || [];
+            const listUniv = toothHistoryDict[toothNum] || [];
+            const listFdi = (fdiNum && toothHistoryDict[fdiNum]) ? toothHistoryDict[fdiNum] : [];
+            const priorHistoriesMap = {};
+            [...listUniv, ...listFdi].forEach(h => { priorHistoriesMap[h.id] = h; });
+            const priorHistories = Object.values(priorHistoriesMap);
             const clinicTreatments = patientTeethData[toothNum] || [];
             const isClinicExtracted = clinicTreatments.some(t => isExtractionProcedure(t.procedure));
             const isPriorExtracted = priorHistories.some(h => isExtractionProcedure(h.procedure));
@@ -2075,7 +2088,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <p class="mb-0 text-secondary small mt-1">${h.notes || (isAr ? 'سجل خارجي (لا توجد ملاحظات)' : 'External record')}</p>
                                         <span class="text-muted small" style="font-size: 0.75rem;"><i class="bi bi-clock me-1"></i>${h.created_at}</span>
                                     </div>
-                                    <form method="POST" action="/patients/{{ patient.id }}/tooth-history/${h.id}/delete" onsubmit="return confirm('${isAr ? 'هل أنت متأكد من حذف هذه السابقة المرضية؟' : 'Delete this history record?'}');">
+                                    <form method="POST" action="/patients/{{ patient.id }}/tooth-history/${h.id}/delete" onsubmit="return confirmDelete(event, '${isAr ? 'هل أنت متأكد من حذف هذه السابقة المرضية؟' : 'Delete this history record?'}');">
                                         <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1.5" title="${isAr ? 'حذف السابقة' : 'Delete History'}">
                                             <i class="bi bi-trash fs-6"></i>
                                         </button>

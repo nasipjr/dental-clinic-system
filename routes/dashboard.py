@@ -15,6 +15,8 @@ def home():
     current_app.logger.info("Home page opened")
 
     try:
+        from routes.appointments import cancel_expired_appointments
+        cancel_expired_appointments()
         total_patients = Patient.query.count()
         total_appointments = Appointment.query.count()
         scheduled_appointments = Appointment.query.filter_by(status="Scheduled").count()

@@ -1,7 +1,8 @@
 from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash, jsonify
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload, selectinload
 
-from models import db, Patient, Appointment, Treatment, Payment, Invoice, PatientFile, ToothHistory
+from models import db, Patient, Appointment, Treatment, Payment, Invoice, PatientFile, ToothHistory, User
 from utils.validators import parse_patient_data
 from utils.auth_helper import role_required
 from utils.constants import TREATMENT_PROCEDURE_TYPES
@@ -60,8 +61,12 @@ def get_patients_context():
     }
 
 
-def get_patient_payments_context(patient_id):
-    patient = Patient.query.get_or_404(patient_id)
+def get_patient_payments_context(patient_or_id):
+    if isinstance(patient_or_id, Patient):
+        patient = patient_or_id
+    else:
+        patient = Patient.query.get_or_404(patient_or_id)
+
     payment_sort = request.args.get("payment_sort", "date")
     payment_order = request.args.get("payment_order", "desc")
 
@@ -91,15 +96,19 @@ def get_patient_payments_context(patient_id):
     }
 
 
-def get_patient_invoices_context(patient_id):
-    patient = Patient.query.get_or_404(patient_id)
+def get_patient_invoices_context(patient_or_id):
+    if isinstance(patient_or_id, Patient):
+        patient = patient_or_id
+    else:
+        patient = Patient.query.get_or_404(patient_or_id)
+
     invoice_sort = request.args.get("invoice_sort", "date")
     invoice_order = request.args.get("invoice_order", "desc")
 
     patient_invoices = (
         Invoice.query
         .filter_by(patient_id=patient.id)
-        .join(Invoice.appointment)
+        .options(joinedload(Invoice.appointment), joinedload(Invoice.patient))
         .all()
     )
 
@@ -254,7 +263,15 @@ def patient_detail(patient_id):
 
     try:
         from utils.notification_helper import get_bot_username
-        patient = Patient.query.get_or_404(patient_id)
+        patient = (
+            Patient.query
+            .options(
+                selectinload(Patient.files),
+                selectinload(Patient.invoices),
+                selectinload(Patient.payments)
+            )
+            .get_or_404(patient_id)
+        )
 
         appointment_sort = request.args.get("appointment_sort", "date")
         appointment_order = request.args.get("appointment_order", "desc")
@@ -262,8 +279,8 @@ def patient_detail(patient_id):
         treatment_sort = request.args.get("treatment_sort", "date")
         treatment_order = request.args.get("treatment_order", "desc")
 
-        payment_context = get_patient_payments_context(patient.id)
-        invoice_context = get_patient_invoices_context(patient.id)
+        payment_context = get_patient_payments_context(patient)
+        invoice_context = get_patient_invoices_context(patient)
 
         active_tab = request.args.get("tab", "appointments")
 
@@ -274,17 +291,31 @@ def patient_detail(patient_id):
             "status": Appointment.status,
         }
 
-        appointment_sort_column = appointment_sort_columns.get(
-            appointment_sort,
-            Appointment.appointment_date,
+        appointments_query = (
+            Appointment.query
+            .filter_by(patient_id=patient.id)
+            .options(
+                selectinload(Appointment.treatments),
+                joinedload(Appointment.invoice),
+                joinedload(Appointment.doctor)
+            )
         )
 
-        appointments_query = Appointment.query.filter_by(patient_id=patient.id)
-
-        if appointment_order == "asc":
-            appointments_query = appointments_query.order_by(appointment_sort_column.asc())
+        if appointment_sort == "doctor":
+            appointments_query = appointments_query.outerjoin(User, Appointment.doctor_id == User.id)
+            if appointment_order == "asc":
+                appointments_query = appointments_query.order_by(User.first_name.asc())
+            else:
+                appointments_query = appointments_query.order_by(User.first_name.desc())
         else:
-            appointments_query = appointments_query.order_by(appointment_sort_column.desc())
+            appointment_sort_column = appointment_sort_columns.get(
+                appointment_sort,
+                Appointment.appointment_date,
+            )
+            if appointment_order == "asc":
+                appointments_query = appointments_query.order_by(appointment_sort_column.asc())
+            else:
+                appointments_query = appointments_query.order_by(appointment_sort_column.desc())
 
         patient_appointments = appointments_query.all()
 
@@ -295,21 +326,28 @@ def patient_detail(patient_id):
             "tooth_number": Treatment.tooth_number,
         }
 
-        treatment_sort_column = treatment_sort_columns.get(
-            treatment_sort,
-            Treatment.treatment_date,
-        )
-
         treatments_query = (
             Treatment.query
             .join(Appointment)
             .filter(Appointment.patient_id == patient.id)
+            .options(joinedload(Treatment.doctor), joinedload(Treatment.appointment))
         )
 
-        if treatment_order == "asc":
-            treatments_query = treatments_query.order_by(treatment_sort_column.asc())
+        if treatment_sort == "doctor":
+            treatments_query = treatments_query.outerjoin(User, Treatment.doctor_id == User.id)
+            if treatment_order == "asc":
+                treatments_query = treatments_query.order_by(User.first_name.asc())
+            else:
+                treatments_query = treatments_query.order_by(User.first_name.desc())
         else:
-            treatments_query = treatments_query.order_by(treatment_sort_column.desc())
+            treatment_sort_column = treatment_sort_columns.get(
+                treatment_sort,
+                Treatment.treatment_date,
+            )
+            if treatment_order == "asc":
+                treatments_query = treatments_query.order_by(treatment_sort_column.asc())
+            else:
+                treatments_query = treatments_query.order_by(treatment_sort_column.desc())
 
         patient_treatments = treatments_query.all()
         
@@ -317,6 +355,7 @@ def patient_detail(patient_id):
                 Invoice.query
                 .filter_by(patient_id=patient.id)
                 .join(Invoice.appointment)
+                .options(joinedload(Invoice.appointment), joinedload(Invoice.patient))
                 .order_by(Appointment.appointment_date.desc(), Invoice.id.desc())
                 .all()
             )
@@ -340,7 +379,7 @@ def patient_detail(patient_id):
         invoices = Invoice.query.join(Invoice.appointment).filter(
             Appointment.patient_id == patient.id,
             Appointment.status != "Cancelled"
-        ).all()
+        ).options(joinedload(Invoice.appointment).selectinload(Appointment.treatments)).all()
         for inv in invoices:
             desc_items = [t.procedure_type for t in inv.appointment.treatments if t.procedure_type]
             desc_str = ", ".join(desc_items) if desc_items else (inv.appointment.reason or "Dental Session")
@@ -428,13 +467,22 @@ def patient_detail(patient_id):
 @patients_bp.route("/patients/<int:patient_id>/tooth-history/add", methods=["POST"])
 @role_required("admin", "doctor", "receptionist")
 def add_tooth_history(patient_id):
+    import re
     patient = Patient.query.get_or_404(patient_id)
     tooth_number = request.form.get("tooth_number")
     procedure_type = request.form.get("procedure_type")
     notes = request.form.get("notes", "").strip()
 
+    appointment_id = request.form.get("appointment_id") or request.args.get("appointment_id")
+    if not appointment_id and request.referrer:
+        match = re.search(r'/appointments/(\d+)/session', request.referrer)
+        if match:
+            appointment_id = match.group(1)
+
     if not tooth_number or not procedure_type:
         flash("يرجى اختيار السن ونوع الإجراء السريري." if request.cookies.get("lang") == "ar" else "Please specify tooth number and procedure type.", "danger")
+        if appointment_id:
+            return redirect(url_for("treatments.appointment_session", appointment_id=appointment_id))
         return redirect(url_for("patients.patient_detail", patient_id=patient_id, active_tab="chart"))
 
     th = ToothHistory(
@@ -447,18 +495,29 @@ def add_tooth_history(patient_id):
     db.session.commit()
 
     flash("تم تسجيل السابقة المرضية بنجاح." if request.cookies.get("lang") == "ar" else "Tooth pre-existing condition recorded successfully.", "success")
+    if appointment_id:
+        return redirect(url_for("treatments.appointment_session", appointment_id=appointment_id))
     return redirect(url_for("patients.patient_detail", patient_id=patient_id, active_tab="chart"))
 
 
 @patients_bp.route("/patients/<int:patient_id>/tooth-history/<int:history_id>/delete", methods=["POST"])
 @role_required("admin", "doctor", "receptionist")
 def delete_tooth_history(patient_id, history_id):
+    import re
     patient = Patient.query.get_or_404(patient_id)
     th = ToothHistory.query.filter_by(id=history_id, patient_id=patient.id).first_or_404()
     db.session.delete(th)
     db.session.commit()
 
+    appointment_id = request.form.get("appointment_id") or request.args.get("appointment_id")
+    if not appointment_id and request.referrer:
+        match = re.search(r'/appointments/(\d+)/session', request.referrer)
+        if match:
+            appointment_id = match.group(1)
+
     flash("تم حذف السابقة المرضية بنجاح." if request.cookies.get("lang") == "ar" else "Tooth condition record deleted successfully.", "success")
+    if appointment_id:
+        return redirect(url_for("treatments.appointment_session", appointment_id=appointment_id))
     return redirect(url_for("patients.patient_detail", patient_id=patient_id, active_tab="chart"))
 
 
@@ -573,14 +632,20 @@ def patient_appointments_table(patient_id):
         "status": Appointment.status,
     }
 
-    sort_column = sort_columns.get(appointment_sort, Appointment.appointment_date)
-
     query = Appointment.query.filter_by(patient_id=patient.id)
 
-    if appointment_order == "asc":
-        query = query.order_by(sort_column.asc())
+    if appointment_sort == "doctor":
+        query = query.outerjoin(User, Appointment.doctor_id == User.id)
+        if appointment_order == "asc":
+            query = query.order_by(User.first_name.asc())
+        else:
+            query = query.order_by(User.first_name.desc())
     else:
-        query = query.order_by(sort_column.desc())
+        sort_column = sort_columns.get(appointment_sort, Appointment.appointment_date)
+        if appointment_order == "asc":
+            query = query.order_by(sort_column.asc())
+        else:
+            query = query.order_by(sort_column.desc())
 
     patient_appointments = query.all()
 
@@ -608,18 +673,24 @@ def patient_treatments_table(patient_id):
         "tooth_number": Treatment.tooth_number,
     }
 
-    sort_column = sort_columns.get(treatment_sort, Treatment.treatment_date)
-
     query = (
         Treatment.query
         .join(Appointment)
         .filter(Appointment.patient_id == patient.id)
     )
 
-    if treatment_order == "asc":
-        query = query.order_by(sort_column.asc())
+    if treatment_sort == "doctor":
+        query = query.outerjoin(User, Treatment.doctor_id == User.id)
+        if treatment_order == "asc":
+            query = query.order_by(User.first_name.asc())
+        else:
+            query = query.order_by(User.first_name.desc())
     else:
-        query = query.order_by(sort_column.desc())
+        sort_column = sort_columns.get(treatment_sort, Treatment.treatment_date)
+        if treatment_order == "asc":
+            query = query.order_by(sort_column.asc())
+        else:
+            query = query.order_by(sort_column.desc())
 
     patient_treatments = query.all()
 
@@ -786,18 +857,23 @@ def create_portal_account(patient_id):
             flash("Username and password are required.", "danger")
             return redirect(url_for("patients.patient_detail", patient_id=patient.id))
 
+        is_ar = request.cookies.get('lang', 'ar') != 'en'
+
         if len(username) > 80:
-            flash("Username cannot exceed 80 characters.", "danger")
+            msg = "اسم المستخدم لا يمكن أن يتجاوز 80 حرفاً." if is_ar else "Username cannot exceed 80 characters."
+            flash(msg, "danger")
             return redirect(url_for("patients.patient_detail", patient_id=patient.id))
 
         if len(password) < 6:
-            flash("Password must be at least 6 characters.", "danger")
+            msg = "كلمة السر يجب أن تكون 6 أحرف على الأقل." if is_ar else "Password must be at least 6 characters."
+            flash(msg, "danger")
             return redirect(url_for("patients.patient_detail", patient_id=patient.id))
 
         from models import User
         existing_user = User.query.filter_by(username=username).first()
         if existing_user:
-            flash("Username already exists. Please choose a different one.", "danger")
+            msg = "اسم المستخدم موجود مسبقاً، يرجى اختيار اسم آخر." if is_ar else "Username already exists. Please choose a different one."
+            flash(msg, "danger")
             return redirect(url_for("patients.patient_detail", patient_id=patient.id))
 
         new_user = User(
@@ -812,13 +888,17 @@ def create_portal_account(patient_id):
         db.session.add(new_user)
         db.session.commit()
 
-        flash(f"Portal account created successfully for patient: {patient.first_name}. Username: {username}", "success")
+        if is_ar:
+            flash(f"تم إنشاء حساب البوابة الإلكترونية بنجاح للمريض: {patient.first_name} {patient.last_name}. اسم المستخدم: {username}", "success")
+        else:
+            flash(f"Portal account created successfully for patient: {patient.first_name} {patient.last_name}. Username: {username}", "success")
         return redirect(url_for("patients.patient_detail", patient_id=patient.id))
 
     except Exception:
         db.session.rollback()
         current_app.logger.exception(f"Failed to create portal account for patient_id={patient_id}")
-        flash("Failed to create portal account due to a database error.", "danger")
+        msg = "فشل إنشاء حساب البوابة بسبب خطأ في قاعدة البيانات." if is_ar else "Failed to create portal account due to a database error."
+        flash(msg, "danger")
         return redirect(url_for("patients.patient_detail", patient_id=patient_id))
 
 
@@ -826,22 +906,26 @@ def create_portal_account(patient_id):
 @role_required("admin", "receptionist")
 def delete_portal_account(patient_id):
     current_app.logger.warning(f"Deleting patient portal account for patient_id={patient_id}")
+    is_ar = request.cookies.get('lang', 'ar') != 'en'
     try:
         patient = Patient.query.get_or_404(patient_id)
         if not patient.user:
-            flash("Patient does not have a portal account.", "warning")
+            msg = "المريض ليس لديه حساب بوابة إلكترونية." if is_ar else "Patient does not have a portal account."
+            flash(msg, "warning")
             return redirect(url_for("patients.patient_detail", patient_id=patient.id))
 
         db.session.delete(patient.user)
         db.session.commit()
 
-        flash("Portal account access deleted successfully.", "success")
+        msg = "تم حذف حساب البوابة الإلكترونية للمريض بنجاح." if is_ar else "Portal account access deleted successfully."
+        flash(msg, "success")
         return redirect(url_for("patients.patient_detail", patient_id=patient.id))
 
     except Exception:
         db.session.rollback()
         current_app.logger.exception(f"Failed to delete portal account for patient_id={patient_id}")
-        flash("Failed to delete portal account.", "danger")
+        msg = "فشل حذف حساب البوابة الإلكترونية." if is_ar else "Failed to delete portal account."
+        flash(msg, "danger")
         return redirect(url_for("patients.patient_detail", patient_id=patient_id))
 
 

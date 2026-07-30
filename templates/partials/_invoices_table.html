@@ -194,7 +194,7 @@
 
                 <td class="text-center">
                     <div class="appointments-actions d-flex align-items-center justify-content-center gap-2">
-                        {% if current_user.role in ('admin', 'doctor') %}
+                        {% if current_user.role == 'admin' or (current_user.role == 'doctor' and (not invoice.appointment.doctor_id or invoice.appointment.doctor_id == current_user.id) and invoice.appointment.status != 'Cancelled') %}
                         <a href="{{ url_for('treatments.appointment_session', appointment_id=invoice.appointment_id) }}"
                            class="table-action-btn session-btn"
                            title="{% if current_lang == 'ar' %}فتح الجلسة{% else %}Open Session{% endif %}"

@@ -246,6 +246,10 @@
               <a href="{{ url_for('invoices.invoices') }}"><i class="bi bi-chevron-right me-1 small"></i> Invoices</a>
               <a href="{{ url_for('payments.payments') }}"><i class="bi bi-chevron-right me-1 small"></i> Payments</a>
               {% endif %}
+              {% if current_user and current_user.role == 'admin' %}
+              <a href="{{ url_for('reports.reports_dashboard') }}#tab-patient-debts"><i class="bi bi-chevron-right me-1 small"></i> Patient Debts</a>
+              <a href="{{ url_for('reports.reports_dashboard') }}#tab-patient-credits"><i class="bi bi-chevron-right me-1 small"></i> Patient Credits</a>
+              {% endif %}
             </nav>
           </div>
         </div>
@@ -639,6 +643,8 @@
             "Miss": "آنسة",
             "Monday": "الاثنين",
             "Monthly Financial Performance (Last 6 Months)": "الأداء المالي الشهري (آخر 6 أشهر)",
+            "Doctor": "الدكتور",
+            "Doctor (Female)": "الدكتورة",
             "Mr": "السيد",
             "Mrs": "السيدة",
             "Ms": "الآنسة",
@@ -718,6 +724,8 @@
             "Procedure Price": "سعر الإجراء",
             "Procedure Type": "نوع الإجراء",
             "Quick Access": "وصول سريع",
+            "Patient Debts": "ديون المرضى والمستحقات",
+            "Patient Credits": "أرصدة المرضى الدائنة",
             "Quick Cancel": "إلغاء سريع",
             "Quick Complete": "إنجاز سريع",
             "Quick overview of this patient's financial balance": "نظرة عامة سريعة على الرصيد المالي للمريض",
@@ -1219,5 +1227,49 @@
             }
         });
     });
+
+    // Global SweetAlert2 Delete Confirmation Dialog
+    function confirmDelete(event, customMsg, customTitle) {
+        if (event) event.preventDefault();
+        const isAr = document.documentElement.getAttribute('lang') === 'ar' || document.documentElement.lang === 'ar';
+        const target = (event && (event.currentTarget || event.target)) || null;
+        
+        const title = customTitle || (isAr ? 'تأكيد الحذف' : 'Confirm Deletion');
+        const text = customMsg || (isAr ? 'هل أنت متأكد من عملية الحذف؟' : 'Are you sure you want to delete this item?');
+        
+        Swal.fire({
+            title: title,
+            text: text,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: isAr ? 'نعم، احذف الآن' : 'Yes, Delete Now',
+            cancelButtonText: isAr ? 'إلغاء' : 'Cancel',
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            background: '#1e293b',
+            color: '#f8fafc',
+            customClass: {
+                popup: 'rounded-4 border border-secondary shadow-lg'
+            }
+        }).then((result) => {
+            if (result.isConfirmed && target) {
+                if (target.tagName === 'FORM') {
+                    target.submit();
+                } else if (target.tagName === 'A' && target.href) {
+                    window.location.href = target.href;
+                } else {
+                    const form = target.closest('form');
+                    if (form) {
+                        form.submit();
+                    } else if (target.href) {
+                        window.location.href = target.href;
+                    } else if (target.getAttribute('href')) {
+                        window.location.href = target.getAttribute('href');
+                    }
+                }
+            }
+        });
+        return false;
+    }
   </script>
 </html>

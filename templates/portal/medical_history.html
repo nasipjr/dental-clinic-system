@@ -83,7 +83,7 @@
                     </td>
                     <td>
                       {% if t.tooth_number %}
-                        <span class="badge bg-light text-dark border px-2.5 py-1.5 rounded-pill">{{ t.tooth_number }}</span>
+                        <span class="badge bg-light text-dark border px-2.5 py-1.5 rounded-pill">{{ t.tooth_number | format_tooth_number }}</span>
                       {% else %}
                         <span class="text-muted small">N/A</span>
                       {% endif %}
