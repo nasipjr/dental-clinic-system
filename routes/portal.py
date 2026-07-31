@@ -229,6 +229,10 @@ def book_appointment():
         from utils.validators import check_appointment_conflict, booking_lock
         doctor_id_raw = request.form.get("doctor_id", "").strip()
         doctor_id = int(doctor_id_raw) if doctor_id_raw.isdigit() else None
+        if not doctor_id:
+            main_admin = User.query.filter(User.role.in_(["admin", "doctor"])).order_by(User.id.asc()).first()
+            if main_admin:
+                doctor_id = main_admin.id
 
         with booking_lock:
             conflict = check_appointment_conflict(appointment_date, doctor_id=doctor_id)
@@ -306,7 +310,7 @@ def booked_slots():
         limit_date = now + timedelta(days=booking_window_days)
         
         occupied = Appointment.query.filter(
-            Appointment.status.in_(["Scheduled", "Pending", "Done"]),
+            Appointment.status.in_(["Scheduled", "Pending", "Done", "Checked In", "In Chair"]),
             Appointment.appointment_date >= now.date(),
             Appointment.appointment_date <= limit_date
         ).all()
@@ -330,7 +334,7 @@ def portal_events():
         limit_date = now + timedelta(days=booking_window_days)
         
         occupied = Appointment.query.filter(
-            Appointment.status.in_(["Scheduled", "Pending", "Done"]),
+            Appointment.status.in_(["Scheduled", "Pending", "Done", "Checked In", "In Chair"]),
             Appointment.appointment_date >= now.date(),
             Appointment.appointment_date <= limit_date
         ).all()
@@ -368,7 +372,7 @@ def cancel_appointment(appointment_id):
     patient_id = session.get("patient_id")
     appointment = Appointment.query.filter_by(id=appointment_id, patient_id=patient_id).first_or_404()
     
-    lang = request.cookies.get('lang', 'en')
+    lang = request.cookies.get('lang', 'ar')
     
     if appointment.status not in ["Scheduled", "Pending"]:
         deny_msg = {

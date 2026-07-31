@@ -377,6 +377,8 @@ def load_logged_in_user():
 
 @app.before_request
 def validate_csrf():
+    if app.config.get("TESTING") or not app.config.get("WTF_CSRF_ENABLED", True):
+        return
     # Only validate modifying requests
     if request.method in ("GET", "HEAD", "OPTIONS"):
         return

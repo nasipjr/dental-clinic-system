@@ -565,3 +565,162 @@ def check_system_update():
             "message": f"حدث خطأ أثناء تنفيذ التحديث: {str(e)}"
         })
 
+
+@settings_bp.route("/settings/reset-clinic", methods=["POST"])
+@role_required("admin")
+def reset_clinic():
+    """Resets all operational clinic database records (patients, appointments, treatments, invoices, payments, expenses, etc.)
+    while preserving system settings, notification configurations/tokens, and user accounts.
+    Requires admin username & password verification."""
+    from models import (
+        db, User, Patient, Appointment, Treatment, ToothHistory,
+        Invoice, Payment, PaymentAllocation, PatientFile, NotificationLog, Expense
+    )
+    is_ar = request.cookies.get('lang', 'ar') != 'en'
+
+    admin_username = request.form.get("admin_username", "").strip()
+    admin_password = request.form.get("admin_password", "").strip()
+
+    if not admin_username or not admin_password:
+        msg = "يرجى إدخال اسم المستخدم وكلمة المرور الخاصة بالمدير." if is_ar else "Admin username and password are required."
+        flash(msg, "danger")
+        return redirect(url_for("settings.settings_page"))
+
+    # Verify admin user credentials
+    admin_user = User.query.filter_by(username=admin_username).first()
+    if not admin_user or admin_user.role != "admin" or not admin_user.check_password(admin_password):
+        current_app.logger.warning(f"Failed clinic reset attempt: invalid admin credentials for username '{admin_username}'.")
+        msg = "اسم المستخدم أو كلمة المرور الخاصة بالمدير غير صحيحة، أو أنك لا تملك صلاحيات مدير." if is_ar else "Invalid admin username or password, or insufficient permissions."
+        flash(msg, "danger")
+        return redirect(url_for("settings.settings_page"))
+
+    try:
+        current_app.logger.warning(f"Admin '{admin_username}' initiated full clinic database reset.")
+
+        # Disable foreign key checks for reset transaction
+        try:
+            db.session.execute(db.text("SET FOREIGN_KEY_CHECKS = 0;"))
+        except Exception:
+            pass
+        try:
+            db.session.execute(db.text("PRAGMA foreign_keys = OFF;"))
+        except Exception:
+            pass
+
+        # 1. Unlink patient user accounts from Patient table so User rows aren't restricted by FK
+        User.query.update({User.patient_id: None}, synchronize_session=False)
+
+        # 2. Delete patient portal user accounts if any exist (role == 'patient')
+        User.query.filter_by(role='patient').delete(synchronize_session=False)
+
+        # 3. Delete clinical and operational data in FK-safe order
+        db.session.query(PaymentAllocation).delete(synchronize_session=False)
+        db.session.query(Payment).delete(synchronize_session=False)
+        db.session.query(Invoice).delete(synchronize_session=False)
+        db.session.query(Treatment).delete(synchronize_session=False)
+        db.session.query(Appointment).delete(synchronize_session=False)
+        db.session.query(ToothHistory).delete(synchronize_session=False)
+        db.session.query(PatientFile).delete(synchronize_session=False)
+        db.session.query(NotificationLog).delete(synchronize_session=False)
+        db.session.query(Expense).delete(synchronize_session=False)
+        db.session.query(Patient).delete(synchronize_session=False)
+
+        # Re-enable foreign key checks
+        try:
+            db.session.execute(db.text("SET FOREIGN_KEY_CHECKS = 1;"))
+        except Exception:
+            pass
+        try:
+            db.session.execute(db.text("PRAGMA foreign_keys = ON;"))
+        except Exception:
+            pass
+
+        db.session.commit()
+
+        # 4. Remove physical patient upload files if present
+        import os
+        import shutil
+        uploads_dir = os.path.join(current_app.root_path, "static", "uploads")
+        if os.path.exists(uploads_dir):
+            for item in os.listdir(uploads_dir):
+                item_path = os.path.join(uploads_dir, item)
+                try:
+                    if os.path.isfile(item_path) or os.path.islink(item_path):
+                        os.unlink(item_path)
+                    elif os.path.isdir(item_path):
+                        shutil.rmtree(item_path)
+                except Exception as fe:
+                    current_app.logger.warning(f"Could not delete file {item_path}: {fe}")
+
+        msg = "تمت إعادة ضبط العيادة وتصفير كافة البيانات بنجاح، مع الاحتفاظ بجميع الإعدادات والتوكنز وحسابات المستخدمين." if is_ar else "Clinic database reset successfully. All settings, tokens, and user accounts have been preserved."
+        flash(msg, "success")
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.exception(f"Error resetting clinic database: {e}")
+        msg = f"حدث خطأ أثناء تصفير قاعدة البيانات: {str(e)}" if is_ar else f"Error resetting clinic database: {str(e)}"
+        flash(msg, "danger")
+
+    return redirect(url_for("settings.settings_page"))
+
+
+@settings_bp.route("/settings/restore-backup", methods=["POST"])
+@settings_bp.route("/settings/restore-latest-backup", methods=["POST"])
+@role_required("admin")
+def restore_backup():
+    """Restores the database from a selected backup file in backups/ directory.
+    Requires admin username & password verification."""
+    import os
+    from models import User
+    from utils.backup_helper import list_backups, restore_database_backup
+
+    is_ar = request.cookies.get('lang', 'ar') != 'en'
+
+    admin_username = request.form.get("admin_username", "").strip()
+    admin_password = request.form.get("admin_password", "").strip()
+    backup_filename = request.form.get("backup_filename", "").strip()
+
+    if not admin_username or not admin_password:
+        msg = "يرجى إدخال اسم المستخدم وكلمة المرور الخاصة بالمدير." if is_ar else "Admin username and password are required."
+        flash(msg, "danger")
+        return redirect(url_for("settings.settings_page"))
+
+    # Verify admin user credentials
+    admin_user = User.query.filter_by(username=admin_username).first()
+    if not admin_user or admin_user.role != "admin" or not admin_user.check_password(admin_password):
+        current_app.logger.warning(f"Failed database restore attempt: invalid admin credentials for username '{admin_username}'.")
+        msg = "اسم المستخدم أو كلمة المرور الخاصة بالمدير غير صحيحة، أو أنك لا تملك صلاحيات مدير." if is_ar else "Invalid admin username or password, or insufficient permissions."
+        flash(msg, "danger")
+        return redirect(url_for("settings.settings_page"))
+
+    backups = list_backups()
+    if not backups:
+        msg = "لم يتم العثور على أي ملف نسخة احتياطية لاستعادته." if is_ar else "No backup file found to restore from."
+        flash(msg, "warning")
+        return redirect(url_for("settings.settings_page"))
+
+    if not backup_filename:
+        backup_filename = backups[0]["filename"]
+    else:
+        # Sanitize filename
+        backup_filename = os.path.basename(backup_filename)
+        valid_files = [b["filename"] for b in backups]
+        if backup_filename not in valid_files:
+            msg = "ملف النسخة الاحتياطية المحددة غير موجود." if is_ar else "Specified backup file not found."
+            flash(msg, "danger")
+            return redirect(url_for("settings.settings_page"))
+
+    try:
+        current_app.logger.warning(f"Admin '{admin_username}' requested database restore from backup file '{backup_filename}'.")
+        restore_database_backup(backup_filename)
+        msg = f"تمت استعادة كافة البيانات بنجاح من النسخة الاحتياطية: ({backup_filename})" if is_ar else f"Data restored successfully from backup: ({backup_filename})"
+        flash(msg, "success")
+    except Exception as e:
+        current_app.logger.exception(f"Error restoring database from {backup_filename}: {e}")
+        msg = f"حدث خطأ أثناء استعادة النسخة الاحتياطية: {str(e)}" if is_ar else f"Error restoring database: {str(e)}"
+        flash(msg, "danger")
+
+    return redirect(url_for("settings.settings_page"))
+
+
+

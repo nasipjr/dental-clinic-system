@@ -96,6 +96,56 @@
                                         name="clinic_address" rows="3">{{ settings.clinic_address }}</textarea>
                                 </div>
                             </div>
+
+                            <!-- Reset Clinic Section (Danger Zone) -->
+                            <div class="mt-4 pt-4 border-top" style="border-top-color: rgba(220, 53, 69, 0.2) !important;">
+                                <div class="card border-danger border-opacity-25 bg-danger bg-opacity-10 rounded-3 p-3">
+                                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                                        <div>
+                                            <h5 class="text-danger fw-bold mb-1">
+                                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                                {% if current_lang == 'ar' %}إعادة ضبط العيادة{% else %}Reset Clinic{% endif %}
+                                            </h5>
+                                            <p class="text-muted small mb-0">
+                                                {% if current_lang == 'ar' %}
+                                                    حذف جميع سجلات المرضى والمواعيد والمعالجات والفواتير بشكل دائم، مع الحفاظ على الإعدادات، التوكنز، وحسابات المستخدمين.
+                                                {% else %}
+                                                    Permanently delete all patient records, appointments, treatments, and financial data while maintaining system settings, tokens, and user accounts.
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                        <button type="button" class="btn btn-danger text-nowrap rounded-pill px-4 py-2 fw-semibold shadow-sm" onclick="triggerResetClinicFlow()">
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                            Reset Clinic
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Restore Backup Section -->
+                            <div class="mt-3">
+                                <div class="card border-warning border-opacity-25 bg-warning bg-opacity-10 rounded-3 p-3">
+                                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                                        <div>
+                                            <h5 class="text-warning text-dark-emphasis fw-bold mb-1">
+                                                <i class="bi bi-box-arrow-in-down me-2"></i>
+                                                {% if current_lang == 'ar' %}استعادة نسخة احتياطية{% else %}Restore Database Backup{% endif %}
+                                            </h5>
+                                            <p class="text-muted small mb-0">
+                                                {% if current_lang == 'ar' %}
+                                                    استعادة وتمرير كافة بيانات العيادة من إحدى النسخ الاحتياطية المحفوظة في النظام.
+                                                {% else %}
+                                                    Restore all clinic database records from one of the saved system backup files.
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                        <button type="button" class="btn btn-warning text-dark text-nowrap rounded-pill px-4 py-2 fw-semibold shadow-sm" onclick="triggerRestoreLatestBackupFlow()">
+                                            <i class="bi bi-arrow-down-square-fill me-1"></i>
+                                            {% if current_lang == 'ar' %}استعادة نسخة احتياطية{% else %}Restore Database Backup{% endif %}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- ═══════════ Calendar Settings Tab ═══════════ -->
@@ -1161,6 +1211,132 @@
     </div>
 </div>
 
+<!-- ═══════════════════════════════════════════
+     Reset Clinic Admin Verification Modal
+     ═══════════════════════════════════════════ -->
+<div class="modal fade" id="resetClinicModal" tabindex="-1" aria-labelledby="resetClinicModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content settings-modal border border-danger">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger" id="resetClinicModalLabel">
+                    <i class="bi bi-shield-lock-fill me-2"></i>
+                    {% if current_lang == 'ar' %}التحقق الأمني لإعادة ضبط العيادة{% else %}Admin Verification — Reset Clinic{% endif %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('settings.reset_clinic') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                <div class="modal-body py-3">
+                    <div class="alert alert-danger d-flex align-items-start gap-2 mb-3">
+                        <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0 mt-1"></i>
+                        <div class="small">
+                            {% if current_lang == 'ar' %}
+                                <strong>تنبيه نهائي:</strong> سيتم حذف كافة سجلات المرضى والمواعيد والمعالجات والفواتير بالكامل. يرجى إدخال اسم المستخدم وكلمة المرور لحساب المدير (Admin) للتأكيد والتحقق.
+                            {% else %}
+                                <strong>Final Warning:</strong> All patients, appointments, treatments, and billing data will be wiped out. Please enter your Admin credentials to authorize this action.
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reset_admin_username" class="settings-label">
+                            {% if current_lang == 'ar' %}اسم المستخدم للمدير (Admin Username){% else %}Admin Username{% endif %}
+                        </label>
+                        <input type="text" class="form-control settings-input" id="reset_admin_username" name="admin_username"
+                            required placeholder="{% if current_lang == 'ar' %}أدخل اسم المستخدم للآدمن{% else %}Enter admin username{% endif %}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="reset_admin_password" class="settings-label">
+                            {% if current_lang == 'ar' %}كلمة المرور للمدير (Admin Password){% else %}Admin Password{% endif %}
+                        </label>
+                        <input type="password" class="form-control settings-input" id="reset_admin_password" name="admin_password"
+                            required placeholder="{% if current_lang == 'ar' %}أدخل كلمة المرور للآدمن{% else %}Enter admin password{% endif %}">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">
+                        {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                    </button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">
+                        <i class="bi bi-trash3-fill me-1"></i>
+                        {% if current_lang == 'ar' %}تأكيد وتصفير العيادة نهائياً{% else %}Confirm & Wipe Database{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     Restore Backup Admin Verification Modal
+     ═══════════════════════════════════════════ -->
+<div class="modal fade" id="restoreBackupModal" tabindex="-1" aria-labelledby="restoreBackupModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content settings-modal border border-warning">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-warning text-dark-emphasis" id="restoreBackupModalLabel">
+                    <i class="bi bi-shield-lock-fill me-2"></i>
+                    {% if current_lang == 'ar' %}تأكيد استعادة نسخة احتياطية{% else %}Admin Verification — Restore Backup{% endif %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('settings.restore_backup') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                <div class="modal-body py-3">
+                    <div class="alert alert-warning d-flex align-items-start gap-2 mb-3">
+                        <i class="bi bi-info-circle-fill fs-5 flex-shrink-0 mt-1"></i>
+                        <div class="small">
+                            {% if current_lang == 'ar' %}
+                                <strong>تنبيه الاستعادة:</strong> اختر ملف النسخة الاحتياطية المراد استعادتها وأدخل اسم المستخدم وكلمة المرور للمدير (Admin) للمتابعة والتأكيد.
+                            {% else %}
+                                <strong>Restore Warning:</strong> Select the backup file to restore from and enter your Admin credentials to authorize.
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="restore_backup_filename" class="settings-label">
+                            {% if current_lang == 'ar' %}اختر النسخة الاحتياطية المراد استعادتها{% else %}Select Backup File to Restore{% endif %}
+                        </label>
+                        <select class="form-select settings-input" id="restore_backup_filename" name="backup_filename" required>
+                            {% for b in backups %}
+                                <option value="{{ b.filename }}">
+                                    📅 {{ b.mtime }} — ({{ b.size }})
+                                </option>
+                            {% else %}
+                                <option value="" disabled selected>
+                                    {% if current_lang == 'ar' %}لا تتوفر نسخ احتياطية محفوظة{% else %}No saved backups available{% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="restore_admin_username" class="settings-label">
+                            {% if current_lang == 'ar' %}اسم المستخدم للمدير (Admin Username){% else %}Admin Username{% endif %}
+                        </label>
+                        <input type="text" class="form-control settings-input" id="restore_admin_username" name="admin_username"
+                            required placeholder="{% if current_lang == 'ar' %}أدخل اسم المستخدم للآدمن{% else %}Enter admin username{% endif %}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="restore_admin_password" class="settings-label">
+                            {% if current_lang == 'ar' %}كلمة المرور للمدير (Admin Password){% else %}Admin Password{% endif %}
+                        </label>
+                        <input type="password" class="form-control settings-input" id="restore_admin_password" name="admin_password"
+                            required placeholder="{% if current_lang == 'ar' %}أدخل كلمة المرور للآدمن{% else %}Enter admin password{% endif %}">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">
+                        {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                    </button>
+                    <button type="submit" class="btn btn-warning text-dark rounded-pill px-4 fw-bold">
+                        <i class="bi bi-box-arrow-in-down me-1"></i>
+                        {% if current_lang == 'ar' %}تأكيد واستعادة النسخة المحددة{% else %}Confirm & Restore Selected Backup{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     function runSettingsInit() {
         const tbody = document.getElementById("procedures-list");
@@ -1672,6 +1848,119 @@
                         alert.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2"></i> ${data.message}`;
                     }
                 });
+            });
+        }
+
+        window.triggerResetClinicFlow = function() {
+            const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
+            
+            const openModal = function() {
+                const modalEl = document.getElementById('resetClinicModal');
+                if (modalEl) {
+                    const bsModal = new bootstrap.Modal(modalEl);
+                    bsModal.show();
+                }
+            };
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: isAr ? '⚠️ تحذير شديد الخطورة!' : '⚠️ CRITICAL WARNING!',
+                    html: isAr ? `
+                        <div class="text-end dir-rtl p-1" style="direction: rtl; text-align: right;">
+                            <p class="fw-bold text-danger mb-2 fs-6">هل أنت متأكد تماماً من رغبتك في إعادة ضبط العيادة وتصفير كافة البيانات؟</p>
+                            <div class="p-3 bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded-3 mb-3 small">
+                                <div class="fw-bold mb-1 text-danger"><i class="bi bi-x-circle-fill me-1"></i> سيتم حذف:</div>
+                                <ul class="mb-0 pe-3 text-secondary" style="list-style-type: square;">
+                                    <li>جميع المرضى والملفات الطبية</li>
+                                    <li>جميع المواعيد والجلسات</li>
+                                    <li>كافة الفواتير والمدفوعات والمصاريف</li>
+                                </ul>
+                            </div>
+                            <div class="p-2.5 bg-success bg-opacity-10 border border-success border-opacity-25 rounded-3 small">
+                                <div class="fw-bold text-success"><i class="bi bi-check-circle-fill me-1"></i> سيتم الحفاظ على:</div>
+                                <span class="text-secondary small">إعدادات العيادة، توكنز الإشعارات، الأسعار، وحسابات المستخدمين والمدراء.</span>
+                            </div>
+                        </div>
+                    ` : 'Are you sure you want to reset all clinic data?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: isAr ? 'متابعة للتحقق الأمني ➔' : 'Proceed to Admin Verification ➔',
+                    cancelButtonText: isAr ? 'إلغاء' : 'Cancel',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        openModal();
+                    }
+                });
+            } else {
+                openModal();
+            }
+        };
+
+        window.triggerRestoreLatestBackupFlow = function() {
+            const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
+
+            const openModal = function() {
+                const modalEl = document.getElementById('restoreBackupModal');
+                if (modalEl) {
+                    const bsModal = new bootstrap.Modal(modalEl);
+                    bsModal.show();
+                }
+            };
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: isAr ? '⚠️ استعادة أحدث نسخة احتياطية' : '⚠️ Restore Latest Backup',
+                    html: isAr ? `
+                        <div class="text-end dir-rtl p-1" style="direction: rtl; text-align: right;">
+                            <p class="fw-bold text-warning text-dark-emphasis mb-2 fs-6">هل أنت متأكد من رغبتك في استعادة كافة بيانات العيادة؟</p>
+                            <div class="p-3 bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded-3 mb-2 small text-secondary">
+                                <i class="bi bi-info-circle-fill text-warning me-1"></i>
+                                سيتم استبدال واسترجاع كافة سجلات المرضى والمواعيد والفواتير الموجودة بأحدث نسخة احتياطية محفوظة تلقائياً في النظام.
+                            </div>
+                        </div>
+                    ` : 'Are you sure you want to restore clinic database from the latest saved backup file?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ffc107',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: isAr ? 'متابعة للتحقق الأمني ➔' : 'Proceed to Admin Verification ➔',
+                    cancelButtonText: isAr ? 'إلغاء' : 'Cancel',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        openModal();
+                    }
+                });
+            } else {
+                openModal();
+            }
+        };
+
+        // Form submit loading states for reset and restore modals
+        const resetForm = document.querySelector('#resetClinicModal form');
+        if (resetForm) {
+            resetForm.addEventListener('submit', function() {
+                const btn = resetForm.querySelector('button[type="submit"]');
+                if (btn) {
+                    const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
+                    btn.disabled = true;
+                    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status"></span> ${isAr ? 'جاري تصفير البيانات...' : 'Resetting data...'}`;
+                }
+            });
+        }
+
+        const restoreForm = document.querySelector('#restoreBackupModal form');
+        if (restoreForm) {
+            restoreForm.addEventListener('submit', function() {
+                const btn = restoreForm.querySelector('button[type="submit"]');
+                if (btn) {
+                    const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
+                    btn.disabled = true;
+                    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status"></span> ${isAr ? 'جاري استعادة البيانات...' : 'Restoring data...'}`;
+                }
             });
         }
     }

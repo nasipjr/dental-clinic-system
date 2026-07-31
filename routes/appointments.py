@@ -74,6 +74,18 @@ def get_appointments_context():
     page = request.args.get("page", 1, type=int)
     per_page = 10
 
+    # Auto-assign primary admin doctor to any unassigned appointments
+    try:
+        admin_doc = User.query.filter(User.role.in_(["admin", "doctor"])).order_by(User.id.asc()).first()
+        if admin_doc:
+            unassigned = Appointment.query.filter(Appointment.doctor_id == None).all()
+            if unassigned:
+                for appt in unassigned:
+                    appt.doctor_id = admin_doc.id
+                db.session.commit()
+    except Exception:
+        db.session.rollback()
+
     query = Appointment.query.join(Patient)
 
     if search_query:
@@ -176,12 +188,29 @@ def get_appointments_context():
     top_upcoming_appointments = sorted(upcoming_list, key=lambda appt: appt.appointment_date)[:5]
 
     appointment_stats = {
+        "all_count": total_appts_count,
         "total_appts_count": total_appts_count,
         "completed_count": completed_count,
         "active_count": active_count,
         "cancelled_count": cancelled_count,
         "completion_rate": round(completion_rate, 1),
         "cancellation_rate": round(cancellation_rate, 1),
+    }
+
+    today_appts = [appt for appt in all_appts if appt.appointment_date and today_start <= appt.appointment_date < today_end]
+    today_stats = {
+        "all_count": today_count,
+        "active_count": sum(1 for appt in today_appts if appt.status in ("Scheduled", "Checked In", "In Chair")),
+        "completed_count": sum(1 for appt in today_appts if appt.status == "Done"),
+        "cancelled_count": sum(1 for appt in today_appts if appt.status == "Cancelled"),
+    }
+
+    tomorrow_appts = [appt for appt in all_appts if appt.appointment_date and today_end <= appt.appointment_date < tomorrow_end]
+    tomorrow_stats = {
+        "all_count": tomorrow_count,
+        "active_count": sum(1 for appt in tomorrow_appts if appt.status in ("Scheduled", "Checked In", "In Chair")),
+        "completed_count": sum(1 for appt in tomorrow_appts if appt.status == "Done"),
+        "cancelled_count": sum(1 for appt in tomorrow_appts if appt.status == "Cancelled"),
     }
 
     return {
@@ -197,6 +226,8 @@ def get_appointments_context():
         "tomorrow_count": tomorrow_count,
         "all_count": all_count,
         "appointment_stats": appointment_stats,
+        "today_stats": today_stats,
+        "tomorrow_stats": tomorrow_stats,
         "top_upcoming_appointments": top_upcoming_appointments,
     }
 

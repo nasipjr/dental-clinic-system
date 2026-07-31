@@ -265,8 +265,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (testDate > now) {
                     let isOcc = false;
                     events.forEach(evt => {
-                        if (evt.start && evt.end && testDate >= evt.start && testDate < evt.end) {
-                            isOcc = true;
+                        if (evt.start) {
+                            const evStart = evt.start;
+                            if (evStart.getFullYear() === selYear &&
+                                evStart.getMonth() === selMonth &&
+                                evStart.getDate() === selDay) {
+                                const evStartMins = evStart.getHours() * 60 + evStart.getMinutes();
+                                const evEndMins = evt.end ? (evt.end.getHours() * 60 + evt.end.getMinutes()) : (evStartMins + defaultDuration);
+                                const testMins = slotH * 60 + slotM;
+                                if (testMins >= evStartMins && testMins < evEndMins) {
+                                    isOcc = true;
+                                }
+                            }
                         }
                     });
                     if (!isOcc) {

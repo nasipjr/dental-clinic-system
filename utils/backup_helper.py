@@ -98,6 +98,14 @@ def restore_database_backup(backup_filename):
     if not os.path.exists(backup_path):
         raise Exception("Backup file not found.")
 
+    from models import db
+    # Close and dispose active connection pool so DB locks are released before restore
+    try:
+        db.session.remove()
+        db.engine.dispose()
+    except Exception:
+        pass
+
     db_uri = current_app.config.get('SQLALCHEMY_DATABASE_URI', '')
     if db_uri.startswith('mysql'):
         import re
@@ -111,12 +119,20 @@ def restore_database_backup(backup_filename):
                 f'--port={port}',
                 f'--user={user}',
                 f'--password={password}',
+                '--init-command=SET FOREIGN_KEY_CHECKS=0;',
                 dbname
             ]
             with open(backup_path, 'r', encoding='utf-8') as f:
-                result = subprocess.run(cmd, stdin=f, stderr=subprocess.PIPE, text=True)
+                result = subprocess.run(cmd, stdin=f, stderr=subprocess.PIPE, text=True, timeout=60)
             if result.returncode != 0:
                 raise Exception(f"mysql restore failed: {result.stderr}")
+
+            try:
+                db.session.remove()
+                db.engine.dispose()
+            except Exception:
+                pass
+
             return True
         else:
             raise Exception("Invalid MySQL URI format.")
@@ -133,6 +149,13 @@ def restore_database_backup(backup_filename):
             with sqlite3.connect(backup_path) as src_conn:
                 with sqlite3.connect(db_path) as dst_conn:
                     src_conn.backup(dst_conn)
+
+            try:
+                db.session.remove()
+                db.engine.dispose()
+            except Exception:
+                pass
+
             return True
         else:
             raise Exception("Invalid SQLite URI format.")
