@@ -4,7 +4,7 @@ from models import db, Appointment, Treatment, ToothHistory
 from services.invoice_service import sync_invoice_for_appointment
 from services.payment_service import allocate_patient_payments_to_invoices
 from utils.constants import TREATMENT_PRICES, TREATMENT_PROCEDURE_TYPES
-from utils.auth_helper import role_required
+from utils.auth_helper import role_required, get_safe_redirect_url
 from utils.settings_helper import get_setting
 
 
@@ -514,7 +514,7 @@ def edit_treatment(treatment_id):
             )
 
             return redirect(
-                url_for(
+                get_safe_redirect_url(
                     "treatments.appointment_session",
                     appointment_id=treatment.appointment_id,
                 )
@@ -645,7 +645,7 @@ def delete_treatment(treatment_id):
                 f"Treatment deleted successfully | treatment_id={treatment_id}"
             )
             return redirect(
-                url_for("treatments.appointment_session", appointment_id=appointment_id)
+                get_safe_redirect_url("treatments.appointment_session", appointment_id=appointment_id)
             )
 
         return render_template("treatments/delete_treatment.html", treatment=treatment)

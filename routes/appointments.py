@@ -8,7 +8,7 @@ from utils.validators import (
     check_appointment_conflict,
     booking_lock,
 )
-from utils.auth_helper import role_required
+from utils.auth_helper import role_required, get_safe_redirect_url
 from utils.constants import TREATMENT_PRICES
 
 
@@ -74,10 +74,11 @@ def get_appointments_context():
     page = request.args.get("page", 1, type=int)
     per_page = 10
 
-    # Auto-assign primary admin doctor to any unassigned appointments
+    # Auto-assign doctor to unassigned appointments ONLY if there is exactly 1 doctor in the clinic
     try:
-        admin_doc = User.query.filter(User.role.in_(["admin", "doctor"])).order_by(User.id.asc()).first()
-        if admin_doc:
+        all_docs = User.query.filter(User.role.in_(["admin", "doctor"])).all()
+        if len(all_docs) == 1:
+            admin_doc = all_docs[0]
             unassigned = Appointment.query.filter(Appointment.doctor_id == None).all()
             if unassigned:
                 for appt in unassigned:
@@ -348,7 +349,11 @@ def add_appointment_direct():
                 f"Appointment added successfully | appointment_id={new_appointment.id}, patient_id={patient.id}"
             )
 
-            return redirect(url_for("appointments.appointments"))
+            return redirect(get_safe_redirect_url("appointments.appointments"))
+
+        next_url = request.args.get("next") or request.referrer or ""
+        if any(k in next_url for k in ["/add", "/edit", "/delete"]):
+            next_url = ""
 
         return render_template(
             "appointments/add_appointment.html",
@@ -358,6 +363,7 @@ def add_appointment_direct():
             appointment_min_datetime=appointment_min_datetime,
             appointment_max_datetime=appointment_max_datetime,
             prefilled_date=prefilled_date,
+            next_url=next_url,
         )
 
     except Exception:
@@ -428,7 +434,11 @@ def add_appointment(patient_id):
                 f"Appointment added successfully | appointment_id={new_appointment.id}, patient_id={patient.id}"
             )
 
-            return redirect(url_for("patients.patient_detail", patient_id=patient.id))
+            return redirect(get_safe_redirect_url("patients.patient_detail", patient_id=patient.id))
+
+        next_url = request.args.get("next") or request.referrer or ""
+        if any(k in next_url for k in ["/add", "/edit", "/delete"]):
+            next_url = ""
 
         return render_template(
             "appointments/add_appointment.html",
@@ -437,6 +447,7 @@ def add_appointment(patient_id):
             treatment_prices=dict(TREATMENT_PRICES),
             appointment_min_datetime=appointment_min_datetime,
             appointment_max_datetime=appointment_max_datetime,
+            next_url=next_url,
         )
 
     except Exception:
@@ -446,7 +457,7 @@ def add_appointment(patient_id):
 
 
 @appointments_bp.route("/appointments/<int:appointment_id>/edit", methods=["GET", "POST"])
-@role_required("admin", "receptionist")
+@role_required("admin", "receptionist", "doctor")
 def edit_appointment(appointment_id):
     current_app.logger.info(f"Edit appointment page/request | appointment_id={appointment_id}")
 
@@ -546,7 +557,11 @@ def edit_appointment(appointment_id):
                 f"Appointment updated successfully | appointment_id={appointment.id}"
             )
 
-            return redirect(url_for("patients.patient_detail", patient_id=appointment.patient_id))
+            return redirect(get_safe_redirect_url("appointments.appointments"))
+
+        next_url = request.args.get("next") or request.referrer or ""
+        if any(k in next_url for k in ["/add", "/edit", "/delete"]):
+            next_url = ""
 
         return render_template(
             "appointments/edit_appointment.html",
@@ -556,6 +571,7 @@ def edit_appointment(appointment_id):
             mode="edit",
             appointment_min_datetime=appointment_min_datetime,
             appointment_max_datetime=appointment_max_datetime,
+            next_url=next_url,
         )
 
     except Exception:
@@ -633,9 +649,13 @@ def delete_appointment(appointment_id):
                 f"Appointment deleted successfully | appointment_id={appointment_id}"
             )
 
-            return redirect(url_for("patients.patient_detail", patient_id=patient_id))
+            return redirect(get_safe_redirect_url("appointments.appointments"))
 
-        return render_template("appointments/delete_appointment.html", appointment=appointment)
+        next_url = request.args.get("next") or request.referrer or ""
+        if any(k in next_url for k in ["/add", "/edit", "/delete"]):
+            next_url = ""
+
+        return render_template("appointments/delete_appointment.html", appointment=appointment, next_url=next_url)
 
     except Exception:
         db.session.rollback()

@@ -225,9 +225,11 @@ def parse_appointment_data(form):
 
     if not doctor_id:
         from models import User
-        admin_doc = User.query.filter((User.role == "admin") | (User.username == "admin")).first()
-        if admin_doc:
-            doctor_id = admin_doc.id
+        all_docs = User.query.filter(User.role.in_(["admin", "doctor"])).all()
+        if len(all_docs) == 1:
+            doctor_id = all_docs[0].id
+        else:
+            doctor_id = None
 
     appointment_data = {
         "appointment_date": appointment_date,

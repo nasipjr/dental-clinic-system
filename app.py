@@ -526,6 +526,7 @@ def inject_settings():
         "clinic_vat_number": get_setting("clinic_vat_number", ""),
         "current_user": g.current_user if "current_user" in dir(g) else None,
         "all_doctors": doctors_list,
+        "doctors_list": doctors_list,
         "operating_hours": hours_formatted,
         "operating_days": days_str,
         "operating_closed": closed_str,

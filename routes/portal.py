@@ -230,9 +230,11 @@ def book_appointment():
         doctor_id_raw = request.form.get("doctor_id", "").strip()
         doctor_id = int(doctor_id_raw) if doctor_id_raw.isdigit() else None
         if not doctor_id:
-            main_admin = User.query.filter(User.role.in_(["admin", "doctor"])).order_by(User.id.asc()).first()
-            if main_admin:
-                doctor_id = main_admin.id
+            all_docs = User.query.filter(User.role.in_(["admin", "doctor"])).all()
+            if len(all_docs) == 1:
+                doctor_id = all_docs[0].id
+            else:
+                doctor_id = None
 
         with booking_lock:
             conflict = check_appointment_conflict(appointment_date, doctor_id=doctor_id)

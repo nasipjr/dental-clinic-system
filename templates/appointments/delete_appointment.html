@@ -49,14 +49,15 @@
                     </div>
 
                     <form method="POST" class="mt-4">
+                        <input type="hidden" name="next" value="{{ next_url or request.args.get('next', '') or request.referrer or '' }}">
                         <div class="action-buttons justify-content-center gap-3">
                             <button type="submit" class="btn-delete-soft px-4">
                                 Yes, Delete Appointment
                             </button>
 
-                            <a href="{{ url_for('patients.patient_detail', patient_id=appointment.patient_id) }}"
+                            <a href="{{ next_url or request.referrer or url_for('appointments.appointments') }}"
                                class="btn-outline-main px-4">
-                                Back to Patient
+                                {% if request.cookies.get('lang', 'en') == 'ar' %}إلغاء / عودة{% else %}Cancel / Back{% endif %}
                             </a>
 
                             {% if current_user and current_user.role != 'receptionist' %}

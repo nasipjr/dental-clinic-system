@@ -4,7 +4,7 @@ from sqlalchemy.orm import joinedload, selectinload
 
 from models import db, Patient, Appointment, Treatment, Payment, Invoice, PatientFile, ToothHistory, User
 from utils.validators import parse_patient_data
-from utils.auth_helper import role_required
+from utils.auth_helper import role_required, get_safe_redirect_url
 from utils.constants import TREATMENT_PROCEDURE_TYPES
 
 
@@ -756,13 +756,18 @@ def edit_patient(patient_id):
             current_app.logger.info(
                 f"Patient updated successfully | patient_id={patient.id}"
             )
-            return redirect(url_for("patients.patient_detail", patient_id=patient.id))
+            return redirect(get_safe_redirect_url("patients.patient_detail", patient_id=patient.id))
+
+        next_url = request.args.get("next") or request.referrer or ""
+        if any(k in next_url for k in ["/edit", "/delete"]):
+            next_url = ""
 
         return render_template(
             "patients/edit_patient.html",
             patient=patient,
             mode="edit",
             all_patients=all_patients,
+            next_url=next_url,
         )
 
     except Exception:

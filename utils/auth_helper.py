@@ -27,7 +27,27 @@ def role_required(*roles):
                 flash(msg, "danger")
                 if g.current_user.role == 'patient':
                     return redirect(url_for('portal.dashboard'))
-                return redirect(url_for('dashboard.home'))
             return f(*args, **kwargs)
         return decorated_function
     return decorator
+
+
+def get_safe_redirect_url(default_endpoint=None, **kwargs):
+    """Returns next_url if safe and local, otherwise falls back to default_endpoint."""
+    from urllib.parse import urlparse
+    next_url = request.form.get("next") or request.args.get("next") or request.referrer
+    if next_url:
+        try:
+            ref_url = urlparse(next_url)
+            host_url = urlparse(request.host_url)
+            if not ref_url.netloc or ref_url.netloc == host_url.netloc:
+                path = ref_url.path.lower()
+                # Exclude self loops (form pages themselves)
+                if not any(k in path for k in ["/edit", "/delete"]):
+                    return next_url
+        except Exception:
+            pass
+    if default_endpoint:
+        return url_for(default_endpoint, **kwargs)
+    return url_for("appointments.appointments")
+

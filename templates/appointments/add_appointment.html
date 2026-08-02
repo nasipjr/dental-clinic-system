@@ -39,6 +39,7 @@
                     </div>
                     {% else %}
                     <form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300">
+                        <input type="hidden" name="next" value="{{ next_url or request.args.get('next', '') or request.referrer or '' }}">
                         {% if patients %}
                         <div class="col-md-12">
                             <label for="patient_id" class="form-label">Patient</label>
@@ -93,17 +94,10 @@
 
                         <div class="col-12 text-center pt-2">
                             <button type="submit" class="save-patient-btn">Save Appointment</button>
-                            {% if patient %}
-                            <a href="{{ url_for('patients.patient_detail', patient_id=patient.id) }}"
+                            <a href="{{ next_url or request.referrer or (url_for('patients.patient_detail', patient_id=patient.id) if patient else url_for('appointments.appointments')) }}"
                                 class="btn-outline-main ms-2">
-                                Cancel
+                                {% if request.cookies.get('lang', 'en') == 'ar' %}إلغاء / عودة{% else %}Cancel{% endif %}
                             </a>
-                            {% else %}
-                            <a href="{{ url_for('appointments.appointments') }}"
-                                class="btn-outline-main ms-2">
-                                Cancel
-                            </a>
-                            {% endif %}
                         </div>
                     </form>
                     {% endif %}

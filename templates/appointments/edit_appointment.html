@@ -47,6 +47,7 @@
 
                     <form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300"
                         class="{% if is_locked %}readonly-form{% endif %}">
+                        <input type="hidden" name="next" value="{{ next_url or request.args.get('next', '') or request.referrer or '' }}">
 
                         <div class="row gy-4">
 
@@ -137,8 +138,8 @@
                                  </a>
                                  {% endif %}
 
-                                <a href="{{ url_for('appointments.appointments') }}" class="btn-outline-main px-4">
-                                    Back to Appointments
+                                <a href="{{ next_url or request.referrer or url_for('appointments.appointments') }}" class="btn-outline-main px-4">
+                                    {% if request.cookies.get('lang', 'en') == 'ar' %}إلغاء / عودة{% else %}Cancel / Back{% endif %}
                                 </a>
                             </div>
 
