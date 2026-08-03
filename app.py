@@ -567,6 +567,13 @@ def internal_error(error):
     return "internal server error", 500
 
 
+@app.after_request
+def add_static_cache_headers(response):
+    if request.path.startswith('/static/'):
+        response.headers['Cache-Control'] = 'public, max-age=86400'
+    return response
+
+
 if __name__ == "__main__":
     with app.app_context():
         try:
@@ -591,4 +598,4 @@ if __name__ == "__main__":
 
     debug_mode = os.getenv("FLASK_DEBUG", "True").lower() in ("true", "1")
     app.logger.info(f"Flask app is running (debug={debug_mode})")
-    app.run(host="0.0.0.0", port=5000, debug=debug_mode)
+    app.run(host="0.0.0.0", port=5000, debug=debug_mode, threaded=True)

@@ -163,16 +163,31 @@
                                                     Use this IP link to access the system on reception laptops or other devices on the same network.
                                                 {% endif %}
                                             </p>
-                                            <div class="input-group" style="max-width: 480px;" dir="ltr">
-                                                <span class="input-group-text bg-primary bg-opacity-20 text-primary border-primary border-opacity-25">
-                                                    <i class="bi bi-link-45deg fs-5"></i>
-                                                </span>
-                                                <input type="text" class="form-control fw-bold font-monospace border-primary border-opacity-25 text-primary text-center" id="local-network-url-input" value="{{ server_network_url }}" readonly>
-                                                <button type="button" class="btn btn-primary px-3 fw-bold d-flex align-items-center gap-1.5" id="copy-network-url-btn" onclick="copyNetworkUrlToClipboard()">
-                                                    <i class="bi bi-clipboard me-1"></i>
+                                            <div class="d-flex flex-wrap align-items-center gap-2" dir="ltr">
+                                                <div class="input-group" style="max-width: 380px;">
+                                                    <span class="input-group-text bg-white border-primary border-opacity-25 text-primary">
+                                                        <i class="bi bi-link-45deg fs-5"></i>
+                                                    </span>
+                                                    <input type="text" class="form-control fw-bold font-monospace border-primary border-opacity-25 text-primary text-center bg-white" id="local-network-url-input" value="{{ server_network_url }}" readonly>
+                                                </div>
+                                                <button type="button" class="btn btn-primary px-3.5 py-2 fw-bold d-inline-flex align-items-center gap-1.5 shadow-sm" id="copy-network-url-btn" onclick="copyNetworkUrlToClipboard()">
+                                                    <i class="bi bi-clipboard"></i>
                                                     <span id="copy-btn-text">{% if current_lang == 'ar' %}نسخ الرابط{% else %}Copy Link{% endif %}</span>
                                                 </button>
                                             </div>
+                                            {% if all_network_urls and all_network_urls|length > 1 %}
+                                            <div class="mt-2.5 small text-muted">
+                                                <i class="bi bi-info-circle me-1"></i>
+                                                {% if current_lang == 'ar' %}روابط شبكة أخرى متاحة للجهاز (انقر للتبديل):{% else %}Other available network URLs (click to switch):{% endif %}
+                                                <div class="d-flex flex-wrap gap-1 mt-1" dir="ltr">
+                                                {% for url in all_network_urls %}
+                                                    <span class="badge bg-white text-primary border border-primary border-opacity-25 font-monospace px-2.5 py-1.5 rounded-pill" style="cursor:pointer;" onclick="document.getElementById('local-network-url-input').value='{{ url }}';">
+                                                        <i class="bi bi-arrow-repeat me-1"></i>{{ url }}
+                                                    </span>
+                                                {% endfor %}
+                                                </div>
+                                            </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -2220,15 +2235,32 @@
     window.copyNetworkUrlToClipboard = function() {
         const input = document.getElementById('local-network-url-input');
         if (!input) return;
-        navigator.clipboard.writeText(input.value).then(() => {
-            const btnText = document.getElementById('copy-btn-text');
-            if (btnText) {
-                const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
-                const original = btnText.textContent;
-                btnText.textContent = isAr ? 'تم النسخ!' : 'Copied!';
-                setTimeout(() => { btnText.textContent = original; }, 2000);
+
+        input.select();
+        input.setSelectionRange(0, 99999);
+
+        let copied = false;
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(input.value);
+                copied = true;
             }
-        });
+        } catch (e) {}
+
+        if (!copied) {
+            try {
+                document.execCommand('copy');
+                copied = true;
+            } catch (err) {}
+        }
+
+        const btnText = document.getElementById('copy-btn-text');
+        if (btnText) {
+            const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
+            const original = btnText.textContent;
+            btnText.textContent = isAr ? 'تم النسخ!' : 'Copied!';
+            setTimeout(() => { btnText.textContent = original; }, 2000);
+        }
     };
 </script>
 {% endblock %}

@@ -166,21 +166,45 @@ def settings_page():
         # Sort backups by date descending (newest first)
         backups_list.sort(key=lambda x: x['mtime'], reverse=True)
     
-    from utils.license_helper import get_current_license_status
-    license_info = get_current_license_status()
-
     import socket
+    local_ips = []
+    try:
+        hostname = socket.gethostname()
+        for ip in socket.gethostbyname_ex(hostname)[2]:
+            if not ip.startswith("127.") and ip not in local_ips:
+                local_ips.append(ip)
+    except Exception:
+        pass
+
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
-        local_ip = s.getsockname()[0]
+        connected_ip = s.getsockname()[0]
         s.close()
+        if not connected_ip.startswith("127.") and connected_ip not in local_ips:
+            local_ips.append(connected_ip)
     except Exception:
-        local_ip = "127.0.0.1"
+        pass
+
+    def ip_priority(ip):
+        if ip.startswith("192.168."):
+            return 0
+        if ip.startswith("172."):
+            return 1
+        if ip.startswith("10."):
+            return 2
+        return 3
+
+    local_ips.sort(key=ip_priority)
+    primary_ip = local_ips[0] if local_ips else "127.0.0.1"
 
     host_parts = request.host.split(":")
     port = host_parts[1] if len(host_parts) > 1 else "5000"
-    server_network_url = f"http://{local_ip}:{port}"
+    server_network_url = f"http://{primary_ip}:{port}"
+    all_network_urls = [f"http://{ip}:{port}" for ip in local_ips]
+
+    from utils.license_helper import get_current_license_status
+    license_info = get_current_license_status()
 
     return render_template(
         "settings/settings.html",
@@ -192,7 +216,8 @@ def settings_page():
         license_info=license_info,
         salary_configs=salary_configs,
         salary_staff=salary_staff,
-        server_network_url=server_network_url
+        server_network_url=server_network_url,
+        all_network_urls=all_network_urls
     )
 
 
