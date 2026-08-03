@@ -571,6 +571,7 @@ def doctor_appointments_report():
         order      = request.args.get("order", "desc")
         date_from  = request.args.get("date_from", "").strip()
         date_to    = request.args.get("date_to", "").strip()
+        search     = request.args.get("search", "").strip()
 
         from models import Patient
         query = (
@@ -584,6 +585,15 @@ def doctor_appointments_report():
                 query = query.filter(Appointment.doctor_id == int(doctor_id))
             except ValueError:
                 pass
+
+        if search:
+            query = query.filter(
+                db.or_(
+                    Patient.first_name.ilike(f"%{search}%"),
+                    Patient.last_name.ilike(f"%{search}%"),
+                    Appointment.reason.ilike(f"%{search}%")
+                )
+            )
 
         if date_from:
             try:
@@ -628,10 +638,14 @@ def doctor_appointments_report():
             total_invoiced_sum += inv_total
             total_paid_sum += paid
 
+            date_val = appt.appointment_date.strftime("%Y-%m-%d") if appt.appointment_date else "—"
+            time_val = appt.appointment_date.strftime("%I:%M %p") if appt.appointment_date else ""
+
             rows.append({
                 "id":           appt.id,
                 "patient_name": f"{patient.first_name} {patient.last_name}" if patient else "—",
-                "date":         appt.appointment_date.strftime("%Y-%m-%d %I:%M %p") if appt.appointment_date else "—",
+                "date":         date_val,
+                "time":         time_val,
                 "doctor":       doc_name,
                 "invoice_total": inv_total,
                 "total_paid":   paid,

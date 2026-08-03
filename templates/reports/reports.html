@@ -435,8 +435,14 @@
                                     <option value="Salaries">{% if current_lang=='ar' %}رواتب{% else %}Salaries{% endif %}</option>
                                     <option value="Other">{% if current_lang=='ar' %}أخرى{% else %}Other{% endif %}</option>
                                 </select>
-                                <input type="date" id="exp-filter-from" class="form-control form-control-sm rounded-pill border" style="width:auto;" placeholder="{% if current_lang=='ar' %}من{% else %}From{% endif %}">
-                                <input type="date" id="exp-filter-to" class="form-control form-control-sm rounded-pill border" style="width:auto;" placeholder="{% if current_lang=='ar' %}إلى{% else %}To{% endif %}">
+                                <div class="d-flex align-items-center gap-1">
+                                    <span class="small text-secondary fw-semibold">{% if current_lang=='ar' %}من:{% else %}From:{% endif %}</span>
+                                    <input type="date" id="exp-filter-from" class="form-control form-control-sm rounded-pill border" style="width:auto;">
+                                </div>
+                                <div class="d-flex align-items-center gap-1">
+                                    <span class="small text-secondary fw-semibold">{% if current_lang=='ar' %}إلى:{% else %}To:{% endif %}</span>
+                                    <input type="date" id="exp-filter-to" class="form-control form-control-sm rounded-pill border" style="width:auto;">
+                                </div>
                                 <input type="text" id="exp-filter-search" class="form-control form-control-sm rounded-pill border" style="width:auto;min-width:160px;" placeholder="{% if current_lang=='ar' %}بحث في الملاحظات...{% else %}Search notes...{% endif %}">
                                 <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="exp-reset-btn">
                                     <i class="bi bi-x-circle me-1"></i>{% if current_lang=='ar' %}إعادة تعيين{% else %}Reset{% endif %}
@@ -551,9 +557,15 @@
                         </div>
                     </div>
                     <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
-                        <input type="date" id="doc-filter-from" class="form-control form-control-sm rounded-pill border" style="width:auto;">
-                        <span class="text-muted small">—</span>
-                        <input type="date" id="doc-filter-to" class="form-control form-control-sm rounded-pill border" style="width:auto;">
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="small text-secondary fw-semibold">{% if current_lang=='ar' %}من:{% else %}From:{% endif %}</span>
+                            <input type="date" id="doc-filter-from" class="form-control form-control-sm rounded-pill border" style="width:auto;">
+                        </div>
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="small text-secondary fw-semibold">{% if current_lang=='ar' %}إلى:{% else %}To:{% endif %}</span>
+                            <input type="date" id="doc-filter-to" class="form-control form-control-sm rounded-pill border" style="width:auto;">
+                        </div>
+                        <input type="text" id="doc-filter-search" class="form-control form-control-sm rounded-pill border" style="width:auto;min-width:180px;" placeholder="{% if current_lang=='ar' %}بحث باسم المريض...{% else %}Search patient...{% endif %}">
                         <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="doc-reset-btn">
                             <i class="bi bi-x-circle me-1"></i>{% if current_lang=='ar' %}إعادة تعيين{% else %}Reset{% endif %}
                         </button>
@@ -2306,7 +2318,7 @@
         'Other':     `<span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-1 rounded-pill fw-semibold">${isAr ? 'أخرى' : 'Other'}</span>`,
     };
 
-    function fmt(n) { return Number(n).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+    function fmt(n) { return Number(n).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0}); }
 
     function loadExpenses() {
         const cat    = document.getElementById('exp-filter-category')?.value || '';
@@ -2357,19 +2369,35 @@
             .catch(() => { tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">${isAr ? 'خطأ في التحميل' : 'Load error'}</td></tr>`; });
     }
 
+    function scrollToTarget(el) {
+        if (!el) return;
+        const navHeight = 100;
+        const elementPosition = el.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = Math.max(0, elementPosition - navHeight);
+        window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+    }
+
     function renderExpPagination(current, pages, total) {
         const info = document.getElementById('exp-pagination-info');
         const links = document.getElementById('exp-pagination-links');
         if (info) info.textContent = isAr ? `الصفحة ${current} من ${pages} (${total} سجل)` : `Page ${current} of ${pages} (${total} records)`;
         if (!links) return;
         let html = '';
-        if (current > 1) html += `<li class="page-item"><a class="page-link rounded-3" href="#" data-exp-page="${current-1}">‹</a></li>`;
+        const prevIcon = isAr ? 'bi-chevron-right' : 'bi-chevron-left';
+        const nextIcon = isAr ? 'bi-chevron-left' : 'bi-chevron-right';
+        if (current > 1) html += `<li class="page-item"><button type="button" class="page-link rounded-3" data-exp-page="${current-1}"><i class="bi ${prevIcon}"></i></button></li>`;
         for (let p = Math.max(1,current-2); p <= Math.min(pages,current+2); p++) {
-            html += `<li class="page-item ${p===current?'active':''}"><a class="page-link rounded-3" href="#" data-exp-page="${p}">${p}</a></li>`;
+            html += `<li class="page-item ${p===current?'active':''}"><button type="button" class="page-link rounded-3" data-exp-page="${p}">${p}</button></li>`;
         }
-        if (current < pages) html += `<li class="page-item"><a class="page-link rounded-3" href="#" data-exp-page="${current+1}">›</a></li>`;
+        if (current < pages) html += `<li class="page-item"><button type="button" class="page-link rounded-3" data-exp-page="${current+1}"><i class="bi ${nextIcon}"></i></button></li>`;
         links.innerHTML = html;
-        links.querySelectorAll('[data-exp-page]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); expPage = +a.dataset.expPage; loadExpenses(); }));
+        links.querySelectorAll('[data-exp-page]').forEach(btn => btn.addEventListener('click', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            expPage = +btn.dataset.expPage;
+            loadExpenses();
+            scrollToTarget(document.getElementById('expenses-ajax-table')?.closest('.card'));
+        }));
     }
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -2412,12 +2440,13 @@
     const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
     let docPage = 1, docSort = 'date', docOrder = 'desc', docDoctorId = '';
 
-    function fmt(n) { return Number(n).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+    function fmt(n) { return Number(n).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0}); }
 
     function loadDocAppts() {
-        const from = document.getElementById('doc-filter-from')?.value || '';
-        const to   = document.getElementById('doc-filter-to')?.value || '';
-        const tbody = document.getElementById('doc-appts-body');
+        const from   = document.getElementById('doc-filter-from')?.value || '';
+        const to     = document.getElementById('doc-filter-to')?.value || '';
+        const search = document.getElementById('doc-filter-search')?.value || '';
+        const tbody  = document.getElementById('doc-appts-body');
         if (!tbody) return;
 
         tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm"></div></td></tr>';
@@ -2426,6 +2455,7 @@
         if (docDoctorId) params.set('doctor_id', docDoctorId);
         if (from) params.set('date_from', from);
         if (to) params.set('date_to', to);
+        if (search) params.set('search', search);
 
         fetch('/reports/doctor-appointments?' + params)
             .then(r => r.json())
@@ -2464,7 +2494,10 @@
                     tbody.innerHTML = data.rows.map(r => `
                         <tr>
                             <td class="fw-semibold">${r.patient_name}</td>
-                            <td class="text-secondary small">${r.date}</td>
+                            <td class="text-secondary small">
+                                <div class="fw-bold">${r.date}</div>
+                                ${r.time ? `<div class="text-muted" style="font-size:0.78rem;">${r.time}</div>` : ''}
+                            </td>
                             <td>${r.doctor ? `<span class="badge bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-pill">${r.doctor}</span>` : '—'}</td>
                             <td class="text-end fw-bold">${fmt(r.invoice_total)}</td>
                             <td class="text-end text-success fw-bold">${fmt(r.total_paid)}</td>
@@ -2483,13 +2516,21 @@
         if (info) info.textContent = isAr ? `الصفحة ${current} من ${pages} (${total} موعد)` : `Page ${current} of ${pages} (${total} appointments)`;
         if (!links) return;
         let html = '';
-        if (current > 1) html += `<li class="page-item"><a class="page-link rounded-3" href="#" data-doc-page="${current-1}">‹</a></li>`;
+        const prevIcon = isAr ? 'bi-chevron-right' : 'bi-chevron-left';
+        const nextIcon = isAr ? 'bi-chevron-left' : 'bi-chevron-right';
+        if (current > 1) html += `<li class="page-item"><button type="button" class="page-link rounded-3" data-doc-page="${current-1}"><i class="bi ${prevIcon}"></i></button></li>`;
         for (let p = Math.max(1,current-2); p <= Math.min(pages,current+2); p++) {
-            html += `<li class="page-item ${p===current?'active':''}"><a class="page-link rounded-3" href="#" data-doc-page="${p}">${p}</a></li>`;
+            html += `<li class="page-item ${p===current?'active':''}"><button type="button" class="page-link rounded-3" data-doc-page="${p}">${p}</button></li>`;
         }
-        if (current < pages) html += `<li class="page-item"><a class="page-link rounded-3" href="#" data-doc-page="${current+1}">›</a></li>`;
+        if (current < pages) html += `<li class="page-item"><button type="button" class="page-link rounded-3" data-doc-page="${current+1}"><i class="bi ${nextIcon}"></i></button></li>`;
         links.innerHTML = html;
-        links.querySelectorAll('[data-doc-page]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); docPage = +a.dataset.docPage; loadDocAppts(); }));
+        links.querySelectorAll('[data-doc-page]').forEach(btn => btn.addEventListener('click', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            docPage = +btn.dataset.docPage;
+            loadDocAppts();
+            scrollToTarget(document.getElementById('doctor-appts-section'));
+        }));
     }
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -2500,8 +2541,15 @@
             if (el) el.addEventListener('change', () => { docPage = 1; loadDocAppts(); });
         });
 
+        const docSearchInput = document.getElementById('doc-filter-search');
+        let docSearchTimer;
+        if (docSearchInput) docSearchInput.addEventListener('input', () => {
+            clearTimeout(docSearchTimer);
+            docSearchTimer = setTimeout(() => { docPage = 1; loadDocAppts(); }, 400);
+        });
+
         document.getElementById('doc-reset-btn')?.addEventListener('click', () => {
-            ['doc-filter-from','doc-filter-to'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+            ['doc-filter-from','doc-filter-to','doc-filter-search'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
             docDoctorId = '';
             document.getElementById('doc-filter-label').textContent = isAr ? 'كل الأطباء' : 'All Doctors';
             document.querySelectorAll('.doc-filter-item').forEach(i => i.classList.remove('active','fw-bold'));
