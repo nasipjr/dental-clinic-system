@@ -22,11 +22,11 @@ if %errorlevel% neq 0 (
     echo.
     echo [ERROR] Build failed! Check error details above.
 ) else (
-    copy /Y "dist\Clinic MS v1.3.0.exe" "dist\Clinic MS.exe" >nul 2>&1
+    copy /Y "dist\Clinic MS v1.5.0.exe" "dist\Clinic MS.exe" >nul 2>&1
     echo.
     echo =======================================================
     echo   BUILD COMPLETED SUCCESSFULLY!
-    echo   Target location: dist\Clinic MS v1.3.0.exe
+    echo   Target location: dist\Clinic MS v1.5.0.exe (and dist\Clinic MS.exe)
     echo =======================================================
 )
 pause
