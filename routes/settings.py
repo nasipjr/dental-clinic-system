@@ -169,6 +169,19 @@ def settings_page():
     from utils.license_helper import get_current_license_status
     license_info = get_current_license_status()
 
+    import socket
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+    except Exception:
+        local_ip = "127.0.0.1"
+
+    host_parts = request.host.split(":")
+    port = host_parts[1] if len(host_parts) > 1 else "5000"
+    server_network_url = f"http://{local_ip}:{port}"
+
     return render_template(
         "settings/settings.html",
         settings=settings_data,
@@ -178,7 +191,8 @@ def settings_page():
         notifications=notifications,
         license_info=license_info,
         salary_configs=salary_configs,
-        salary_staff=salary_staff
+        salary_staff=salary_staff,
+        server_network_url=server_network_url
     )
 
 
