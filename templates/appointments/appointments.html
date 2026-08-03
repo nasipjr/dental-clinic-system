@@ -61,7 +61,7 @@
         <ul class="nav justify-content-center gap-3 mb-4 patient-detail-tabs border-0 flex-wrap" id="appointmentsTabs" role="tablist">
             <!-- Today's Appointments Tab -->
             <li class="nav-item flex-grow-1" role="presentation" style="min-width: 210px; max-width: 280px;">
-                <a href="{{ url_for('appointments.appointments', date_filter='today', search=search_query, status=status_filter, sort=sort_by, order=order) }}"
+                 <a href="{{ url_for('appointments.appointments', date_filter='today', search=search_query, status=status_filter, sort=sort_by, order=order, doctor_id=doctor_filter) }}"
                    data-filter="today"
                    class="nav-link appointment-tab-btn date-filter-btn border-0 w-100 p-0 text-center {% if not show_pending and date_filter == 'today' %}active{% endif %}">
                     <div class="appointment-tab-card {% if not show_pending and date_filter == 'today' %}active{% endif %}">
@@ -76,7 +76,7 @@
 
             <!-- Tomorrow's Appointments Tab -->
             <li class="nav-item flex-grow-1" role="presentation" style="min-width: 210px; max-width: 280px;">
-                <a href="{{ url_for('appointments.appointments', date_filter='tomorrow', search=search_query, status=status_filter, sort=sort_by, order=order) }}"
+                 <a href="{{ url_for('appointments.appointments', date_filter='tomorrow', search=search_query, status=status_filter, sort=sort_by, order=order, doctor_id=doctor_filter) }}"
                    data-filter="tomorrow"
                    class="nav-link appointment-tab-btn date-filter-btn border-0 w-100 p-0 text-center {% if not show_pending and date_filter == 'tomorrow' %}active{% endif %}">
                     <div class="appointment-tab-card {% if not show_pending and date_filter == 'tomorrow' %}active{% endif %}">
@@ -91,7 +91,7 @@
 
             <!-- All Appointments Tab -->
             <li class="nav-item flex-grow-1" role="presentation" style="min-width: 210px; max-width: 280px;">
-                <a href="{{ url_for('appointments.appointments', date_filter='all', search=search_query, status=status_filter, sort=sort_by, order=order) }}"
+                 <a href="{{ url_for('appointments.appointments', date_filter='all', search=search_query, status=status_filter, sort=sort_by, order=order, doctor_id=doctor_filter) }}"
                    data-filter="all"
                    class="nav-link appointment-tab-btn date-filter-btn border-0 w-100 p-0 text-center {% if not show_pending and date_filter == 'all' %}active{% endif %}">
                     <div class="appointment-tab-card {% if not show_pending and date_filter == 'all' %}active{% endif %}">
@@ -258,7 +258,7 @@
                 <input type="hidden" name="sort" value="{{ sort_by }}">
                 <input type="hidden" name="order" value="{{ order }}">
 
-                <div class="row justify-content-center">
+                <div class="row justify-content-center align-items-center g-2">
                     <div class="col-md-6 col-lg-5">
                         <div class="input-group shadow-sm rounded-pill overflow-hidden border">
                             <span class="input-group-text bg-body-tertiary border-0 px-3">
@@ -268,7 +268,7 @@
                                    placeholder="{% if current_lang == 'ar' %}البحث باسم المريض...{% else %}Search by patient name...{% endif %}"
                                    value="{{ search_query }}" style="box-shadow: none;">
                             {% if search_query %}
-                            <a href="{{ url_for('appointments.appointments', date_filter=date_filter, status=status_filter) }}" id="appointments-reset-btn" class="btn btn-outline-secondary border-0 px-3 d-flex align-items-center">
+                            <a href="{{ url_for('appointments.appointments', date_filter=date_filter, status=status_filter, doctor_id=doctor_filter) }}" id="appointments-reset-btn" class="btn btn-outline-secondary border-0 px-3 d-flex align-items-center">
                                 <i class="bi bi-x-lg"></i>
                             </a>
                             {% endif %}
@@ -277,6 +277,51 @@
                             </button>
                         </div>
                     </div>
+
+                    {% if doctors_list %}
+                    <div class="col-auto">
+                        <div class="dropdown" id="doctor-filter-dropdown">
+                            <button class="btn rounded-pill px-4 fw-semibold d-flex align-items-center gap-2 shadow-sm {% if doctor_filter %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+                                    type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                    style="border-width:1.5px; transition: all .2s;">
+                                <i class="bi bi-person-badge"></i>
+                                <span id="doctor-filter-label">
+                                    {% if doctor_filter %}
+                                        {% for doc in doctors_list %}{% if doc.id|string == doctor_filter|string %}{{ doc.first_name }} {{ doc.last_name }}{% endif %}{% endfor %}
+                                    {% else %}
+                                        {% if current_lang == 'ar' %}الطبيب المعالج{% else %}Doctor{% endif %}
+                                    {% endif %}
+                                </span>
+                                <i class="bi bi-chevron-down" style="font-size:.8rem;"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 py-2 mt-1"
+                                style="min-width:200px; background: var(--surface-color); border: 1px solid rgba(255,255,255,0.08) !important;">
+                                <li>
+                                    <a class="dropdown-item rounded-3 d-flex align-items-center gap-2 py-2 px-3 doctor-filter-option {% if not doctor_filter %}active fw-bold{% endif %}"
+                                       href="#" data-doctor-id=""
+                                       style="transition: background .15s;">
+                                        <i class="bi bi-grid-fill text-primary"></i>
+                                        {% if current_lang == 'ar' %}الجميع{% else %}All Doctors{% endif %}
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider my-1" style="border-color: rgba(255,255,255,0.08);"></li>
+                                {% for doc in doctors_list %}
+                                <li>
+                                    <a class="dropdown-item rounded-3 d-flex align-items-center gap-2 py-2 px-3 doctor-filter-option {% if doctor_filter|string == doc.id|string %}active fw-bold{% endif %}"
+                                       href="#" data-doctor-id="{{ doc.id }}"
+                                       style="transition: background .15s;">
+                                        <span class="rounded-circle d-inline-flex align-items-center justify-content-center fw-bold text-white"
+                                              style="width:26px;height:26px;font-size:.75rem;background: linear-gradient(135deg,#6366f1,#8b5cf6);flex-shrink:0;">{{ doc.first_name[0] }}</span>
+                                        {{ doc.first_name }} {{ doc.last_name }}
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <input type="hidden" name="doctor_id" id="doctor-filter-input" value="{{ doctor_filter }}">
+                    </div>
+                    {% endif %}
+
                 </div>
             </form>
             <!-- /Sleek Search Bar -->
@@ -419,6 +464,48 @@ document.addEventListener("DOMContentLoaded", function () {
         if (link) {
             event.preventDefault();
             loadAppointmentsTable(link.href);
+            return;
+        }
+
+        // 5. Doctor filter dropdown option
+        const doctorOption = event.target.closest(".doctor-filter-option");
+        if (doctorOption) {
+            event.preventDefault();
+            const doctorId = doctorOption.getAttribute("data-doctor-id");
+            const doctorInput = document.getElementById("doctor-filter-input");
+            const doctorLabel = document.getElementById("doctor-filter-label");
+            const dropdownBtn = document.querySelector("#doctor-filter-dropdown > button");
+
+            if (doctorInput) doctorInput.value = doctorId;
+
+            // Update label text
+            if (doctorLabel) {
+                doctorLabel.textContent = doctorId ? doctorOption.textContent.trim() : (document.documentElement.lang === 'ar' ? 'الطبيب المعالج' : 'Doctor');
+            }
+
+            // Toggle button style
+            if (dropdownBtn) {
+                if (doctorId) {
+                    dropdownBtn.classList.remove("btn-outline-secondary");
+                    dropdownBtn.classList.add("btn-primary");
+                } else {
+                    dropdownBtn.classList.remove("btn-primary");
+                    dropdownBtn.classList.add("btn-outline-secondary");
+                }
+            }
+
+            // Mark active item
+            document.querySelectorAll(".doctor-filter-option").forEach(el => el.classList.remove("active", "fw-bold"));
+            doctorOption.classList.add("active", "fw-bold");
+
+            // Auto-submit form
+            const filterForm = document.getElementById("appointments-filter-form");
+            if (filterForm) {
+                const formData = new FormData(filterForm);
+                const queryString = new URLSearchParams(formData).toString();
+                const url = filterForm.getAttribute("action") + "?" + queryString;
+                loadAppointmentsTable(url);
+            }
             return;
         }
     });

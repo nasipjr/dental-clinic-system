@@ -214,6 +214,9 @@ def get_appointments_context():
         "cancelled_count": sum(1 for appt in tomorrow_appts if appt.status == "Cancelled"),
     }
 
+    # Fetch doctors for the doctor filter dropdown
+    doctors_list = User.query.filter(User.role.in_(["admin", "doctor"])).order_by(User.first_name.asc()).all()
+
     return {
         "appointments": pagination.items,
         "pagination": pagination,
@@ -230,6 +233,8 @@ def get_appointments_context():
         "today_stats": today_stats,
         "tomorrow_stats": tomorrow_stats,
         "top_upcoming_appointments": top_upcoming_appointments,
+        "doctors_list": doctors_list,
+        "doctor_filter": doctor_filter,
     }
 
 

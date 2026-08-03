@@ -477,3 +477,213 @@ def financial_calendar_data():
     except Exception:
         current_app.logger.exception("Failed to load financial calendar data")
         return {"error": "Failed to load financial calendar data"}, 500
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# AJAX: Paginated/Filtered Expenses Table
+# ──────────────────────────────────────────────────────────────────────────────
+
+@reports_bp.route("/reports/expenses/list")
+@role_required("admin")
+def expenses_list():
+    """Returns paginated, filtered, sortable expenses as JSON for AJAX table."""
+    try:
+        page       = request.args.get("page", 1, type=int)
+        per_page   = request.args.get("per_page", 10, type=int)
+        category   = request.args.get("category", "").strip()
+        date_from  = request.args.get("date_from", "").strip()
+        date_to    = request.args.get("date_to", "").strip()
+        search     = request.args.get("search", "").strip()
+        sort_by    = request.args.get("sort", "date")
+        order      = request.args.get("order", "desc")
+
+        query = Expense.query
+
+        if category:
+            query = query.filter(Expense.category == category)
+        if search:
+            query = query.filter(Expense.notes.ilike(f"%{search}%"))
+        if date_from:
+            try:
+                from datetime import date
+                df = datetime.strptime(date_from, "%Y-%m-%d").date()
+                query = query.filter(Expense.expense_date >= df)
+            except ValueError:
+                pass
+        if date_to:
+            try:
+                dt = datetime.strptime(date_to, "%Y-%m-%d").date()
+                query = query.filter(Expense.expense_date <= dt)
+            except ValueError:
+                pass
+
+        sort_map = {
+            "date":     Expense.expense_date,
+            "amount":   Expense.amount,
+            "category": Expense.category,
+            "notes":    Expense.notes,
+        }
+        sort_col = sort_map.get(sort_by, Expense.expense_date)
+        query = query.order_by(sort_col.asc() if order == "asc" else sort_col.desc())
+
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+        rows = []
+        for e in pagination.items:
+            rows.append({
+                "id":       e.id,
+                "category": e.category,
+                "amount":   float(e.amount),
+                "date":     e.expense_date.strftime("%Y-%m-%d"),
+                "notes":    e.notes or "",
+            })
+
+        total_filtered = float(query.with_entities(
+            func.coalesce(func.sum(Expense.amount), 0.0)
+        ).scalar() or 0.0)
+
+        return {
+            "rows":           rows,
+            "total":          pagination.total,
+            "pages":          pagination.pages,
+            "current_page":   pagination.page,
+            "total_filtered_amount": total_filtered,
+        }
+    except Exception:
+        current_app.logger.exception("Failed to load expenses list")
+        return {"error": "Failed to load expenses"}, 500
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# AJAX: Doctor Completed Appointments with Financial Details
+# ──────────────────────────────────────────────────────────────────────────────
+
+@reports_bp.route("/reports/doctor-appointments")
+@role_required("admin")
+def doctor_appointments_report():
+    """Returns paginated completed appointments for a specific doctor (or all)."""
+    try:
+        from models import User
+        doctor_id  = request.args.get("doctor_id", "", type=str).strip()
+        page       = request.args.get("page", 1, type=int)
+        per_page   = request.args.get("per_page", 10, type=int)
+        sort_by    = request.args.get("sort", "date")
+        order      = request.args.get("order", "desc")
+        date_from  = request.args.get("date_from", "").strip()
+        date_to    = request.args.get("date_to", "").strip()
+
+        from models import Patient
+        query = (
+            Appointment.query
+            .join(Patient, Appointment.patient_id == Patient.id)
+            .filter(Appointment.status == "Done")
+        )
+
+        if doctor_id:
+            try:
+                query = query.filter(Appointment.doctor_id == int(doctor_id))
+            except ValueError:
+                pass
+
+        if date_from:
+            try:
+                df = datetime.strptime(date_from, "%Y-%m-%d")
+                query = query.filter(Appointment.appointment_date >= df)
+            except ValueError:
+                pass
+        if date_to:
+            try:
+                dt = datetime.strptime(date_to, "%Y-%m-%d")
+                # Include full day
+                from datetime import timedelta
+                query = query.filter(Appointment.appointment_date < dt + timedelta(days=1))
+            except ValueError:
+                pass
+
+        sort_map = {
+            "date":    Appointment.appointment_date,
+            "patient": Patient.first_name,
+            "status":  Appointment.status,
+        }
+        sort_col = sort_map.get(sort_by, Appointment.appointment_date)
+        query = query.order_by(sort_col.asc() if order == "asc" else sort_col.desc())
+
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+        rows = []
+        total_invoiced_sum = 0.0
+        total_paid_sum = 0.0
+
+        for appt in pagination.items:
+            patient = appt.patient
+            inv_total = float(appt.invoice_total or 0)
+            paid      = float(appt.total_paid or 0)
+            remaining = max(0.0, inv_total - paid)
+
+            doc = appt.doctor
+            doc_name = ""
+            if doc:
+                doc_name = f"{doc.first_name or ''} {doc.last_name or ''}".strip() or doc.username
+
+            total_invoiced_sum += inv_total
+            total_paid_sum += paid
+
+            rows.append({
+                "id":           appt.id,
+                "patient_name": f"{patient.first_name} {patient.last_name}" if patient else "—",
+                "date":         appt.appointment_date.strftime("%Y-%m-%d %I:%M %p") if appt.appointment_date else "—",
+                "doctor":       doc_name,
+                "invoice_total": inv_total,
+                "total_paid":   paid,
+                "remaining":    remaining,
+                "reason":       appt.reason or "",
+            })
+
+        # Build list of doctors for the filter dropdown
+        doctors = User.query.filter(User.role.in_(["admin", "doctor"])).order_by(User.first_name).all()
+        doctors_list = [
+            {"id": d.id, "name": f"{d.first_name or ''} {d.last_name or ''}".strip() or d.username}
+            for d in doctors
+        ]
+
+        return {
+            "rows":             rows,
+            "total":            pagination.total,
+            "pages":            pagination.pages,
+            "current_page":     pagination.page,
+            "total_invoiced":   total_invoiced_sum,
+            "total_paid":       total_paid_sum,
+            "doctors":          doctors_list,
+        }
+    except Exception:
+        current_app.logger.exception("Failed to load doctor appointments report")
+        return {"error": "Failed to load doctor appointments"}, 500
+
+
+@reports_bp.route("/reports/expenses/<int:expense_id>/edit", methods=["POST"])
+@role_required("admin")
+def edit_expense(expense_id):
+    """Edit an existing expense record."""
+    try:
+        expense = Expense.query.get_or_404(expense_id)
+        expense.category = request.form.get("category", expense.category).strip()
+        expense.notes    = request.form.get("notes", expense.notes or "").strip()
+        amount_str = request.form.get("amount", "").strip()
+        date_str   = request.form.get("expense_date", "").strip()
+        if amount_str:
+            try:
+                expense.amount = float(amount_str)
+            except ValueError:
+                pass
+        if date_str:
+            try:
+                expense.expense_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            except ValueError:
+                pass
+        db.session.commit()
+        flash("تم تعديل المصروف بنجاح." if request.cookies.get("lang","ar")!="en" else "Expense updated successfully.", "success")
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(f"Failed to edit expense {expense_id}")
+        flash("فشل في تعديل المصروف." if request.cookies.get("lang","ar")!="en" else "Failed to update expense.", "danger")
+    return redirect(url_for("reports.reports_dashboard") + "#tab-expenses")

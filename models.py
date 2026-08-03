@@ -584,4 +584,31 @@ class Expense(db.Model):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+
+class StaffSalary(db.Model):
+    """Stores salary configuration per staff member (receptionist or doctor)."""
+    __tablename__ = "staff_salary"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True  # One salary config per user
+    )
+    # "fixed" → fixed monthly amount; "percentage" → % of total invoiced by that doctor
+    salary_type = db.Column(db.String(20), nullable=False, default="fixed")
+    amount = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
+    deduction_day = db.Column(db.Integer, nullable=False, default=1)  # 1–28
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+    notes = db.Column(db.Text, nullable=True)
+    last_deducted_month = db.Column(db.String(7), nullable=True)  # "YYYY-MM" of last auto-deduction
+    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+
+    user = db.relationship("User", backref=db.backref("salary_config", uselist=False, cascade="all, delete-orphan"))
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 

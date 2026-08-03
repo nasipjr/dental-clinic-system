@@ -138,9 +138,13 @@ def settings_page():
         
     treatment_prices = get_treatment_prices()
     
-    from models import User, NotificationLog
+    from models import User, NotificationLog, StaffSalary
     users = User.query.all()
     notifications = NotificationLog.query.order_by(NotificationLog.sent_at.desc()).limit(100).all()
+
+    # Salary management: staff eligible (doctors + receptionists), keyed configs
+    salary_configs = {sc.user_id: sc for sc in StaffSalary.query.all()}
+    salary_staff = User.query.filter(User.role.in_(["doctor", "receptionist"])).order_by(User.role, User.first_name).all()
 
     # Read backups
     import os
@@ -172,7 +176,9 @@ def settings_page():
         users=users,
         backups=backups_list,
         notifications=notifications,
-        license_info=license_info
+        license_info=license_info,
+        salary_configs=salary_configs,
+        salary_staff=salary_staff
     )
 
 
@@ -723,4 +729,189 @@ def restore_backup():
     return redirect(url_for("settings.settings_page"))
 
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Staff Salary Management Routes
+# ──────────────────────────────────────────────────────────────────────────────
 
+@settings_bp.route("/settings/salary/save", methods=["POST"])
+@role_required("admin")
+def save_staff_salary():
+    """Save or update salary config for a specific staff member."""
+    from models import db, User, StaffSalary
+    is_ar = request.cookies.get("lang", "ar") != "en"
+    try:
+        user_id = int(request.form.get("user_id", 0))
+        salary_type = request.form.get("salary_type", "fixed").strip()
+        amount_str = request.form.get("amount", "0").strip()
+        deduction_day = int(request.form.get("deduction_day", 1))
+        is_active = request.form.get("is_active") == "1"
+        notes = request.form.get("notes", "").strip()
+
+        if salary_type not in ("fixed", "percentage"):
+            salary_type = "fixed"
+        deduction_day = max(1, min(28, deduction_day))
+
+        try:
+            amount = float(amount_str.replace(",", ""))
+            if amount < 0:
+                amount = 0.0
+        except ValueError:
+            amount = 0.0
+
+        user = User.query.get_or_404(user_id)
+        if user.role not in ("doctor", "receptionist"):
+            flash("يمكن تعيين الراتب للأطباء والموظفين فقط." if is_ar else "Salaries can only be set for doctors and receptionists.", "danger")
+            return redirect(url_for("settings.settings_page") + "#tab-billing")
+
+        existing = StaffSalary.query.filter_by(user_id=user_id).first()
+        if existing:
+            existing.salary_type = salary_type
+            existing.amount = amount
+            existing.deduction_day = deduction_day
+            existing.is_active = is_active
+            existing.notes = notes
+        else:
+            new_salary = StaffSalary(
+                user_id=user_id,
+                salary_type=salary_type,
+                amount=amount,
+                deduction_day=deduction_day,
+                is_active=is_active,
+                notes=notes
+            )
+            db.session.add(new_salary)
+
+        db.session.commit()
+        current_app.logger.info(f"Salary config saved for user_id={user_id}")
+        flash("تم حفظ إعدادات الراتب بنجاح." if is_ar else "Salary config saved successfully.", "success")
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Failed to save staff salary")
+        flash("فشل في حفظ إعدادات الراتب." if is_ar else "Failed to save salary config.", "danger")
+
+    return redirect(url_for("settings.settings_page") + "#tab-billing")
+
+
+@settings_bp.route("/settings/salary/deduct/<int:user_id>", methods=["POST"])
+@role_required("admin")
+def deduct_salary_now(user_id):
+    """Immediately deduct salary for a staff member and record it as an Expense."""
+    from models import db, User, StaffSalary, Expense, Invoice, Appointment
+    from sqlalchemy import func
+    from datetime import datetime
+    is_ar = request.cookies.get("lang", "ar") != "en"
+    try:
+        salary_cfg = StaffSalary.query.filter_by(user_id=user_id).first_or_404()
+        user = User.query.get_or_404(user_id)
+
+        amount_to_deduct = 0.0
+        if salary_cfg.salary_type == "fixed":
+            amount_to_deduct = float(salary_cfg.amount)
+        else:
+            # percentage of total invoiced amount for completed appointments of this doctor
+            from models import Treatment
+            total_invoiced = float(
+                db.session.query(func.coalesce(func.sum(Invoice.total_amount_col), 0.0))
+                .join(Invoice.appointment)
+                .filter(Appointment.doctor_id == user_id, Appointment.status == "Done")
+                .scalar() or 0.0
+            )
+            # Fallback: sum treatment costs
+            total_invoiced = float(
+                db.session.query(func.coalesce(func.sum(Treatment.total_cost), 0.0))
+                .filter(Treatment.doctor_id == user_id)
+                .scalar() or 0.0
+            )
+            amount_to_deduct = round(total_invoiced * float(salary_cfg.amount) / 100.0, 2)
+
+        if amount_to_deduct <= 0:
+            flash("مبلغ الراتب يجب أن يكون أكبر من صفر." if is_ar else "Salary amount must be greater than zero.", "warning")
+            return redirect(url_for("settings.settings_page") + "#tab-billing")
+
+        full_name = f"{user.first_name or ''} {user.last_name or ''}".strip() or user.username
+        role_label = "طبيب" if user.role == "doctor" else "موظف استقبال"
+        note_text = f"راتب {role_label}: {full_name}" if is_ar else f"Salary - {user.role.capitalize()}: {full_name}"
+
+        expense = Expense(
+            category="Salaries",
+            amount=amount_to_deduct,
+            expense_date=datetime.now().date(),
+            notes=note_text
+        )
+        db.session.add(expense)
+
+        # Record this month as deducted
+        salary_cfg.last_deducted_month = datetime.now().strftime("%Y-%m")
+        db.session.commit()
+
+        current_app.logger.info(f"Salary deducted for user_id={user_id} amount={amount_to_deduct}")
+        flash(f"{'تم خصم راتب' if is_ar else 'Salary deducted'}: {full_name} — {amount_to_deduct}", "success")
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(f"Failed to deduct salary for user_id={user_id}")
+        flash("فشل في خصم الراتب." if is_ar else "Failed to deduct salary.", "danger")
+
+    return redirect(url_for("settings.settings_page") + "#tab-billing")
+
+
+def auto_process_salary_deductions(app):
+    """
+    Called on app startup. Checks all active salary configs whose deduction_day
+    matches today's day and last_deducted_month != current month, then auto-deducts.
+    """
+    from datetime import datetime
+    with app.app_context():
+        try:
+            from models import db, User, StaffSalary, Expense, Treatment
+            from sqlalchemy import func
+            today = datetime.now()
+            current_month = today.strftime("%Y-%m")
+            current_day = today.day
+
+            due_salaries = StaffSalary.query.filter(
+                StaffSalary.is_active == True,
+                StaffSalary.deduction_day == current_day,
+            ).all()
+
+            deducted = 0
+            for sal in due_salaries:
+                # Skip if already deducted this month
+                if sal.last_deducted_month == current_month:
+                    continue
+
+                user = sal.user
+                if not user or user.role not in ("doctor", "receptionist"):
+                    continue
+
+                amount_to_deduct = 0.0
+                if sal.salary_type == "fixed":
+                    amount_to_deduct = float(sal.amount)
+                else:
+                    total_invoiced = float(
+                        db.session.query(func.coalesce(func.sum(Treatment.total_cost), 0.0))
+                        .filter(Treatment.doctor_id == user.id)
+                        .scalar() or 0.0
+                    )
+                    amount_to_deduct = round(total_invoiced * float(sal.amount) / 100.0, 2)
+
+                if amount_to_deduct <= 0:
+                    continue
+
+                full_name = f"{user.first_name or ''} {user.last_name or ''}".strip() or user.username
+                note_text = f"Salary - {user.role.capitalize()}: {full_name} (Auto)"
+
+                expense = Expense(
+                    category="Salaries",
+                    amount=amount_to_deduct,
+                    expense_date=today.date(),
+                    notes=note_text
+                )
+                db.session.add(expense)
+                sal.last_deducted_month = current_month
+                deducted += 1
+
+            if deducted > 0:
+                db.session.commit()
+                app.logger.info(f"Auto-deducted salaries for {deducted} staff members.")
+        except Exception:
+            app.logger.exception("Auto salary deduction failed")

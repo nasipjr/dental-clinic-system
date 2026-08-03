@@ -582,6 +582,13 @@ if __name__ == "__main__":
         except Exception as e:
             app.logger.error(f"Failed to start background schedulers: {e}")
 
+        # Auto-process pending salary deductions for today
+        try:
+            from routes.settings import auto_process_salary_deductions
+            auto_process_salary_deductions(app)
+        except Exception as e:
+            app.logger.error(f"Failed to auto-process salary deductions: {e}")
+
     debug_mode = os.getenv("FLASK_DEBUG", "True").lower() in ("true", "1")
     app.logger.info(f"Flask app is running (debug={debug_mode})")
     app.run(debug=debug_mode)

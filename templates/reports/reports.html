@@ -410,116 +410,109 @@
                     </div>
                 </div>
 
-                <div class="row g-4">
-                    <!-- Expenses Record Card -->
+                <!-- ── AJAX Expenses Table + Add Form ── -->
+                <div class="row g-4 mb-5">
+                    <!-- Expenses AJAX Table -->
                     <div class="col-lg-8">
                         <div class="card table-card border-0 rounded-4 shadow-sm p-4 h-100">
-                            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                                 <div>
                                     <h4 class="fw-bold mb-1">{% if current_lang == 'ar' %}سجل مصاريف العيادة{% else %}Clinic Expenses Log{% endif %}</h4>
-                                    <p class="text-secondary mb-0">{% if current_lang == 'ar' %}إدارة وتتبع المصاريف والمدفوعات التشغيلية.{% else %}Overview of all running expenditures and operational costs.{% endif %}</p>
+                                    <p class="text-secondary mb-0 small">{% if current_lang == 'ar' %}إدارة وتتبع المصاريف والمدفوعات التشغيلية.{% else %}Track all clinic expenditures and operational costs.{% endif %}</p>
                                 </div>
+                                <span class="badge bg-danger bg-opacity-10 text-danger fw-bold px-3 py-2 rounded-pill" id="exp-total-badge">
+                                    <i class="bi bi-cash-stack me-1"></i>
+                                    <span id="exp-total-amount">—</span> {{ currency_symbol }}
+                                </span>
                             </div>
 
-                            {% if expenses %}
+                            <!-- Filters Bar -->
+                            <div class="d-flex flex-wrap gap-2 mb-3 align-items-center" id="expense-filters-bar">
+                                <select id="exp-filter-category" class="form-select form-select-sm rounded-pill border" style="width:auto;min-width:130px;">
+                                    <option value="">{% if current_lang=='ar' %}كل الفئات{% else %}All Categories{% endif %}</option>
+                                    <option value="Materials">{% if current_lang=='ar' %}مواد طبية{% else %}Materials{% endif %}</option>
+                                    <option value="Rent">{% if current_lang=='ar' %}إيجار{% else %}Rent{% endif %}</option>
+                                    <option value="Salaries">{% if current_lang=='ar' %}رواتب{% else %}Salaries{% endif %}</option>
+                                    <option value="Other">{% if current_lang=='ar' %}أخرى{% else %}Other{% endif %}</option>
+                                </select>
+                                <input type="date" id="exp-filter-from" class="form-control form-control-sm rounded-pill border" style="width:auto;" placeholder="{% if current_lang=='ar' %}من{% else %}From{% endif %}">
+                                <input type="date" id="exp-filter-to" class="form-control form-control-sm rounded-pill border" style="width:auto;" placeholder="{% if current_lang=='ar' %}إلى{% else %}To{% endif %}">
+                                <input type="text" id="exp-filter-search" class="form-control form-control-sm rounded-pill border" style="width:auto;min-width:160px;" placeholder="{% if current_lang=='ar' %}بحث في الملاحظات...{% else %}Search notes...{% endif %}">
+                                <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="exp-reset-btn">
+                                    <i class="bi bi-x-circle me-1"></i>{% if current_lang=='ar' %}إعادة تعيين{% else %}Reset{% endif %}
+                                </button>
+                            </div>
+
+                            <!-- Table -->
                             <div class="table-responsive">
-                                <table class="table align-middle mb-0">
+                                <table class="table align-middle mb-0" id="expenses-ajax-table">
                                     <thead>
                                         <tr>
-                                            <th>{% if current_lang == 'ar' %}الفئة{% else %}Category{% endif %}</th>
-                                            <th class="text-end">{% if current_lang == 'ar' %}المبلغ{% else %}Amount{% endif %}</th>
-                                            <th class="text-center">{% if current_lang == 'ar' %}التاريخ{% else %}Date{% endif %}</th>
-                                            <th>{% if current_lang == 'ar' %}ملاحظات{% else %}Notes{% endif %}</th>
-                                            <th class="text-center d-print-none">{% if current_lang == 'ar' %}الإجراء{% else %}Action{% endif %}</th>
+                                            <th class="exp-sort-th" data-col="category" style="cursor:pointer;">
+                                                {% if current_lang=='ar' %}الفئة{% else %}Category{% endif %}
+                                                <i class="bi bi-arrow-down-up ms-1 text-muted" style="font-size:.75rem;"></i>
+                                            </th>
+                                            <th class="exp-sort-th text-end" data-col="amount" style="cursor:pointer;">
+                                                {% if current_lang=='ar' %}المبلغ{% else %}Amount{% endif %}
+                                                <i class="bi bi-arrow-down-up ms-1 text-muted" style="font-size:.75rem;"></i>
+                                            </th>
+                                            <th class="exp-sort-th text-center" data-col="date" style="cursor:pointer;">
+                                                {% if current_lang=='ar' %}التاريخ{% else %}Date{% endif %}
+                                                <i class="bi bi-arrow-down-up ms-1 text-muted" style="font-size:.75rem;"></i>
+                                            </th>
+                                            <th>{% if current_lang=='ar' %}ملاحظات{% else %}Notes{% endif %}</th>
+                                            <th class="text-center d-print-none">{% if current_lang=='ar' %}إجراء{% else %}Action{% endif %}</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        {% for e in expenses %}
-                                        <tr>
-                                            <td>
-                                                {% if e.category == 'Materials' %}
-                                                    <span class="badge bg-info bg-opacity-10 text-info px-3 py-1.5 rounded-pill fw-semibold">
-                                                        {% if current_lang == 'ar' %}مواد طبية{% else %}Medical Materials{% endif %}
-                                                    </span>
-                                                {% elif e.category == 'Rent' %}
-                                                    <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-1.5 rounded-pill fw-semibold">
-                                                        {% if current_lang == 'ar' %}إيجار{% else %}Rent{% endif %}
-                                                    </span>
-                                                {% elif e.category == 'Salaries' %}
-                                                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1.5 rounded-pill fw-semibold">
-                                                        {% if current_lang == 'ar' %}رواتب الموظفين{% else %}Salaries{% endif %}
-                                                    </span>
-                                                {% else %}
-                                                    <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-1.5 rounded-pill fw-semibold">
-                                                        {% if current_lang == 'ar' %}أخرى{% else %}Other{% endif %}
-                                                    </span>
-                                                {% endif %}
-                                            </td>
-                                            <td class="text-end fw-bold text-danger">{{ e.amount | format_price }} {{ currency_symbol }}</td>
-                                            <td class="text-center text-secondary small">{{ e.expense_date.strftime('%Y-%m-%d') }}</td>
-                                            <td class="text-secondary small">{{ e.notes or '-' }}</td>
-                                            <td class="text-center d-print-none">
-                                                <form method="POST" action="{{ url_for('reports.delete_expense', expense_id=e.id) }}" onsubmit="return confirmDelete(event, '{% if current_lang == 'ar' %}هل أنت متأكد من حذف هذا المصروف؟{% else %}Are you sure you want to delete this expense?{% endif %}');" style="display:inline;">
-                                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="{% if current_lang == 'ar' %}حذف{% else %}Delete{% endif %}">
-                                                        <i class="bi bi-trash fs-5"></i>
-                                                    </button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
+                                    <tbody id="expenses-table-body">
+                                        <tr><td colspan="5" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm"></div></td></tr>
                                     </tbody>
                                 </table>
                             </div>
-                            {% else %}
-                            <div class="text-center py-5">
-                                <i class="bi bi-journal-x text-muted fs-1 opacity-50 mb-3 d-block"></i>
-                                <h5>{% if current_lang == 'ar' %}لم يتم تسجيل أي مصاريف حتى الآن.{% else %}No expenses recorded yet.{% endif %}</h5>
-                                <p class="text-muted small">{% if current_lang == 'ar' %}استخدم النموذج الجانبي لتسجيل أول مصروف للعيادة.{% else %}Use the form in the sidebar to log clinic expenditures.{% endif %}</p>
+
+                            <!-- Pagination -->
+                            <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2" id="exp-pagination-bar">
+                                <small class="text-muted" id="exp-pagination-info"></small>
+                                <nav><ul class="pagination pagination-sm mb-0 gap-1" id="exp-pagination-links"></ul></nav>
                             </div>
-                            {% endif %}
                         </div>
                     </div>
 
-                    <!-- Add Expense Card (Sidebar) -->
+                    <!-- Add Expense Sidebar -->
                     <div class="col-lg-4 d-print-none expense-form-card">
                         <div class="card p-4 border-0 rounded-4 shadow-sm h-100" style="background: rgba(0,0,0,0.015); border: 1px dashed color-mix(in srgb, var(--accent-color), transparent 80%) !important;">
-                            <h4 class="fw-bold mb-3 text-main"><i class="bi bi-plus-circle me-1.5"></i>{% if current_lang == 'ar' %}إضافة مصروف جديد{% else %}Log New Expense{% endif %}</h4>
+                            <h4 class="fw-bold mb-3 text-main"><i class="bi bi-plus-circle me-1"></i>{% if current_lang == 'ar' %}إضافة مصروف جديد{% else %}Log New Expense{% endif %}</h4>
                             <p class="text-secondary small mb-4">
                                 {% if current_lang == 'ar' %}قم بتسجيل الفواتير، الإيجار، الرواتب أو المواد الطبية لحساب الأرباح الصافية بدقة.{% else %}Enter clinic expenditures here to track exact net profit margins.{% endif %}
                             </p>
-
-                            <form method="POST" action="{{ url_for('reports.add_expense') }}">
+                            <form method="POST" action="{{ url_for('reports.add_expense') }}" id="add-expense-form">
                                 <div class="mb-3">
                                     <label for="expense-category" class="form-label fw-semibold text-secondary small">{% if current_lang == 'ar' %}فئة المصروف{% else %}Category{% endif %}</label>
                                     <select name="category" id="expense-category" class="form-select rounded-3 border-secondary-subtle" required>
-                                        <option value="Materials">{% if current_lang == 'ar' %}مواد طبية (Materials){% else %}Medical Materials{% endif %}</option>
-                                        <option value="Rent">{% if current_lang == 'ar' %}إيجار العيادة (Rent){% else %}Rent{% endif %}</option>
-                                        <option value="Salaries">{% if current_lang == 'ar' %}رواتب وأجور (Salaries){% else %}Salaries{% endif %}</option>
-                                        <option value="Other" selected>{% if current_lang == 'ar' %}أخرى (Other){% else %}Other / General{% endif %}</option>
+                                        <option value="Materials">{% if current_lang == 'ar' %}مواد طبية{% else %}Medical Materials{% endif %}</option>
+                                        <option value="Rent">{% if current_lang == 'ar' %}إيجار العيادة{% else %}Rent{% endif %}</option>
+                                        <option value="Salaries">{% if current_lang == 'ar' %}رواتب وأجور{% else %}Salaries{% endif %}</option>
+                                        <option value="Other" selected>{% if current_lang == 'ar' %}أخرى{% else %}Other / General{% endif %}</option>
                                     </select>
                                 </div>
-
                                 <div class="mb-3">
-                                    <label for="expense-amount" class="form-label fw-semibold text-secondary small">{% if current_lang == 'ar' %}قيمة المصروف (المبلغ){% else %}Amount{% endif %}</label>
+                                    <label for="expense-amount" class="form-label fw-semibold text-secondary small">{% if current_lang == 'ar' %}قيمة المصروف{% else %}Amount{% endif %}</label>
                                     <div class="input-group">
                                         <input type="number" step="0.01" name="amount" id="expense-amount" class="form-control rounded-start-3" placeholder="0.00" required>
                                         <span class="input-group-text rounded-end-3 bg-secondary-subtle text-secondary small">{{ currency_symbol }}</span>
                                     </div>
                                 </div>
-
                                 <div class="mb-3">
                                     <label for="expense-date" class="form-label fw-semibold text-secondary small">{% if current_lang == 'ar' %}تاريخ المصروف{% else %}Expense Date{% endif %}</label>
                                     <input type="date" name="expense_date" id="expense-date" class="form-control rounded-3" value="{{ now.strftime('%Y-%m-%d') }}" required>
                                 </div>
-
                                 <div class="mb-4">
                                     <label for="expense-notes" class="form-label fw-semibold text-secondary small">{% if current_lang == 'ar' %}ملاحظات وتفاصيل{% else %}Notes{% endif %}</label>
-                                    <textarea name="notes" id="expense-notes" class="form-control rounded-3" rows="3" placeholder="{% if current_lang == 'ar' %}اكتب تفاصيل الفاتورة أو الجهة المصروفة إليها...{% else %}Enter details like supplier, invoice number, salary receiver...{% endif %}"></textarea>
+                                    <textarea name="notes" id="expense-notes" class="form-control rounded-3" rows="3" placeholder="{% if current_lang == 'ar' %}اكتب تفاصيل الفاتورة...{% else %}Enter details like supplier, invoice number...{% endif %}"></textarea>
                                 </div>
-
                                 <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary rounded-pill py-2.5 fw-bold">
-                                        <i class="bi bi-check-lg {% if current_lang == 'ar' %}ms-1{% else %}me-1{% endif %}"></i>
+                                    <button type="submit" class="btn btn-primary rounded-pill py-2 fw-bold">
+                                        <i class="bi bi-check-lg me-1"></i>
                                         {% if current_lang == 'ar' %}حفظ المصروف{% else %}Log Expense{% endif %}
                                     </button>
                                 </div>
@@ -528,9 +521,87 @@
                     </div>
                 </div>
 
+                <!-- ── Doctor Appointments Performance Table ── -->
+                <div class="card border-0 rounded-4 shadow-sm p-4 mb-4 d-print-none" id="doctor-appts-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                            <h4 class="fw-bold mb-1"><i class="bi bi-person-badge me-2 text-primary"></i>{% if current_lang=='ar' %}أداء الأطباء - المواعيد المنجزة{% else %}Doctor Performance — Completed Appointments{% endif %}</h4>
+                            <p class="text-secondary mb-0 small">{% if current_lang=='ar' %}عرض المواعيد المنجزة لكل طبيب مع تفاصيل قيمة الفاتورة والمبالغ المدفوعة.{% else %}View completed appointments per doctor with invoice and payment details.{% endif %}</p>
+                        </div>
+                        <!-- Doctor filter dropdown -->
+                        <div class="dropdown" id="doc-filter-dropdown">
+                            <button class="btn btn-outline-primary rounded-pill px-4 fw-semibold d-flex align-items-center gap-2"
+                                    type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-badge"></i>
+                                <span id="doc-filter-label">{% if current_lang=='ar' %}كل الأطباء{% else %}All Doctors{% endif %}</span>
+                                <i class="bi bi-chevron-down" style="font-size:.8rem;"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 py-2 mt-1"
+                                style="min-width:210px; background:var(--surface-color);" id="doc-filter-menu">
+                                <li>
+                                    <a class="dropdown-item rounded-3 d-flex align-items-center gap-2 py-2 px-3 doc-filter-item active fw-bold"
+                                       href="#" data-doc-id="">
+                                        <i class="bi bi-grid-fill text-primary"></i>
+                                        {% if current_lang=='ar' %}كل الأطباء{% else %}All Doctors{% endif %}
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider my-1" style="border-color:rgba(255,255,255,0.08);"></li>
+                                <!-- Populated by JS -->
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+                        <input type="date" id="doc-filter-from" class="form-control form-control-sm rounded-pill border" style="width:auto;">
+                        <span class="text-muted small">—</span>
+                        <input type="date" id="doc-filter-to" class="form-control form-control-sm rounded-pill border" style="width:auto;">
+                        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="doc-reset-btn">
+                            <i class="bi bi-x-circle me-1"></i>{% if current_lang=='ar' %}إعادة تعيين{% else %}Reset{% endif %}
+                        </button>
+                        <div class="ms-auto d-flex gap-2 flex-wrap">
+                            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-semibold">
+                                {% if current_lang=='ar' %}مفوتر:{% else %}Billed:{% endif %}
+                                <span id="doc-total-invoiced">—</span> {{ currency_symbol }}
+                            </span>
+                            <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill fw-semibold">
+                                {% if current_lang=='ar' %}مدفوع:{% else %}Paid:{% endif %}
+                                <span id="doc-total-paid">—</span> {{ currency_symbol }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0" id="doc-appts-table">
+                            <thead>
+                                <tr>
+                                    <th class="doc-sort-th" data-col="patient" style="cursor:pointer;">
+                                        {% if current_lang=='ar' %}المريض{% else %}Patient{% endif %}
+                                        <i class="bi bi-arrow-down-up ms-1 text-muted" style="font-size:.75rem;"></i>
+                                    </th>
+                                    <th class="doc-sort-th" data-col="date" style="cursor:pointer;">
+                                        {% if current_lang=='ar' %}التاريخ{% else %}Date{% endif %}
+                                        <i class="bi bi-arrow-down-up ms-1 text-muted" style="font-size:.75rem;"></i>
+                                    </th>
+                                    <th>{% if current_lang=='ar' %}الطبيب{% else %}Doctor{% endif %}</th>
+                                    <th class="text-end">{% if current_lang=='ar' %}قيمة الفاتورة{% else %}Invoice{% endif %}</th>
+                                    <th class="text-end">{% if current_lang=='ar' %}المدفوع{% else %}Paid{% endif %}</th>
+                                    <th class="text-end">{% if current_lang=='ar' %}المتبقي{% else %}Remaining{% endif %}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="doc-appts-body">
+                                <tr><td colspan="6" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm"></div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2" id="doc-pagination-bar">
+                        <small class="text-muted" id="doc-pagination-info"></small>
+                        <nav><ul class="pagination pagination-sm mb-0 gap-1" id="doc-pagination-links"></ul></nav>
+                    </div>
+                </div>
+
             </div>
 
-            <!-- Tab 3: Monthly Financial Summary -->
+
             <div class="tab-pane fade" id="tab-monthly-summary" role="tabpanel" aria-labelledby="monthly-summary-tab">
                 
                 <!-- Print Page Title -->
@@ -2221,4 +2292,238 @@
         }
     }
 </style>
-{% endblock %}
+
+<script>
+// ── Expenses AJAX Table ──────────────────────────────────────────────────────
+(function () {
+    const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
+    let expPage = 1, expSort = 'date', expOrder = 'desc';
+
+    const CAT_BADGES = {
+        'Materials': `<span class="badge bg-info bg-opacity-10 text-info px-3 py-1 rounded-pill fw-semibold">${isAr ? 'مواد طبية' : 'Materials'}</span>`,
+        'Rent':      `<span class="badge bg-warning bg-opacity-10 text-warning px-3 py-1 rounded-pill fw-semibold">${isAr ? 'إيجار' : 'Rent'}</span>`,
+        'Salaries':  `<span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1 rounded-pill fw-semibold">${isAr ? 'رواتب' : 'Salaries'}</span>`,
+        'Other':     `<span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-1 rounded-pill fw-semibold">${isAr ? 'أخرى' : 'Other'}</span>`,
+    };
+
+    function fmt(n) { return Number(n).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+
+    function loadExpenses() {
+        const cat    = document.getElementById('exp-filter-category')?.value || '';
+        const from   = document.getElementById('exp-filter-from')?.value || '';
+        const to     = document.getElementById('exp-filter-to')?.value || '';
+        const search = document.getElementById('exp-filter-search')?.value || '';
+        const tbody  = document.getElementById('expenses-table-body');
+        if (!tbody) return;
+
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm"></div></td></tr>';
+
+        const params = new URLSearchParams({ page: expPage, per_page: 10, sort: expSort, order: expOrder });
+        if (cat) params.set('category', cat);
+        if (from) params.set('date_from', from);
+        if (to) params.set('date_to', to);
+        if (search) params.set('search', search);
+
+        fetch('/reports/expenses/list?' + params)
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) { tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">${data.error}</td></tr>`; return; }
+
+                document.getElementById('exp-total-amount').textContent = fmt(data.total_filtered_amount || 0);
+
+                if (!data.rows || data.rows.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-5 text-muted"><i class="bi bi-journal-x fs-1 opacity-50 d-block mb-2"></i>${isAr ? 'لا توجد مصاريف' : 'No expenses found'}</td></tr>`;
+                } else {
+                    tbody.innerHTML = data.rows.map(e => `
+                        <tr>
+                            <td>${CAT_BADGES[e.category] || CAT_BADGES['Other']}</td>
+                            <td class="text-end fw-bold text-danger">${fmt(e.amount)}</td>
+                            <td class="text-center text-secondary small">${e.date}</td>
+                            <td class="text-secondary small">${e.notes || '—'}</td>
+                            <td class="text-center">
+                                <form method="POST" action="/reports/expenses/${e.id}/delete"
+                                      onsubmit="return confirm('${isAr ? 'هل تريد حذف هذا المصروف؟' : 'Delete this expense?'}')"
+                                      style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="${isAr ? 'حذف' : 'Delete'}">
+                                        <i class="bi bi-trash fs-5"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>`).join('');
+                }
+
+                renderExpPagination(data.current_page, data.pages, data.total);
+            })
+            .catch(() => { tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">${isAr ? 'خطأ في التحميل' : 'Load error'}</td></tr>`; });
+    }
+
+    function renderExpPagination(current, pages, total) {
+        const info = document.getElementById('exp-pagination-info');
+        const links = document.getElementById('exp-pagination-links');
+        if (info) info.textContent = isAr ? `الصفحة ${current} من ${pages} (${total} سجل)` : `Page ${current} of ${pages} (${total} records)`;
+        if (!links) return;
+        let html = '';
+        if (current > 1) html += `<li class="page-item"><a class="page-link rounded-3" href="#" data-exp-page="${current-1}">‹</a></li>`;
+        for (let p = Math.max(1,current-2); p <= Math.min(pages,current+2); p++) {
+            html += `<li class="page-item ${p===current?'active':''}"><a class="page-link rounded-3" href="#" data-exp-page="${p}">${p}</a></li>`;
+        }
+        if (current < pages) html += `<li class="page-item"><a class="page-link rounded-3" href="#" data-exp-page="${current+1}">›</a></li>`;
+        links.innerHTML = html;
+        links.querySelectorAll('[data-exp-page]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); expPage = +a.dataset.expPage; loadExpenses(); }));
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        loadExpenses();
+
+        ['exp-filter-category','exp-filter-from','exp-filter-to'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', () => { expPage = 1; loadExpenses(); });
+        });
+        const search = document.getElementById('exp-filter-search');
+        let searchTimer;
+        if (search) search.addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { expPage = 1; loadExpenses(); }, 400); });
+
+        document.getElementById('exp-reset-btn')?.addEventListener('click', () => {
+            ['exp-filter-category','exp-filter-from','exp-filter-to','exp-filter-search'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+            expPage = 1; loadExpenses();
+        });
+
+        document.querySelectorAll('.exp-sort-th').forEach(th => {
+            th.addEventListener('click', () => {
+                const col = th.dataset.col;
+                if (expSort === col) expOrder = expOrder === 'asc' ? 'desc' : 'asc';
+                else { expSort = col; expOrder = 'desc'; }
+                expPage = 1; loadExpenses();
+            });
+        });
+
+        // Reload expenses table after add form submit
+        const addForm = document.getElementById('add-expense-form');
+        if (addForm) {
+            addForm.addEventListener('submit', function() {
+                setTimeout(() => { expPage = 1; loadExpenses(); }, 600);
+            });
+        }
+    });
+})();
+
+// ── Doctor Appointments AJAX Table ───────────────────────────────────────────
+(function () {
+    const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
+    let docPage = 1, docSort = 'date', docOrder = 'desc', docDoctorId = '';
+
+    function fmt(n) { return Number(n).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+
+    function loadDocAppts() {
+        const from = document.getElementById('doc-filter-from')?.value || '';
+        const to   = document.getElementById('doc-filter-to')?.value || '';
+        const tbody = document.getElementById('doc-appts-body');
+        if (!tbody) return;
+
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm"></div></td></tr>';
+
+        const params = new URLSearchParams({ page: docPage, per_page: 10, sort: docSort, order: docOrder });
+        if (docDoctorId) params.set('doctor_id', docDoctorId);
+        if (from) params.set('date_from', from);
+        if (to) params.set('date_to', to);
+
+        fetch('/reports/doctor-appointments?' + params)
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) { tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">${data.error}</td></tr>`; return; }
+
+                // Update summary badges
+                document.getElementById('doc-total-invoiced').textContent = fmt(data.total_invoiced || 0);
+                document.getElementById('doc-total-paid').textContent = fmt(data.total_paid || 0);
+
+                // Populate doctor dropdown on first load
+                const menu = document.getElementById('doc-filter-menu');
+                if (menu && data.doctors && menu.querySelectorAll('.doc-filter-item').length <= 1) {
+                    data.doctors.forEach(d => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<a class="dropdown-item rounded-3 d-flex align-items-center gap-2 py-2 px-3 doc-filter-item" href="#" data-doc-id="${d.id}">
+                            <i class="bi bi-person-badge text-primary"></i> ${d.name}
+                        </a>`;
+                        menu.appendChild(li);
+                    });
+                    menu.querySelectorAll('.doc-filter-item').forEach(item => {
+                        item.addEventListener('click', e => {
+                            e.preventDefault();
+                            docDoctorId = item.dataset.docId;
+                            document.getElementById('doc-filter-label').textContent = item.textContent.trim();
+                            menu.querySelectorAll('.doc-filter-item').forEach(i => i.classList.remove('active','fw-bold'));
+                            item.classList.add('active','fw-bold');
+                            docPage = 1; loadDocAppts();
+                        });
+                    });
+                }
+
+                if (!data.rows || data.rows.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted"><i class="bi bi-calendar-x fs-1 opacity-50 d-block mb-2"></i>${isAr ? 'لا توجد مواعيد منجزة' : 'No completed appointments found'}</td></tr>`;
+                } else {
+                    tbody.innerHTML = data.rows.map(r => `
+                        <tr>
+                            <td class="fw-semibold">${r.patient_name}</td>
+                            <td class="text-secondary small">${r.date}</td>
+                            <td>${r.doctor ? `<span class="badge bg-primary bg-opacity-10 text-primary px-2 py-1 rounded-pill">${r.doctor}</span>` : '—'}</td>
+                            <td class="text-end fw-bold">${fmt(r.invoice_total)}</td>
+                            <td class="text-end text-success fw-bold">${fmt(r.total_paid)}</td>
+                            <td class="text-end ${r.remaining > 0 ? 'text-danger fw-bold' : 'text-success'}">${fmt(r.remaining)}</td>
+                        </tr>`).join('');
+                }
+
+                renderDocPagination(data.current_page, data.pages, data.total);
+            })
+            .catch(() => { tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">${isAr ? 'خطأ في التحميل' : 'Load error'}</td></tr>`; });
+    }
+
+    function renderDocPagination(current, pages, total) {
+        const info = document.getElementById('doc-pagination-info');
+        const links = document.getElementById('doc-pagination-links');
+        if (info) info.textContent = isAr ? `الصفحة ${current} من ${pages} (${total} موعد)` : `Page ${current} of ${pages} (${total} appointments)`;
+        if (!links) return;
+        let html = '';
+        if (current > 1) html += `<li class="page-item"><a class="page-link rounded-3" href="#" data-doc-page="${current-1}">‹</a></li>`;
+        for (let p = Math.max(1,current-2); p <= Math.min(pages,current+2); p++) {
+            html += `<li class="page-item ${p===current?'active':''}"><a class="page-link rounded-3" href="#" data-doc-page="${p}">${p}</a></li>`;
+        }
+        if (current < pages) html += `<li class="page-item"><a class="page-link rounded-3" href="#" data-doc-page="${current+1}">›</a></li>`;
+        links.innerHTML = html;
+        links.querySelectorAll('[data-doc-page]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); docPage = +a.dataset.docPage; loadDocAppts(); }));
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        loadDocAppts();
+
+        ['doc-filter-from','doc-filter-to'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', () => { docPage = 1; loadDocAppts(); });
+        });
+
+        document.getElementById('doc-reset-btn')?.addEventListener('click', () => {
+            ['doc-filter-from','doc-filter-to'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+            docDoctorId = '';
+            document.getElementById('doc-filter-label').textContent = isAr ? 'كل الأطباء' : 'All Doctors';
+            document.querySelectorAll('.doc-filter-item').forEach(i => i.classList.remove('active','fw-bold'));
+            document.querySelector('.doc-filter-item[data-doc-id=""]')?.classList.add('active','fw-bold');
+            docPage = 1; loadDocAppts();
+        });
+
+        document.querySelectorAll('.doc-sort-th').forEach(th => {
+            th.addEventListener('click', () => {
+                const col = th.dataset.col;
+                if (docSort === col) docOrder = docOrder === 'asc' ? 'desc' : 'asc';
+                else { docSort = col; docOrder = 'desc'; }
+                docPage = 1; loadDocAppts();
+            });
+        });
+
+        // Auto-reload doctor table when expenses tab becomes active
+        document.getElementById('tab-expenses')?.addEventListener('shown.bs.tab', function () {
+            loadExpenses();
+            loadDocAppts();
+        });
+    });
+})();
+</script>
+{% endblock %}
