@@ -275,6 +275,7 @@ class ToothHistory(db.Model):
     tooth_number = db.Column(db.String(50), nullable=False)
     procedure_type = db.Column(db.String(200), nullable=False)
     notes = db.Column(db.Text, nullable=True)
+    history_date = db.Column(db.Date, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     patient = db.relationship("Patient", backref=db.backref("tooth_histories", cascade="all, delete-orphan"))

@@ -81,6 +81,7 @@ def appointment_session(appointment_id):
                 "id": th.id,
                 "procedure": th.procedure_type,
                 "notes": th.notes or "",
+                "history_date": th.history_date.strftime("%Y-%m-%d") if th.history_date else None,
                 "created_at": th.created_at.strftime("%Y-%m-%d %I:%M %p")
             })
 
@@ -544,6 +545,7 @@ def edit_treatment(treatment_id):
                 "id": th.id,
                 "procedure": th.procedure_type,
                 "notes": th.notes or "",
+                "history_date": th.history_date.strftime("%Y-%m-%d") if th.history_date else None,
                 "created_at": th.created_at.strftime("%Y-%m-%d %I:%M %p")
             })
 

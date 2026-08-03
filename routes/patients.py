@@ -427,6 +427,7 @@ def patient_detail(patient_id):
                 "id": th.id,
                 "procedure": th.procedure_type,
                 "notes": th.notes or "",
+                "history_date": th.history_date.strftime("%Y-%m-%d") if th.history_date else None,
                 "created_at": th.created_at.strftime("%Y-%m-%d %I:%M %p")
             })
 
@@ -485,11 +486,27 @@ def add_tooth_history(patient_id):
             return redirect(url_for("treatments.appointment_session", appointment_id=appointment_id))
         return redirect(url_for("patients.patient_detail", patient_id=patient_id, active_tab="chart"))
 
+    history_date_str = request.form.get("history_date", "").strip()
+    history_date_val = None
+    if history_date_str:
+        try:
+            from datetime import datetime
+            parsed_date = datetime.strptime(history_date_str, "%Y-%m-%d").date()
+            if parsed_date > datetime.now().date():
+                flash("لا يمكن اختيار تاريخ مستقبلي لمعالجة تاريخية سابقة!" if request.cookies.get("lang") == "ar" else "Cannot select a future date for prior tooth history!", "danger")
+                if appointment_id:
+                    return redirect(url_for("treatments.appointment_session", appointment_id=appointment_id))
+                return redirect(url_for("patients.patient_detail", patient_id=patient_id, active_tab="chart"))
+            history_date_val = parsed_date
+        except ValueError:
+            history_date_val = None
+
     th = ToothHistory(
         patient_id=patient.id,
         tooth_number=str(tooth_number),
         procedure_type=procedure_type,
-        notes=notes
+        notes=notes,
+        history_date=history_date_val
     )
     db.session.add(th)
     db.session.commit()
@@ -516,6 +533,51 @@ def delete_tooth_history(patient_id, history_id):
             appointment_id = match.group(1)
 
     flash("تم حذف السابقة المرضية بنجاح." if request.cookies.get("lang") == "ar" else "Tooth condition record deleted successfully.", "success")
+    if appointment_id:
+        return redirect(url_for("treatments.appointment_session", appointment_id=appointment_id))
+    return redirect(url_for("patients.patient_detail", patient_id=patient_id, active_tab="chart"))
+
+
+@patients_bp.route("/patients/<int:patient_id>/tooth-history/<int:history_id>/edit", methods=["POST"])
+@role_required("admin", "doctor", "receptionist")
+def edit_tooth_history(patient_id, history_id):
+    import re
+    patient = Patient.query.get_or_404(patient_id)
+    th = ToothHistory.query.filter_by(id=history_id, patient_id=patient.id).first_or_404()
+
+    procedure_type = request.form.get("procedure_type", "").strip()
+    notes = request.form.get("notes", "").strip()
+    history_date_str = request.form.get("history_date", "").strip()
+
+    if procedure_type:
+        th.procedure_type = procedure_type
+    th.notes = notes
+
+    if history_date_str:
+        try:
+            from datetime import datetime
+            parsed_date = datetime.strptime(history_date_str, "%Y-%m-%d").date()
+            if parsed_date > datetime.now().date():
+                appointment_id = request.form.get("appointment_id") or request.args.get("appointment_id")
+                flash("لا يمكن اختيار تاريخ مستقبلي لمعالجة تاريخية سابقة!" if request.cookies.get("lang") == "ar" else "Cannot select a future date for prior tooth history!", "danger")
+                if appointment_id:
+                    return redirect(url_for("treatments.appointment_session", appointment_id=appointment_id))
+                return redirect(url_for("patients.patient_detail", patient_id=patient_id, active_tab="chart"))
+            th.history_date = parsed_date
+        except ValueError:
+            th.history_date = None
+    else:
+        th.history_date = None
+
+    db.session.commit()
+
+    appointment_id = request.form.get("appointment_id") or request.args.get("appointment_id")
+    if not appointment_id and request.referrer:
+        match = re.search(r'/appointments/(\d+)/session', request.referrer)
+        if match:
+            appointment_id = match.group(1)
+
+    flash("تم تحديث السابقة المرضية بنجاح." if request.cookies.get("lang") == "ar" else "Tooth condition record updated successfully.", "success")
     if appointment_id:
         return redirect(url_for("treatments.appointment_session", appointment_id=appointment_id))
     return redirect(url_for("patients.patient_detail", patient_id=patient_id, active_tab="chart"))

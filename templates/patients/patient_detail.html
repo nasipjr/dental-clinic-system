@@ -1850,8 +1850,8 @@ document.addEventListener("DOMContentLoaded", function() {
                     <div id="add-history-form-container" class="card card-body mb-3 border rounded-3 d-none" style="background: rgba(168, 85, 247, 0.05); border-color: rgba(168, 85, 247, 0.25) !important;">
                         <form method="POST" action="{{ url_for('patients.add_tooth_history', patient_id=patient.id) }}">
                             <input type="hidden" name="tooth_number" id="history-form-tooth-number" value="">
-                            <div class="row g-3">
-                                <div class="col-md-6">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-4">
                                     <label class="form-label small fw-bold" style="color: var(--heading-color);">
                                         {% if current_lang == 'ar' %}نوع الإجراء السريري / السابقة{% else %}Condition / Procedure Type{% endif %}
                                     </label>
@@ -1862,13 +1862,19 @@ document.addEventListener("DOMContentLoaded", function() {
                                         {% endfor %}
                                     </select>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="form-label small fw-bold" style="color: var(--heading-color);">
                                         {% if current_lang == 'ar' %}ملاحظات سريرية توثيقية{% else %}Clinical Notes / History{% endif %}
                                     </label>
-                                    <input type="text" name="notes" class="form-control form-control-sm rounded-3" placeholder="{% if current_lang == 'ar' %}مثال: حشوة قديمة تمت بغير عيادة عام 2021...{% else %}e.g. Done at another clinic in 2021...{% endif %}">
+                                    <input type="text" name="notes" class="form-control form-control-sm rounded-3" placeholder="{% if current_lang == 'ar' %}مثال: حشوة قديمة تمت بغير عيادة...{% else %}e.g. Done at another clinic...{% endif %}">
                                 </div>
-                                <div class="col-12 text-end">
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold" style="color: var(--heading-color);">
+                                        {% if current_lang == 'ar' %}تاريخ المعالجة السابقة{% else %}Prior Treatment Date{% endif %}
+                                    </label>
+                                    <input type="date" name="history_date" max="today" class="form-control form-control-sm rounded-3" title="{% if current_lang == 'ar' %}تاريخ المعالجة (اتركه فارغاً إذا كان غير محدد){% else %}Treatment Date (Leave empty if unspecified){% endif %}">
+                                </div>
+                                <div class="col-12 text-end mt-3">
                                     <button type="submit" class="btn btn-sm btn-primary rounded-pill px-4 fw-bold">
                                         <i class="bi bi-check2-circle me-1"></i>
                                         {% if current_lang == 'ar' %}حفظ السابقة المرضية{% else %}Save Condition{% endif %}
@@ -1902,7 +1908,103 @@ document.addEventListener("DOMContentLoaded", function() {
     </div>
 </div>
 
+<!-- Edit Tooth History Modal -->
+<div class="modal fade" id="editToothHistoryModal" tabindex="-1" aria-labelledby="editToothHistoryModalLabel" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg" style="background: var(--surface-color);">
+            <div class="modal-header border-bottom pb-3">
+                <h5 class="modal-title fw-bold text-primary mb-0" id="editToothHistoryModalLabel">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    {% if current_lang == 'ar' %}تعديل السابقة المرضية للسن{% else %}Edit Tooth Condition History{% endif %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editToothHistoryForm" method="POST">
+                <input type="hidden" name="appointment_id" id="edit-history-appointment-id" value="">
+                <div class="modal-body py-3">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">
+                            {% if current_lang == 'ar' %}نوع الإجراء السريري / السابقة{% else %}Condition / Procedure Type{% endif %}
+                        </label>
+                        <select name="procedure_type" id="edit-history-procedure-type" class="form-select rounded-3" required>
+                            {% for proc in treatment_procedure_types %}
+                            <option value="{{ proc }} (سابق)">{{ proc }} ({% if current_lang == 'ar' %}سابق{% else %}Prior{% endif %})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">
+                            {% if current_lang == 'ar' %}ملاحظات سريرية توثيقية{% else %}Clinical Notes{% endif %}
+                        </label>
+                        <input type="text" name="notes" id="edit-history-notes" class="form-control rounded-3" placeholder="{% if current_lang == 'ar' %}الملاحظات...{% else %}Notes...{% endif %}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">
+                            {% if current_lang == 'ar' %}تاريخ المعالجة السابقة{% else %}Prior Treatment Date{% endif %}
+                        </label>
+                        <input type="date" name="history_date" id="edit-history-date" max="today" class="form-control rounded-3">
+                        <div class="form-text text-muted small">{% if current_lang == 'ar' %}اتركه فارغاً إذا كان التاريخ غير محدد.{% else %}Leave blank if unspecified.{% endif %}</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                        {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                    </button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">
+                        <i class="bi bi-check2-circle me-1"></i>{% if current_lang == 'ar' %}حفظ التغييرات{% else %}Save Changes{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
+window.openEditToothHistoryModal = function(patientId, historyId, procedure, notes, historyDate, appointmentId) {
+    const modalEl = document.getElementById('editToothHistoryModal');
+    if (!modalEl) return;
+    const form = document.getElementById('editToothHistoryForm');
+    if (form) form.action = `/patients/${patientId}/tooth-history/${historyId}/edit`;
+
+    const procSelect = document.getElementById('edit-history-procedure-type');
+    if (procSelect) {
+        let found = false;
+        for (let opt of procSelect.options) {
+            if (opt.value === procedure) {
+                opt.selected = true;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            const cleanProc = procedure.replace(/\s*\([^)]*\)/, '').trim();
+            for (let opt of procSelect.options) {
+                if (opt.value.includes(cleanProc)) {
+                    opt.selected = true;
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (!found && procedure) {
+            const opt = new Option(procedure, procedure, true, true);
+            procSelect.add(opt);
+        }
+    }
+
+    const notesInp = document.getElementById('edit-history-notes');
+    if (notesInp) notesInp.value = notes || '';
+
+    const dateInp = document.getElementById('edit-history-date');
+    if (dateInp) dateInp.value = historyDate || '';
+
+    const apptInp = document.getElementById('edit-history-appointment-id');
+    if (apptInp) apptInp.value = appointmentId || '';
+
+    const bsModal = new bootstrap.Modal(modalEl);
+    bsModal.show();
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     const isAr = document.documentElement.lang === 'ar';
     const currency = "{{ currency_symbol }}";
@@ -2078,21 +2180,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     priorList.innerHTML = `<div class="small py-3 px-3 rounded-3 text-center text-muted border border-dashed mb-3" style="background: rgba(255,255,255,0.02);">${isAr ? 'لا توجد سوابق مرضية أو تشخيص أولي مسجل لهذا السن.' : 'No pre-existing conditions recorded for this tooth.'}</div>`;
                 } else {
                     priorHistories.forEach(h => {
+                        const dateLabel = h.history_date ? h.history_date : (isAr ? 'تاريخ المعالجة: غير محدد' : 'Treatment Date: Unspecified');
+                        const safeProc = (h.procedure || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                        const safeNotes = (h.notes || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                        const safeDate = h.history_date || '';
                         let hHtml = `
                             <div class="card card-body mb-2 p-3 border rounded-3 shadow-xs" style="background: rgba(168, 85, 247, 0.08); border-color: rgba(168, 85, 247, 0.25) !important;">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <span class="badge badge-history-external px-2.5 py-1 fw-bold fs-6 mb-1">
-                                            <i class="bi bi-journal-medical me-1"></i>${h.procedure}
-                                        </span>
-                                        <p class="mb-0 text-secondary small mt-1">${h.notes || (isAr ? 'سجل خارجي (لا توجد ملاحظات)' : 'External record')}</p>
-                                        <span class="text-muted small" style="font-size: 0.75rem;"><i class="bi bi-clock me-1"></i>${h.created_at}</span>
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <span class="badge badge-history-external px-2.5 py-1 fw-bold fs-6">
+                                                <i class="bi bi-journal-medical me-1"></i>${h.procedure}
+                                            </span>
+                                            <span class="badge bg-secondary-subtle text-secondary border px-2 py-1 text-xs">
+                                                <i class="bi bi-calendar3 me-1"></i>${dateLabel}
+                                            </span>
+                                        </div>
+                                        <p class="mb-0 text-secondary small mt-1.5">${h.notes || (isAr ? 'سجل خارجي (لا توجد ملاحظات)' : 'External record')}</p>
                                     </div>
-                                    <form method="POST" action="/patients/{{ patient.id }}/tooth-history/${h.id}/delete" onsubmit="return confirmDelete(event, '${isAr ? 'هل أنت متأكد من حذف هذه السابقة المرضية؟' : 'Delete this history record?'}');">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1.5" title="${isAr ? 'حذف السابقة' : 'Delete History'}">
-                                            <i class="bi bi-trash fs-6"></i>
+                                    <div class="d-flex align-items-center gap-1.5 ms-auto">
+                                        <button type="button" class="btn btn-sm btn-outline-primary rounded-circle p-1.5"
+                                                onclick="openEditToothHistoryModal({{ patient.id }}, ${h.id}, '${safeProc}', '${safeNotes}', '${safeDate}')"
+                                                title="${isAr ? 'تعديل السابقة المرضية' : 'Edit History Record'}">
+                                            <i class="bi bi-pencil fs-6"></i>
                                         </button>
-                                    </form>
+                                        <form method="POST" action="/patients/{{ patient.id }}/tooth-history/${h.id}/delete" onsubmit="return confirmDelete(event, '${isAr ? 'هل أنت متأكد من حذف هذه السابقة المرضية؟' : 'Delete this history record?'}');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1.5" title="${isAr ? 'حذف السابقة' : 'Delete History'}">
+                                                <i class="bi bi-trash fs-6"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         `;

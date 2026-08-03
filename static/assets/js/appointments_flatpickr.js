@@ -31,14 +31,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 minTime: minTimeAttr,
                 maxTime: maxTimeAttr,
                 disable: [
-                    function(date) {
+                    function (date) {
                         return !workingDaysList.includes(date.getDay());
                     }
                 ],
-                onChange: function(selectedDates, dateStr, instance) {
+                onChange: function (selectedDates, dateStr, instance) {
                     if (bookedSlots.includes(dateStr)) {
-                        const msg = currentLang === 'ar' 
-                            ? "هذا الوقت محجوز بالفعل، يرجى اختيار وقت آخر." 
+                        const msg = currentLang === 'ar'
+                            ? "هذا الوقت محجوز بالفعل، يرجى اختيار وقت آخر."
                             : "This slot is already reserved. Please select another time.";
                         alert(msg);
                         instance.clear();
@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 minTime: minTimeAttr,
                 maxTime: maxTimeAttr,
                 disable: [
-                    function(date) {
+                    function (date) {
                         return !workingDaysList.includes(date.getDay());
                     }
                 ],

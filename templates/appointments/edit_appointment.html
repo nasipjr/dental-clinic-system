@@ -47,7 +47,8 @@
 
                     <form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300"
                         class="{% if is_locked %}readonly-form{% endif %}">
-                        <input type="hidden" name="next" value="{{ next_url or request.args.get('next', '') or request.referrer or '' }}">
+                        <input type="hidden" name="next"
+                            value="{{ next_url or request.args.get('next', '') or request.referrer or '' }}">
 
                         <div class="row gy-4">
 
@@ -57,34 +58,43 @@
                                     class="form-control"
                                     value="{{ appointment.appointment_date.strftime('%Y-%m-%dT%H:%M') if appointment.appointment_date else '' }}"
                                     min="{{ appointment_min_datetime }}" max="{{ appointment_max_datetime }}"
-                                    data-working-days="{{ working_days }}"
-                                    data-min-time="{{ working_hours_start }}"
+                                    data-working-days="{{ working_days }}" data-min-time="{{ working_hours_start }}"
                                     data-max-time="{{ working_hours_end }}"
-                                    data-duration="{{ default_appointment_duration }}" required
-                                    {% if is_locked %}disabled{% endif %}>
+                                    data-duration="{{ default_appointment_duration }}" required {% if is_locked
+                                    %}disabled{% endif %}>
                             </div>
 
                             <div class="col-12">
-                                <label for="reason" class="form-label">{% if request.cookies.get('lang', 'en') == 'ar' %}السبب / نوع المعالجة{% else %}Reason / Procedure Type{% endif %}</label>
-                                <select id="reason" name="reason" class="form-select" required {% if is_locked %}disabled{% endif %}>
-                                    <option value="">{% if request.cookies.get('lang', 'en') == 'ar' %}-- اختر السبب --{% else %}-- Select Reason --{% endif %}</option>
-                                    {% set default_procs = ['فحص دوري', 'تنظيف وتلميع', 'حشوة أسنان', 'علاج عصب السن', 'قلع سن', 'معالجة ما بعد القلع', 'تاج / جسر', 'تقويم الأسنان', 'تبييض الأسنان', 'ألم طارئ', 'متابعة'] %}
-                                    {% set available_procs = (treatment_prices.keys() if treatment_prices else default_procs) | list %}
-                                    {% if appointment and appointment.reason and appointment.reason not in available_procs %}
-                                        {% set _ = available_procs.append(appointment.reason) %}
+                                <label for="reason" class="form-label">{% if request.cookies.get('lang', 'en') == 'ar'
+                                    %}السبب / نوع المعالجة{% else %}Reason / Procedure Type{% endif %}</label>
+                                <select id="reason" name="reason" class="form-select" required {% if is_locked
+                                    %}disabled{% endif %}>
+                                    <option value="">{% if request.cookies.get('lang', 'en') == 'ar' %}-- اختر السبب
+                                        --{% else %}-- Select Reason --{% endif %}</option>
+                                    {% set default_procs = ['فحص دوري', 'تنظيف وتلميع', 'حشوة أسنان', 'علاج عصب السن',
+                                    'قلع سن', 'معالجة ما بعد القلع', 'تاج / جسر', 'تقويم الأسنان', 'تبييض الأسنان', 'ألم
+                                    طارئ', 'متابعة'] %}
+                                    {% set available_procs = (treatment_prices.keys() if treatment_prices else
+                                    default_procs) | list %}
+                                    {% if appointment and appointment.reason and appointment.reason not in
+                                    available_procs %}
+                                    {% set _ = available_procs.append(appointment.reason) %}
                                     {% endif %}
                                     {% for proc_name in available_procs %}
-                                    <option value="{{ proc_name }}" {% if appointment and appointment.reason == proc_name %}selected{% endif %}>{{ proc_name }}</option>
+                                    <option value="{{ proc_name }}" {% if appointment and appointment.reason==proc_name
+                                        %}selected{% endif %}>{{ proc_name }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
 
                             <div class="col-12">
                                 <label for="doctor_id" class="form-label">Doctor</label>
-                                <select id="doctor_id" name="doctor_id" class="form-select" {% if is_locked %}disabled{% endif %}>
+                                <select id="doctor_id" name="doctor_id" class="form-select" {% if is_locked %}disabled{%
+                                    endif %}>
                                     <option value="">Any Available Doctor</option>
                                     {% for doc in (doctors or all_doctors) %}
-                                    <option value="{{ doc.id }}" {% if appointment.doctor_id == doc.id %}selected{% endif %}>
+                                    <option value="{{ doc.id }}" {% if appointment.doctor_id==doc.id %}selected{% endif
+                                        %}>
                                         {{ doc.display_name }}
                                     </option>
                                     {% endfor %}
@@ -131,15 +141,17 @@
                                 </a>
                                 {% endif %}
 
-                                 {% if current_user and current_user.role != 'receptionist' %}
-                                 <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
-                                     class="btn-outline-main px-4">
-                                     Back to Session
-                                 </a>
-                                 {% endif %}
+                                {% if current_user and current_user.role != 'receptionist' %}
+                                <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
+                                    class="btn-outline-main px-4">
+                                    Back to Session
+                                </a>
+                                {% endif %}
 
-                                <a href="{{ next_url or request.referrer or url_for('appointments.appointments') }}" class="btn-outline-main px-4">
-                                    {% if request.cookies.get('lang', 'en') == 'ar' %}إلغاء / عودة{% else %}Cancel / Back{% endif %}
+                                <a href="{{ next_url or request.referrer or url_for('appointments.appointments') }}"
+                                    class="btn-outline-main px-4">
+                                    {% if request.cookies.get('lang', 'en') == 'ar' %}إلغاء / عودة{% else %}Cancel /
+                                    Back{% endif %}
                                 </a>
                             </div>
 

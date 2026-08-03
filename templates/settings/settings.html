@@ -1582,12 +1582,49 @@
                 }
             }
 
-            // ── Delete row from table ──
+            // ── Delete row from table with warning confirmation ──
             const deleteBtn = e.target.closest(".delete-row-btn");
             if (deleteBtn) {
                 e.preventDefault();
                 const row = deleteBtn.closest("tr");
-                if (row) row.remove();
+                if (!row) return;
+
+                const nameInput = row.querySelector('input[name="procedure_names[]"]');
+                const procName = nameInput ? nameInput.value.trim() : '';
+                const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
+
+                const confirmText = procName
+                    ? (isAr ? `هل أنت متأكد من رغبتك في حذف الإجراء (${procName})؟` : `Are you sure you want to delete procedure "${procName}"?`)
+                    : (isAr ? 'هل أنت متأكد من رغبتك في حذف هذا الإجراء؟' : 'Are you sure you want to delete this procedure?');
+
+                const doDelete = function() {
+                    row.style.transition = 'opacity 0.25s, transform 0.25s';
+                    row.style.opacity = '0';
+                    row.style.transform = 'scale(0.95)';
+                    setTimeout(() => { row.remove(); }, 250);
+                };
+
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: isAr ? '⚠️ تأكيد حذف الإجراء' : '⚠️ Confirm Delete Procedure',
+                        text: confirmText,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: isAr ? 'نعم، حذف' : 'Yes, Delete',
+                        cancelButtonText: isAr ? 'إلغاء' : 'Cancel',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            doDelete();
+                        }
+                    });
+                } else {
+                    if (confirm(confirmText)) {
+                        doDelete();
+                    }
+                }
             }
         });
 

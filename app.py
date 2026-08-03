@@ -579,8 +579,18 @@ if __name__ == "__main__":
         try:
             db.create_all()
             app.logger.info("Database tables created successfully or already exist")
+            
+            from sqlalchemy import inspect, text
+            inspector = inspect(db.engine)
+            if 'tooth_history' in inspector.get_table_names():
+                columns = [c['name'] for c in inspector.get_columns('tooth_history')]
+                if 'history_date' not in columns:
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE tooth_history ADD COLUMN history_date DATE NULL"))
+                        conn.commit()
+                    app.logger.info("Added history_date column to tooth_history table")
         except Exception:
-            app.logger.exception("Failed to create database tables")
+            app.logger.exception("Failed to create database tables or migrate columns")
 
         # Start background schedulers using Single-Instance Lock Guard
         try:
