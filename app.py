@@ -52,11 +52,17 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
     import sqlite3
     if isinstance(dbapi_connection, sqlite3.Connection):
         cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA journal_mode=WAL;")
-        cursor.execute("PRAGMA busy_timeout=30000;")
-        cursor.execute("PRAGMA synchronous=NORMAL;")
+        # WAL mode can fail on NFS file systems like PythonAnywhere; fall back gracefully if unsupported
+        try:
+            cursor.execute("PRAGMA journal_mode=WAL;")
+        except Exception:
+            pass
+        try:
+            cursor.execute("PRAGMA busy_timeout=30000;")
+            cursor.execute("PRAGMA synchronous=NORMAL;")
+        except Exception:
+            pass
         cursor.close()
-
 
 
 def populate_default_settings():
@@ -98,10 +104,13 @@ def ensure_default_admin():
 
 
 with app.app_context():
-    db.create_all()
-    populate_default_settings()
-    ensure_database_schema(app, db)
-    ensure_default_admin()
+    try:
+        db.create_all()
+        populate_default_settings()
+        ensure_database_schema(app, db)
+        ensure_default_admin()
+    except Exception as e:
+        app.logger.error(f"Failed to complete database startup tasks: {e}")
 
 
 setup_logging(app, LOG_DIRECTORY, LOG_FILE_NAME)

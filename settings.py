@@ -28,18 +28,36 @@ def build_database_uri():
     if database_url:
         return database_url
 
-    db_user = os.getenv("DB_USER", "root")
-    db_password = os.getenv("DB_PASSWORD", "1234")
-    db_host = os.getenv("DB_HOST", "127.0.0.1")
-    db_port = os.getenv("DB_PORT", "3308")
-    db_name = os.getenv("DB_NAME", "dental_clinic")
+    db_engine = os.getenv("DB_ENGINE", "").lower()
+    is_pythonanywhere = (
+        "PYTHONANYWHERE_DOMAIN" in os.environ
+        or "PYTHONANYWHERE_SITE" in os.environ
+        or "PYTHONANYWHERE_SERVICE" in os.environ
+    )
 
-    # If MySQL is configured explicitly or if the MySQL port is open and reachable
-    if os.getenv("DB_ENGINE") == "mysql" or is_port_open(db_host, db_port):
+    if db_engine == "mysql":
+        db_user = os.getenv("DB_USER", "root")
+        db_password = os.getenv("DB_PASSWORD", "1234")
+        db_host = os.getenv("DB_HOST", "127.0.0.1")
+        db_port = os.getenv("DB_PORT", "3306")
+        db_name = os.getenv("DB_NAME", "dental_clinic")
         return (
             f"mysql+pymysql://{db_user}:{db_password}"
             f"@{db_host}:{db_port}/{db_name}"
         )
+
+    # Only probe port 3308 on local dev if DB_ENGINE is unspecified and not on PythonAnywhere
+    if not db_engine and not is_pythonanywhere:
+        db_user = os.getenv("DB_USER", "root")
+        db_password = os.getenv("DB_PASSWORD", "1234")
+        db_host = os.getenv("DB_HOST", "127.0.0.1")
+        db_port = os.getenv("DB_PORT", "3308")
+        db_name = os.getenv("DB_NAME", "dental_clinic")
+        if is_port_open(db_host, db_port):
+            return (
+                f"mysql+pymysql://{db_user}:{db_password}"
+                f"@{db_host}:{db_port}/{db_name}"
+            )
 
     # Fallback to zero-dependency embedded SQLite database
     instance_dir = BASE_DIR / "instance"
