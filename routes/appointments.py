@@ -746,9 +746,9 @@ def calendar():
         working_days = get_setting("working_days", "0,1,2,3,4,6")
         working_days_list = [int(d) for d in working_days.split(",") if d.strip().isdigit()]
         return render_template("appointments/calendar.html", working_days_list=working_days_list)
-    except Exception:
-        current_app.logger.exception("Failed to load calendar page")
-        return "Error loading calendar page", 500
+    except Exception as e:
+        current_app.logger.exception(f"Failed to load calendar page: {e}")
+        return f"Error loading calendar page: {str(e)}", 500
 
 
 @appointments_bp.route("/appointments/events")
