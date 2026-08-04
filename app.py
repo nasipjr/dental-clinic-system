@@ -237,7 +237,6 @@ def check_login():
 def process_html_response(response):
     if response.mimetype == "text/html":
         import re
-        from flask_wtf.csrf import generate_csrf
 
         # Disable browser caching for HTML pages to ensure updates appear immediately
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
