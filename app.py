@@ -36,8 +36,12 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 app.jinja_env.auto_reload = True
 app.jinja_env.cache = None
 
-from flask_wtf.csrf import CSRFProtect
-csrf = CSRFProtect(app)
+try:
+    from flask_wtf.csrf import CSRFProtect, generate_csrf
+    csrf = CSRFProtect(app)
+except ImportError:
+    csrf = None
+    generate_csrf = lambda: ""
 
 LOG_DIRECTORY = app.config["LOG_DIRECTORY"]
 LOG_FILE_NAME = app.config["LOG_FILE_NAME"]
@@ -221,9 +225,16 @@ def process_html_response(response):
         
         # 1. Inject CSRF Token into forms if not already present
         try:
-            token = generate_csrf()
+            if csrf:
+                try:
+                    from flask_wtf.csrf import generate_csrf
+                    token = generate_csrf()
+                except Exception:
+                    token = ""
+            else:
+                token = ""
             html_data = response.get_data(as_text=True)
-            if "<form" in html_data.lower() and 'name="csrf_token"' not in html_data.lower():
+            if token and "<form" in html_data.lower() and 'name="csrf_token"' not in html_data.lower():
                 csrf_input = f'<input type="hidden" name="csrf_token" value="{token}">'
                 html_data = re.sub(r'(<form[^>]*>)', r'\1' + csrf_input, html_data, flags=re.IGNORECASE)
         except Exception as e:
@@ -336,7 +347,8 @@ app.register_blueprint(reports_bp)
 app.register_blueprint(settings_bp)
 app.register_blueprint(portal_bp)
 app.register_blueprint(deploy_bp)
-csrf.exempt(deploy_bp)
+if csrf:
+    csrf.exempt(deploy_bp)
 
 
 
