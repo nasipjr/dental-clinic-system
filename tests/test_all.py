@@ -11,6 +11,12 @@ from utils.license_helper import generate_license_key, verify_license_key
 
 
 class DentalClinicTestCase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        from app import app
+        app.config['TESTING'] = True
+        app.config['WTF_CSRF_ENABLED'] = False
+
     def test_parse_treatment_money(self):
         total, paid, err = parse_treatment_money(100, 50)
         self.assertIsNone(err)

@@ -42,3 +42,8 @@ dist/
 # Project zip backups
 *.zip
 
+# Sensitive License Generator & Secret Keys (Never push to GitHub)
+licensing/
+generate_license.py
+.master_key
+.secret_key

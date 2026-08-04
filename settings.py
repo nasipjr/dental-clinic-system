@@ -48,8 +48,40 @@ def build_database_uri():
     return f"sqlite:///{db_path.as_posix()}"
 
 
+def get_or_create_secret_key():
+    """
+    Returns SECRET_KEY from environment if available.
+    Otherwise, reads or generates a secure random secret key saved in instance/.secret_key.
+    This ensures every installation/deployment has a unique, cryptographically strong secret key.
+    """
+    secret = os.getenv("SECRET_KEY")
+    if secret:
+        return secret
+
+    instance_dir = BASE_DIR / "instance"
+    instance_dir.mkdir(parents=True, exist_ok=True)
+    key_file = instance_dir / ".secret_key"
+
+    if key_file.exists():
+        try:
+            stored_key = key_file.read_text(encoding="utf-8").strip()
+            if stored_key:
+                return stored_key
+        except Exception:
+            pass
+
+    import secrets
+    new_key = secrets.token_hex(32)
+    try:
+        key_file.write_text(new_key, encoding="utf-8")
+    except Exception:
+        pass
+
+    return new_key
+
+
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
+    SECRET_KEY = get_or_create_secret_key()
 
     SQLALCHEMY_DATABASE_URI = build_database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False

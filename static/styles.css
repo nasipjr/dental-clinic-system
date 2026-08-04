@@ -4158,4 +4158,368 @@ body.dark-mode .doctor-badge {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* 📱 MOBILE RESPONSIVENESS & TOUCH ENHANCEMENTS (Phase 3.1)                 */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Tables on mobile screens */
+  .table-responsive {
+    border-radius: 12px;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+  }
+
+  .table th, .table td {
+    padding: 0.65rem 0.5rem !important;
+    font-size: 0.85rem !important;
+    white-space: nowrap;
+  }
+
+  /* Interactive FDI Teeth Chart scaling for smartphones */
+  .fdi-chart-container, .teeth-chart {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+
+  .tooth-item {
+    min-width: 32px !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* Modals on mobile */
+  .modal-dialog {
+    margin: 0.5rem !important;
+  }
+
+  .modal-content {
+    border-radius: 16px !important;
+  }
+
+  /* Action buttons touch padding */
+  .btn-sm {
+    padding: 0.4rem 0.75rem !important;
+    font-size: 0.82rem !important;
+  }
+
+  /* Form controls touch optimization */
+  .form-control, .form-select {
+    font-size: 0.95rem !important;
+    padding: 0.6rem 0.85rem !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* 🌙 DARK MODE HIGH-CONTRAST & VIBRANT COLOR PALETTE SYSTEM                  */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+[data-bs-theme="dark"] {
+  --bs-body-bg: #0b0f19;
+  --bs-body-color: #f8fafc;
+  --surface-color: #1e293b;
+  --card-bg: #111827;
+}
+
+/* Dark Mode Tables */
+[data-bs-theme="dark"] .table {
+  color: #f8fafc !important;
+  background-color: transparent !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+[data-bs-theme="dark"] .table thead th {
+  background-color: #1e293b !important;
+  color: #38bdf8 !important;
+  font-weight: 700 !important;
+  border-bottom: 2px solid rgba(56, 189, 248, 0.3) !important;
+}
+
+[data-bs-theme="dark"] .table-hover tbody tr:hover {
+  background-color: rgba(56, 189, 248, 0.08) !important;
+  color: #ffffff !important;
+}
+
+/* Dark Mode Modals */
+[data-bs-theme="dark"] .modal-content {
+  background-color: #111827 !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7) !important;
+  color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .modal-header,
+[data-bs-theme="dark"] .modal-footer {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Dark Mode Forms & Inputs */
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+  background-color: #0f172a !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .form-control::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25) !important;
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+}
+
+/* Dark Mode Badges & Status Pills */
+[data-bs-theme="dark"] .badge.bg-success,
+[data-bs-theme="dark"] .badge-status-done {
+  background-color: rgba(16, 185, 129, 0.2) !important;
+  color: #34d399 !important;
+  border: 1px solid rgba(52, 211, 153, 0.3) !important;
+}
+
+[data-bs-theme="dark"] .badge.bg-primary,
+[data-bs-theme="dark"] .badge-status-scheduled {
+  background-color: rgba(14, 165, 233, 0.2) !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
+}
+
+[data-bs-theme="dark"] .badge.bg-warning,
+[data-bs-theme="dark"] .badge-status-in-chair {
+  background-color: rgba(245, 158, 11, 0.2) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(251, 191, 36, 0.3) !important;
+}
+
+[data-bs-theme="dark"] .badge.bg-danger,
+[data-bs-theme="dark"] .badge-status-cancelled {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(248, 113, 113, 0.3) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* 📊 FINANCIAL REPORTS & PDF PRINT EXCELLENCE SYSTEM (Phase 3.2)             */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Financial KPI Cards in Dark Mode */
+[data-bs-theme="dark"] .kpi-card,
+[data-bs-theme="dark"] .report-card {
+  background-color: #111827 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-bs-theme="dark"] .kpi-card .kpi-title {
+  color: #94a3b8 !important;
+  font-weight: 600 !important;
+}
+
+[data-bs-theme="dark"] .kpi-card .kpi-value {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+[data-bs-theme="dark"] .kpi-card.kpi-revenue {
+  border-left: 4px solid #38bdf8 !important;
+}
+
+[data-bs-theme="dark"] .kpi-card.kpi-paid {
+  border-left: 4px solid #34d399 !important;
+}
+
+[data-bs-theme="dark"] .kpi-card.kpi-expenses {
+  border-left: 4px solid #c084fc !important;
+}
+
+[data-bs-theme="dark"] .kpi-card.kpi-outstanding {
+  border-left: 4px solid #fbbf24 !important;
+}
+
+/* 🖨️ ULTIMATE UNIFIED PDF & PRINT STYLING SYSTEM (Phase 3.2 Master Print CSS) */
+@media print {
+  /* Force universal light print theme regardless of dark/light mode */
+  *, *::before, *::after {
+    background-color: transparent !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  html, body, [data-bs-theme="dark"] {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    font-family: "Cairo", "Segoe UI", system-ui, -apple-system, sans-serif !important;
+    font-size: 9.5pt !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Hide interactive non-printable elements, search boxes, inputs, buttons, scrollbars */
+  .d-print-none, .no-print, nav, header, footer, .sidebar,
+  .btn, .dropdown, #reportsTabs, .dataTables_filter, .dataTables_paginate,
+  .action-buttons, .btn-close, .section-title,
+  input, select, textarea, .form-control, .form-select, .search-box,
+  .filter-bar, .pagination, #doc-filter-dropdown, #doc-pagination-bar,
+  ::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Show all tab contents cleanly in print */
+  .tab-content > .tab-pane {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    margin-bottom: 25px !important;
+    page-break-inside: avoid;
+  }
+
+  /* Print Header Banner */
+  .print-header {
+    display: block !important;
+    text-align: center;
+    border-bottom: 2px solid #1e3a8a;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+  }
+
+  .print-header h2 {
+    color: #1e3a8a !important;
+    font-weight: 800 !important;
+    font-size: 16pt !important;
+    margin: 0;
+  }
+
+  .print-header p {
+    color: #475569 !important;
+    font-size: 9.5pt !important;
+    margin-top: 4px;
+  }
+
+  /* Cards & Containers in Print */
+  .card, .report-card, .kpi-card, .modal-content, .stat-grid-item, #doctor-appts-section {
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    padding: 12px !important;
+    margin-bottom: 15px !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    display: block !important;
+  }
+
+  .kpi-title {
+    color: #475569 !important;
+    font-size: 9pt !important;
+    font-weight: 700 !important;
+  }
+
+  .kpi-value, .stat-grid-item strong {
+    color: #1e3a8a !important;
+    font-size: 13pt !important;
+    font-weight: 900 !important;
+  }
+
+  /* Chart Canvas Fix for Print */
+  canvas {
+    max-height: 240px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    object-fit: contain !important;
+    page-break-inside: avoid;
+  }
+
+  /* Tables & Table Headers in Print (Fix dark header & cutoff columns!) */
+  .table-responsive {
+    overflow: visible !important;
+    width: 100% !important;
+    border: none !important;
+  }
+
+  .table {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-collapse: collapse !important;
+    margin-bottom: 1rem !important;
+    background-color: #ffffff !important;
+    table-layout: auto !important;
+    word-wrap: break-word !important;
+  }
+
+  .table thead, .table thead tr {
+    background-color: #e2e8f0 !important;
+  }
+
+  .table thead th {
+    background-color: #e2e8f0 !important;
+    color: #1e3a8a !important;
+    font-weight: 800 !important;
+    font-size: 9pt !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 8px 10px !important;
+    text-align: inherit !important;
+    white-space: normal !important;
+  }
+
+  .table tbody tr {
+    background-color: #ffffff !important;
+  }
+
+  .table td {
+    border: 1px solid #e2e8f0 !important;
+    padding: 7px 10px !important;
+    font-size: 8.5pt !important;
+    color: #0f172a !important;
+    background-color: #ffffff !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+
+  .table tbody tr:nth-child(even) td {
+    background-color: #f8fafc !important;
+  }
+
+  /* Status Badges in Print */
+  .badge {
+    border: 1px solid #cbd5e1 !important;
+    padding: 3px 8px !important;
+    font-size: 8pt !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+  }
+
+  .badge.bg-success, .badge-status-done {
+    background-color: #d1fae5 !important;
+    color: #065f46 !important;
+    border-color: #a7f3d0 !important;
+  }
+
+  .badge.bg-primary, .badge-status-scheduled {
+    background-color: #dbeafe !important;
+    color: #1e40af !important;
+    border-color: #bfdbfe !important;
+  }
+
+  .badge.bg-warning, .badge-status-in-chair {
+    background-color: #fef3c7 !important;
+    color: #92400e !important;
+    border-color: #fde68a !important;
+  }
+
+  .badge.bg-danger, .badge-status-cancelled {
+    background-color: #fee2e2 !important;
+    color: #991b1b !important;
+    border-color: #fecaca !important;
+  }
+
+  .page-break {
+    page-break-before: always !important;
+  }
+}
+
 

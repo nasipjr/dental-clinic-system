@@ -1,6 +1,7 @@
 from datetime import datetime, time, timedelta
 
 from flask import Blueprint, current_app, render_template
+from sqlalchemy.orm import joinedload
 
 from models import db, Patient, Appointment, Treatment, Payment
 from utils.auth_helper import role_required
@@ -46,6 +47,11 @@ def home():
         scheduled_query = (
             Appointment.query
             .join(Patient)
+            .options(
+                joinedload(Appointment.patient),
+                joinedload(Appointment.doctor),
+                joinedload(Appointment.invoice)
+            )
             .filter(Appointment.appointment_date >= today_start)
             .filter(Appointment.appointment_date <= today_end)
             .filter(Appointment.status.in_(["Scheduled", "Checked In", "In Chair"]))
@@ -58,6 +64,11 @@ def home():
         done_query = (
             Appointment.query
             .join(Patient)
+            .options(
+                joinedload(Appointment.patient),
+                joinedload(Appointment.doctor),
+                joinedload(Appointment.invoice)
+            )
             .filter(Appointment.appointment_date >= today_start)
             .filter(Appointment.appointment_date <= today_end)
             .filter(Appointment.status == "Done")

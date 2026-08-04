@@ -27,7 +27,7 @@
   <td>
     {% if appt.status in ('Scheduled', 'Pending') %}
     <form action="{{ url_for('portal.cancel_appointment', appointment_id=appt.id) }}" method="POST" class="d-inline" onsubmit="return confirmCancel(event);">
-      <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
         {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
       </button>

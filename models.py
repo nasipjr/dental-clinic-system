@@ -11,15 +11,15 @@ class Patient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     title = db.Column(db.String(20))
-    first_name = db.Column(db.String(100), nullable=False)
-    last_name = db.Column(db.String(100), nullable=False)
+    first_name = db.Column(db.String(100), nullable=False, index=True)
+    last_name = db.Column(db.String(100), nullable=False, index=True)
 
     preferred_first_name = db.Column(db.String(100))
     date_of_birth = db.Column(db.Date)
     gender = db.Column(db.String(20))
 
-    phone = db.Column(db.String(20))
-    email = db.Column(db.String(120))
+    phone = db.Column(db.String(20), index=True)
+    email = db.Column(db.String(120), index=True)
 
     address = db.Column(db.String(255))
     city = db.Column(db.String(100))
@@ -125,14 +125,19 @@ class Appointment(db.Model):
     patient_id = db.Column(
         db.Integer,
         db.ForeignKey("patient.id", ondelete="CASCADE"),
-        nullable=False
+        nullable=False,
+        index=True
     )
 
-    appointment_date = db.Column(db.DateTime, nullable=False)
+    appointment_date = db.Column(db.DateTime, nullable=False, index=True)
     reason = db.Column(db.String(255))
-    status = db.Column(db.String(50), default="Scheduled")
+    status = db.Column(db.String(50), default="Scheduled", index=True)
     session_opened_at = db.Column(db.DateTime, nullable=True)
-    doctor_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    doctor_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True, index=True)
+
+    __table_args__ = (
+        db.Index("idx_appt_date_status", "appointment_date", "status"),
+    )
     doctor = db.relationship("User", foreign_keys=[doctor_id], backref="doctor_appointments")
 
     treatments = db.relationship(
@@ -498,7 +503,6 @@ class User(db.Model):
     last_name = db.Column(db.String(100), nullable=True)
     patient_id = db.Column(db.Integer, db.ForeignKey("patient.id", ondelete="CASCADE", use_alter=True, name="fk_user_patient"), nullable=True)
     patient = db.relationship("Patient", foreign_keys=[patient_id], backref=db.backref("user", uselist=False, cascade="all, delete-orphan"))
-    plain_password = db.Column(db.String(255), nullable=True)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

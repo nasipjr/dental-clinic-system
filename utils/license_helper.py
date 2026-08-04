@@ -5,8 +5,32 @@ import sys
 from datetime import datetime, timedelta
 from flask import current_app
 
-# Secret master salt for generating and validating license HMAC signatures
-MASTER_SECRET = "DCMS-SECRET-LICENSE-KEY-DENTAL-CLINIC-2026-PROTECTED"
+def get_master_license_secret() -> str:
+    """
+    Returns the master secret used for signing and verifying license keys.
+    Reads from LICENSE_MASTER_SECRET env variable or local .master_key file.
+    """
+    secret = os.getenv("LICENSE_MASTER_SECRET")
+    if secret:
+        return secret
+
+    from pathlib import Path
+    if getattr(sys, 'frozen', False):
+        base_dir = Path(sys.executable).parent
+    else:
+        base_dir = Path(__file__).resolve().parent.parent
+
+    key_file = base_dir / "instance" / ".master_key"
+    if key_file.exists():
+        try:
+            content = key_file.read_text(encoding="utf-8").strip()
+            if content:
+                return content
+        except Exception:
+            pass
+
+    return "DCMS-SECRET-LICENSE-KEY-DENTAL-CLINIC-2026-PROTECTED"
+
 
 TYPE_CODES = {
     "T14": ("trial", 14),
@@ -21,15 +45,29 @@ TYPE_CODES = {
 
 def _compute_hmac(payload: str) -> str:
     """Compute HMAC-SHA256 signature for payload and return first 10 hex chars."""
-    mac = hmac.new(MASTER_SECRET.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256)
+    secret = get_master_license_secret()
+    mac = hmac.new(secret.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256)
     return mac.hexdigest()[:10].upper()
 
 
-def generate_license_key(days: int = 30, license_type: str = "trial") -> str:
+def get_local_machine_hwid() -> str:
+    """
+    Generates a unique, stable Machine Hardware ID (HWID) based on machine system attributes.
+    Returns format: HWID-XXXX-YYYY-ZZZZ
+    """
+    import uuid
+    import platform
+    raw_info = f"{platform.node()}:{uuid.getnode()}:{platform.processor()}"
+    digest = hashlib.sha256(raw_info.encode("utf-8")).hexdigest().upper()
+    return f"HWID-{digest[:4]}-{digest[4:8]}-{digest[8:12]}"
+
+
+def generate_license_key(days: int = 30, license_type: str = "trial", hwid: str = None) -> str:
     """
     Generates a cryptographically signed license key string.
-    Format: DCMS-{TYPE_CODE}-{EXPIRY_YYYYMMDD}-{SIGNATURE}
-    Example: DCMS-T30-20260822-8F92A31B4C
+    If hwid is provided, the key will be locked exclusively to that machine.
+    Format Universal: DCMS-{TYPE_CODE}-{EXPIRY_YYYYMMDD}-{SIGNATURE}
+    Format Locked:    DCMS-{TYPE_CODE}-{EXPIRY_YYYYMMDD}-{HWID_SHORT}-{SIGNATURE}
     """
     now = datetime.now()
     expires_at = now + timedelta(days=days)
@@ -49,15 +87,21 @@ def generate_license_key(days: int = 30, license_type: str = "trial") -> str:
         else:
             type_code = f"T{days}"
 
-    raw_payload = f"{type_code}:{date_str}"
-    sig = _compute_hmac(raw_payload)
+    clean_hwid = hwid.strip().upper() if hwid else None
+    if clean_hwid:
+        raw_payload = f"{type_code}:{date_str}:{clean_hwid}"
+        sig = _compute_hmac(raw_payload)
+        hwid_part = clean_hwid.replace("-", "")
+        return f"DCMS-{type_code}-{date_str}-{hwid_part}-{sig}"
+    else:
+        raw_payload = f"{type_code}:{date_str}"
+        sig = _compute_hmac(raw_payload)
+        return f"DCMS-{type_code}-{date_str}-{sig}"
 
-    return f"DCMS-{type_code}-{date_str}-{sig}"
 
-
-def verify_license_key(key_string: str) -> tuple[bool, dict | str]:
+def verify_license_key(key_string: str, current_hwid: str = None) -> tuple[bool, dict | str]:
     """
-    Verifies that a license key string is authentic and valid.
+    Verifies that a license key string is authentic and valid for the current machine.
     Returns (True, payload_dict) or (False, error_message).
     """
     if not key_string or not isinstance(key_string, str):
@@ -66,23 +110,45 @@ def verify_license_key(key_string: str) -> tuple[bool, dict | str]:
     clean_key = key_string.strip().upper()
     parts = clean_key.split("-")
 
-    if len(parts) != 4 or parts[0] != "DCMS":
+    if parts[0] != "DCMS":
         return False, "صيغة مفتاح الترخيص غير صحيحة."
 
-    prefix, type_code, date_str, sig = parts
+    if len(parts) == 4:
+        # Universal License: DCMS-TYPE-DATE-SIG
+        prefix, type_code, date_str, sig = parts
+        raw_payload = f"{type_code}:{date_str}"
+        bound_hwid = None
+    elif len(parts) >= 5:
+        # Machine Locked License: DCMS-TYPE-DATE-HWID_PART-SIG
+        prefix = parts[0]
+        type_code = parts[1]
+        date_str = parts[2]
+        sig = parts[-1]
+        bound_hwid_part = "-".join(parts[3:-1])
+        
+        # Check current machine HWID
+        if not current_hwid:
+            current_hwid = get_local_machine_hwid()
+            
+        clean_current_hwid = current_hwid.strip().upper()
+        raw_payload = f"{type_code}:{date_str}:{clean_current_hwid}"
+        bound_hwid = clean_current_hwid
+    else:
+        return False, "صيغة مفتاح الترخيص غير صحيحة."
 
     # Re-verify HMAC signature
-    raw_payload = f"{type_code}:{date_str}"
     expected_sig = _compute_hmac(raw_payload)
 
     if not hmac.compare_digest(sig, expected_sig):
+        if len(parts) >= 5:
+            return False, "مفتاح الترخيص غير مخصص لهذا الكمبيوتر (HWID Mismatch)."
         return False, "مفتاح الترخيص غير صالح أو تم التلاعب برموزه."
 
     try:
         expires_at = datetime.strptime(date_str, "%Y%m%d")
-        # Expiry is set to end of that day (23:59:59)
         expires_at = expires_at.replace(hour=23, minute=59, second=59)
     except ValueError:
+        return False, "تاريخ الانتهاء المشفر في المفتاح غير صالح."
         return False, "تاريخ الانتهاء المشفر في المفتاح غير صالح."
 
     # Determine license type description

@@ -1368,7 +1368,7 @@
                 </p>
                 <form method="POST"
                     action="{{ url_for('treatments.end_appointment_session', appointment_id=appointment.id) }}">
-                    <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="d-flex justify-content-center gap-3">
                         <button type="button" class="btn btn-outline-secondary rounded-pill px-4"
                             data-bs-dismiss="modal">
@@ -1404,7 +1404,7 @@
                 </p>
                 <form method="POST"
                     action="{{ url_for('treatments.reopen_appointment_session', appointment_id=appointment.id) }}">
-                    <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="d-flex justify-content-center gap-3">
                         <button type="button" class="btn btn-outline-secondary rounded-pill px-4"
                             data-bs-dismiss="modal">

@@ -148,12 +148,26 @@
                 </div>
             {% else %}
                 <div class="alert alert-info rounded-3 mb-4">
-                    <small>{% if current_lang == 'ar' %}يرجى إدخال مفتاح الترخيص المكون من 4 أجزاء لتفعيل التطبيق.{% else %}Please enter your 4-part license key to activate the application.{% endif %}</small>
+                    <small>{% if current_lang == 'ar' %}يرجى إدخال مفتاح الترخيص لتفعيل التطبيق.{% else %}Please enter your license key to activate the application.{% endif %}</small>
                 </div>
             {% endif %}
 
+            <!-- Machine HWID Display Box -->
+            <div class="p-3 mb-4 rounded-3 text-center" style="background: rgba(13, 110, 253, 0.08); border: 1px dashed rgba(13, 110, 253, 0.3);">
+                <div class="text-secondary small fw-semibold mb-1">
+                    <i class="bi bi-cpu-fill me-1 text-primary"></i>
+                    {% if current_lang == 'ar' %}معرف كمبيوتر العيادة (Machine HWID):{% else %}Clinic Machine Identifier (HWID):{% endif %}
+                </div>
+                <div class="d-flex align-items-center justify-content-center gap-2 mt-1">
+                    <code class="fs-5 fw-bold text-primary px-3 py-1 bg-white rounded border shadow-sm" id="hwidCode">{{ machine_hwid }}</code>
+                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-semibold" onclick="navigator.clipboard.writeText('{{ machine_hwid }}'); this.innerText='✓ تم النسخ'; setTimeout(() => this.innerText='نسخ HWID', 2000);">
+                        {% if current_lang == 'ar' %}نسخ HWID{% else %}Copy HWID{% endif %}
+                    </button>
+                </div>
+            </div>
+
             <form method="POST" action="{{ url_for('auth.activate_license') }}">
-                <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token', '') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 
                 <div class="mb-4">
                     <label for="license_key" class="form-label text-secondary fw-semibold small mb-2">

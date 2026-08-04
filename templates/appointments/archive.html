@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if current_lang == 'ar' %}أرشيف المواعيد الملغاة والمحذوفة{% else %}Appointments Archive{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container section-title" data-aos="fade-up">
+  <h2>{% if current_lang == 'ar' %}أرشيف المواعيد الملغاة والمحذوفة{% else %}Cancelled & Archived Appointments{% endif %}</h2>
+  <p>{% if current_lang == 'ar' %}استعرِض وراجع المواعيد التي تم إلغاؤها أو حذفها، مع الترتيب والفرز والاستعادة المباشرة المتقدمة.{% else %}Review archived appointments with real-time AJAX sorting, filtering, and instant 1-click restoration.{% endif %}</p>
+</div>
+
+<section id="appointments-archive-section" class="find-a-doctor section pt-0" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+  <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+    <!-- Top Action Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 border-bottom pb-3">
+      <div>
+        <h4 class="mb-1 text-main fw-bold">
+          <i class="bi bi-archive me-2 text-warning"></i>
+          {% if current_lang == 'ar' %}سجل الأرشيف والاستعادة{% else %}Archive & Restoration Ledger{% endif %}
+        </h4>
+        <p class="text-secondary small mb-0">
+          {% if current_lang == 'ar' %}إجمالي المواعيد المؤرشفة:{% else %}Total Archived Appointments:{% endif %} 
+          <strong class="text-primary fs-6 ms-1" id="archived-count-display">{{ archived_count }}</strong>
+        </p>
+      </div>
+
+      <div class="d-flex gap-2">
+        <a href="{{ url_for('appointments.appointments') }}" class="btn btn-outline-secondary rounded-pill px-4 fw-semibold">
+          <i class="bi bi-arrow-left me-1"></i>
+          {% if current_lang == 'ar' %}العودة لقائمة المواعيد{% else %}Back to Appointments{% endif %}
+        </a>
+      </div>
+    </div>
+
+    <!-- Sleek Search & Filter Form -->
+    <div class="card border-0 rounded-4 shadow-sm p-3 mb-4 bg-body-tertiary">
+      <form id="archive-filter-form" action="{{ url_for('appointments.archive_table') }}" method="GET" class="row g-3 align-items-center">
+        <div class="col-md-7 col-lg-8">
+          <div class="input-group">
+            <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-search"></i></span>
+            <input type="text" name="search" id="archive-search-input" value="{{ search_query }}" class="form-control border-start-0 ps-0" placeholder="{% if current_lang == 'ar' %}ابحث باسم المريض...{% else %}Search by patient name...{% endif %}" autocomplete="off">
+          </div>
+        </div>
+        <div class="col-md-5 col-lg-4 d-flex gap-2">
+          <select name="status" id="archive-status-select" class="form-select rounded-pill">
+            <option value="" {% if not status_filter %}selected{% endif %}>{% if current_lang == 'ar' %}جميع الحالات (الملغاة والمحذوفة){% else %}All Statuses{% endif %}</option>
+            <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>{% if current_lang == 'ar' %}الملغاة فقط{% else %}Cancelled Only{% endif %}</option>
+            <option value="Deleted" {% if status_filter == 'Deleted' %}selected{% endif %}>{% if current_lang == 'ar' %}المحذوفة فقط{% else %}Deleted Only{% endif %}</option>
+          </select>
+          <a href="{{ url_for('appointments.appointments_archive') }}" class="btn btn-outline-secondary rounded-pill text-nowrap" id="archive-reset-btn">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Archived Appointments Table Card -->
+    <div class="card border-0 rounded-4 shadow-sm p-4">
+      <div id="archive-table-container">
+        {% include "partials/_archive_table.html" %}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const tableContainer = document.getElementById("archive-table-container");
+    const filterForm = document.getElementById("archive-filter-form");
+    const searchInput = document.getElementById("archive-search-input");
+    const statusSelect = document.getElementById("archive-status-select");
+
+    function loadArchiveTable(url) {
+        if (!tableContainer) return;
+        tableContainer.style.opacity = "0.5";
+
+        fetch(url, {
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Failed to load archive table");
+            return res.text();
+        })
+        .then(html => {
+            tableContainer.innerHTML = html;
+            tableContainer.style.opacity = "1";
+            if (window.initCustomTooltips) window.initCustomTooltips();
+        })
+        .catch(err => {
+            console.error(err);
+            tableContainer.style.opacity = "1";
+        });
+    }
+
+    // Delegate AJAX clicks for sorting headers & pagination links
+    document.addEventListener("click", function (e) {
+        const link = e.target.closest(".archive-ajax-link");
+        if (link) {
+            e.preventDefault();
+            loadArchiveTable(link.href);
+        }
+    });
+
+    // Handle Live Input Search with debounce
+    let searchTimeout = null;
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function () {
+                if (filterForm) {
+                    const formData = new FormData(filterForm);
+                    const queryString = new URLSearchParams(formData).toString();
+                    loadArchiveTable(filterForm.action + "?" + queryString);
+                }
+            }, 350);
+        });
+    }
+
+    // Handle Status Select Filter Change
+    if (statusSelect) {
+        statusSelect.addEventListener("change", function () {
+            if (filterForm) {
+                const formData = new FormData(filterForm);
+                const queryString = new URLSearchParams(formData).toString();
+                loadArchiveTable(filterForm.action + "?" + queryString);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

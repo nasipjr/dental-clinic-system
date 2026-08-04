@@ -417,13 +417,11 @@ def patient_detail(patient_id):
             entry["balance"] = running_bal
 
         # Tooth Pre-existing History / Diagnostic Notes
+        from collections import defaultdict
         tooth_histories = ToothHistory.query.filter_by(patient_id=patient.id).order_by(ToothHistory.created_at.desc()).all()
-        tooth_history_dict = {}
+        tooth_history_dict = defaultdict(list)
         for th in tooth_histories:
-            tn = str(th.tooth_number)
-            if tn not in tooth_history_dict:
-                tooth_history_dict[tn] = []
-            tooth_history_dict[tn].append({
+            tooth_history_dict[str(th.tooth_number)].append({
                 "id": th.id,
                 "procedure": th.procedure_type,
                 "notes": th.notes or "",
@@ -948,23 +946,115 @@ def create_portal_account(patient_id):
             role="patient",
             first_name=patient.first_name,
             last_name=patient.last_name,
-            patient_id=patient.id,
-            plain_password=password
+            patient_id=patient.id
         )
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
 
+        # Send Telegram notification if patient has a linked telegram chat
+        telegram_sent = False
+        if getattr(patient, "telegram_chat_id", None):
+            try:
+                from utils.notification_helper import send_telegram_message
+                from utils.settings_helper import get_setting
+                clinic_name = get_setting("clinic_name", "العيادة")
+                patient_name = f"{patient.first_name} {patient.last_name}"
+                msg_text = (
+                    f"🎉 *مرحباً بك في بوابة المرضى الإلكترونية*\n\n"
+                    f"مرحباً *{patient_name}*،\n"
+                    f"تم إنشاء حساب جديد لك في بوابة {clinic_name}.\n\n"
+                    f"👤 *اسم المستخدم:* `{username}`\n"
+                    f"🔑 *كلمة المرور:* `{password}`\n\n"
+                    f"⚠️ _يرجى الحفاظ على كلمة المرور وعدم مشاركتها مع أحد._"
+                )
+                success, _ = send_telegram_message(patient.telegram_chat_id, msg_text)
+                if success:
+                    telegram_sent = True
+            except Exception as e:
+                current_app.logger.error(f"Failed to send telegram account creation alert: {e}")
+
         if is_ar:
-            flash(f"تم إنشاء حساب البوابة الإلكترونية بنجاح للمريض: {patient.first_name} {patient.last_name}. اسم المستخدم: {username}", "success")
+            if telegram_sent:
+                flash(f"تم إنشاء حساب البوابة الإلكترونية للمريض: {patient.first_name} وإرسال بيانات الدخول إلى حسابه على التلغرام.", "success")
+            else:
+                flash(f"تم إنشاء حساب البوابة الإلكترونية بنجاح للمريض: {patient.first_name}. اسم المستخدم: {username} | كلمة المرور: {password}", "success")
         else:
-            flash(f"Portal account created successfully for patient: {patient.first_name} {patient.last_name}. Username: {username}", "success")
+            if telegram_sent:
+                flash(f"Portal account created successfully for patient: {patient.first_name}. Credentials sent via Telegram.", "success")
+            else:
+                flash(f"Portal account created successfully for patient: {patient.first_name}. Username: {username} | Password: {password}", "success")
         return redirect(url_for("patients.patient_detail", patient_id=patient.id))
 
     except Exception:
         db.session.rollback()
         current_app.logger.exception(f"Failed to create portal account for patient_id={patient_id}")
         msg = "فشل إنشاء حساب البوابة بسبب خطأ في قاعدة البيانات." if is_ar else "Failed to create portal account due to a database error."
+        flash(msg, "danger")
+        return redirect(url_for("patients.patient_detail", patient_id=patient_id))
+
+
+@patients_bp.route("/patients/<int:patient_id>/portal/reset_password", methods=["POST"])
+@role_required("admin", "receptionist", "doctor")
+def reset_portal_account_password(patient_id):
+    current_app.logger.info(f"Resetting patient portal password for patient_id={patient_id}")
+    is_ar = request.cookies.get('lang', 'ar') != 'en'
+    try:
+        patient = Patient.query.get_or_404(patient_id)
+        if not patient.user:
+            msg = "المريض ليس لديه حساب بوابة إلكترونية." if is_ar else "Patient does not have a portal account."
+            flash(msg, "warning")
+            return redirect(url_for("patients.patient_detail", patient_id=patient.id))
+
+        new_password = request.form.get("password", "").strip()
+        if not new_password or len(new_password) < 6:
+            msg = "كلمة السر يجب أن تكون 6 أحرف على الأقل." if is_ar else "Password must be at least 6 characters."
+            flash(msg, "danger")
+            return redirect(url_for("patients.patient_detail", patient_id=patient.id))
+
+        patient.user.set_password(new_password)
+        db.session.commit()
+
+        # Send Telegram notification if patient has a linked telegram chat
+        telegram_sent = False
+        if getattr(patient, "telegram_chat_id", None):
+            try:
+                from utils.notification_helper import send_telegram_message
+                from utils.settings_helper import get_setting
+                clinic_name = get_setting("clinic_name", "العيادة")
+                patient_name = f"{patient.first_name} {patient.last_name}"
+                msg_text = (
+                    f"🔐 *تنبيه أمان - بوابة المرضى*\n\n"
+                    f"مرحباً *{patient_name}*،\n"
+                    f"تم تحديث بيانات الدخول الخاصة بحسابك في بوابة {clinic_name} بنجاح.\n\n"
+                    f"👤 *اسم المستخدم:* `{patient.user.username}`\n"
+                    f"🔑 *كلمة المرور الجديدة:* `{new_password}`\n\n"
+                    f"⚠️ _يرجى الحفاظ على كلمة المرور وعدم مشاركتها مع أحد._"
+                )
+                success, _ = send_telegram_message(patient.telegram_chat_id, msg_text)
+                if success:
+                    telegram_sent = True
+            except Exception as e:
+                current_app.logger.error(f"Failed to send telegram password reset alert: {e}")
+
+        if is_ar:
+            if telegram_sent:
+                msg = f"تم تحديث كلمة المرور للمريض ({patient.first_name}) بنجاح وإرسال الإشعار عبر التلغرام."
+            else:
+                msg = f"تم تحديث كلمة المرور للمريض ({patient.first_name}) بنجاح. كلمة المرور الجديدة: {new_password}"
+        else:
+            if telegram_sent:
+                msg = f"Password updated for patient ({patient.first_name}) and notification sent via Telegram."
+            else:
+                msg = f"Password updated for patient ({patient.first_name}). New password: {new_password}"
+
+        flash(msg, "success")
+        return redirect(url_for("patients.patient_detail", patient_id=patient.id))
+
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(f"Failed to reset portal password for patient_id={patient_id}")
+        msg = "فشل تغيير كلمة المرور بسبب خطأ في قاعدة البيانات." if is_ar else "Failed to reset portal password due to database error."
         flash(msg, "danger")
         return redirect(url_for("patients.patient_detail", patient_id=patient_id))
 
@@ -1089,3 +1179,46 @@ def delete_patient_file(patient_id, file_id):
         flash("Failed to delete file from database.", "danger")
         
     return redirect(url_for("patients.patient_detail", patient_id=patient_id, tab="files"))
+
+
+@patients_bp.route("/api/patients/<int:patient_id>/fdi-chart", methods=["GET"])
+@role_required("admin", "doctor", "receptionist")
+def get_patient_fdi_chart_api(patient_id):
+    """Returns compact JSON of patient tooth history and clinic treatments for dynamic FDI chart loading."""
+    from collections import defaultdict
+    patient = Patient.query.get_or_404(patient_id)
+
+    tooth_histories = ToothHistory.query.filter_by(patient_id=patient.id).order_by(ToothHistory.created_at.desc()).all()
+    history_dict = defaultdict(list)
+    for th in tooth_histories:
+        history_dict[str(th.tooth_number)].append({
+            "id": th.id,
+            "procedure": th.procedure_type,
+            "notes": th.notes or "",
+            "history_date": th.history_date.strftime("%Y-%m-%d") if th.history_date else None,
+            "created_at": th.created_at.strftime("%Y-%m-%d %I:%M %p")
+        })
+
+    treatments = Treatment.query.join(Appointment).filter(
+        Appointment.patient_id == patient.id,
+        Appointment.status != "Cancelled"
+    ).all()
+
+    treatments_dict = defaultdict(list)
+    for tr in treatments:
+        if tr.tooth_number:
+            treatments_dict[str(tr.tooth_number)].append({
+                "id": tr.id,
+                "procedure": tr.procedure_type,
+                "notes": tr.notes or "",
+                "date": tr.treatment_date.strftime("%Y-%m-%d") if tr.treatment_date else "",
+                "cost": float(tr.total_cost or 0)
+            })
+
+    return jsonify({
+        "success": True,
+        "patient_id": patient.id,
+        "patient_name": f"{patient.first_name} {patient.last_name}",
+        "tooth_history": dict(history_dict),
+        "clinic_treatments": dict(treatments_dict)
+    })

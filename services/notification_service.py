@@ -98,6 +98,36 @@ def send_patient_notifications_async(app, appointment_id, patient_id, action_typ
                     success, msg = send_smtp_email(patient.email, subject, body)
                     _log_notification(appointment, patient, "email_reschedule", "email", patient.email, success, msg)
 
+            elif action_type == 'restore':
+                restore_sms_enabled = get_setting("sms_restore_enabled", "true").lower() == "true"
+                restore_telegram_enabled = get_setting("telegram_restore_enabled", "true").lower() == "true"
+                restore_email_enabled = get_setting("email_restore_enabled", "true").lower() == "true"
+
+                # 1. SMS
+                if sms_enabled and restore_sms_enabled and patient.phone:
+                    template = get_setting("sms_restore_template", "تنبيه من {clinic_name}: تم إعادة تفعيل وتأكيد موعدك المحدد بتاريخ {appointment_time}. أهلاً وسهلاً بك.")
+                    body = format_notification_template(template, patient_full_name, formatted_date, clinic_name)
+                    success, msg = send_commpeak_sms(patient.phone, body)
+                    _log_notification(appointment, patient, "sms_restore", "sms", patient.phone, success, msg)
+
+                # 2. Telegram
+                telegram_chat_id = getattr(patient, "telegram_chat_id", None)
+                if telegram_enabled and restore_telegram_enabled and telegram_chat_id:
+                    template = get_setting("telegram_restore_template", "تنبيه من {clinic_name}: تم إعادة تفعيل وتأكيد موعدك المحدد بتاريخ {appointment_time}. ننتظر حضوركم في الوقت المحدد. 🦷✨")
+                    body = format_notification_template(template, patient_full_name, formatted_date, clinic_name)
+                    success, msg = send_telegram_message(telegram_chat_id, body)
+                    _log_notification(appointment, patient, "telegram_restore", "telegram", str(telegram_chat_id), success, msg)
+
+                # 3. Email
+                if email_enabled and restore_email_enabled and patient.email:
+                    subject_template = get_setting("email_restore_subject", "تأكيد إعادة تفعيل موعدك لدى {clinic_name}")
+                    body_template = get_setting("email_restore_template", "عزيزي {patient_name}،\n\nنود إعلامكم بأنه تم إعادة تفعيل وتأكيد موعدكم المحدد بتاريخ {appointment_time}.\n\nننتظر حضوركم في الوقت المحدد.\n\nمع تحيات،\n{clinic_name}")
+                    
+                    subject = format_notification_template(subject_template, patient_full_name, formatted_date, clinic_name)
+                    body = format_notification_template(body_template, patient_full_name, formatted_date, clinic_name)
+                    success, msg = send_smtp_email(patient.email, subject, body)
+                    _log_notification(appointment, patient, "email_restore", "email", patient.email, success, msg)
+
         except Exception as e:
             app.logger.error(f"Error in send_patient_notifications_async: {e}")
 
@@ -127,6 +157,21 @@ def notify_appointment_reschedule(appointment):
         threading.Thread(
             target=send_patient_notifications_async,
             args=(app, appointment.id, appointment.patient_id, 'reschedule'),
+            daemon=True
+        ).start()
+    except Exception as e:
+        pass
+
+
+def notify_appointment_restoration(appointment):
+    """
+    Trigger restoration notifications for patient in a background thread.
+    """
+    try:
+        app = current_app._get_current_object()
+        threading.Thread(
+            target=send_patient_notifications_async,
+            args=(app, appointment.id, appointment.patient_id, 'restore'),
             daemon=True
         ).start()
     except Exception as e:

@@ -14,6 +14,12 @@
 <section id="reports-dashboard-section" class="find-a-doctor section pt-0" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
     <div class="container" data-aos="fade-up" data-aos-delay="100">
 
+        <!-- Print Header Banner (Only Visible During PDF Printing) -->
+        <div class="print-header d-none d-print-block">
+            <h2>{% if current_lang == 'ar' %}التقرير المالي والتشغيلي الشامل للعيادة{% else %}Comprehensive Clinic Financial & Operational Report{% endif %}</h2>
+            <p>{% if current_lang == 'ar' %}تاريخ طباعة التقرير: {% else %}Printed Date: {% endif %}{{ now.strftime('%Y-%m-%d %I:%M %p') }}</p>
+        </div>
+
         <!-- Export & Print Actions Bar -->
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 d-print-none border-bottom pb-3">
             <div>
@@ -26,10 +32,10 @@
             </div>
             
             <div class="d-flex gap-2">
-                <button onclick="window.print()" class="btn btn-primary rounded-pill px-4 fw-bold">
+                <a href="{{ url_for('reports.print_full_report') }}" target="_blank" class="btn btn-primary rounded-pill px-4 fw-bold">
                     <i class="bi bi-printer me-1"></i>
-                    {% if current_lang == 'ar' %}طباعة التقرير (PDF){% else %}Print Report (PDF){% endif %}
-                </button>
+                    {% if current_lang == 'ar' %}طباعة التقرير الشامل (PDF){% else %}Print Full Report (PDF){% endif %}
+                </a>
                 <div class="dropdown">
                     <button class="btn btn-primary rounded-pill px-4 fw-bold dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-download me-1"></i>

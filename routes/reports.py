@@ -699,5 +699,193 @@ def edit_expense(expense_id):
     except Exception:
         db.session.rollback()
         current_app.logger.exception(f"Failed to edit expense {expense_id}")
-        flash("فشل في تعديل المصروف." if request.cookies.get("lang","ar")!="en" else "Failed to update expense.", "danger")
+        flash("تعديل المصروف." if request.cookies.get("lang","ar")!="en" else "Failed to update expense.", "danger")
     return redirect(url_for("reports.reports_dashboard") + "#tab-expenses")
+
+
+@reports_bp.route("/reports/export/financial-csv")
+@role_required("admin")
+def export_financial_csv():
+    """Export complete financial summary to CSV format for Excel and accounting software."""
+    import csv
+    import io
+    from sqlalchemy.orm import joinedload
+
+    output = io.StringIO()
+    # Write UTF-8 BOM for Microsoft Excel compatibility with Arabic text
+    output.write('\ufeff')
+    writer = csv.writer(output, csv.QUOTE_MINIMAL)
+
+    lang = request.cookies.get("lang", "ar")
+    if lang == "ar":
+        writer.writerow(["رقم الفاتورة", "تاريخ الإصدار", "اسم المريض", "الإجمالي", "المدفوع", "المتبقي", "الحالة"])
+    else:
+        writer.writerow(["Invoice Ref", "Issue Date", "Patient Name", "Total Amount", "Paid Amount", "Outstanding", "Status"])
+
+    invoices = Invoice.query.join(Invoice.appointment).options(
+        joinedload(Invoice.patient),
+        joinedload(Invoice.appointment)
+    ).order_by(Invoice.issue_date.desc()).all()
+
+    for inv in invoices:
+        patient_name = f"{inv.patient.first_name} {inv.patient.last_name}" if inv.patient else "N/A"
+        writer.writerow([
+            inv.invoice_number,
+            inv.issue_date.strftime("%Y-%m-%d") if inv.issue_date else "",
+            patient_name,
+            float(inv.total_amount or 0),
+            float(inv.total_paid or 0),
+            float(inv.outstanding_amount or 0),
+            inv.status
+        ])
+
+    response = Response(output.getvalue(), mimetype="text/csv; charset=utf-8")
+    response.headers["Content-Disposition"] = "attachment; filename=dental_clinic_financial_report.csv"
+    return response
+
+
+@reports_bp.route("/reports/print")
+@role_required("admin")
+def print_full_report():
+    """Renders a dedicated, perfectly formatted multi-page document for PDF printing."""
+    try:
+        total_patients = Patient.query.count()
+        total_appointments = Appointment.query.count()
+        total_invoiced = sum(float(inv.total_amount) for inv in Invoice.query.join(Invoice.appointment).filter(Appointment.status != "Cancelled").all())
+        total_payments = float(db.session.query(func.coalesce(func.sum(Payment.amount), 0.0)).scalar())
+        total_outstanding = max(0.0, total_invoiced - total_payments)
+        total_credit = max(0.0, total_payments - total_invoiced)
+
+        today = datetime.now()
+        selected_year = request.args.get("year", default=today.year, type=int)
+
+        # Top 5 Procedures
+        procedure_counts = db.session.query(
+            Treatment.procedure_type,
+            func.count(Treatment.id),
+            func.sum(Treatment.total_cost)
+        ).group_by(Treatment.procedure_type).order_by(func.count(Treatment.id).desc()).limit(5).all()
+
+        procedure_labels = [p[0] for p in procedure_counts]
+        procedure_values_counts = [p[1] for p in procedure_counts]
+        procedure_values_revenue = [float(p[2] or 0.0) for p in procedure_counts]
+
+        # Gender Demographics
+        gender_counts = db.session.query(
+            Patient.gender, func.count(Patient.id)
+        ).group_by(Patient.gender).all()
+
+        gender_labels = [g[0] or "Not Specified" for g in gender_counts]
+        gender_values = [g[1] for g in gender_counts]
+
+        # Monthly Summary for year
+        monthly_summary = []
+        for month in range(1, 13):
+            date_start = datetime(selected_year, month, 1)
+            date_end = datetime(selected_year + 1, 1, 1) if month == 12 else datetime(selected_year, month + 1, 1)
+
+            invoices_m = Invoice.query.join(Invoice.appointment).filter(
+                Appointment.status != "Cancelled",
+                Invoice.issue_date >= date_start,
+                Invoice.issue_date < date_end
+            ).all()
+            billed_m = sum(float(inv.total_amount) for inv in invoices_m)
+
+            paid_m = float(db.session.query(func.sum(Payment.amount)).filter(
+                Payment.payment_date >= date_start,
+                Payment.payment_date < date_end
+            ).scalar() or 0.0)
+
+            expenses_m = float(db.session.query(func.sum(Expense.amount)).filter(
+                Expense.expense_date >= date_start.date(),
+                Expense.expense_date < date_end.date()
+            ).scalar() or 0.0)
+
+            monthly_summary.append({
+                "month_label": date_start.strftime("%B %Y"),
+                "billed": billed_m,
+                "paid": paid_m,
+                "expenses": expenses_m,
+                "net_profit": paid_m - expenses_m,
+                "accrual_profit": billed_m - expenses_m
+            })
+
+        # Doctors Performance
+        from models import User
+        doctors = User.query.filter(User.role.in_(["admin", "doctor"])).all()
+        doctors_report = []
+        for doc in doctors:
+            doc_appts = Appointment.query.filter_by(doctor_id=doc.id).count()
+            doc_treatment_count = Treatment.query.filter_by(doctor_id=doc.id).count()
+            doc_revenue = float(db.session.query(func.coalesce(func.sum(Treatment.total_cost), 0.0)).filter_by(doctor_id=doc.id).scalar())
+            doctors_report.append({
+                "doctor": doc,
+                "appointment_count": doc_appts,
+                "treatment_count": doc_treatment_count,
+                "total_revenue": doc_revenue
+            })
+
+        # Debtors & Credited Patients
+        patient_invoiced = {}
+        for inv in Invoice.query.join(Invoice.appointment).filter(Appointment.status != "Cancelled").all():
+            patient_invoiced[inv.patient_id] = patient_invoiced.get(inv.patient_id, 0.0) + float(inv.total_amount)
+
+        patient_payments = dict(
+            db.session.query(
+                Payment.patient_id,
+                func.coalesce(func.sum(Payment.amount), 0.0)
+            ).group_by(Payment.patient_id).all()
+        )
+
+        all_patient_ids = set(patient_invoiced.keys()).union(set(patient_payments.keys()))
+        all_patients_map = {p.id: p for p in Patient.query.filter(Patient.id.in_(all_patient_ids)).all()} if all_patient_ids else {}
+
+        all_debtors = []
+        all_credited_patients = []
+
+        for p_id, p in all_patients_map.items():
+            billed = float(patient_invoiced.get(p_id, 0.0))
+            paid = float(patient_payments.get(p_id, 0.0))
+            diff = billed - paid
+
+            p_data = {
+                "name": f"{p.first_name} {p.last_name}",
+                "phone": p.phone or "—",
+                "total_billed": billed,
+                "total_paid": paid,
+                "outstanding": max(0.0, diff),
+                "credit": max(0.0, -diff)
+            }
+
+            if diff > 0.01:
+                all_debtors.append(p_data)
+            elif diff < -0.01:
+                all_credited_patients.append(p_data)
+
+        all_debtors.sort(key=lambda x: x["outstanding"], reverse=True)
+        all_credited_patients.sort(key=lambda x: x["credit"], reverse=True)
+
+        return render_template(
+            "reports/print_report.html",
+            total_patients=total_patients,
+            total_appointments=total_appointments,
+            total_invoiced=total_invoiced,
+            total_payments=total_payments,
+            total_outstanding=total_outstanding,
+            total_credit=total_credit,
+            procedure_labels=procedure_labels,
+            procedure_values_counts=procedure_values_counts,
+            procedure_values_revenue=procedure_values_revenue,
+            gender_labels=gender_labels,
+            gender_values=gender_values,
+            monthly_summary=monthly_summary,
+            doctors_report=doctors_report,
+            all_debtors=all_debtors,
+            all_credited_patients=all_credited_patients,
+            selected_year=selected_year,
+            print_date=today.strftime("%Y-%m-%d %I:%M %p")
+        )
+    except Exception:
+        current_app.logger.exception("Failed to render print report")
+        flash("فشل في تجهيز طباعة التقرير." if request.cookies.get("lang","ar")!="en" else "Failed to render print report.", "danger")
+        return redirect(url_for("reports.reports_dashboard"))

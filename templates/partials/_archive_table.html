@@ -1,0 +1,186 @@
+{% if archived_appointments %}
+<div class="table-responsive">
+  <table class="table align-middle mb-0">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>
+          <a class="archive-ajax-link text-decoration-none text-main fw-bold"
+             href="{{ url_for('appointments.archive_table', search=search_query, status=status_filter, sort='patient', order='asc' if sort_by != 'patient' or order == 'desc' else 'desc') }}">
+            {% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}
+            {% if sort_by == 'patient' %}
+            <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+            {% endif %}
+          </a>
+        </th>
+        <th>
+          <a class="archive-ajax-link text-decoration-none text-main fw-bold"
+             href="{{ url_for('appointments.archive_table', search=search_query, status=status_filter, sort='date', order='asc' if sort_by != 'date' or order == 'desc' else 'desc') }}">
+            {% if current_lang == 'ar' %}التاريخ والوقت{% else %}Date & Time{% endif %}
+            {% if sort_by == 'date' %}
+            <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+            {% endif %}
+          </a>
+        </th>
+        <th>
+          <a class="archive-ajax-link text-decoration-none text-main fw-bold"
+             href="{{ url_for('appointments.archive_table', search=search_query, status=status_filter, sort='doctor', order='asc' if sort_by != 'doctor' or order == 'desc' else 'desc') }}">
+            {% if current_lang == 'ar' %}الطبيب المعالج{% else %}Doctor{% endif %}
+            {% if sort_by == 'doctor' %}
+            <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+            {% endif %}
+          </a>
+        </th>
+        <th>
+          <a class="archive-ajax-link text-decoration-none text-main fw-bold"
+             href="{{ url_for('appointments.archive_table', search=search_query, status=status_filter, sort='reason', order='asc' if sort_by != 'reason' or order == 'desc' else 'desc') }}">
+            {% if current_lang == 'ar' %}سبب الموعد / الملاحظات{% else %}Reason / Notes{% endif %}
+            {% if sort_by == 'reason' %}
+            <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+            {% endif %}
+          </a>
+        </th>
+        <th>
+          <a class="archive-ajax-link text-decoration-none text-main fw-bold"
+             href="{{ url_for('appointments.archive_table', search=search_query, status=status_filter, sort='status', order='asc' if sort_by != 'status' or order == 'desc' else 'desc') }}">
+            {% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}
+            {% if sort_by == 'status' %}
+            <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+            {% endif %}
+          </a>
+        </th>
+        <th class="text-end">{% if current_lang == 'ar' %}الإجراءات والتحكم{% else %}Actions{% endif %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for appt in archived_appointments %}
+      <tr>
+        <td class="fw-bold text-secondary">{{ (pagination.page - 1) * pagination.per_page + loop.index }}</td>
+        <td>
+          {% if appt.patient %}
+          <a href="{{ url_for('patients.patient_detail', patient_id=appt.patient.id) }}" class="fw-bold text-decoration-none text-main">
+            <i class="bi bi-person me-1 text-primary"></i>
+            {{ appt.patient.first_name }} {{ appt.patient.last_name }}
+          </a>
+          <div class="text-secondary small ms-3">{{ appt.patient.phone or '' }}</div>
+          {% else %}
+          <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+        <td>
+          <div class="fw-bold">{{ appt.appointment_date.strftime('%Y-%m-%d') if appt.appointment_date else '—' }}</div>
+          <div class="text-muted small">{{ appt.appointment_date.strftime('%I:%M %p') if appt.appointment_date else '' }}</div>
+        </td>
+        <td>
+          {% if appt.doctor %}
+          <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1.5 fw-semibold">
+            <i class="bi bi-person-badge me-1"></i>
+            {{ appt.doctor.first_name or '' }} {{ appt.doctor.last_name or '' }}
+          </span>
+          {% else %}
+          <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+        <td>
+          <span class="text-secondary small">{{ appt.reason or '—' }}</span>
+        </td>
+        <td>
+          {% if appt.status == 'Deleted' %}
+          <span class="badge bg-dark bg-opacity-25 text-danger rounded-pill px-3 py-1.5 fw-semibold border border-danger border-opacity-25">
+            <i class="bi bi-trash-fill me-1"></i>
+            {% if current_lang == 'ar' %}محذوف{% else %}Deleted{% endif %}
+          </span>
+          {% else %}
+          <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-1.5 fw-semibold border border-warning border-opacity-25">
+            <i class="bi bi-x-circle me-1"></i>
+            {% if current_lang == 'ar' %}ملغى{% else %}Cancelled{% endif %}
+          </span>
+          {% endif %}
+        </td>
+        <td class="text-end">
+          <div class="d-flex justify-content-end gap-2">
+            <!-- Restore Appointment Form (Future Only) -->
+            {% if appt.appointment_date and appt.appointment_date >= now %}
+            <form method="POST" action="{{ url_for('appointments.restore_appointment', appointment_id=appt.id) }}" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold" title="{% if current_lang == 'ar' %}استعادة الموعد وإعادته للجدول{% else %}Restore Appointment{% endif %}">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>
+                {% if current_lang == 'ar' %}استعادة للجدول{% else %}Restore{% endif %}
+              </button>
+            </form>
+            {% else %}
+            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 opacity-50" disabled title="{% if current_lang == 'ar' %}انتهى تاريخ الموعد - لا يمكن الاستعادة{% else %}Past Date - Cannot Restore{% endif %}">
+              <i class="bi bi-clock-history me-1"></i>
+              {% if current_lang == 'ar' %}انتهى موعده{% else %}Past Date{% endif %}
+            </button>
+            {% endif %}
+
+            {% if current_user.role in ('admin', 'receptionist') %}
+            <!-- Permanent Delete Form -->
+            <form method="POST" action="{{ url_for('appointments.permanent_delete_appointment', appointment_id=appt.id) }}" class="d-inline" onsubmit="return confirmDelete(event, {% if current_lang == 'ar' %}'هل أنت متأكد من حذف هذا الموعد نهائياً من قاعدة البيانات؟'{% else %}'Are you sure you want to permanently delete this appointment?'{% endif %});">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" title="{% if current_lang == 'ar' %}حذف نهائي{% else %}Delete Permanently{% endif %}">
+                <i class="bi bi-trash me-1"></i>
+                {% if current_lang == 'ar' %}حذف نهائي{% else %}Delete{% endif %}
+              </button>
+            </form>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Archive Pagination -->
+{% if pagination.pages > 1 %}
+<nav class="archive-pagination mt-4">
+  <ul class="pagination justify-content-center">
+    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+      {% if pagination.has_prev %}
+      <a class="page-link archive-ajax-link"
+         href="{{ url_for('appointments.archive_table', page=pagination.prev_num, search=search_query, status=status_filter, sort=sort_by, order=order) }}">
+        {% if current_lang == 'ar' %}السابق{% else %}Previous{% endif %}
+      </a>
+      {% else %}
+      <span class="page-link">{% if current_lang == 'ar' %}السابق{% else %}Previous{% endif %}</span>
+      {% endif %}
+    </li>
+
+    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+    {% if page_num %}
+    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+      <a class="page-link archive-ajax-link"
+         href="{{ url_for('appointments.archive_table', page=page_num, search=search_query, status=status_filter, sort=sort_by, order=order) }}">
+        {{ page_num }}
+      </a>
+    </li>
+    {% else %}
+    <li class="page-item disabled">
+      <span class="page-link">...</span>
+    </li>
+    {% endif %}
+    {% endfor %}
+
+    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+      {% if pagination.has_next %}
+      <a class="page-link archive-ajax-link"
+         href="{{ url_for('appointments.archive_table', page=pagination.next_num, search=search_query, status=status_filter, sort=sort_by, order=order) }}">
+        {% if current_lang == 'ar' %}التالي{% else %}Next{% endif %}
+      </a>
+      {% else %}
+      <span class="page-link">{% if current_lang == 'ar' %}التالي{% else %}Next{% endif %}</span>
+      {% endif %}
+    </li>
+  </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="text-center py-5">
+  <i class="bi bi-archive-fill text-muted fs-1 mb-3 d-block opacity-50"></i>
+  <h5 class="text-secondary fw-bold">{% if current_lang == 'ar' %}لا توجد مواعيد ملغاة أو مؤرشفة مطابقة للبحث{% else %}No archived appointments found{% endif %}</h5>
+  <p class="text-muted small">{% if current_lang == 'ar' %}جميع مواعيد العيادة مفعلة ونشطة بكفاءة.{% else %}All clinic appointments are active and scheduled.{% endif %}</p>
+</div>
+{% endif %}

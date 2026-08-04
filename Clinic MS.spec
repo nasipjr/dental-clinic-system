@@ -18,7 +18,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=['generate_license'],
     noarchive=False,
     optimize=0,
 )

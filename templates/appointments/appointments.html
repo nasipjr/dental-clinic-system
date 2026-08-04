@@ -41,16 +41,10 @@
             </div>
 
             <div class="d-flex gap-2 align-items-center">
-                {% if has_cancelled and current_user.role in ('admin', 'receptionist') %}
-                <button type="button" class="btn btn-outline-danger" style="border-radius: 30px; font-weight: 600; padding: 10px 24px;" data-bs-toggle="modal" data-bs-target="#deleteAllCancelledModal">
-                    <i class="bi bi-trash me-1"></i>
-                    {% if current_lang == 'ar' %}حذف جميع المواعيد الملغاة{% else %}Delete All Cancelled{% endif %}
-                </button>
-                {% endif %}
                 {% if current_user.role in ('admin', 'receptionist', 'doctor') %}
                 <a href="{{ url_for('appointments.add_appointment_direct') }}" class="btn btn-primary" style="border-radius: 30px; font-weight: 600; padding: 10px 24px;">
-                    <i class="bi bi-plus-circle"></i>
-                    New Appointment
+                    <i class="bi bi-plus-circle me-1"></i>
+                    {% if current_lang == 'ar' %}إضافة موعد جديد{% else %}New Appointment{% endif %}
                 </a>
                 {% endif %}
             </div>
@@ -328,6 +322,20 @@
 
             <div id="appointments-table-container">
                 {% include "partials/_appointments_table.html" %}
+            </div>
+
+            <!-- Bottom Actions Bar: Archive & Delete All Cancelled -->
+            <div class="d-flex justify-content-end align-items-center gap-2 mt-4 pt-3 border-top border-secondary border-opacity-25 flex-wrap">
+                <a href="{{ url_for('appointments.appointments_archive') }}" class="btn btn-outline-warning border-2 rounded-pill px-4 py-2 fw-bold shadow-sm">
+                    <i class="bi bi-archive-fill me-1"></i>
+                    {% if current_lang == 'ar' %}أرشيف المواعيد (الملغاة والمحذوفة){% else %}Appointments Archive{% endif %}
+                </a>
+                {% if has_cancelled and current_user.role in ('admin', 'receptionist') %}
+                <button type="button" class="btn btn-outline-danger border-2 rounded-pill px-4 py-2 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#deleteAllCancelledModal">
+                    <i class="bi bi-trash me-1"></i>
+                    {% if current_lang == 'ar' %}حذف جميع المواعيد الملغاة{% else %}Delete All Cancelled{% endif %}
+                </button>
+                {% endif %}
             </div>
         {% endif %}
         </div>

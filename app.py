@@ -36,6 +36,9 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 app.jinja_env.auto_reload = True
 app.jinja_env.cache = None
 
+from flask_wtf.csrf import CSRFProtect
+csrf = CSRFProtect(app)
+
 LOG_DIRECTORY = app.config["LOG_DIRECTORY"]
 LOG_FILE_NAME = app.config["LOG_FILE_NAME"]
 
@@ -70,207 +73,7 @@ def populate_default_settings():
         app.logger.error(f"Error initializing default settings: {e}")
 
 
-def check_and_add_discount_column():
-    from sqlalchemy import text
-    try:
-        db.session.execute(text("SELECT discount FROM invoice LIMIT 1"))
-    except Exception:
-        db.session.rollback()
-        try:
-            app.logger.info("Adding discount column to invoice table")
-            db.session.execute(text("ALTER TABLE invoice ADD COLUMN discount DECIMAL(10, 2) NOT NULL DEFAULT 0.00"))
-            db.session.commit()
-            app.logger.info("Successfully added discount column")
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Failed to add discount column: {e}")
-
-    try:
-        db.session.execute(text("SELECT discount_type FROM invoice LIMIT 1"))
-    except Exception:
-        db.session.rollback()
-        try:
-            app.logger.info("Adding discount_type column to invoice table")
-            db.session.execute(text("ALTER TABLE invoice ADD COLUMN discount_type VARCHAR(20) NOT NULL DEFAULT 'value'"))
-            db.session.commit()
-            app.logger.info("Successfully added discount_type column")
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Failed to add discount_type column: {e}")
-
-
-def check_and_add_additional_charges_column():
-    from sqlalchemy import text
-    try:
-        db.session.execute(text("SELECT additional_charges FROM invoice LIMIT 1"))
-    except Exception:
-        db.session.rollback()
-        try:
-            app.logger.info("Adding additional_charges column to invoice table")
-            db.session.execute(text("ALTER TABLE invoice ADD COLUMN additional_charges DECIMAL(10, 2) NOT NULL DEFAULT 0.00"))
-            db.session.commit()
-            app.logger.info("Successfully added additional_charges column")
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Failed to add additional_charges column: {e}")
-
-
-def check_and_add_tax_rate_column():
-    from sqlalchemy import text
-    try:
-        db.session.execute(text("SELECT tax_rate FROM invoice LIMIT 1"))
-    except Exception:
-        db.session.rollback()
-        try:
-            app.logger.info("Adding tax_rate column to invoice table")
-            db.session.execute(text("ALTER TABLE invoice ADD COLUMN tax_rate DECIMAL(5, 2) NOT NULL DEFAULT 0.00"))
-            db.session.commit()
-            app.logger.info("Successfully added tax_rate column")
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Failed to add tax_rate column: {e}")
-
-
-def check_and_add_patient_id_column():
-    from sqlalchemy import text
-    try:
-        db.session.execute(text("SELECT patient_id FROM user LIMIT 1"))
-    except Exception:
-        db.session.rollback()
-        try:
-            app.logger.info("Adding patient_id column to user table")
-            db.session.execute(text("ALTER TABLE user ADD COLUMN patient_id INT NULL"))
-            db.session.commit()
-            app.logger.info("Successfully added patient_id column to user table")
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Failed to add patient_id column: {e}")
-        try:
-            app.logger.info("Adding foreign key constraint for patient_id on user table")
-            db.session.execute(text("ALTER TABLE user ADD CONSTRAINT fk_user_patient FOREIGN KEY (patient_id) REFERENCES patient(id)"))
-            db.session.commit()
-            app.logger.info("Successfully added foreign key constraint")
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Failed to add foreign key constraint: {e}")
-
-
-def check_and_add_plain_password_column():
-    from sqlalchemy import text
-    try:
-        db.session.execute(text("SELECT plain_password FROM user LIMIT 1"))
-    except Exception:
-        db.session.rollback()
-        try:
-            app.logger.info("Adding plain_password column to user table")
-            db.session.execute(text("ALTER TABLE user ADD COLUMN plain_password VARCHAR(255) NULL"))
-            db.session.commit()
-            app.logger.info("Successfully added plain_password column to user table")
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Failed to add plain_password column: {e}")
-
-
-def check_and_add_session_opened_at_column():
-    from sqlalchemy import text
-    try:
-        db.session.execute(text("SELECT session_opened_at FROM appointment LIMIT 1"))
-    except Exception:
-        db.session.rollback()
-        try:
-            app.logger.info("Adding session_opened_at column to appointment table")
-            db.session.execute(text("ALTER TABLE appointment ADD COLUMN session_opened_at DATETIME NULL"))
-            db.session.commit()
-            app.logger.info("Successfully added session_opened_at column to appointment table")
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Failed to add session_opened_at column: {e}")
-
-
-def check_and_add_telegram_columns():
-    from sqlalchemy import text
-    try:
-        db.session.execute(text("SELECT telegram_chat_id FROM patient LIMIT 1"))
-    except Exception:
-        db.session.rollback()
-        try:
-            app.logger.info("Adding telegram_chat_id column to patient table")
-            db.session.execute(text("ALTER TABLE patient ADD COLUMN telegram_chat_id VARCHAR(50) NULL"))
-            db.session.commit()
-            app.logger.info("Successfully added telegram_chat_id column to patient table")
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Failed to add telegram_chat_id column: {e}")
-
-    try:
-        db.session.execute(text("SELECT reminders_enabled FROM patient LIMIT 1"))
-    except Exception:
-        db.session.rollback()
-        try:
-            app.logger.info("Adding reminders_enabled column to patient table")
-            db.session.execute(text("ALTER TABLE patient ADD COLUMN reminders_enabled BOOLEAN NOT NULL DEFAULT 1"))
-            db.session.commit()
-            app.logger.info("Successfully added reminders_enabled column to patient table")
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Failed to add reminders_enabled column: {e}")
-
-
-def check_and_add_anesthesia_columns():
-    from sqlalchemy import text
-    try:
-        db.session.execute(text("SELECT use_anesthesia FROM treatment LIMIT 1"))
-    except Exception:
-        db.session.rollback()
-        try:
-            app.logger.info("Adding anesthesia columns to treatment table")
-            db.session.execute(text("ALTER TABLE treatment ADD COLUMN use_anesthesia BOOLEAN NOT NULL DEFAULT 0"))
-            db.session.execute(text("ALTER TABLE treatment ADD COLUMN anesthesia_needles INTEGER NOT NULL DEFAULT 0"))
-            db.session.execute(text("ALTER TABLE treatment ADD COLUMN anesthesia_cost DECIMAL(10,2) NOT NULL DEFAULT 0.00"))
-            db.session.commit()
-            app.logger.info("Successfully added anesthesia columns to treatment table")
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Failed to add anesthesia columns: {e}")
-
-
-def check_and_add_doctor_columns():
-    from sqlalchemy import text
-    try:
-        db.session.execute(text("SELECT doctor_id FROM appointment LIMIT 1"))
-    except Exception:
-        db.session.rollback()
-        try:
-            app.logger.info("Adding doctor_id column to appointment table")
-            db.session.execute(text("ALTER TABLE appointment ADD COLUMN doctor_id INT NULL"))
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Failed to add doctor_id column to appointment: {e}")
-
-    try:
-        db.session.execute(text("SELECT doctor_id FROM treatment LIMIT 1"))
-    except Exception:
-        db.session.rollback()
-        try:
-            app.logger.info("Adding doctor_id column to treatment table")
-            db.session.execute(text("ALTER TABLE treatment ADD COLUMN doctor_id INT NULL"))
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Failed to add doctor_id column to treatment: {e}")
-
-    try:
-        db.session.execute(text("SELECT primary_doctor_id FROM patient LIMIT 1"))
-    except Exception:
-        db.session.rollback()
-        try:
-            app.logger.info("Adding primary_doctor_id column to patient table")
-            db.session.execute(text("ALTER TABLE patient ADD COLUMN primary_doctor_id INT NULL"))
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Failed to add primary_doctor_id column to patient: {e}")
+from utils.db_migration_helper import ensure_database_schema
 
 
 def ensure_default_admin():
@@ -297,15 +100,7 @@ def ensure_default_admin():
 with app.app_context():
     db.create_all()
     populate_default_settings()
-    check_and_add_discount_column()
-    check_and_add_additional_charges_column()
-    check_and_add_tax_rate_column()
-    check_and_add_patient_id_column()
-    check_and_add_plain_password_column()
-    check_and_add_session_opened_at_column()
-    check_and_add_telegram_columns()
-    check_and_add_anesthesia_columns()
-    check_and_add_doctor_columns()
+    ensure_database_schema(app, db)
     ensure_default_admin()
 
 
@@ -376,26 +171,6 @@ def load_logged_in_user():
 
 
 @app.before_request
-def validate_csrf():
-    if app.config.get("TESTING") or not app.config.get("WTF_CSRF_ENABLED", True):
-        return
-    # Only validate modifying requests
-    if request.method in ("GET", "HEAD", "OPTIONS"):
-        return
-    # Exclude deployment webhook
-    if request.endpoint == "deploy.deploy":
-        return
-        
-    csrf_token = session.get("csrf_token")
-    form_token = request.form.get("csrf_token")
-    header_token = request.headers.get("X-CSRF-Token")
-    
-    if not csrf_token or (form_token != csrf_token and header_token != csrf_token):
-        app.logger.warning(f"CSRF validation failed! method={request.method} path={request.path}")
-        return "CSRF Token missing or invalid", 403
-
-
-@app.before_request
 def enforce_system_license():
     # Exclude login, activation, static files, logout, and deploy webhook
     excluded_endpoints = ("auth.login", "auth.activate_license", "auth.logout", "static", "deploy.deploy")
@@ -428,22 +203,23 @@ def check_login():
 def process_html_response(response):
     if response.mimetype == "text/html":
         import re
-        import secrets
+        from flask_wtf.csrf import generate_csrf
 
         # Disable browser caching for HTML pages to ensure updates appear immediately
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
         
-        # 1. Inject CSRF Token in forms
-        csrf_token = session.get("csrf_token")
-        if not csrf_token:
-            csrf_token = secrets.token_hex(32)
-            session["csrf_token"] = csrf_token
-            
-        html_data = response.get_data(as_text=True)
-        csrf_input = f'<input type="hidden" name="csrf_token" value="{csrf_token}">'
-        html_data = re.sub(r'(<form[^>]*>)', r'\1' + csrf_input, html_data, flags=re.IGNORECASE)
+        # 1. Inject CSRF Token into forms if not already present
+        try:
+            token = generate_csrf()
+            html_data = response.get_data(as_text=True)
+            if "<form" in html_data.lower() and 'name="csrf_token"' not in html_data.lower():
+                csrf_input = f'<input type="hidden" name="csrf_token" value="{token}">'
+                html_data = re.sub(r'(<form[^>]*>)', r'\1' + csrf_input, html_data, flags=re.IGNORECASE)
+        except Exception as e:
+            app.logger.error(f"Error generating CSRF token for response: {e}")
+            html_data = response.get_data(as_text=True)
         
         # 2. Server-side translation
         lang = request.cookies.get("lang", "en")
@@ -551,6 +327,7 @@ app.register_blueprint(reports_bp)
 app.register_blueprint(settings_bp)
 app.register_blueprint(portal_bp)
 app.register_blueprint(deploy_bp)
+csrf.exempt(deploy_bp)
 
 
 

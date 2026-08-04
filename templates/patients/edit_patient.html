@@ -239,24 +239,23 @@
                                     </div>
                                 </div><br>
 
-                                {% if patient.user and session.get('role') in ('doctor', 'admin') %}
+                                {% if patient.user and session.get('role') in ('doctor', 'admin', 'receptionist') %}
                                 <div class="col-md-12 mt-4 pt-3 border-top">
-                                    <div class="card bg-light border-warning shadow-sm">
-                                        <div class="card-header bg-warning bg-opacity-10 text-warning-emphasis fw-bold">
-                                            <i class="bi bi-shield-lock-fill me-1"></i> {% if request.cookies.get('lang') == 'ar' %}بيانات دخول بوابة المريض (للعرض فقط للطبيب والمدير){% else %}Patient Portal Access Credentials (Doctor & Admin View Only){% endif %}
+                                    <div class="card bg-light border-primary shadow-sm">
+                                        <div class="card-header bg-primary bg-opacity-10 text-primary-emphasis fw-bold d-flex justify-content-between align-items-center">
+                                            <span><i class="bi bi-shield-lock-fill me-1"></i> {% if request.cookies.get('lang') == 'ar' %}حساب بوابة المريض{% else %}Patient Portal Access Account{% endif %}</span>
+                                            <span class="badge bg-success">{% if request.cookies.get('lang') == 'ar' %}حساب نشط{% else %}Active Account{% endif %}</span>
                                         </div>
                                         <div class="card-body">
-                                            <div class="row gy-3">
+                                            <div class="row gy-3 align-items-center">
                                                 <div class="col-md-6">
                                                     <label class="form-label fw-semibold">{% if request.cookies.get('lang') == 'ar' %}اسم مستخدم البوابة{% else %}Portal Username{% endif %}</label>
                                                     <input type="text" class="form-control bg-white" value="{{ patient.user.username }}" readonly>
                                                 </div>
-                                                <div class="col-md-6">
-                                                    <label class="form-label fw-semibold">{% if request.cookies.get('lang') == 'ar' %}كلمة مرور البوابة{% else %}Portal Password{% endif %}</label>
-                                                    <div class="input-group">
-                                                        <input type="text" class="form-control bg-white" value="{{ patient.user.plain_password or 'N/A' }}" readonly>
-                                                        <span class="input-group-text"><i class="bi bi-key-fill text-muted"></i></span>
-                                                    </div>
+                                                <div class="col-md-6 text-end">
+                                                    <button type="button" class="btn btn-outline-primary fw-semibold mt-4" data-bs-toggle="modal" data-bs-target="#resetPortalPasswordModal">
+                                                        <i class="bi bi-key-fill me-1"></i> {% if request.cookies.get('lang') == 'ar' %}تغيير كلمة المرور{% else %}Change Password{% endif %}
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -292,6 +291,37 @@
         </div>
     </div>
 </section>
+
+<!-- Reset Portal Password Modal -->
+{% if patient.user %}
+<div class="modal fade" id="resetPortalPasswordModal" tabindex="-1" aria-labelledby="resetPortalPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--surface-color, #ffffff); border-radius: 16px;">
+            <div class="modal-header border-bottom-0">
+                <h5 class="modal-title fw-bold" id="resetPortalPasswordModalLabel">{% if request.cookies.get('lang') == 'ar' %}تغيير كلمة سر بوابة المريض{% else %}Change Patient Portal Password{% endif %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('patients.reset_portal_account_password', patient_id=patient.id) }}">
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">{% if request.cookies.get('lang') == 'ar' %}أدخل كلمة المرور الجديدة. سيتم إرسال إشعار للمريض بها عبر التلغرام تلقائياً إذا كان حسابه مرتبطاً.{% else %}Enter new password. A Telegram alert with the new password will be automatically sent to the patient if linked.{% endif %}</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">{% if request.cookies.get('lang') == 'ar' %}اسم المستخدم{% else %}Username{% endif %}</label>
+                        <input type="text" class="form-control bg-light" value="{{ patient.user.username }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_reset_password" class="form-label fw-semibold">{% if request.cookies.get('lang') == 'ar' %}كلمة المرور الجديدة{% else %}New Password{% endif %}</label>
+                        <input type="password" id="edit_reset_password" name="password" class="form-control" placeholder="{% if request.cookies.get('lang') == 'ar' %}6 أحرف على الأقل{% else %}At least 6 characters{% endif %}" required minlength="6">
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">{% if request.cookies.get('lang') == 'ar' %}إلغاء{% else %}Cancel{% endif %}</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">{% if request.cookies.get('lang') == 'ar' %}حفظ كلمة المرور{% else %}Save Password{% endif %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {

@@ -486,39 +486,42 @@ def _send_telegram_bot_reply(bot_token, chat_id, text, reply_markup=None):
 
 
 _bot_username_cache = None
+_bot_username_cache_token = None
 _bot_username_cache_time = 0
 
 def get_bot_username():
-    """Retrieve and cache the bot username from Telegram API to generate dynamic links."""
-    global _bot_username_cache, _bot_username_cache_time
+    """Retrieve and cache the bot username from Telegram API without blocking web page loads."""
+    global _bot_username_cache, _bot_username_cache_token, _bot_username_cache_time
     import time
     now = time.time()
 
-    if _bot_username_cache_time and (now - _bot_username_cache_time < 300):
-        return _bot_username_cache
-
-    token = get_setting("telegram_bot_token", "")
+    token = get_setting("telegram_bot_token", "").strip()
     if not token:
-        _bot_username_cache = None
-        _bot_username_cache_time = now
         return None
+
+    # Return cached username immediately if token hasn't changed and cache is within 1 hour
+    if _bot_username_cache_token == token and (now - _bot_username_cache_time < 3600):
+        return _bot_username_cache
 
     import urllib.request
     import json
     try:
         url = f"https://api.telegram.org/bot{token}/getMe"
         req = urllib.request.Request(url, method="GET")
-        with urllib.request.urlopen(req, timeout=1.5) as resp:
+        with urllib.request.urlopen(req, timeout=0.8) as resp:
             data = json.loads(resp.read().decode("utf-8"))
             if data.get("ok"):
                 username = data["result"].get("username")
                 _bot_username_cache = username
+                _bot_username_cache_token = token
                 _bot_username_cache_time = now
                 return username
     except Exception:
         pass
 
-    _bot_username_cache = None
+    # On network failure/timeout, cache failure for 10 minutes to avoid hanging page renders
+    _bot_username_cache = _bot_username_cache if _bot_username_cache_token == token else None
+    _bot_username_cache_token = token
     _bot_username_cache_time = now
-    return None
+    return _bot_username_cache
 

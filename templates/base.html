@@ -24,7 +24,7 @@
   <title>HomePage</title>
   <meta name="description" content="">
   <meta name="keywords" content="">
-  <meta name="csrf-token" content="{{ session.get('csrf_token') }}">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <!-- Favicons -->
   <link href="{{ url_for('static', filename='assets/img/favicon.png') }}" rel="icon">
@@ -82,6 +82,16 @@
         </div>
         <div class="social-links d-flex align-items-center gap-2 gap-md-3 flex-grow-1 flex-md-grow-0 flex-shrink-0 justify-content-between justify-content-md-end">
           {% if current_user %}
+            <!-- 1-Click Theme Switcher Button -->
+            <button onclick="toggleAppTheme()" id="quickThemeToggleBtn" class="btn btn-sm text-white border-0 bg-white bg-opacity-10 rounded-pill px-2 py-1 me-1 d-flex align-items-center gap-1 shadow-sm" style="transition: all 0.2s ease;" title="{% if current_lang == 'ar' %}تبديل المظهر (داكن/فاتح){% else %}Toggle Theme (Dark/Light){% endif %}">
+              <i class="bi bi-moon-stars-fill fs-6" id="quickThemeIcon"></i>
+            </button>
+
+            <!-- 1-Click Language Switcher Button -->
+            <button onclick="toggleAppLanguage()" id="quickLangToggleBtn" class="btn btn-sm text-white border-0 bg-white bg-opacity-10 rounded-pill px-2.5 py-1 me-2 d-flex align-items-center gap-1 shadow-sm fw-bold" style="transition: all 0.2s ease; font-size: 0.78rem;" title="{% if current_lang == 'ar' %}تغيير اللغة إلى الإنجليزية{% else %}Switch Language to Arabic{% endif %}">
+              <i class="bi bi-translate fs-6"></i>
+              <span>{% if current_lang == 'ar' %}EN{% else %}عربي{% endif %}</span>
+            </button>
             <span class="text-white text-truncate" style="font-size: 13px; max-width: 60vw;">
               <i class="bi bi-person-circle me-1"></i>
               <span class="d-none d-sm-inline">{{ current_user.first_name or current_user.username }} ({{ current_user.role|capitalize }})</span>
@@ -1271,6 +1281,41 @@
             }
         });
         return false;
+    }
+
+    // ── Global Theme Toggle Logic ──
+    function toggleAppTheme() {
+        const current = document.documentElement.getAttribute('data-bs-theme') || 'light';
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-bs-theme', next);
+        localStorage.setItem('theme', next);
+        document.cookie = "theme=" + next + ";path=/;max-age=31536000;SameSite=Lax";
+        updateQuickThemeIcon(next);
+        window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: next } }));
+    }
+
+    function updateQuickThemeIcon(theme) {
+        const icon = document.getElementById('quickThemeIcon');
+        if (!icon) return;
+        if (theme === 'dark') {
+            icon.className = 'bi bi-sun-fill text-warning';
+        } else {
+            icon.className = 'bi bi-moon-stars-fill text-white';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const theme = document.documentElement.getAttribute('data-bs-theme') || localStorage.getItem('theme') || 'light';
+        updateQuickThemeIcon(theme);
+    });
+
+    // ── Global Language Toggle Logic ──
+    function toggleAppLanguage() {
+        const current = document.documentElement.getAttribute('lang') || 'ar';
+        const next = current === 'ar' ? 'en' : 'ar';
+        document.cookie = "lang=" + next + ";path=/;max-age=31536000;SameSite=Lax";
+        localStorage.setItem('lang', next);
+        window.location.reload();
     }
   </script>
 </html>

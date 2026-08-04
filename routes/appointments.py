@@ -1,5 +1,6 @@
-from flask import Blueprint, current_app, render_template, request, redirect, url_for, jsonify
+from flask import Blueprint, current_app, render_template, request, redirect, url_for, jsonify, flash
 from datetime import datetime, timedelta
+from sqlalchemy.orm import joinedload, selectinload
 
 from models import db, Patient, Appointment, User
 from utils.validators import (
@@ -87,7 +88,11 @@ def get_appointments_context():
     except Exception:
         db.session.rollback()
 
-    query = Appointment.query.join(Patient)
+    query = Appointment.query.join(Patient).options(
+        joinedload(Appointment.patient),
+        joinedload(Appointment.doctor),
+        joinedload(Appointment.invoice)
+    )
 
     if search_query:
         query = query.filter(
@@ -105,7 +110,7 @@ def get_appointments_context():
     if status_filter:
         query = query.filter(Appointment.status == status_filter)
     else:
-        query = query.filter(Appointment.status != "Pending")
+        query = query.filter(~Appointment.status.in_(["Pending", "Deleted"]))
 
     date_filter = request.args.get("date_filter", "").strip().lower()
 
@@ -114,7 +119,7 @@ def get_appointments_context():
     today_end = today_start + timedelta(days=1)
     tomorrow_end = today_start + timedelta(days=2)
 
-    base_active = Appointment.query.filter(Appointment.status != "Pending")
+    base_active = Appointment.query.filter(~Appointment.status.in_(["Pending", "Deleted"]))
     today_count = base_active.filter(
         Appointment.appointment_date >= today_start,
         Appointment.appointment_date < today_end
@@ -643,7 +648,7 @@ def delete_appointment(appointment_id):
 
         if request.method == "POST":
             patient_id = appointment.patient_id
-            db.session.delete(appointment)
+            appointment.status = "Deleted"
             db.session.flush()
 
             from services.payment_service import allocate_patient_payments_to_invoices
@@ -1031,6 +1036,158 @@ def get_today_statuses():
     except Exception:
         current_app.logger.exception("Failed to get today statuses")
         return jsonify({"success": False, "statuses": {}}), 500
+
+
+def get_archive_context():
+    from sqlalchemy.orm import joinedload
+    search_query = request.args.get("search", "").strip()
+    status_filter = request.args.get("status", "").strip()
+    sort_by = request.args.get("sort", "date").strip()
+    order = request.args.get("order", "desc").strip()
+    page = request.args.get("page", 1, type=int)
+    per_page = 10
+
+    query = (
+        Appointment.query
+        .filter(Appointment.status.in_(["Cancelled", "Deleted"]))
+        .options(
+            joinedload(Appointment.patient),
+            joinedload(Appointment.doctor)
+        )
+    )
+
+    if search_query:
+        query = query.join(Patient).filter(
+            (Patient.first_name.ilike(f"%{search_query}%")) |
+            (Patient.last_name.ilike(f"%{search_query}%"))
+        )
+
+    if status_filter in ["Cancelled", "Deleted"]:
+        query = query.filter(Appointment.status == status_filter)
+
+    sort_columns = {
+        "date": Appointment.appointment_date,
+        "status": Appointment.status,
+        "reason": Appointment.reason,
+    }
+
+    if sort_by == "patient":
+        if not search_query:
+            query = query.join(Patient)
+        sort_column = Patient.first_name
+    elif sort_by == "doctor":
+        query = query.outerjoin(User, Appointment.doctor_id == User.id)
+        sort_column = User.first_name
+    else:
+        sort_column = sort_columns.get(sort_by, Appointment.appointment_date)
+
+    if order == "asc":
+        query = query.order_by(sort_column.asc())
+    else:
+        query = query.order_by(sort_column.desc())
+
+    pagination = query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False,
+    )
+
+    archived_count = Appointment.query.filter(Appointment.status.in_(["Cancelled", "Deleted"])).count()
+
+    return {
+        "pagination": pagination,
+        "archived_appointments": pagination.items,
+        "archived_count": archived_count,
+        "search_query": search_query,
+        "status_filter": status_filter,
+        "sort_by": sort_by,
+        "order": order,
+        "now": datetime.now(),
+        "current_lang": request.cookies.get("lang", "ar")
+    }
+
+
+@appointments_bp.route("/appointments/archive", methods=["GET"])
+@role_required("admin", "doctor", "receptionist")
+def appointments_archive():
+    """Renders the Archived, Cancelled & Deleted Appointments page."""
+    current_app.logger.info("Appointments archive page requested")
+    try:
+        context = get_archive_context()
+        return render_template("appointments/archive.html", **context)
+    except Exception:
+        current_app.logger.exception("Failed to load appointments archive")
+        flash("فشل في تحميل أرشيف المواعيد." if request.cookies.get("lang","ar")!="en" else "Failed to load appointments archive.", "danger")
+        return redirect(url_for("appointments.appointments"))
+
+
+@appointments_bp.route("/appointments/archive/table", methods=["GET"])
+@role_required("admin", "doctor", "receptionist")
+def archive_table():
+    """Renders the Archive table partial for AJAX sorting and pagination."""
+    current_app.logger.info("Appointments archive table partial requested")
+    try:
+        context = get_archive_context()
+        return render_template("partials/_archive_table.html", **context)
+    except Exception:
+        current_app.logger.exception("Failed to load archive table partial")
+        return "Failed to load archive table", 500
+
+
+@appointments_bp.route("/appointments/<int:appointment_id>/restore", methods=["POST"])
+@role_required("admin", "doctor", "receptionist")
+def restore_appointment(appointment_id):
+    """Restores an archived/cancelled/deleted appointment back to Scheduled status ONLY if it is in the future."""
+    is_ar = request.cookies.get("lang", "ar") != "en"
+    try:
+        appt = Appointment.query.get_or_404(appointment_id)
+        
+        # Enforce Rule: Only future appointments can be restored
+        if appt.appointment_date and appt.appointment_date < datetime.now():
+            msg = "لا يمكن استعادة موعد انتهى تاريخه الزمني. يمكن استعادة المواعيد المستقبلية فقط." if is_ar else "Cannot restore an appointment with a past date. Only future appointments can be restored."
+            flash(msg, "warning")
+            return redirect(url_for("appointments.appointments_archive"))
+
+        appt.status = "Scheduled"
+        db.session.commit()
+
+        try:
+            from services.notification_service import notify_appointment_restoration
+            notify_appointment_restoration(appt)
+        except Exception as ne:
+            current_app.logger.error(f"Failed to send restoration notification: {ne}")
+
+        patient_name = f"{appt.patient.first_name} {appt.patient.last_name}" if appt.patient else ""
+        msg = f"تمت استعادة الموعد وإعادته إلى الجدول بنجاح للمريض ({patient_name})." if is_ar else f"Appointment restored successfully for ({patient_name})."
+        flash(msg, "success")
+        current_app.logger.info(f"Appointment id={appointment_id} restored to Scheduled")
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(f"Failed to restore appointment id={appointment_id}")
+        flash("فشل في استعادة الموعد." if is_ar else "Failed to restore appointment.", "danger")
+
+    return redirect(url_for("appointments.appointments_archive"))
+
+
+@appointments_bp.route("/appointments/<int:appointment_id>/permanent-delete", methods=["POST"])
+@role_required("admin", "receptionist")
+def permanent_delete_appointment(appointment_id):
+    """Permanently deletes a cancelled appointment record."""
+    is_ar = request.cookies.get("lang", "ar") != "en"
+    try:
+        appt = Appointment.query.get_or_404(appointment_id)
+        db.session.delete(appt)
+        db.session.commit()
+
+        msg = "تم حذف الموعد نهائياً من قاعدة البيانات." if is_ar else "Appointment permanently deleted."
+        flash(msg, "success")
+        current_app.logger.info(f"Appointment id={appointment_id} permanently deleted")
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(f"Failed to permanently delete appointment id={appointment_id}")
+        flash("فشل في حذف الموعد." if is_ar else "Failed to delete appointment.", "danger")
+
+    return redirect(url_for("appointments.appointments_archive"))
 
 
 
