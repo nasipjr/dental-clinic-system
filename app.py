@@ -41,7 +41,15 @@ try:
     csrf = CSRFProtect(app)
 except ImportError:
     csrf = None
-    generate_csrf = lambda: ""
+
+def safe_csrf_token():
+    try:
+        from flask_wtf.csrf import generate_csrf
+        return generate_csrf()
+    except Exception:
+        return ""
+
+app.jinja_env.globals['csrf_token'] = safe_csrf_token
 
 LOG_DIRECTORY = app.config["LOG_DIRECTORY"]
 LOG_FILE_NAME = app.config["LOG_FILE_NAME"]
