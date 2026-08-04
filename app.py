@@ -107,14 +107,35 @@ def ensure_default_admin():
         app.logger.error(f"Failed to seed default admin: {e}")
 
 
-with app.app_context():
+def init_db_tables():
     try:
         db.create_all()
         populate_default_settings()
         ensure_database_schema(app, db)
         ensure_default_admin()
+        app.logger.info("Database initialized successfully.")
     except Exception as e:
         app.logger.error(f"Failed to complete database startup tasks: {e}")
+
+
+with app.app_context():
+    init_db_tables()
+
+
+_db_initialized = False
+
+@app.before_request
+def check_db_initialized():
+    global _db_initialized
+    if not _db_initialized:
+        try:
+            from sqlalchemy import inspect
+            inspector = inspect(db.engine)
+            if "user" not in inspector.get_table_names():
+                init_db_tables()
+            _db_initialized = True
+        except Exception as e:
+            app.logger.error(f"Error checking DB tables on request: {e}")
 
 
 setup_logging(app, LOG_DIRECTORY, LOG_FILE_NAME)
@@ -361,8 +382,9 @@ def not_found_error(error):
 @app.errorhandler(500)
 def internal_error(error):
     db.session.rollback()
-    app.logger.exception("500 Internal Server Error")
-    return "internal server error", 500
+    err_detail = str(getattr(error, 'original_exception', error))
+    app.logger.exception(f"500 Internal Server Error: {err_detail}")
+    return f"Internal Server Error: {err_detail}", 500
 
 
 @app.after_request
