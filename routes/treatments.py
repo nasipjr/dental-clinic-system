@@ -82,7 +82,7 @@ def appointment_session(appointment_id):
                 "procedure": th.procedure_type,
                 "notes": th.notes or "",
                 "history_date": th.history_date.strftime("%Y-%m-%d") if th.history_date else None,
-                "created_at": th.created_at.strftime("%Y-%m-%d %I:%M %p")
+                "created_at": th.created_at.strftime("%Y-%m-%d %I:%M %p") if th.created_at else (th.history_date.strftime("%Y-%m-%d") if th.history_date else "")
             })
 
         return render_template(
@@ -105,10 +105,11 @@ def appointment_session(appointment_id):
         current_app.logger.exception(
             f"Failed to open appointment session | appointment_id={appointment_id}"
         )
+        is_ar = request.cookies.get("lang", "ar") != "en"
         return render_template(
             "error_message.html",
-            title="Error",
-            message="Failed to open appointment session.",
+            title="خطأ في النظام" if is_ar else "System Error",
+            message="فشل في فتح جلسة الموعد العلاجية." if is_ar else "Failed to open appointment session.",
             back_url=url_for("appointments.appointments"),
         ), 500
 
@@ -546,7 +547,7 @@ def edit_treatment(treatment_id):
                 "procedure": th.procedure_type,
                 "notes": th.notes or "",
                 "history_date": th.history_date.strftime("%Y-%m-%d") if th.history_date else None,
-                "created_at": th.created_at.strftime("%Y-%m-%d %I:%M %p")
+                "created_at": th.created_at.strftime("%Y-%m-%d %I:%M %p") if th.created_at else (th.history_date.strftime("%Y-%m-%d") if th.history_date else "")
             })
 
         return render_template(

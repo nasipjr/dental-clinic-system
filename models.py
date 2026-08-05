@@ -251,6 +251,9 @@ class Treatment(db.Model):
     doctor_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     doctor = db.relationship("User", foreign_keys=[doctor_id], backref="doctor_treatments")
 
+    salary_expense_id = db.Column(db.Integer, db.ForeignKey("expense.id", ondelete="SET NULL"), nullable=True)
+    salary_expense = db.relationship("Expense", foreign_keys=[salary_expense_id], backref=db.backref("deducted_treatments", lazy="dynamic"))
+
     @property
     def procedure_cost(self):
         if self.use_anesthesia and self.anesthesia_cost and self.anesthesia_cost > 0:

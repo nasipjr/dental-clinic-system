@@ -100,6 +100,7 @@
                     </div>
 
                     <form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="force_save" id="force-save-flag" value="0">
                         <div class="row gy-4">
                             <div class="col-md-4">

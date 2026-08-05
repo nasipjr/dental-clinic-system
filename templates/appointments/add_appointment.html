@@ -42,6 +42,7 @@
                     </div>
                     {% else %}
                     <form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="next"
                             value="{{ next_url or request.args.get('next', '') or request.referrer or '' }}">
                         {% if patients %}

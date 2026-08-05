@@ -219,18 +219,43 @@ def reports_dashboard():
                 "accrual_profit": accrual_profit_m
             })
 
-        from models import User
-        doctors = User.query.filter(User.role.in_(["admin", "doctor"])).all()
+        from models import User, StaffSalary
+        doctors = User.query.filter_by(role="doctor").order_by(User.first_name).all()
         doctors_report = []
         for doc in doctors:
             doc_appts = Appointment.query.filter_by(doctor_id=doc.id).count()
-            doc_treatment_count = Treatment.query.filter_by(doctor_id=doc.id).count()
-            doc_revenue = float(db.session.query(func.coalesce(func.sum(Treatment.total_cost), 0.0)).filter_by(doctor_id=doc.id).scalar())
+            doc_treatment_count = Treatment.query.join(Appointment, Treatment.appointment_id == Appointment.id).filter(Appointment.doctor_id == doc.id).count()
+            doc_revenue = float(
+                db.session.query(func.coalesce(func.sum(Treatment.total_cost), 0.0))
+                .join(Appointment, Treatment.appointment_id == Appointment.id)
+                .filter(Appointment.doctor_id == doc.id)
+                .scalar() or 0.0
+            )
+
+            # Salary configuration and profit share
+            salary_cfg = StaffSalary.query.filter_by(user_id=doc.id).first()
+            salary_type = salary_cfg.salary_type if salary_cfg else "fixed"
+            salary_amount = float(salary_cfg.amount) if salary_cfg else 0.0
+
+            if salary_type == "percentage":
+                doctor_earned = round(doc_revenue * salary_amount / 100.0, 2)
+                pct_display = salary_amount
+            else:
+                doctor_earned = salary_amount
+                pct_display = round((doctor_earned / doc_revenue * 100.0), 1) if doc_revenue > 0 else 0.0
+
+            clinic_net = max(0.0, doc_revenue - doctor_earned)
+
             doctors_report.append({
                 "doctor": doc,
                 "appointment_count": doc_appts,
                 "treatment_count": doc_treatment_count,
-                "total_revenue": doc_revenue
+                "total_revenue": doc_revenue,
+                "salary_type": salary_type,
+                "salary_amount": salary_amount,
+                "doctor_earned": doctor_earned,
+                "clinic_net": clinic_net,
+                "pct_display": min(100.0, max(0.0, pct_display))
             })
 
         return render_template(
@@ -324,15 +349,19 @@ def add_expense():
 @role_required("admin")
 def delete_expense(expense_id):
     current_app.logger.warning(f"Deleting expense | id={expense_id}")
+    is_ar = request.cookies.get("lang", "ar") != "en"
     try:
+        from models import Treatment
         expense = Expense.query.get_or_404(expense_id)
+        # Unmark linked treatments so "Deducted" tag is removed
+        Treatment.query.filter_by(salary_expense_id=expense.id).update({"salary_expense_id": None}, synchronize_session=False)
         db.session.delete(expense)
         db.session.commit()
-        flash("Expense deleted successfully.", "success")
+        flash("تم حذف المصروف وإلغاء شارة الخصم عن المعالجات المرتبطة به بنجاح." if is_ar else "Expense deleted successfully and treatment deduction tags removed.", "success")
     except Exception:
         db.session.rollback()
         current_app.logger.exception(f"Failed to delete expense {expense_id}")
-        flash("Failed to delete expense.", "danger")
+        flash("فشل في حذف المصروف." if is_ar else "Failed to delete expense.", "danger")
     return redirect(url_for("reports.reports_dashboard") + "#tab-expenses")
 
 
@@ -561,19 +590,32 @@ def expenses_list():
 @reports_bp.route("/reports/doctor-appointments")
 @role_required("admin")
 def doctor_appointments_report():
-    """Returns paginated completed appointments for a specific doctor (or all)."""
+    """Returns paginated completed appointments for a specific doctor (or all), with monthly defaults and deduction status."""
     try:
-        from models import User
+        from models import User, Patient, Treatment
+        from datetime import datetime, timedelta
+        import calendar
+
         doctor_id  = request.args.get("doctor_id", "", type=str).strip()
         page       = request.args.get("page", 1, type=int)
         per_page   = request.args.get("per_page", 10, type=int)
         sort_by    = request.args.get("sort", "date")
         order      = request.args.get("order", "desc")
+        month      = request.args.get("month", "").strip()
         date_from  = request.args.get("date_from", "").strip()
         date_to    = request.args.get("date_to", "").strip()
         search     = request.args.get("search", "").strip()
 
-        from models import Patient
+        # If a specific month is selected (YYYY-MM), filter by that month
+        if month:
+            try:
+                m_date = datetime.strptime(month, "%Y-%m")
+                _, last_day = calendar.monthrange(m_date.year, m_date.month)
+                date_from = f"{m_date.year:04d}-{m_date.month:02d}-01"
+                date_to = f"{m_date.year:04d}-{m_date.month:02d}-{last_day:02d}"
+            except ValueError:
+                pass
+
         query = (
             Appointment.query
             .join(Patient, Appointment.patient_id == Patient.id)
@@ -604,8 +646,6 @@ def doctor_appointments_report():
         if date_to:
             try:
                 dt = datetime.strptime(date_to, "%Y-%m-%d")
-                # Include full day
-                from datetime import timedelta
                 query = query.filter(Appointment.appointment_date < dt + timedelta(days=1))
             except ValueError:
                 pass
@@ -641,6 +681,10 @@ def doctor_appointments_report():
             date_val = appt.appointment_date.strftime("%Y-%m-%d") if appt.appointment_date else "—"
             time_val = appt.appointment_date.strftime("%I:%M %p") if appt.appointment_date else ""
 
+            # Deduction status: check if any treatment on this appointment has been deducted
+            treatments = Treatment.query.filter_by(appointment_id=appt.id).all()
+            is_deducted = len(treatments) > 0 and any(t.salary_expense_id is not None for t in treatments)
+
             rows.append({
                 "id":           appt.id,
                 "patient_name": f"{patient.first_name} {patient.last_name}" if patient else "—",
@@ -651,6 +695,7 @@ def doctor_appointments_report():
                 "total_paid":   paid,
                 "remaining":    remaining,
                 "reason":       appt.reason or "",
+                "is_deducted":  is_deducted
             })
 
         # Build list of doctors for the filter dropdown
@@ -668,10 +713,184 @@ def doctor_appointments_report():
             "total_invoiced":   total_invoiced_sum,
             "total_paid":       total_paid_sum,
             "doctors":          doctors_list,
+            "active_month":     month,
         }
     except Exception:
         current_app.logger.exception("Failed to load doctor appointments report")
         return {"error": "Failed to load doctor appointments"}, 500
+
+
+@reports_bp.route("/reports/doctor-revenue-share")
+@role_required("admin")
+def doctor_revenue_share_report():
+    """Returns paginated doctors performance & revenue share analysis with monthly defaults and deduction tracking."""
+    try:
+        from models import User, StaffSalary, Appointment, Treatment, db
+        from sqlalchemy import func
+        from datetime import datetime, timedelta
+        import calendar
+
+        doctor_id = request.args.get("doctor_id", "", type=str).strip()
+        page      = request.args.get("page", 1, type=int)
+        per_page  = request.args.get("per_page", 10, type=int)
+        sort_by   = request.args.get("sort", "revenue")
+        order     = request.args.get("order", "desc")
+        month     = request.args.get("month", "").strip()
+        date_from = request.args.get("date_from", "").strip()
+        date_to   = request.args.get("date_to", "").strip()
+        search    = request.args.get("search", "").strip()
+
+        # If a specific month is selected (YYYY-MM), filter by that month
+        if month:
+            try:
+                m_date = datetime.strptime(month, "%Y-%m")
+                _, last_day = calendar.monthrange(m_date.year, m_date.month)
+                date_from = f"{m_date.year:04d}-{m_date.month:02d}-01"
+                date_to = f"{m_date.year:04d}-{m_date.month:02d}-{last_day:02d}"
+            except ValueError:
+                pass
+
+        # Fetch only assistant doctors (excluding admin)
+        all_docs = User.query.filter_by(role="doctor").order_by(User.first_name).all()
+        doctors_list = [{"id": d.id, "name": f"{d.first_name or ''} {d.last_name or ''}".strip() or d.username} for d in all_docs]
+
+        doc_query = User.query.filter_by(role="doctor")
+
+        if doctor_id:
+            try:
+                doc_query = doc_query.filter(User.id == int(doctor_id))
+            except ValueError:
+                pass
+
+        if search:
+            doc_query = doc_query.filter(
+                db.or_(
+                    User.first_name.ilike(f"%{search}%"),
+                    User.last_name.ilike(f"%{search}%"),
+                    User.username.ilike(f"%{search}%")
+                )
+            )
+
+        matched_docs = doc_query.all()
+
+        df = None
+        dt = None
+        if date_from:
+            try:
+                df = datetime.strptime(date_from, "%Y-%m-%d")
+            except ValueError:
+                pass
+        if date_to:
+            try:
+                dt = datetime.strptime(date_to, "%Y-%m-%d") + timedelta(days=1)
+            except ValueError:
+                pass
+
+        calculated_rows = []
+        tot_rev_sum = 0.0
+        tot_earned_sum = 0.0
+        tot_net_sum = 0.0
+
+        for doc in matched_docs:
+            appt_query = Appointment.query.filter_by(doctor_id=doc.id)
+            if df:
+                appt_query = appt_query.filter(Appointment.appointment_date >= df)
+            if dt:
+                appt_query = appt_query.filter(Appointment.appointment_date < dt)
+
+            appts_count = appt_query.count()
+
+            t_query = db.session.query(func.coalesce(func.sum(Treatment.total_cost), 0.0)).join(Appointment, Treatment.appointment_id == Appointment.id).filter(Appointment.doctor_id == doc.id)
+            if df:
+                t_query = t_query.filter(Appointment.appointment_date >= df)
+            if dt:
+                t_query = t_query.filter(Appointment.appointment_date < dt)
+
+            doc_revenue = float(t_query.scalar() or 0.0)
+
+            # Count deducted vs pending treatments
+            t_base = Treatment.query.join(Appointment, Treatment.appointment_id == Appointment.id).filter(Appointment.doctor_id == doc.id)
+            if df:
+                t_base = t_base.filter(Appointment.appointment_date >= df)
+            if dt:
+                t_base = t_base.filter(Appointment.appointment_date < dt)
+
+            deducted_count = t_base.filter(Treatment.salary_expense_id != None).count()
+            pending_count = t_base.filter(Treatment.salary_expense_id == None).count()
+
+            sc = StaffSalary.query.filter_by(user_id=doc.id).first()
+            s_type = sc.salary_type if sc else "fixed"
+            s_amount = float(sc.amount) if sc else 0.0
+            current_month_str = datetime.now().strftime("%Y-%m")
+            deducted_this_month = bool(sc and sc.last_deducted_month == current_month_str)
+
+            if s_type == "percentage":
+                doc_earned = round(doc_revenue * s_amount / 100.0, 2)
+                pct_rate = s_amount
+            else:
+                doc_earned = s_amount
+                pct_rate = round((doc_earned / doc_revenue * 100.0), 1) if doc_revenue > 0 else 0.0
+
+            # If date or month filter is active, skip doctors who have no appointments and no revenue in this period
+            if (df or dt or month) and appts_count == 0 and doc_revenue == 0.0:
+                continue
+
+            clinic_net = max(0.0, doc_revenue - doc_earned)
+
+            tot_rev_sum += doc_revenue
+            tot_earned_sum += doc_earned
+            tot_net_sum += clinic_net
+
+            calculated_rows.append({
+                "id": doc.id,
+                "first_name": doc.first_name or "",
+                "last_name": doc.last_name or "",
+                "username": doc.username,
+                "appointment_count": appts_count,
+                "total_revenue": doc_revenue,
+                "salary_type": s_type,
+                "salary_amount": s_amount,
+                "doctor_earned": doc_earned,
+                "clinic_net": clinic_net,
+                "pct_display": min(100.0, max(0.0, pct_rate)),
+                "deducted_count": deducted_count,
+                "pending_count": pending_count,
+                "deducted_this_month": deducted_this_month,
+                "last_deducted_month": sc.last_deducted_month if sc else None,
+            })
+
+        reverse = (order == "desc")
+        if sort_by == "name":
+            calculated_rows.sort(key=lambda x: f"{x['first_name']} {x['last_name']}".strip(), reverse=reverse)
+        elif sort_by == "appts":
+            calculated_rows.sort(key=lambda x: x["appointment_count"], reverse=reverse)
+        elif sort_by == "earned":
+            calculated_rows.sort(key=lambda x: x["doctor_earned"], reverse=reverse)
+        elif sort_by == "net":
+            calculated_rows.sort(key=lambda x: x["clinic_net"], reverse=reverse)
+        else:
+            calculated_rows.sort(key=lambda x: x["total_revenue"], reverse=reverse)
+
+        total_items = len(calculated_rows)
+        start_idx = (page - 1) * per_page
+        end_idx = start_idx + per_page
+        page_rows = calculated_rows[start_idx:end_idx]
+        total_pages = (total_items + per_page - 1) // per_page if per_page > 0 else 1
+
+        return {
+            "rows": page_rows,
+            "total": total_items,
+            "pages": total_pages,
+            "current_page": page,
+            "total_revenue_sum": tot_rev_sum,
+            "total_earned_sum": tot_earned_sum,
+            "total_net_sum": tot_net_sum,
+            "doctors": doctors_list,
+            "active_month": month,
+        }
+    except Exception:
+        current_app.logger.exception("Failed to load doctor revenue share report")
+        return {"error": "Failed to load doctor revenue share report"}, 500
 
 
 @reports_bp.route("/reports/expenses/<int:expense_id>/edit", methods=["POST"])

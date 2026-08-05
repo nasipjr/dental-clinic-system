@@ -49,6 +49,7 @@
                     </div>
 
                     <form method="POST" class="mt-4">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="next" value="{{ next_url or request.args.get('next', '') or request.referrer or '' }}">
                         <div class="action-buttons justify-content-center gap-3">
                             <button type="submit" class="btn-delete-soft px-4">

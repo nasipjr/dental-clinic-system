@@ -835,41 +835,53 @@ def save_staff_salary():
 @role_required("admin")
 def deduct_salary_now(user_id):
     """Immediately deduct salary for a staff member and record it as an Expense."""
-    from models import db, User, StaffSalary, Expense, Invoice, Appointment
+    from models import db, User, StaffSalary, Expense, Invoice, Appointment, Treatment
     from sqlalchemy import func
     from datetime import datetime
     is_ar = request.cookies.get("lang", "ar") != "en"
     try:
-        salary_cfg = StaffSalary.query.filter_by(user_id=user_id).first_or_404()
+        salary_cfg = StaffSalary.query.filter_by(user_id=user_id).first()
         user = User.query.get_or_404(user_id)
+
+        if not salary_cfg:
+            msg = "يرجى تعيين وتأكيد إعدادات الراتب لهذا الموظف أولاً قبل الضغط على الخصم." if is_ar else "Please configure salary settings for this user first."
+            if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.is_json:
+                return {"success": False, "message": msg}, 400
+            flash(msg, "warning")
+            return redirect(url_for("settings.settings_page") + "#tab-billing")
+
+        undeducted_treatments = (
+            Treatment.query
+            .join(Appointment, Treatment.appointment_id == Appointment.id)
+            .filter(Appointment.doctor_id == user_id, Treatment.salary_expense_id == None)
+            .all()
+        )
 
         amount_to_deduct = 0.0
         if salary_cfg.salary_type == "fixed":
             amount_to_deduct = float(salary_cfg.amount)
         else:
-            # percentage of total invoiced amount for completed appointments of this doctor
-            from models import Treatment
-            total_invoiced = float(
-                db.session.query(func.coalesce(func.sum(Invoice.total_amount_col), 0.0))
-                .join(Invoice.appointment)
-                .filter(Appointment.doctor_id == user_id, Appointment.status == "Done")
-                .scalar() or 0.0
-            )
-            # Fallback: sum treatment costs
-            total_invoiced = float(
-                db.session.query(func.coalesce(func.sum(Treatment.total_cost), 0.0))
-                .filter(Treatment.doctor_id == user_id)
-                .scalar() or 0.0
-            )
-            amount_to_deduct = round(total_invoiced * float(salary_cfg.amount) / 100.0, 2)
+            doc_revenue = sum(float(t.total_cost or 0.0) for t in undeducted_treatments)
+            if doc_revenue == 0.0:
+                doc_revenue = float(
+                    db.session.query(func.coalesce(func.sum(Treatment.total_cost), 0.0))
+                    .join(Appointment, Treatment.appointment_id == Appointment.id)
+                    .filter(Appointment.doctor_id == user_id)
+                    .scalar() or 0.0
+                )
+            amount_to_deduct = round(doc_revenue * float(salary_cfg.amount) / 100.0, 2)
 
         if amount_to_deduct <= 0:
-            flash("مبلغ الراتب يجب أن يكون أكبر من صفر." if is_ar else "Salary amount must be greater than zero.", "warning")
+            msg = "مبلغ الراتب المحسوب هو 0.0. يرجى التأكد من إدخال مبلغ الراتب أو إضافة معالجات/فواتير للطبيب." if is_ar else "Calculated salary amount is 0.0. Ensure doctor has treatments or fixed salary."
+            if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.is_json:
+                return {"success": False, "message": msg}, 400
+            flash(msg, "warning")
             return redirect(url_for("settings.settings_page") + "#tab-billing")
 
         full_name = f"{user.first_name or ''} {user.last_name or ''}".strip() or user.username
         role_label = "طبيب" if user.role == "doctor" else "موظف استقبال"
-        note_text = f"راتب {role_label}: {full_name}" if is_ar else f"Salary - {user.role.capitalize()}: {full_name}"
+        type_desc = f"نسبة {salary_cfg.amount}%" if salary_cfg.salary_type == "percentage" else "راتب ثابت"
+        note_text = f"راتب {role_label}: {full_name} ({type_desc})" if is_ar else f"Salary - {user.role.capitalize()}: {full_name}"
 
         expense = Expense(
             category="Salaries",
@@ -878,19 +890,94 @@ def deduct_salary_now(user_id):
             notes=note_text
         )
         db.session.add(expense)
+        db.session.flush()
 
-        # Record this month as deducted
+        for t in undeducted_treatments:
+            t.salary_expense_id = expense.id
+
         salary_cfg.last_deducted_month = datetime.now().strftime("%Y-%m")
         db.session.commit()
 
+        currency = get_setting("currency_symbol", "ل.س")
         current_app.logger.info(f"Salary deducted for user_id={user_id} amount={amount_to_deduct}")
-        flash(f"{'تم خصم راتب' if is_ar else 'Salary deducted'}: {full_name} — {amount_to_deduct}", "success")
+        msg = f"{'تم خصم وتسجيل راتب' if is_ar else 'Salary deducted successfully'}: {full_name} — ({amount_to_deduct:,.0f} {currency})"
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.is_json:
+            return {"success": True, "message": msg, "amount": amount_to_deduct}
+
+        flash(msg, "success")
     except Exception:
         db.session.rollback()
         current_app.logger.exception(f"Failed to deduct salary for user_id={user_id}")
-        flash("فشل في خصم الراتب." if is_ar else "Failed to deduct salary.", "danger")
+        msg = "فشل في خصم الراتب." if is_ar else "Failed to deduct salary."
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.is_json:
+            return {"success": False, "message": msg}, 500
+        flash(msg, "danger")
 
     return redirect(url_for("settings.settings_page") + "#tab-billing")
+
+
+@settings_bp.route("/settings/salary/undo/<int:user_id>", methods=["POST"])
+@role_required("admin")
+def undo_salary_deduction(user_id):
+    """Reverse the current month's salary deduction for a staff member."""
+    from models import db, User, StaffSalary, Expense, Treatment
+    from datetime import datetime
+    is_ar = request.cookies.get("lang", "ar") != "en"
+
+    def _json_resp(success, msg, status=200):
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.is_json:
+            return {"success": success, "message": msg}, status
+        flash(msg, "success" if success else "danger")
+        return redirect(url_for("settings.settings_page") + "#tab-billing")
+
+    try:
+        sc = StaffSalary.query.filter_by(user_id=user_id).first()
+        user = User.query.get_or_404(user_id)
+        current_month_str = datetime.now().strftime("%Y-%m")
+
+        if not sc or sc.last_deducted_month != current_month_str:
+            msg = "لا يوجد خصم مسجل للشهر الحالي لهذا الطبيب." if is_ar else "No deduction found for the current month for this doctor."
+            return _json_resp(False, msg, 400)
+
+        full_name = f"{user.first_name or ''} {user.last_name or ''}".strip() or user.username
+
+        # Find the expense recorded this month for this doctor
+        from sqlalchemy import extract
+        now = datetime.now()
+        expense = (
+            Expense.query
+            .filter(
+                Expense.category == "Salaries",
+                extract("year", Expense.expense_date) == now.year,
+                extract("month", Expense.expense_date) == now.month,
+                Expense.notes.ilike(f"%{full_name}%")
+            )
+            .order_by(Expense.id.desc())
+            .first()
+        )
+
+        if expense:
+            # Unlink treatments so their deduction badge is removed
+            Treatment.query.filter_by(salary_expense_id=expense.id).update(
+                {"salary_expense_id": None}, synchronize_session=False
+            )
+            db.session.delete(expense)
+
+        # Reset deduction month marker
+        sc.last_deducted_month = None
+        db.session.commit()
+
+        current_app.logger.info(f"Salary deduction reversed for user_id={user_id}")
+        msg = (f"تم التراجع عن خصم راتب {full_name} لشهر {current_month_str} وإلغاء المصروف المرتبط."
+               if is_ar else
+               f"Salary deduction for {full_name} ({current_month_str}) has been reversed.")
+        return _json_resp(True, msg)
+
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(f"Failed to undo salary deduction for user_id={user_id}")
+        msg = "فشل في التراجع عن الخصم." if is_ar else "Failed to undo deduction."
+        return _json_resp(False, msg, 500)
 
 
 def auto_process_salary_deductions(app):

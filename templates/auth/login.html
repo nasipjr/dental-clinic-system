@@ -199,6 +199,7 @@
         <!-- Clinic Staff Login Pane -->
         <div class="tab-pane fade {% if active_tab == 'staff' %}show active{% endif %}" id="staff-pane" role="tabpanel" aria-labelledby="staff-tab">
           <form method="POST" class="login-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="user_type" value="staff">
             <div class="mb-3">
               <label for="staff_username" class="form-label">{% if current_lang == 'ar' %}اسم المستخدم{% else %}Username{% endif %}</label>
@@ -219,6 +220,7 @@
         <!-- Patient Login Pane -->
         <div class="tab-pane fade {% if active_tab == 'patient' %}show active{% endif %}" id="patient-pane" role="tabpanel" aria-labelledby="patient-tab">
           <form method="POST" class="login-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="user_type" value="patient">
             <div class="mb-3">
               <label for="patient_username" class="form-label">{% if current_lang == 'ar' %}اسم المستخدم{% else %}Username{% endif %}</label>

@@ -90,6 +90,7 @@
                     </div>
 
                     <form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                         <div class="row gy-4">
 

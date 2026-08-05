@@ -14,6 +14,7 @@
         </div>
         
         <form method="POST" action="{{ url_for('portal.login') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="mb-3">
             <label for="username" class="form-label settings-label">Username</label>
             <input type="text" class="form-control settings-input" id="username" name="username" required placeholder="Enter username">

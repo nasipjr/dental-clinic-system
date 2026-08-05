@@ -196,6 +196,7 @@
                     {% if current_lang == 'ar' %}إنهاء الجلسة{% else %}End Session{% endif %}
                 </button>
                 <form method="POST" action="{{ url_for('treatments.revert_session', appointment_id=appointment.id) }}" class="d-inline" id="revertSessionForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="button" class="btn btn-warning text-dark rounded-pill px-4 py-2 fw-bold session-action-btn ms-2 shadow-sm" onclick="confirmRevertSession()">
                         <i class="bi bi-arrow-u-turn-left me-1.5"></i>
                         {% if current_lang == 'ar' %}التراجع عن فتح الجلسة{% else %}Undo Session Start{% endif %}
@@ -1224,6 +1225,7 @@
                                 style="background: rgba(168, 85, 247, 0.05); border-color: rgba(168, 85, 247, 0.25) !important;">
                                 <form method="POST"
                                     action="{{ url_for('patients.add_tooth_history', patient_id=patient.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="appointment_id" value="{{ appointment.id }}">
                                     <input type="hidden" name="tooth_number" id="s-history-form-tooth-number" value="">
                                     <div class="mb-2">
@@ -1280,6 +1282,7 @@
                         </h6>
                         <form id="modal-add-treatment-form" method="POST"
                             action="{{ url_for('treatments.add_treatment_to_appointment', appointment_id=appointment.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="tooth_number" id="modal-tooth-input">
                             <input type="hidden" name="custom_cost" id="modal-custom-cost-input" value="">
                             <div class="mb-3">
@@ -1658,6 +1661,7 @@
                                             <i class="bi bi-pencil" style="font-size: 0.75rem;"></i>
                                         </button>
                                         <form method="POST" action="/patients/{{ appointment.patient_id }}/tooth-history/${h.id}/delete" onsubmit="return confirmDelete(event, '${isAr ? 'هل أنت متأكد من حذف هذه السابقة المرضية؟' : 'Delete this history record?'}');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <input type="hidden" name="appointment_id" value="{{ appointment.id }}">
                                             <button type="submit" class="btn btn-xs btn-outline-danger rounded-circle p-1" title="${isAr ? 'حذف' : 'Delete'}">
                                                 <i class="bi bi-trash" style="font-size: 0.75rem;"></i>
@@ -1947,6 +1951,7 @@ function confirmRevertSession() {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="editToothHistoryForm" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="appointment_id" id="edit-history-appointment-id" value="">
                 <div class="modal-body py-3">
                     <div class="mb-3">

@@ -326,10 +326,12 @@
 
             <!-- Bottom Actions Bar: Archive & Delete All Cancelled -->
             <div class="d-flex justify-content-end align-items-center gap-2 mt-4 pt-3 border-top border-secondary border-opacity-25 flex-wrap">
+                {% if current_user.role in ('admin', 'receptionist') %}
                 <a href="{{ url_for('appointments.appointments_archive') }}" class="btn btn-outline-warning border-2 rounded-pill px-4 py-2 fw-bold shadow-sm">
                     <i class="bi bi-archive-fill me-1"></i>
                     {% if current_lang == 'ar' %}أرشيف المواعيد (الملغاة والمحذوفة){% else %}Appointments Archive{% endif %}
                 </a>
+                {% endif %}
                 {% if has_cancelled and current_user.role in ('admin', 'receptionist') %}
                 <button type="button" class="btn btn-outline-danger border-2 rounded-pill px-4 py-2 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#deleteAllCancelledModal">
                     <i class="bi bi-trash me-1"></i>
@@ -582,6 +584,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
                 </button>
                 <form action="{{ url_for('appointments.delete_all_cancelled') }}" method="POST" class="d-inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow">
                         <i class="bi bi-trash-fill me-1"></i>
                         {% if current_lang == 'ar' %}تأكيد الحذف النهائي{% else %}Confirm Delete All{% endif %}

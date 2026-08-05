@@ -21,6 +21,7 @@ def ensure_database_schema(app, db):
             ("treatment", "teeth_range", "ALTER TABLE treatment ADD COLUMN teeth_range VARCHAR(100) NULL"),
             ("treatment", "quadrant", "ALTER TABLE treatment ADD COLUMN quadrant VARCHAR(50) NULL"),
             ("treatment", "jaw", "ALTER TABLE treatment ADD COLUMN jaw VARCHAR(50) NULL"),
+            ("treatment", "salary_expense_id", "ALTER TABLE treatment ADD COLUMN salary_expense_id INT NULL"),
             ("tooth_history", "appointment_id", "ALTER TABLE tooth_history ADD COLUMN appointment_id INT NULL"),
             ("tooth_history", "history_date", "ALTER TABLE tooth_history ADD COLUMN history_date DATE NULL"),
         ]

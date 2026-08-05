@@ -233,6 +233,7 @@
                         <tr class="collapse" id="edit-discount-form">
                             <td colspan="6" class="p-3" style="background: rgba(30, 41, 59, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
                                 <form method="POST" action="{{ url_for('invoices.update_invoice_discount', invoice_id=invoice.id) }}" class="d-flex align-items-center justify-content-end gap-3">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <label for="discount" class="form-label mb-0 fw-semibold text-secondary" style="font-size: 0.9rem;">
                                         {% if current_lang == 'ar' %}تعديل قيمة الخصم:{% else %}Edit Discount:{% endif %}
                                     </label>
@@ -268,6 +269,7 @@
                         <tr class="collapse" id="edit-additional-charges-form">
                             <td colspan="6" class="p-3" style="background: rgba(30, 41, 59, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
                                 <form method="POST" action="{{ url_for('invoices.update_invoice_additional_charges', invoice_id=invoice.id) }}" class="d-flex align-items-center justify-content-end gap-3">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <label for="additional_charges" class="form-label mb-0 fw-semibold text-secondary" style="font-size: 0.9rem;">
                                         {% if current_lang == 'ar' %}إضافة تكاليف إضافية للفاتورة:{% else %}Additional Charges:{% endif %}
                                     </label>

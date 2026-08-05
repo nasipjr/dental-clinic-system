@@ -349,6 +349,7 @@
 
         <!-- Main Edit Form -->
         <form id="edit-treatment-form" method="POST" class="{% if is_locked %}readonly-form{% endif %}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <fieldset {% if is_locked %}disabled{% endif %}>
                 
                 <div class="row g-4">
