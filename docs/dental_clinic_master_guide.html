@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>الدليل الشامل الشارح لإدارة العيادة السنية</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 12mm 14mm;
+      @bottom-right {
+        content: "صفحة " counter(page);
+        font-family: 'Cairo', sans-serif;
+        font-size: 8pt;
+        color: #64748b;
+      }
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      font-family: 'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif;
+      background-color: #ffffff;
+      color: #0f172a;
+      margin: 0;
+      padding: 0;
+      font-size: 9.5pt;
+      line-height: 1.6;
+    }
+
+    /* Cover Page */
+    .cover-page {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0284c7 100%);
+      color: #ffffff;
+      padding: 60px 40px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+      page-break-after: always;
+      border-radius: 0;
+    }
+
+    .cover-badge {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 6px 20px;
+      border-radius: 30px;
+      font-size: 10pt;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .cover-title {
+      font-size: 26pt;
+      font-weight: 900;
+      margin: 20px 0 10px 0;
+      line-height: 1.3;
+    }
+
+    .cover-subtitle {
+      font-size: 13pt;
+      font-weight: 400;
+      opacity: 0.9;
+      max-width: 650px;
+      margin: 0 auto 30px auto;
+    }
+
+    .workflow-strip {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      max-width: 700px;
+      margin: 20px 0;
+    }
+
+    .wf-step {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 8.5pt;
+      font-weight: 700;
+      flex: 1;
+      text-align: center;
+    }
+
+    .cover-footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      padding-top: 20px;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      font-size: 9pt;
+      opacity: 0.85;
+    }
+
+    /* Standard Page Header & Layout */
+    .doc-page {
+      padding: 10px 0;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+
+    .chapter-header {
+      background: linear-gradient(135deg, #0f172a, #0369a1);
+      color: #ffffff;
+      padding: 14px 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chapter-header h2 {
+      margin: 0;
+      font-size: 13pt;
+      font-weight: 800;
+    }
+
+    .chapter-header .chap-num {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 9pt;
+      font-weight: 700;
+    }
+
+    h3.section-title {
+      color: #0369a1;
+      font-size: 11pt;
+      font-weight: 800;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 4px;
+      margin-top: 18px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      margin-top: 0;
+      margin-bottom: 10px;
+      color: #334155;
+      text-align: justify;
+    }
+
+    /* Process Flow Diagram */
+    .process-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .process-card {
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      border-right: 4px solid #0284c7;
+    }
+
+    .process-num {
+      background: #0284c7;
+      color: #ffffff;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 9.5pt;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .process-content h4 {
+      margin: 0 0 4px 0;
+      font-size: 10pt;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .process-content p {
+      margin: 0;
+      font-size: 9pt;
+      color: #475569;
+    }
+
+    /* Callout Boxes */
+    .callout {
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 14px 0;
+      border-right: 4px solid;
+      font-size: 9pt;
+    }
+
+    .callout.info {
+      background-color: #f0f9ff;
+      border-color: #0284c7;
+      color: #0369a1;
+    }
+
+    .callout.warning {
+      background-color: #fffbeb;
+      border-color: #f59e0b;
+      color: #b45309;
+    }
+
+    .callout.success {
+      background-color: #f0fdf4;
+      border-color: #16a34a;
+      color: #15803d;
+    }
+
+    .callout h5 {
+      margin: 0 0 4px 0;
+      font-size: 9.5pt;
+      font-weight: 800;
+    }
+
+    /* Table Styling */
+    table.guide-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 8.5pt;
+    }
+
+    table.guide-table th,
+    table.guide-table td {
+      border: 1px solid #cbd5e1;
+      padding: 8px 10px;
+      text-align: right;
+      vertical-align: top;
+    }
+
+    table.guide-table th {
+      background: #0f172a;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 9pt;
+    }
+
+    table.guide-table tr:nth-child(even) td {
+      background-color: #f8fafc;
+    }
+
+    .badge-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 8pt;
+      font-weight: 700;
+    }
+
+    .badge-primary { background: #e0f2fe; color: #0369a1; }
+    .badge-success { background: #dcfce7; color: #15803d; }
+    .badge-warning { background: #fef3c7; color: #b45309; }
+
+    /* Footer Sign-off */
+    .guide-footer-sign {
+      margin-top: 30px;
+      border-top: 2px solid #e2e8f0;
+      padding-top: 15px;
+      text-align: center;
+      font-size: 8.5pt;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== COVER PAGE ==================== -->
+  <div class="cover-page">
+    <div style="width: 100%;">
+      <div class="cover-badge">الدليل التشغيلي الموحد — الإصدار المعتمد 2026</div>
+      <div class="cover-title">الدليل الشامل لإدارة العيادة السنية وتدفق العمل السريري والمالي</div>
+      <div class="cover-subtitle">دليل عملي تفصيلي موجه لصاحب العيادة، الأطباء المساعدين، والكادر الإداري لضمان الدقة التشغيلية ومنع تسرب الديون والتكامل التام بين المعالجة والمالية</div>
+
+      <div class="workflow-strip">
+        <div class="wf-step">1. إعدادات العيادة</div>
+        <div class="wf-step">2. تسجيل المريض</div>
+        <div class="wf-step">3. حجز الموعد</div>
+        <div class="wf-step">4. جلسة المعالجة</div>
+        <div class="wf-step">5. إصدار الفاتورة</div>
+        <div class="wf-step">6. التقارير والأرباح</div>
+      </div>
+    </div>
+
+    <div class="cover-footer">
+      <div><strong>نظام إدارة العيادة السنية المتقدم</strong></div>
+      <div><strong>تنسيق PDF رسمي موثق</strong></div>
+      <div><strong>إشراف واستخدام شامل</strong></div>
+    </div>
+  </div>
+
+  <!-- ==================== CHAPTER 1 ==================== -->
+  <div class="doc-page">
+    <div class="chapter-header">
+      <h2>الفصل الأول: البداية الصحيحة — إعدادات العيادة الأساسية (لماذا وكيف؟)</h2>
+      <span class="chap-num">الجزء 1 من 4</span>
+    </div>
+
+    <p>
+      قبل البدء بحجز أي موعد أو استقبال المرضى، يجب على صاحب العيادة ضبط <strong>إعدادات النظام الأساسية</strong>. تشكل الإعدادات "المحرك المركزي" الذي يعتمد عليه التطبيق في توليد الفواتير، وحساب أرباح الأطباء، وتنسيق المطبوعات الرسمية.
+    </p>
+
+    <h3 class="section-title">1. معلومات العيادة الشاملة وهويتها البصرية</h3>
+    <p>
+      من خلال الانتقال لصفحة <strong>"الإعدادات"</strong> ثم تبويب <strong>"بيانات العيادة"</strong>، يتم إدخال:
+    </p>
+    <ul>
+      <li><strong>اسم العيادة واسم الطبيب المسؤول:</strong> يظهر أعلى جميع الفواتير الرسمية، التقارير المالية، والوصفات المطبوعة.</li>
+      <li><strong>العملة الافتراضية وشعار العيادة:</strong> لتوحيد الحسابات المالية وطباعة الترويسة الرسمية على كشوفات المرضى.</li>
+      <li><strong>ساعات الدوام اليومية والرسالة الترحيبية:</strong> لضبط التقويم السريري ومنع حجز مواعيد خارج أوقات العمل الرسمية.</li>
+    </ul>
+
+    <div class="callout info">
+      <h5>لماذا نحدد هذه البيانات أولاً؟</h5>
+      لأن جميع المستندات الصادرة من النظام (فواتير، إيصالات قبض، تقارير ديون، وشدات طبية) تعتمد آلياً على هذه البيانات لطباعة مستند رسمي موثق يُقدم للمريض بكل احترافية.
+    </div>
+
+    <h3 class="section-title">2. جدول الخدمات والإجراءات السنية (Procedures Catalog)</h3>
+    <p>
+      يتيح لك قسم <strong>"قائمة الإجراءات والخدمات"</strong> تعريف كافة المعالجات التي تقدمها العيادة (مثل: حشوة ضوئية، علاج عصب، تقليح وتنظيف، قلع جراحي، تقويم، زراعة سنية...) مع تحديد التكلفة المرجعية الافتراضية لكل إجراء.
+    </p>
+
+    <h3 class="section-title">3. ضبط رواتب الكادر ونسب الأطباء المساعدين (Doctor Commission & Salaries)</h3>
+    <p>
+      من أهم ميزات النظام إدارة حقوق الكادر الطبي والإداري بدقة متناهية من خلال تبويب <strong>"رواتب الكادر"</strong>:
+    </p>
+    <ul>
+      <li><strong>نظام النسبة المئوية (Percentage Rate):</strong> يحدد نسبة الطبيب المساعد (مثلاً 20% أو 30%) من إجمالي المعالجات التي ينجزها. يقوم النظام آلياً بحساب مستحقات الطبيب فور إنجاز كل معالجة.</li>
+      <li><strong>نظام الراتب الثابت (Fixed Monthly Salary):</strong> يحدد راتباً شهرياً ثابتاً للموظف أو الاستقبال، مع إمكانية تحويل الراتب تلقائياً إلى <strong>جدول المصاريف التشغيلية</strong> في يوم محدد من الشهر.</li>
+    </ul>
+
+    <div class="callout success">
+      <h5>النتيجة التشغيلية:</h5>
+      إلغاء الحسابات اليدوية المعقدة ونهاية الخلافات المالية؛ فالطبيب المساعد يتمكن من متابعة مستحقاته بشفافية عبر لحة تقاريره الخاصة، والمالك يتابع صافي ربح العيادة بدقة.
+    </div>
+  </div>
+
+  <!-- ==================== CHAPTER 2 ==================== -->
+  <div class="doc-page page-break">
+    <div class="chapter-header">
+      <h2>الفصل الثاني: خطة سير العمل السريري والمالي اليومي (Step-by-Step Workflow)</h2>
+      <span class="chap-num">الجزء 2 من 4</span>
+    </div>
+
+    <p>
+      يعتمد التطبيق فلسفة تشغيلية سلسة ومترابطة تحاكي الرحلة الحقيقية للمريض داخل العيادة السنية من لحظة دخوله وحتى مغادرته وتسديد حسابه.
+    </p>
+
+    <div class="process-container">
+      <!-- Step 1 -->
+      <div class="process-card">
+        <div class="process-num">1</div>
+        <div class="process-content">
+          <h4>الخطوة الأولى: تسجيل المريض وإنشاء السجل الطبي (Patient Onboarding)</h4>
+          <p>
+            عند زيارة مريض جديد، يتم الضغط على <strong>"إضافة مريض جديد"</strong> وإدخال بياناته الأساسية (الاسم، الهاتف، العمر، الجنس، والسيرة المرضية للحساسيات أو الأمراض المزمنة). يُنشئ النظام ملفاً سريرياً دائماً ومحفوظاً للمريض.
+          </p>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="process-card">
+        <div class="process-num">2</div>
+        <div class="process-content">
+          <h4>الخطوة الثانية: حجز وتنسيق الموعد في التقويم (Appointment Scheduling)</h4>
+          <p>
+            من خلال شاشة <strong>"المواعيد"</strong> أو <strong>"التقويم السريري"</strong>، يتم اختيار المريض، الطبيب المعالج، تحديد التاريخ والوقت، ونوع الموعد. يمنع التقويم الذكي أي تعارض في أوقات الأطباء أو غرف المعالجة.
+          </p>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="process-card">
+        <div class="process-num">3</div>
+        <div class="process-content">
+          <h4>الخطوة الثالثة: فتح الجلسة على الكرسي والتسجيل على مخطط الأسنان (Clinical Chair & FDI Chart)</h4>
+          <p>
+            عند دخول المريض لغرفة المعالجة، يفتح الطبيب شاشة الجلسة ويستخدم <strong>مخطط الأسنان التفاعلي (FDI Teeth Chart)</strong> لتحديد السن المعالج، اختيار نوع الإجراء الطبي، وإضافة ملاحظات الجلسة والبنج المستخدم.
+          </p>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="process-card">
+        <div class="process-num">4</div>
+        <div class="process-content">
+          <h4>الخطوة الرابعة: إنهاء الجلسة وتوليد الفاتورة التلقائية (Automated Invoicing)</h4>
+          <p>
+            بمجرد تحويل حالة الموعد إلى <strong>"منجز Done"</strong>، يقوم النظام آلياً بتوليد فاتورة مالية بناءً على المعالجات المسجلة، مع إمكانية تطبيق خصم (مبلغ أو نسبة) أو إضافة رسوم إضافية معتمدة.
+          </p>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="process-card">
+        <div class="process-num">5</div>
+        <div class="process-content">
+          <h4>الخطوة الخامسة: قبض الدفعات وإدارة الأرصدة والديون (Payments & Ledger)</h4>
+          <p>
+            يقوم موظف الاستقبال أو الإدارة بتسجيل الدفعة المالية للمريض. يربط النظام الدفعات بالفواتير المستحقة، وفي حال تسديد مبلغ إضافي يُحفظ كـ <strong>"رصيد دائن مسبق Credit"</strong> للمريض لاستخدامه بالجلسات القادمة دون خلط الحسابات.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warning">
+      <h5>تنبيه هام لمنع تسرب الديون:</h5>
+      لا تقم أبداً بإلغاء موعد تم تقديم معالجة فيه. استخدم دائماً زر <strong>"إنجاز الموعد Done"</strong> لضمان ترحيل تكلفة العلاج إلى الفاتورة وحساب مستحقات الطبيب بدقة.
+    </div>
+  </div>
+
+  <!-- ==================== CHAPTER 3 ==================== -->
+  <div class="doc-page page-break">
+    <div class="chapter-header">
+      <h2>الفصل الثالث: دليل الأقسام الشامل وكيفية الاستخدام الأمثل لكل قسم</h2>
+      <span class="chap-num">الجزء 3 من 4</span>
+    </div>
+
+    <p>
+      فيما يلي جدول تفصيلي يوضح كل قسم داخل المنظومة، الفائدة التشغيلية منه، والممارسة المثلى لاستخدامه:
+    </p>
+
+    <table class="guide-table">
+      <thead>
+        <tr>
+          <th style="width: 140px;">اسم القسم</th>
+          <th>الفائدة التشغيلية الرئيسية</th>
+          <th>الممارسة المثلى للاستخدام</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>لوحة التحكم (Dashboard)</strong></td>
+          <td>متابعة النبض اليومي للعيادة، المرضى المتواجدين على الكرسي، والإحصائيات السريعة.</td>
+          <td>استخدامها شاشة رئيسية في موظف الاستقبال لتغيير حالات المرضى (وصل Checked In -> على الكرسي In Chair).</td>
+        </tr>
+        <tr>
+          <td><strong>سجل المرضى (Patients)</strong></td>
+          <td>أرشيف شامل لبيانات المرضى، التاريخ الطبي، الفواتير، الصور، والأرصدة الدائنة/الديون.</td>
+          <td>مراجعة ملف المريض قبل البدء بالمعالجة لمعرفة أي حساسية أو ديون سابقة معلقة.</td>
+        </tr>
+        <tr>
+          <td><strong>المواعيد والتقويم (Calendar)</strong></td>
+          <td>تنسيق وتوزيع أوقات المواعيد وتفادي التضارب بين الكادر الطبي.</td>
+          <td>الاعتماد على التقويم اليومي/الأسبوعي وتحديث أوقات الجلسات فور وصول المريض.</td>
+        </tr>
+        <tr>
+          <td><strong>الطلبات المعلقة (Pending)</strong></td>
+          <td>استقبال وتأكيد حجوزات المرضى الذاتية القادمة من البوابة الإلكترونية.</td>
+          <td>مراجعة الطلبات صباح كل يوم وتأكيدها لمنح المريض تجربة حجز متطورة.</td>
+        </tr>
+        <tr>
+          <td><strong>الفواتير والمقبوضات (Invoices)</strong></td>
+          <td>إدارة التدفقات المالية، المقبوضات النقدیة، ومتابعة الفواتير غير المسددة.</td>
+          <td>إصدار الفاتورة فور إنجاز الجلسة وتسليم المريض نسخة مطبوعة موثقة.</td>
+        </tr>
+        <tr>
+          <td><strong>المصاريف التشغيلية (Expenses)</strong></td>
+          <td>تسجيل المصاريف اليومية والشهرية (إيجار، مواد طبية، رواتب، فواتير طاقة).</td>
+          <td>تسجيل كافة المصاريف أولاً بأول للحصول على تقرير أرباح صافية دقيق 100%.</td>
+        </tr>
+        <tr>
+          <td><strong>لوحة تقارير الإدارة (Admin Reports)</strong></td>
+          <td>تحليل الأداء المالي، حساب الأرباح الصافية، متابعة الديون، وأداء الأطباء.</td>
+          <td>مراجعة التقرير الشهري واستخراج النسخة الرسمية PDF للطباعة والأرشفة.</td>
+        </tr>
+        <tr>
+          <td><strong>تقارير الطبيب المساعد (Doctor Portal)</strong></td>
+          <td>عرض المواعيد المعالجة للطبيب، حساب نسبته المئوية ومستحقاته المالية المباشرة.</td>
+          <td>دخول الطبيب المساعد لحسابه الخاص لمتابعة مستحقاته بشفافية تامة دون الدخول لفواتير العيادة.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ==================== CHAPTER 4 ==================== -->
+  <div class="doc-page page-break">
+    <div class="chapter-header">
+      <h2>الفصل الرابع: النمط والممارسات المثلى لإدارة العيادة بنجاح (Best Practices)</h2>
+      <span class="chap-num">الجزء 4 من 4</span>
+    </div>
+
+    <h3 class="section-title">القواعد الذهبية الخمس لإدارة العيادة السنية بإنتاجية عالية:</h3>
+
+    <div class="process-container">
+      <div class="process-card">
+        <div class="process-num" style="background:#16a34a;">1</div>
+        <div class="process-content">
+          <h4>التوثيق المباشر على مخطط الأسنان (Real-time Tooth Charting)</h4>
+          <p>أدخل الإجراءات الطبية مباشرة أثناء تواجد المريض على الكرسي. هذا يضمن عدم نسيان أي خطوة علاجية وتوليد الفاتورة آلياً بتكلفة دقيقة.</p>
+        </div>
+      </div>
+
+      <div class="process-card">
+        <div class="process-num" style="background:#16a34a;">2</div>
+        <div class="process-content">
+          <h4>الفصل التام بين مستحقات الطبيب ودفعات المريض</h4>
+          <p>يعتمد النظام على تكلفة العلاج الفعلية لحساب نسبة الطبيب، بغض النظر عما إذا كان المريض قد سدد حسابه كاملاً أو على أقساط، مما يحمي حقوق الدكتور والكادر دائماً.</p>
+        </div>
+      </div>
+
+      <div class="process-card">
+        <div class="process-num" style="background:#16a34a;">3</div>
+        <div class="process-content">
+          <h4>المراجعة الأسبوعية لتقرير الديون وأرصدة المرضى</h4>
+          <p>قم بالاطلاع على تبويب "ديون المرضى" في صفحة التقارير بشكل دوري والتواصل مع المرضى لإعادة جدولة المستحقات المتبقية.</p>
+        </div>
+      </div>
+
+      <div class="process-card">
+        <div class="process-num" style="background:#16a34a;">4</div>
+        <div class="process-content">
+          <h4>تسجيل كافة المصاريف التشغيلية ومشتريات المواد</h4>
+          <p>للحصول على الرقم الحقيقي للربح الصافي للعيادة (Net Profit)، يجب تسجيل كل مصروف خرج من الصندوق في قسم المصاريف.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-footer-sign">
+      <p><strong>تم إعداد هذا الدليل التنفيذي الشامل لضمان الاستخدام الأمثل والأعلى إنتاجية لنظام إدارة العيادة السنية.</strong></p>
+      <div>جامع وموثق بحسب أحدث المعايير التشغيلية للعيادات والمراكز الطبية السنية 2026 ©</div>
+    </div>
+  </div>
+
+</body>
+</html>

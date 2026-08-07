@@ -17,9 +17,9 @@ def get_payments_context():
     sort_by = request.args.get("sort", "date")
     order = request.args.get("order", "desc")
     page = request.args.get("page", 1, type=int)
-    per_page = 10
+    per_page = request.args.get("per_page", 10, type=int)
 
-    query = Payment.query.join(Patient)
+    query = Payment.query.options(db.joinedload(Payment.patient)).join(Patient)
 
     if search_query:
         clean_search = search_query
@@ -82,18 +82,22 @@ def get_payments_context():
     )
 
     # ── Executive Manager Report & Stats for Payments ──
-    all_payments = Payment.query.all()
-
-    total_payments_count = len(all_payments)
-    total_collected_cash = sum(p.amount for p in all_payments)
-    total_allocated_cash = sum(p.allocated_amount for p in all_payments)
-    total_unallocated_credit = sum(p.unallocated_amount for p in all_payments)
+    total_payments_count = db.session.query(func.count(Payment.id)).scalar() or 0
+    total_collected_cash = float(db.session.query(func.coalesce(func.sum(Payment.amount), 0.0)).scalar() or 0.0)
+    total_allocated_cash = float(db.session.query(func.coalesce(func.sum(PaymentAllocation.amount), 0.0)).scalar() or 0.0)
+    total_unallocated_credit = max(0.0, total_collected_cash - total_allocated_cash)
 
     allocation_rate = float((total_allocated_cash / total_collected_cash * 100)) if total_collected_cash > 0 else 100.0
     avg_payment = float(total_collected_cash / total_payments_count) if total_payments_count > 0 else 0.0
 
     # Top 5 largest payments collected in clinic history
-    top_payments = sorted(all_payments, key=lambda p: p.amount, reverse=True)[:5]
+    top_payments = (
+        Payment.query
+        .options(db.joinedload(Payment.patient))
+        .order_by(Payment.amount.desc())
+        .limit(5)
+        .all()
+    )
 
     payment_stats = {
         "total_payments_count": total_payments_count,
@@ -112,6 +116,7 @@ def get_payments_context():
         "order": order,
         "payment_stats": payment_stats,
         "top_payments": top_payments,
+        "per_page": per_page,
     }
 
 
@@ -265,3 +270,83 @@ def view_payment(payment_id):
             message="Failed to load payment details.",
             back_url=url_for("payments.payments"),
         ), 500
+
+
+@payments_bp.route("/payments/quick-settle/<int:patient_id>", methods=["POST"])
+@role_required("admin", "receptionist")
+def quick_settle_patient_debt(patient_id):
+    """Instantly record a payment for a patient to settle their total remaining debt."""
+    from models import db, Patient, Payment, Invoice, Appointment
+    from services.payment_service import allocate_patient_payments_to_invoices
+    from utils.settings_helper import get_setting
+    from sqlalchemy import func, case
+    is_ar = request.cookies.get("lang", "ar") != "en"
+
+    try:
+        patient = Patient.query.get_or_404(patient_id)
+
+        req_amount_raw = request.form.get("amount", "")
+        if req_amount_raw:
+            try:
+                outstanding = max(0.0, round(float(req_amount_raw), 2))
+            except ValueError:
+                outstanding = 0.0
+        else:
+            outstanding = 0.0
+
+        if outstanding <= 0:
+            subtotal_sub = func.coalesce(Invoice.subtotal, 0.0)
+            discount_amt_sub = case(
+                (Invoice.discount_type == 'percentage', subtotal_sub * (func.coalesce(Invoice.discount_value, 0.0) / 100.0)),
+                else_=func.coalesce(Invoice.discount_value, 0.0)
+            )
+            net_total_sub = case(
+                (subtotal_sub - discount_amt_sub + func.coalesce(Invoice.additional_charges, 0.0) > 0,
+                 subtotal_sub - discount_amt_sub + func.coalesce(Invoice.additional_charges, 0.0)),
+                else_=0.0
+            )
+
+            invoiced = float(
+                db.session.query(func.coalesce(func.sum(net_total_sub), 0.0))
+                .join(Appointment, Invoice.appointment_id == Appointment.id)
+                .filter(Invoice.patient_id == patient_id, Appointment.status != "Cancelled")
+                .scalar() or 0.0
+            )
+
+            paid = float(
+                db.session.query(func.coalesce(func.sum(Payment.amount), 0.0))
+                .filter(Payment.patient_id == patient_id)
+                .scalar() or 0.0
+            )
+
+            outstanding = max(0.0, round(invoiced - paid, 2))
+
+        if outstanding <= 0:
+            msg = "لا توجد ديون متبقية على هذا المريض لتسديدها." if is_ar else "No outstanding debt found for this patient."
+            return {"success": False, "message": msg}, 400
+
+        full_name = f"{patient.first_name or ''} {patient.last_name or ''}".strip() or f"Patient #{patient_id}"
+        currency = get_setting("currency_symbol", "ل.س")
+
+        new_payment = Payment(
+            patient_id=patient.id,
+            amount=outstanding,
+            notes=f"تسديد كامل الدين تلقائياً للمريض ({full_name})" if is_ar else f"Full quick debt settlement for ({full_name})"
+        )
+        db.session.add(new_payment)
+        db.session.flush()
+
+        allocate_patient_payments_to_invoices(patient.id)
+        db.session.commit()
+
+        msg = (f"تم التسديد السريع لدين المريض ({full_name}) بمبلغ ({outstanding:,.0f} {currency}) وتوثيقه بسجل المدفوعات بنجاح!"
+               if is_ar else
+               f"Successfully settled debt of ({outstanding:,.0f} {currency}) for patient ({full_name})!")
+
+        return {"success": True, "message": msg, "amount": outstanding, "patient_id": patient_id}
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.exception(f"Failed quick debt settlement for patient_id={patient_id}: {e}")
+        msg = f"حدث خطأ أثناء التسديد السريع للدين: {str(e)}" if is_ar else f"Failed to process quick debt settlement: {str(e)}"
+        return {"success": False, "message": msg}, 500

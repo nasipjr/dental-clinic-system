@@ -250,18 +250,23 @@ document.addEventListener('DOMContentLoaded', function() {
                             {% else %}
                                 <em class="text-danger small mb-1 d-block">{% if current_lang == 'ar' %}غير مرتبط{% else %}Not Linked{% endif %}</em>
                                 {% if bot_username %}
-                                    <div class="mt-2 d-flex align-items-center gap-3 bg-white p-2 border rounded-3 shadow-sm" style="direction: ltr; width: fit-content; max-width: 100%; margin: 8px 0;">
-                                        <!-- Text link on the left -->
-                                        <div class="d-flex flex-column justify-content-center px-2">
-                                            <span class="text-secondary small fw-semibold mb-1" style="font-size: 0.72rem;">{% if current_lang == 'ar' %}اسم معرف البوت للكتابة:{% else %}Bot username to type:{% endif %}</span>
-                                            <span class="fs-5 fw-bold text-primary mb-2" style="user-select: all; letter-spacing: 0.5px;">@{{ bot_username }}</span>
-                                            <a href="https://t.me/{{ bot_username }}" target="_blank" class="btn btn-sm btn-outline-info py-1 px-3 fw-semibold text-center" style="font-size: 0.7rem; border-radius: 4px;">
-                                                <i class="bi bi-telegram me-1"></i> {% if current_lang == 'ar' %}رابط البوت المباشر{% else %}Direct Bot Link{% endif %}
+                                    <div class="mt-2 p-3 rounded-3 border d-flex align-items-center justify-content-between gap-3 shadow-sm" style="background: rgba(42, 171, 238, 0.08); border-color: rgba(42, 171, 238, 0.25) !important; width: fit-content; max-width: 100%;">
+                                        <!-- Text info & link -->
+                                        <div class="d-flex flex-column justify-content-center">
+                                            <span class="small opacity-75 fw-semibold mb-1" style="font-size: 0.75rem;">
+                                                {% if current_lang == 'ar' %}اسم معرف البوت للكتابة:{% else %}Bot username to type:{% endif %}
+                                            </span>
+                                            <span class="fs-6 fw-bold mb-2 py-1 px-2 rounded-2" dir="ltr" style="user-select: all; background: rgba(42, 171, 238, 0.15); color: #2AA5E0; width: fit-content; letter-spacing: 0.5px;">
+                                                @{{ bot_username }}
+                                            </span>
+                                            <a href="https://t.me/{{ bot_username }}" target="_blank" class="btn btn-sm text-white py-1 px-3 fw-bold d-inline-flex align-items-center justify-content-center gap-1 shadow-sm" style="background: linear-gradient(135deg, #2AA5E0 0%, #1d8bc0 100%); border: none; font-size: 0.78rem; border-radius: 6px;">
+                                                <i class="bi bi-telegram"></i>
+                                                <span>{% if current_lang == 'ar' %}رابط البوت المباشر{% else %}Direct Bot Link{% endif %}</span>
                                             </a>
                                         </div>
-                                        <!-- QR code on the right -->
-                                        <div class="p-1 border rounded" style="background-color: #f8f9fa;">
-                                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=https://t.me/{{ bot_username }}" alt="Telegram QR" style="border-radius: 4px; width: 110px; height: 110px; display: block;">
+                                        <!-- QR code -->
+                                        <div class="p-1.5 rounded-3 shadow-sm border border-light flex-shrink-0" style="background: #ffffff !important;">
+                                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://t.me/{{ bot_username }}" alt="Telegram QR" style="border-radius: 6px; width: 95px; height: 95px; display: block;">
                                         </div>
                                     </div>
                                 {% endif %}

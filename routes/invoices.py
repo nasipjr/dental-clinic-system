@@ -15,12 +15,16 @@ invoices_bp = Blueprint("invoices", __name__)
 
 def get_invoices_context():
     search_query = request.args.get("search", "").strip()
+    status_filter = request.args.get("status", "").strip()
     sort_by = request.args.get("sort", "date")
     order = request.args.get("order", "desc")
     page = request.args.get("page", 1, type=int)
-    per_page = 10
+    per_page = request.args.get("per_page", 10, type=int)
 
-    query = Invoice.query.join(Invoice.patient).join(Invoice.appointment)
+    query = Invoice.query.options(
+        db.joinedload(Invoice.patient),
+        db.joinedload(Invoice.appointment)
+    ).join(Invoice.patient).join(Invoice.appointment)
 
     if search_query:
         clean_search = search_query
@@ -30,6 +34,7 @@ def get_invoices_context():
         filter_conds = [
             Patient.first_name.ilike(f"%{search_query}%"),
             Patient.last_name.ilike(f"%{search_query}%"),
+            (Patient.first_name + " " + Patient.last_name).ilike(f"%{search_query}%"),
             Patient.phone.ilike(f"%{search_query}%"),
             Appointment.status.ilike(f"%{search_query}%")
         ]
@@ -66,6 +71,28 @@ def get_invoices_context():
         .scalar_subquery()
     )
 
+    discount_amt_sub = db.case(
+        (Invoice.discount_type == "percentage", total_amount_sub * func.coalesce(Invoice.discount, 0.0) / 100.0),
+        else_=func.coalesce(Invoice.discount, 0.0)
+    )
+
+    net_total_sub = (
+        total_amount_sub - discount_amt_sub + func.coalesce(Invoice.additional_charges, 0.0)
+    )
+
+    outstanding_sub = db.case(
+        (net_total_sub - total_paid_sub > 0, net_total_sub - total_paid_sub),
+        else_=0.0
+    )
+
+    if status_filter:
+        if status_filter in ("Paid", "مدفوع"):
+            query = query.filter(total_paid_sub >= net_total_sub, net_total_sub > 0)
+        elif status_filter in ("Partially Paid", "Partial", "Partially", "جزئي"):
+            query = query.filter(total_paid_sub > 0.001, total_paid_sub < net_total_sub)
+        elif status_filter in ("Unpaid", "غير مدفوع"):
+            query = query.filter(or_(total_paid_sub <= 0.001, total_paid_sub.is_(None)))
+
     sort_columns = {
         "id": Invoice.id,
         "patient": [Patient.first_name, Patient.last_name],
@@ -73,8 +100,8 @@ def get_invoices_context():
         "treatments": treatments_count_sub,
         "total": total_amount_sub,
         "payments": total_paid_sub,
-        "outstanding": total_amount_sub - total_paid_sub,
-        "status": total_amount_sub - total_paid_sub,
+        "outstanding": outstanding_sub,
+        "status": outstanding_sub,
     }
 
     sort_col = sort_columns.get(sort_by, Appointment.appointment_date)
@@ -98,21 +125,55 @@ def get_invoices_context():
 
     # ── Executive Manager Report & Stats ──
     from decimal import Decimal
-    all_invoices = Invoice.query.all()
 
-    total_invoices_count = len(all_invoices)
-    total_billed = sum((Decimal(str(inv.total_amount or 0)) for inv in all_invoices), Decimal('0.00'))
-    total_collected = sum((Decimal(str(inv.total_paid or 0)) for inv in all_invoices), Decimal('0.00'))
-    total_outstanding = sum((Decimal(str(inv.outstanding_amount or 0)) for inv in all_invoices), Decimal('0.00'))
+    inv_summary_tuples = db.session.query(
+        Invoice.id,
+        net_total_sub.label("net_total"),
+        total_paid_sub.label("total_paid"),
+        outstanding_sub.label("outstanding")
+    ).all()
 
-    unpaid_list = [inv for inv in all_invoices if inv.outstanding_amount > Decimal('0.00')]
-    unpaid_count = len(unpaid_list)
+    total_invoices_count = len(inv_summary_tuples)
+    total_billed = Decimal('0.00')
+    total_collected = Decimal('0.00')
+    total_outstanding = Decimal('0.00')
+
+    unpaid_count = 0
+    paid_count = 0
+    partial_count = 0
+    unpaid_count_strict = 0
+
+    for _, net_t, paid_t, out_t in inv_summary_tuples:
+        net_val = Decimal(str(net_t or 0))
+        paid_val = Decimal(str(paid_t or 0))
+        out_val = Decimal(str(out_t or 0))
+
+        total_billed += net_val
+        total_collected += paid_val
+        total_outstanding += out_val
+
+        if out_val > Decimal('0.00'):
+            unpaid_count += 1
+
+        if paid_val <= Decimal('0.001'):
+            unpaid_count_strict += 1
+        elif paid_val < net_val:
+            partial_count += 1
+        else:
+            paid_count += 1
 
     collection_rate = (total_collected / total_billed * Decimal('100.00')).quantize(Decimal('0.01')) if total_billed > Decimal('0.00') else Decimal('100.00')
     avg_invoice = (total_billed / Decimal(str(total_invoices_count))).quantize(Decimal('0.01')) if total_invoices_count > 0 else Decimal('0.00')
 
     # Top 5 largest unpaid / partially paid invoices
-    top_unpaid_invoices = sorted(unpaid_list, key=lambda inv: inv.outstanding_amount, reverse=True)[:5]
+    top_unpaid_invoices = (
+        Invoice.query
+        .options(db.joinedload(Invoice.patient), db.joinedload(Invoice.appointment))
+        .filter(outstanding_sub > 0)
+        .order_by(outstanding_sub.desc())
+        .limit(5)
+        .all()
+    )
 
     invoice_stats = {
         "total_invoices_count": total_invoices_count,
@@ -124,13 +185,23 @@ def get_invoices_context():
         "avg_invoice": avg_invoice,
     }
 
+    status_counts = {
+        "all": total_invoices_count,
+        "paid": paid_count,
+        "partial": partial_count,
+        "unpaid": unpaid_count_strict,
+    }
+
     return {
         "invoices": pagination.items,
         "pagination": pagination,
         "search_query": search_query,
+        "status_filter": status_filter,
+        "status_counts": status_counts,
         "sort_by": sort_by,
         "order": order,
         "invoice_stats": invoice_stats,
+        "per_page": per_page,
         "top_unpaid_invoices": top_unpaid_invoices,
     }
 

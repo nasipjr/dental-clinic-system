@@ -14,7 +14,7 @@ def settings_page():
             # 1. Update general, calendar, and billing settings
             for key in ["clinic_name", "clinic_phone", "clinic_email", "clinic_address", 
                         "working_hours_start", "working_hours_end", "default_appointment_duration", 
-                        "auto_cancel_expired_minutes",
+                        "auto_cancel_expired_minutes", "auto_close_open_session_minutes",
                         "currency_symbol", "booking_window_days", "anesthesia_needle_price"]:
                 val = request.form.get(key, "").strip()
                 if key == "booking_window_days":
@@ -831,12 +831,185 @@ def save_staff_salary():
     return redirect(url_for("settings.settings_page") + "#tab-billing")
 
 
+def process_monthly_salary_deductions(user_id, target_month=None):
+    """
+    Process salary deductions month-by-month for a user up to current month.
+    If target_month is provided (YYYY-MM), only deducts for that specific month.
+    Returns (created_expenses_count, total_amount_deducted).
+    """
+    from models import db, User, StaffSalary, Expense, Appointment, Treatment
+    from datetime import datetime, date
+    from collections import defaultdict
+    from sqlalchemy import extract
+
+    salary_cfg = StaffSalary.query.filter_by(user_id=user_id).first()
+    user = User.query.get(user_id)
+
+    if not salary_cfg or not user:
+        return 0, 0.0
+
+    today = datetime.now()
+    current_year = today.year
+    current_month = today.month
+    current_month_str = today.strftime("%Y-%m")
+
+    target_ym = None
+    if target_month and target_month != "all":
+        try:
+            parts = target_month.strip().split("-")
+            if len(parts) == 2:
+                target_ym = (int(parts[0]), int(parts[1]))
+        except ValueError:
+            target_ym = None
+
+    full_name = f"{user.first_name or ''} {user.last_name or ''}".strip() or user.username
+    role_label = "طبيب" if user.role == "doctor" else "موظف استقبال"
+
+    total_created_expenses = 0
+    total_amount_deducted = 0.0
+
+    if salary_cfg.salary_type == "fixed":
+        fixed_amount = float(salary_cfg.amount)
+        if fixed_amount <= 0:
+            return 0, 0.0
+
+        if target_ym:
+            months_to_process = [target_ym]
+        else:
+            if salary_cfg.last_deducted_month:
+                try:
+                    last_yr, last_m = map(int, salary_cfg.last_deducted_month.split("-"))
+                    if last_m == 12:
+                        start_yr, start_m = last_yr + 1, 1
+                    else:
+                        start_yr, start_m = last_yr, last_m + 1
+                except ValueError:
+                    start_yr, start_m = current_year, current_month
+            else:
+                earliest_t = (
+                    Treatment.query
+                    .join(Appointment, Treatment.appointment_id == Appointment.id)
+                    .filter(Appointment.doctor_id == user_id)
+                    .order_by(Appointment.appointment_date.asc())
+                    .first()
+                )
+                if earliest_t and earliest_t.appointment and earliest_t.appointment.appointment_date:
+                    start_yr = earliest_t.appointment.appointment_date.year
+                    start_m = earliest_t.appointment.appointment_date.month
+                else:
+                    start_yr, start_m = current_year, current_month
+
+            months_to_process = []
+            cur_yr, cur_m = start_yr, start_m
+            while (cur_yr < current_year) or (cur_yr == current_year and cur_m <= current_month):
+                months_to_process.append((cur_yr, cur_m))
+                if cur_m == 12:
+                    cur_yr += 1
+                    cur_m = 1
+                else:
+                    cur_m += 1
+
+        for cur_yr, cur_m in months_to_process:
+            exp_date = date(cur_yr, cur_m, 1)
+            note_text = f"راتب {role_label}: {full_name} عن شهر {cur_m:02d}/{cur_yr:04d} (راتب ثابت)"
+
+            existing = Expense.query.filter(
+                Expense.category == "Salaries",
+                Expense.expense_date == exp_date,
+                Expense.notes == note_text
+            ).first()
+
+            if not existing:
+                expense = Expense(
+                    category="Salaries",
+                    amount=fixed_amount,
+                    expense_date=exp_date,
+                    notes=note_text
+                )
+                db.session.add(expense)
+                total_created_expenses += 1
+                total_amount_deducted += fixed_amount
+
+        if not target_ym:
+            salary_cfg.last_deducted_month = current_month_str
+        else:
+            t_str = f"{target_ym[0]:04d}-{target_ym[1]:02d}"
+            if not salary_cfg.last_deducted_month or t_str > salary_cfg.last_deducted_month:
+                salary_cfg.last_deducted_month = t_str
+
+        db.session.commit()
+        return total_created_expenses, total_amount_deducted
+
+    else: # percentage
+        percentage_rate = float(salary_cfg.amount)
+        if percentage_rate <= 0:
+            return 0, 0.0
+
+        q = (
+            Treatment.query
+            .join(Appointment, Treatment.appointment_id == Appointment.id)
+            .filter(Appointment.doctor_id == user_id, Treatment.salary_expense_id == None)
+        )
+        if target_ym:
+            q = q.filter(
+                extract('year', Appointment.appointment_date) == target_ym[0],
+                extract('month', Appointment.appointment_date) == target_ym[1]
+            )
+
+        undeducted_treatments = q.order_by(Appointment.appointment_date.asc()).all()
+
+        if not undeducted_treatments:
+            return 0, 0.0
+
+        treatments_by_month = defaultdict(list)
+        for t in undeducted_treatments:
+            t_date = (t.treatment_date or (t.appointment.appointment_date if t.appointment else None))
+            if not t_date:
+                t_date = datetime.now()
+            m_key = (t_date.year, t_date.month)
+            treatments_by_month[m_key].append(t)
+
+        for (yr, m), m_treatments in sorted(treatments_by_month.items()):
+            doc_revenue = sum(float(t.total_cost or 0.0) for t in m_treatments)
+            amount_to_deduct = round(doc_revenue * percentage_rate / 100.0, 2)
+
+            if amount_to_deduct > 0:
+                m_str = f"{m:02d}/{yr:04d}"
+                note_text = f"تسديد مستحقات ونسبة د. {full_name} عن شهر {m_str}"
+                exp_date = date(yr, m, 1)
+
+                expense = Expense(
+                    category="Salaries",
+                    amount=amount_to_deduct,
+                    expense_date=exp_date,
+                    notes=note_text
+                )
+                db.session.add(expense)
+                db.session.flush()
+
+                for t in m_treatments:
+                    t.salary_expense_id = expense.id
+
+                total_created_expenses += 1
+                total_amount_deducted += amount_to_deduct
+
+        if not target_ym:
+            salary_cfg.last_deducted_month = current_month_str
+        else:
+            t_str = f"{target_ym[0]:04d}-{target_ym[1]:02d}"
+            if not salary_cfg.last_deducted_month or t_str > salary_cfg.last_deducted_month:
+                salary_cfg.last_deducted_month = t_str
+
+        db.session.commit()
+        return total_created_expenses, total_amount_deducted
+
+
 @settings_bp.route("/settings/salary/deduct/<int:user_id>", methods=["POST"])
 @role_required("admin")
 def deduct_salary_now(user_id):
-    """Immediately deduct salary for a staff member and record it as an Expense."""
-    from models import db, User, StaffSalary, Expense, Invoice, Appointment, Treatment
-    from sqlalchemy import func
+    """Immediately deduct salary for a staff member and record separate Expenses per month."""
+    from models import db, User, StaffSalary
+    from utils.settings_helper import get_setting
     from datetime import datetime
     is_ar = request.cookies.get("lang", "ar") != "en"
     try:
@@ -850,59 +1023,25 @@ def deduct_salary_now(user_id):
             flash(msg, "warning")
             return redirect(url_for("settings.settings_page") + "#tab-billing")
 
-        undeducted_treatments = (
-            Treatment.query
-            .join(Appointment, Treatment.appointment_id == Appointment.id)
-            .filter(Appointment.doctor_id == user_id, Treatment.salary_expense_id == None)
-            .all()
-        )
+        target_month = (request.form.get("month") or request.args.get("month") or "").strip()
+        created_cnt, total_amount = process_monthly_salary_deductions(user_id, target_month=target_month)
 
-        amount_to_deduct = 0.0
-        if salary_cfg.salary_type == "fixed":
-            amount_to_deduct = float(salary_cfg.amount)
-        else:
-            doc_revenue = sum(float(t.total_cost or 0.0) for t in undeducted_treatments)
-            if doc_revenue == 0.0:
-                doc_revenue = float(
-                    db.session.query(func.coalesce(func.sum(Treatment.total_cost), 0.0))
-                    .join(Appointment, Treatment.appointment_id == Appointment.id)
-                    .filter(Appointment.doctor_id == user_id)
-                    .scalar() or 0.0
-                )
-            amount_to_deduct = round(doc_revenue * float(salary_cfg.amount) / 100.0, 2)
-
-        if amount_to_deduct <= 0:
-            msg = "مبلغ الراتب المحسوب هو 0.0. يرجى التأكد من إدخال مبلغ الراتب أو إضافة معالجات/فواتير للطبيب." if is_ar else "Calculated salary amount is 0.0. Ensure doctor has treatments or fixed salary."
+        if created_cnt == 0 or total_amount <= 0:
+            msg = "لا توجد مستحقات أو رواتب معلقة لخصمها بهذا الشهر." if is_ar else "No pending salary or revenue deductions found."
             if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.is_json:
                 return {"success": False, "message": msg}, 400
             flash(msg, "warning")
             return redirect(url_for("settings.settings_page") + "#tab-billing")
 
         full_name = f"{user.first_name or ''} {user.last_name or ''}".strip() or user.username
-        role_label = "طبيب" if user.role == "doctor" else "موظف استقبال"
-        type_desc = f"نسبة {salary_cfg.amount}%" if salary_cfg.salary_type == "percentage" else "راتب ثابت"
-        note_text = f"راتب {role_label}: {full_name} ({type_desc})" if is_ar else f"Salary - {user.role.capitalize()}: {full_name}"
-
-        expense = Expense(
-            category="Salaries",
-            amount=amount_to_deduct,
-            expense_date=datetime.now().date(),
-            notes=note_text
-        )
-        db.session.add(expense)
-        db.session.flush()
-
-        for t in undeducted_treatments:
-            t.salary_expense_id = expense.id
-
-        salary_cfg.last_deducted_month = datetime.now().strftime("%Y-%m")
-        db.session.commit()
-
         currency = get_setting("currency_symbol", "ل.س")
-        current_app.logger.info(f"Salary deducted for user_id={user_id} amount={amount_to_deduct}")
-        msg = f"{'تم خصم وتسجيل راتب' if is_ar else 'Salary deducted successfully'}: {full_name} — ({amount_to_deduct:,.0f} {currency})"
+        current_app.logger.info(f"Salary deducted for user_id={user_id} count={created_cnt} total={total_amount}")
+        msg = (f"تم خصم وتسجيل {created_cnt} رواتب شهرياً لـ ({full_name}) — إجمالي: ({total_amount:,.0f} {currency})"
+               if is_ar else
+               f"Deducted {created_cnt} monthly salary entries for {full_name} — Total: ({total_amount:,.0f} {currency})")
+
         if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.is_json:
-            return {"success": True, "message": msg, "amount": amount_to_deduct}
+            return {"success": True, "message": msg, "amount": total_amount, "count": created_cnt}
 
         flash(msg, "success")
     except Exception:
@@ -919,9 +1058,10 @@ def deduct_salary_now(user_id):
 @settings_bp.route("/settings/salary/undo/<int:user_id>", methods=["POST"])
 @role_required("admin")
 def undo_salary_deduction(user_id):
-    """Reverse the current month's salary deduction for a staff member."""
-    from models import db, User, StaffSalary, Expense, Treatment
+    """Reverse salary deduction for a staff member for a specific month (or current month)."""
+    from models import db, User, StaffSalary, Expense, Treatment, Appointment
     from datetime import datetime
+    from sqlalchemy import extract
     is_ar = request.cookies.get("lang", "ar") != "en"
 
     def _json_resp(success, msg, status=200):
@@ -933,44 +1073,70 @@ def undo_salary_deduction(user_id):
     try:
         sc = StaffSalary.query.filter_by(user_id=user_id).first()
         user = User.query.get_or_404(user_id)
-        current_month_str = datetime.now().strftime("%Y-%m")
 
-        if not sc or sc.last_deducted_month != current_month_str:
-            msg = "لا يوجد خصم مسجل للشهر الحالي لهذا الطبيب." if is_ar else "No deduction found for the current month for this doctor."
-            return _json_resp(False, msg, 400)
+        req_month = (request.form.get("month") or request.args.get("month") or "").strip()
+        now = datetime.now()
+
+        if req_month:
+            try:
+                target_yr, target_m = map(int, req_month.split("-"))
+                target_month_str = f"{target_yr:04d}-{target_m:02d}"
+            except ValueError:
+                target_yr, target_m = now.year, now.month
+                target_month_str = now.strftime("%Y-%m")
+        else:
+            target_yr, target_m = now.year, now.month
+            target_month_str = now.strftime("%Y-%m")
 
         full_name = f"{user.first_name or ''} {user.last_name or ''}".strip() or user.username
 
-        # Find the expense recorded this month for this doctor
-        from sqlalchemy import extract
-        now = datetime.now()
+        # Find expense recorded for this doctor and target month
+        search_term = user.last_name or user.first_name or user.username
         expense = (
             Expense.query
             .filter(
                 Expense.category == "Salaries",
-                extract("year", Expense.expense_date) == now.year,
-                extract("month", Expense.expense_date) == now.month,
-                Expense.notes.ilike(f"%{full_name}%")
+                extract("year", Expense.expense_date) == target_yr,
+                extract("month", Expense.expense_date) == target_m,
+                Expense.notes.ilike(f"%{search_term}%")
             )
             .order_by(Expense.id.desc())
             .first()
         )
 
+        unlinked_count = 0
         if expense:
-            # Unlink treatments so their deduction badge is removed
-            Treatment.query.filter_by(salary_expense_id=expense.id).update(
+            # Unlink treatments
+            unlinked_count = Treatment.query.filter_by(salary_expense_id=expense.id).update(
                 {"salary_expense_id": None}, synchronize_session=False
             )
             db.session.delete(expense)
 
-        # Reset deduction month marker
-        sc.last_deducted_month = None
+        # Unlink any additional treatments in that month for this doctor
+        additional_treatments = (
+            Treatment.query
+            .join(Appointment, Treatment.appointment_id == Appointment.id)
+            .filter(
+                Appointment.doctor_id == user_id,
+                extract("year", Appointment.appointment_date) == target_yr,
+                extract("month", Appointment.appointment_date) == target_m,
+                Treatment.salary_expense_id != None
+            )
+            .all()
+        )
+        for t in additional_treatments:
+            t.salary_expense_id = None
+            unlinked_count += 1
+
+        if sc and sc.last_deducted_month == target_month_str:
+            sc.last_deducted_month = None
+
         db.session.commit()
 
-        current_app.logger.info(f"Salary deduction reversed for user_id={user_id}")
-        msg = (f"تم التراجع عن خصم راتب {full_name} لشهر {current_month_str} وإلغاء المصروف المرتبط."
+        current_app.logger.info(f"Salary deduction reversed for user_id={user_id} month={target_month_str}")
+        msg = (f"تم التراجع عن خصم راتب {full_name} لشهر {target_month_str} وإلغاء المصروف المرتبط."
                if is_ar else
-               f"Salary deduction for {full_name} ({current_month_str}) has been reversed.")
+               f"Salary deduction for {full_name} ({target_month_str}) has been reversed.")
         return _json_resp(True, msg)
 
     except Exception:

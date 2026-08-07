@@ -178,50 +178,52 @@
     </table>
 </div>
 
-{% if pagination.pages > 1 %}
-<nav class="appointments-pagination mt-4">
-    <ul class="pagination justify-content-center">
+<div class="d-flex justify-content-end align-items-center mt-3 flex-wrap gap-2">
+    {% if pagination.pages > 1 %}
+    <nav class="appointments-pagination mb-0">
+        <ul class="pagination pagination-sm mb-0 justify-content-center gap-1">
 
-        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
-            {% if pagination.has_prev %}
-            <a class="page-link payments-ajax-link"
-                href="{{ url_for('payments.payments_table', page=pagination.prev_num, search=search_query, sort=sort_by, order=order) }}">
-                Previous
-            </a>
+            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                {% if pagination.has_prev %}
+                <a class="page-link payments-ajax-link"
+                    href="{{ url_for('payments.payments_table', page=pagination.prev_num, search=search_query, sort=sort_by, order=order, per_page=per_page) }}">
+                    Previous
+                </a>
+                {% else %}
+                <span class="page-link">Previous</span>
+                {% endif %}
+            </li>
+
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                <a class="page-link payments-ajax-link"
+                    href="{{ url_for('payments.payments_table', page=page_num, search=search_query, sort=sort_by, order=order, per_page=per_page) }}">
+                    {{ page_num }}
+                </a>
+            </li>
             {% else %}
-            <span class="page-link">Previous</span>
+            <li class="page-item disabled">
+                <span class="page-link">...</span>
+            </li>
             {% endif %}
-        </li>
+            {% endfor %}
 
-        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
-        {% if page_num %}
-        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
-            <a class="page-link payments-ajax-link"
-                href="{{ url_for('payments.payments_table', page=page_num, search=search_query, sort=sort_by, order=order) }}">
-                {{ page_num }}
-            </a>
-        </li>
-        {% else %}
-        <li class="page-item disabled">
-            <span class="page-link">...</span>
-        </li>
-        {% endif %}
-        {% endfor %}
+            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                {% if pagination.has_next %}
+                <a class="page-link payments-ajax-link"
+                    href="{{ url_for('payments.payments_table', page=pagination.next_num, search=search_query, sort=sort_by, order=order, per_page=per_page) }}">
+                    Next
+                </a>
+                {% else %}
+                <span class="page-link">Next</span>
+                {% endif %}
+            </li>
 
-        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
-            {% if pagination.has_next %}
-            <a class="page-link payments-ajax-link"
-                href="{{ url_for('payments.payments_table', page=pagination.next_num, search=search_query, sort=sort_by, order=order) }}">
-                Next
-            </a>
-            {% else %}
-            <span class="page-link">Next</span>
-            {% endif %}
-        </li>
-
-    </ul>
-</nav>
-{% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
 
 {% else %}
 <div class="empty-state-card text-center">

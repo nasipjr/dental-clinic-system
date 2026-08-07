@@ -27,12 +27,18 @@
             input.setAttribute("type", "text");
             input.setAttribute("autocomplete", "off");
 
+            const levantineMonths = ["كانون الثاني", "شباط", "آذار", "نيسان", "أيار", "حزيران", "تموز", "آب", "أيلول", "تشرين الأول", "تشرين الثاني", "كانون الأول"];
+
             const fpConfig = {
                 enableTime: false,
                 dateFormat: "Y-m-d",
                 allowInput: true,
                 locale: isAr && typeof flatpickr.l10ns !== "undefined" && typeof flatpickr.l10ns.ar !== "undefined" ? {
                     ...flatpickr.l10ns.ar,
+                    months: {
+                        shorthand: levantineMonths,
+                        longhand: levantineMonths
+                    },
                     firstDayOfWeek: 0
                 } : {
                     firstDayOfWeek: 0

@@ -1,112 +1,184 @@
 {% extends "base.html" %}
 
-{% block title %}Pending Booking Requests{% endblock %}
+{% block title %}
+{% if current_lang == 'ar' %}طلبات الحجز المعلقة{% else %}Pending Booking Requests{% endif %}
+{% endblock %}
 
 {% block content %}
-</br></br></br></br></br></br></br></br></br></br></br></br></br>
-
 <!-- Section Title -->
-<div class="container section-title" data-aos="fade-up">
-    <h2>Pending Booking Requests</h2>
-    <p>Incoming appointment requests from the patient portal waiting for confirmation.</p></br>
+<div class="container section-title pt-3 pb-2" data-aos="fade-up">
+    <h2>{% if current_lang == 'ar' %}طلبات الحجز المعلقة{% else %}Pending Booking Requests{% endif %}</h2>
+    <p>{% if current_lang == 'ar' %}طلبات المواعيد الواردة من بوابة المرضى والتي تنتظر التأكيد.{% else %}Incoming appointment requests from the patient portal waiting for confirmation.{% endif %}</p>
 </div>
 <!-- /Section Title -->
 
 <!-- Pending Appointments Section -->
-<section id="pending-appointments-page-section" class="find-a-doctor section">
+<section id="pending-appointments-page-section" class="find-a-doctor section pt-0" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
     <div class="container" data-aos="fade-up" data-aos-delay="100">
 
+        <!-- Top Header Controls -->
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
             <div>
-                <h3 class="mb-1">Pending Requests List</h3>
-                <p class="mb-0">Confirm or decline appointment requests submitted by patients.</p>
+                <h4 class="mb-1 text-main fw-bold">
+                    <i class="bi bi-clock-history me-2 text-warning"></i>
+                    {% if current_lang == 'ar' %}قائمة الطلبات المعلقة{% else %}Pending Requests List{% endif %}
+                </h4>
+                <p class="text-secondary small mb-0">
+                    {% if current_lang == 'ar' %}تأكيد أو رفض طلبات المواعيد المقدمة من المرضى. (يتم التلغاء التلقائي للمواعيد التي فات وقتها){% else %}Confirm or decline appointment requests. (Past-due requests are automatically auto-cleaned).{% endif %}
+                </p>
             </div>
             
-            <div class="d-flex gap-2 align-items-center">
-                <a href="{{ url_for('appointments.appointments') }}" class="btn btn-outline-primary" style="border-radius: 30px; font-weight: 600; padding: 10px 24px;">
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <button type="button" id="btn-clean-expired" class="btn btn-outline-warning rounded-pill px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5">
+                    <i class="bi bi-magic me-1"></i>
+                    <span>{% if current_lang == 'ar' %}تنظيف الطلبات المنتهية{% else %}Auto-Clean Expired{% endif %}</span>
+                </button>
+
+                <a href="{{ url_for('appointments.appointments') }}" class="btn btn-outline-secondary rounded-pill px-4 py-1.5 fw-semibold d-inline-flex align-items-center gap-2">
                     <i class="bi bi-calendar-event"></i>
-                    All Appointments
+                    <span>{% if current_lang == 'ar' %}قائمة المواعيد{% else %}All Appointments{% endif %}</span>
                 </a>
             </div>
         </div>
 
         {% if pending_appointments %}
-        <div class="appointments-table-wrapper table-responsive">
-            <table class="table appointments-table align-middle">
-                <thead>
-                    <tr>
-                        <th>Date & Time</th>
-                        <th>Patient</th>
-                        <th>Phone</th>
-                        <th>Reason</th>
-                        <th>Status</th>
-                        {% if current_user.role in ('admin', 'receptionist') %}
-                        <th class="text-center">Actions</th>
-                        {% endif %}
-                    </tr>
-                </thead>
+        <div class="card border-0 rounded-4 shadow-sm p-3">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>{% if current_lang == 'ar' %}التاريخ والوقت{% else %}Date & Time{% endif %}</th>
+                            <th>{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</th>
+                            <th>{% if current_lang == 'ar' %}الهاتف{% else %}Phone{% endif %}</th>
+                            <th>{% if current_lang == 'ar' %}السبب / الملاحظات{% else %}Reason{% endif %}</th>
+                            <th>{% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+                            {% if current_user.role in ('admin', 'receptionist') %}
+                            <th class="text-center">{% if current_lang == 'ar' %}الإجراءات والتحكم{% else %}Actions{% endif %}</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
 
-                <tbody>
-                    {% for appointment in pending_appointments %}
-                    <tr>
-                        <td>
-                            {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else 'No date' }}
-                        </td>
+                    <tbody>
+                        {% for appointment in pending_appointments %}
+                        <tr>
+                            <td class="fw-bold">
+                                {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else '—' }}
+                            </td>
 
-                        <td>
-                            <strong>
-                                {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
-                            </strong>
-                        </td>
+                            <td>
+                                {% if appointment.patient %}
+                                <a href="{{ url_for('patients.patient_detail', patient_id=appointment.patient.id) }}" class="fw-bold text-decoration-none text-main">
+                                    <i class="bi bi-person me-1 text-primary"></i>
+                                    {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                                </a>
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
 
-                        <td>
-                            {{ appointment.patient.phone or 'No phone number' }}
-                        </td>
+                            <td class="text-secondary small">
+                                {{ (appointment.patient.phone if appointment.patient else '') or '—' }}
+                            </td>
 
-                        <td>
-                            {{ appointment.reason or 'No reason provided' }}
-                        </td>
+                            <td class="text-secondary small">
+                                {{ appointment.reason or '—' }}
+                            </td>
 
-                        <td>
-                            <span class="appointment-status status-pending">
-                                {{ appointment.status }}
-                            </span>
-                        </td>
+                            <td>
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-3 py-1.5 fw-semibold">
+                                    <i class="bi bi-hourglass-split me-1"></i>
+                                    {% if current_lang == 'ar' %}قيد التثبيت{% else %}Pending{% endif %}
+                                </span>
+                            </td>
 
-                        {% if current_user.role in ('admin', 'receptionist') %}
-                        <td class="text-center">
-                            <div class="d-flex justify-content-center gap-2">
-                                <button type="button"
-                                    class="btn btn-sm btn-success quick-action-btn py-1 px-3 fw-bold rounded-pill"
-                                    data-action-url="{{ url_for('appointments.confirm_appointment', appointment_id=appointment.id) }}"
-                                    data-confirm-msg="Are you sure you want to confirm this booking request?"
-                                    title="Confirm Booking">
-                                    <i class="bi bi-check-lg"></i> Confirm
-                                </button>
+                            {% if current_user.role in ('admin', 'receptionist') %}
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center gap-2">
+                                    <button type="button"
+                                        class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold quick-action-btn d-inline-flex align-items-center gap-1.5"
+                                        style="background: rgba(16, 185, 129, 0.12) !important; color: #34d399 !important; border: 1px solid rgba(16, 185, 129, 0.3) !important;"
+                                        data-action-url="{{ url_for('appointments.confirm_appointment', appointment_id=appointment.id) }}"
+                                        data-confirm-msg="{% if current_lang == 'ar' %}هل أنت متأكد من تأكيد طلب هذا الموعد؟{% else %}Are you sure you want to confirm this booking request?{% endif %}"
+                                        title="{% if current_lang == 'ar' %}تأكيد الموعد{% else %}Confirm Booking{% endif %}">
+                                        <i class="bi bi-check-lg"></i>
+                                        <span>{% if current_lang == 'ar' %}تأكيد{% else %}Confirm{% endif %}</span>
+                                    </button>
 
-                                <button type="button"
-                                    class="btn btn-sm btn-danger quick-action-btn py-1 px-3 fw-bold rounded-pill"
-                                    data-action-url="{{ url_for('appointments.decline_appointment', appointment_id=appointment.id) }}"
-                                    data-confirm-msg="Are you sure you want to decline this booking request?"
-                                    title="Decline Booking">
-                                    <i class="bi bi-x-lg"></i> Decline
-                                </button>
-                            </div>
-                        </td>
-                        {% endif %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                                    <button type="button"
+                                        class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold quick-action-btn d-inline-flex align-items-center gap-1.5"
+                                        style="background: rgba(239, 68, 68, 0.12) !important; color: #f87171 !important; border: 1px solid rgba(239, 68, 68, 0.3) !important;"
+                                        data-action-url="{{ url_for('appointments.decline_appointment', appointment_id=appointment.id) }}"
+                                        data-confirm-msg="{% if current_lang == 'ar' %}هل أنت متأكد من رفض طلب هذا الموعد؟{% else %}Are you sure you want to decline this booking request?{% endif %}"
+                                        title="{% if current_lang == 'ar' %}رفض الموعد{% else %}Decline Booking{% endif %}">
+                                        <i class="bi bi-x-lg"></i>
+                                        <span>{% if current_lang == 'ar' %}رفض{% else %}Decline{% endif %}</span>
+                                    </button>
+                                </div>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
         {% else %}
-        <div class="empty-state-card text-center py-5" style="background: color-mix(in srgb, var(--surface-color), transparent 20%); border-radius: 16px; border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);">
-            <i class="bi bi-check-circle text-success fs-1 mb-3"></i>
-            <h4>All Caught Up!</h4>
-            <p class="text-muted">There are no pending booking requests from patients.</p>
+        <div class="card border-0 rounded-4 shadow-sm p-5 text-center">
+            <div class="py-4">
+                <i class="bi bi-calendar-check text-muted display-4 d-block mb-3 opacity-50"></i>
+                <h5 class="fw-bold text-main">{% if current_lang == 'ar' %}لا توجد طلبات حجز معلقة{% else %}No Pending Booking Requests{% endif %}</h5>
+                <p class="text-secondary small mb-0">{% if current_lang == 'ar' %}تمت معالجة وتأكيد جميع طلبات الحجز القادمة من البوابة.{% else %}All incoming self-booked appointments have been processed.{% endif %}</p>
+            </div>
         </div>
         {% endif %}
-
     </div>
 </section>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const cleanBtn = document.getElementById("btn-clean-expired");
+        if (cleanBtn) {
+            cleanBtn.addEventListener("click", function () {
+                if (typeof Swal !== "undefined") {
+                    Swal.fire({
+                        title: "{% if current_lang == 'ar' %}تنظيف الطلبات المنتهية{% else %}Clean Expired Requests{% endif %}",
+                        text: "{% if current_lang == 'ar' %}سيتم إلغاء كافة طلبات الحجز التي فات تاريخها الميعادي تلقائياً.{% else %}All past-due pending requests will be auto-cancelled.{% endif %}",
+                        icon: "question",
+                        showCancelButton: true,
+                        confirmButtonText: "{% if current_lang == 'ar' %}نعم، تنظيف الآن{% else %}Yes, Clean Now{% endif %}",
+                        cancelButtonText: "{% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            fetch("{{ url_for('appointments.cleanup_expired_route') }}", {
+                                method: "POST",
+                                headers: { "X-Requested-With": "XMLHttpRequest" }
+                            }).then(res => res.json()).then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        icon: "success",
+                                        title: "{% if current_lang == 'ar' %}تم التنظيف بنجاح{% else %}Cleaned Successfully{% endif %}",
+                                        text: data.message,
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    }).then(() => window.location.reload());
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    if (confirm("{% if current_lang == 'ar' %}هل تريد إلغاء وتنظيف الطلبات المنتهية التارخ؟{% else %}Do you want to clean expired pending requests?{% endif %}")) {
+                        fetch("{{ url_for('appointments.cleanup_expired_route') }}", {
+                            method: "POST",
+                            headers: { "X-Requested-With": "XMLHttpRequest" }
+                        }).then(res => res.json()).then(data => {
+                            if (data.success) {
+                                window.location.reload();
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

@@ -16,7 +16,7 @@ def get_patients_context():
     sort_by = request.args.get("sort", "id")
     order = request.args.get("order", "desc")
     page = request.args.get("page", 1, type=int)
-    per_page = 10
+    per_page = request.args.get("per_page", 10, type=int)
 
     query = Patient.query
 
@@ -24,6 +24,7 @@ def get_patients_context():
         query = query.filter(
             (Patient.first_name.ilike(f"%{search_query}%")) |
             (Patient.last_name.ilike(f"%{search_query}%")) |
+            ((Patient.first_name + " " + Patient.last_name).ilike(f"%{search_query}%")) |
             (Patient.phone.ilike(f"%{search_query}%")) |
             (Patient.email.ilike(f"%{search_query}%")) |
             (Patient.city.ilike(f"%{search_query}%"))
@@ -58,6 +59,7 @@ def get_patients_context():
         "search_query": search_query,
         "sort_by": sort_by,
         "order": order,
+        "per_page": per_page
     }
 
 

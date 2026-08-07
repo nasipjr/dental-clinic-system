@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, render_template, request, redirect, url_for, jsonify, flash
+from flask import Blueprint, current_app, render_template, request, redirect, url_for, jsonify, flash, session
 from datetime import datetime, timedelta
 from sqlalchemy.orm import joinedload, selectinload
 
@@ -20,16 +20,59 @@ appointments_bp = Blueprint("appointments", __name__)
 def cancel_expired_appointments():
     try:
         from utils.settings_helper import get_setting
+        from datetime import time
         minutes_str = get_setting("auto_cancel_expired_minutes", "60")
         try:
             minutes = int(minutes_str)
         except (ValueError, TypeError):
             minutes = 60
 
+        now = datetime.now()
+        today_start = datetime.combine(now.date(), time.min)
+
+        # Auto-close open sessions (In Chair or Checked In) left open for longer than auto_close_open_session_minutes
+        close_minutes_str = get_setting("auto_close_open_session_minutes", "120")
+        try:
+            close_minutes = int(close_minutes_str)
+        except (ValueError, TypeError):
+            close_minutes = 120
+
+        if close_minutes > 0:
+            session_cutoff = now - timedelta(minutes=close_minutes)
+            open_sessions = Appointment.query.filter(
+                Appointment.status.in_(["In Chair", "Checked In"])
+            ).all()
+
+            auto_closed = 0
+            for appt in open_sessions:
+                ref_time = appt.session_opened_at or appt.appointment_date
+                if ref_time and ref_time <= session_cutoff:
+                    if appt.treatments or appt.session_opened_at:
+                        appt.status = "Done"
+                    else:
+                        appt.status = "Cancelled"
+                    auto_closed += 1
+            if auto_closed > 0:
+                db.session.commit()
+                current_app.logger.info(f"Auto-closed {auto_closed} open sessions inactive for over {close_minutes} minutes.")
+        else:
+            # If set to 0 (disabled for same day), auto-close sessions from previous days
+            past_active = Appointment.query.filter(
+                Appointment.status.in_(["In Chair", "Checked In"]),
+                Appointment.appointment_date < today_start
+            ).all()
+            if past_active:
+                for appt in past_active:
+                    if appt.treatments or appt.session_opened_at:
+                        appt.status = "Done"
+                    else:
+                        appt.status = "Cancelled"
+                db.session.commit()
+
         if minutes <= 0:
             return  # Auto-cancel is disabled
 
-        cutoff_time = datetime.now() - timedelta(minutes=minutes)
+        cutoff_time = now - timedelta(minutes=minutes)
         expired = Appointment.query.filter(
             Appointment.status == "Scheduled",
             Appointment.appointment_date < cutoff_time,
@@ -73,7 +116,7 @@ def get_appointments_context():
     sort_by = request.args.get("sort", "date")
     order = request.args.get("order", "desc")
     page = request.args.get("page", 1, type=int)
-    per_page = 10
+    per_page = request.args.get("per_page", 10, type=int)
 
     # Auto-assign doctor to unassigned appointments ONLY if there is exactly 1 doctor in the clinic
     try:
@@ -97,7 +140,8 @@ def get_appointments_context():
     if search_query:
         query = query.filter(
             (Patient.first_name.ilike(f"%{search_query}%")) |
-            (Patient.last_name.ilike(f"%{search_query}%"))
+            (Patient.last_name.ilike(f"%{search_query}%")) |
+            ((Patient.first_name + " " + Patient.last_name).ilike(f"%{search_query}%"))
         )
 
     doctor_filter = request.args.get("doctor_id", "")
@@ -240,6 +284,7 @@ def get_appointments_context():
         "top_upcoming_appointments": top_upcoming_appointments,
         "doctors_list": doctors_list,
         "doctor_filter": doctor_filter,
+        "per_page": per_page,
     }
 
 
@@ -853,11 +898,65 @@ def delete_all_cancelled():
         ), 500
 
 
+def cleanup_expired_pending_appointments():
+    """
+    Automatically cancels any pending appointment request if the requested appointment date
+    is less than lead_minutes away (default: 120 minutes = 2 hours before appointment time)
+    or is already in the past.
+    """
+    try:
+        from utils.settings_helper import get_setting
+        lead_mins_str = get_setting("auto_cancel_expired_minutes", "120")
+        try:
+            lead_mins = int(lead_mins_str)
+            if lead_mins < 0:
+                lead_mins = 120
+        except ValueError:
+            lead_mins = 120
+
+        now = datetime.now()
+        # Cutoff: any pending appointment scheduled at or before (now + lead_mins) is considered expired/past-due
+        cutoff = now + timedelta(minutes=lead_mins)
+
+        expired_appts = Appointment.query.filter(
+            Appointment.status == "Pending",
+            Appointment.appointment_date <= cutoff
+        ).all()
+
+        count = len(expired_appts)
+        if count > 0:
+            lead_hours = round(lead_mins / 60.0, 1)
+            for appt in expired_appts:
+                appt.status = "Cancelled"
+                note_suffix = f" [تم الإلغاء تلقائياً لعدم التأكيد قبل الموعد بـ {lead_hours} ساعة]"
+                appt.reason = (appt.reason or "") + note_suffix
+            db.session.commit()
+            current_app.logger.info(f"Auto-cleaned {count} pending appointment requests within {lead_mins} minutes cutoff")
+        return count
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Error in cleanup_expired_pending_appointments")
+        return 0
+
+
+@appointments_bp.route("/appointments/cleanup-expired", methods=["POST"])
+@role_required("admin", "receptionist")
+def cleanup_expired_route():
+    count = cleanup_expired_pending_appointments()
+    is_ar = request.cookies.get("lang") == "ar" or session.get("lang") == "ar"
+    msg = f"تم إلغاء وتنظيف {count} طلب حجز منتهي الصلاحية تلقائياً." if is_ar else f"Auto-cleaned {count} expired booking requests."
+    return jsonify({"success": True, "message": msg, "cleaned_count": count})
+
+
 @appointments_bp.route("/appointments/pending")
 @role_required("admin", "doctor", "receptionist")
 def pending_appointments():
     current_app.logger.info("Pending appointments page opened")
     try:
+        # Auto clean expired pending requests before displaying
+        cleanup_expired_pending_appointments()
+
+        now = datetime.now()
         pending = (
             Appointment.query
             .join(Patient)
@@ -865,7 +964,7 @@ def pending_appointments():
             .order_by(Appointment.appointment_date.asc())
             .all()
         )
-        return render_template("appointments/pending_appointments.html", pending_appointments=pending)
+        return render_template("appointments/pending_appointments.html", pending_appointments=pending, now=now)
     except Exception:
         current_app.logger.exception("Error while loading pending appointments page")
         return "Error Loading Pending Appointments Page", 500
@@ -1045,7 +1144,7 @@ def get_archive_context():
     sort_by = request.args.get("sort", "date").strip()
     order = request.args.get("order", "desc").strip()
     page = request.args.get("page", 1, type=int)
-    per_page = 10
+    per_page = request.args.get("per_page", 10, type=int)
 
     query = (
         Appointment.query
@@ -1103,7 +1202,8 @@ def get_archive_context():
         "sort_by": sort_by,
         "order": order,
         "now": datetime.now(),
-        "current_lang": request.cookies.get("lang", "ar")
+        "current_lang": request.cookies.get("lang", "ar"),
+        "per_page": per_page
     }
 
 
@@ -1139,12 +1239,15 @@ def archive_table():
 def restore_appointment(appointment_id):
     """Restores an archived/cancelled/deleted appointment back to Scheduled status ONLY if it is in the future."""
     is_ar = request.cookies.get("lang", "ar") != "en"
+    is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
     try:
         appt = Appointment.query.get_or_404(appointment_id)
         
         # Enforce Rule: Only future appointments can be restored
         if appt.appointment_date and appt.appointment_date < datetime.now():
             msg = "لا يمكن استعادة موعد انتهى تاريخه الزمني. يمكن استعادة المواعيد المستقبلية فقط." if is_ar else "Cannot restore an appointment with a past date. Only future appointments can be restored."
+            if is_ajax:
+                return {"success": False, "message": msg}, 400
             flash(msg, "warning")
             return redirect(url_for("appointments.appointments_archive"))
 
@@ -1159,12 +1262,17 @@ def restore_appointment(appointment_id):
 
         patient_name = f"{appt.patient.first_name} {appt.patient.last_name}" if appt.patient else ""
         msg = f"تمت استعادة الموعد وإعادته إلى الجدول بنجاح للمريض ({patient_name})." if is_ar else f"Appointment restored successfully for ({patient_name})."
-        flash(msg, "success")
         current_app.logger.info(f"Appointment id={appointment_id} restored to Scheduled")
+        if is_ajax:
+            return {"success": True, "message": msg}
+        flash(msg, "success")
     except Exception:
         db.session.rollback()
         current_app.logger.exception(f"Failed to restore appointment id={appointment_id}")
-        flash("فشل في استعادة الموعد." if is_ar else "Failed to restore appointment.", "danger")
+        msg = "فشل في استعادة الموعد." if is_ar else "Failed to restore appointment."
+        if is_ajax:
+            return {"success": False, "message": msg}, 500
+        flash(msg, "danger")
 
     return redirect(url_for("appointments.appointments_archive"))
 
@@ -1174,18 +1282,111 @@ def restore_appointment(appointment_id):
 def permanent_delete_appointment(appointment_id):
     """Permanently deletes a cancelled appointment record."""
     is_ar = request.cookies.get("lang", "ar") != "en"
+    is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
     try:
         appt = Appointment.query.get_or_404(appointment_id)
         db.session.delete(appt)
         db.session.commit()
 
         msg = "تم حذف الموعد نهائياً من قاعدة البيانات." if is_ar else "Appointment permanently deleted."
-        flash(msg, "success")
         current_app.logger.info(f"Appointment id={appointment_id} permanently deleted")
+        if is_ajax:
+            return {"success": True, "message": msg}
+        flash(msg, "success")
     except Exception:
         db.session.rollback()
         current_app.logger.exception(f"Failed to permanently delete appointment id={appointment_id}")
-        flash("فشل في حذف الموعد." if is_ar else "Failed to delete appointment.", "danger")
+        msg = "فشل في حذف الموعد." if is_ar else "Failed to delete appointment."
+        if is_ajax:
+            return {"success": False, "message": msg}, 500
+        flash(msg, "danger")
+
+    return redirect(url_for("appointments.appointments_archive"))
+
+
+@appointments_bp.route("/appointments/archive/restore-all", methods=["POST"])
+@role_required("admin", "receptionist")
+def restore_all_archived_appointments():
+    """Restores all future archived/cancelled/deleted appointments back to Scheduled status."""
+    is_ar = request.cookies.get("lang", "ar") != "en"
+    is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    try:
+        now = datetime.now()
+        restorable = Appointment.query.filter(
+            Appointment.status.in_(["Cancelled", "Deleted"]),
+            Appointment.appointment_date >= now
+        ).all()
+
+        count = len(restorable)
+        if count == 0:
+            msg = "لا توجد مواعيد مستقبلية قابلة للاستعادة حالياً في الأرشيف." if is_ar else "No future restorable appointments found in archive."
+            if is_ajax:
+                return {"success": False, "message": msg}, 400
+            flash(msg, "warning")
+            return redirect(url_for("appointments.appointments_archive"))
+
+        for appt in restorable:
+            appt.status = "Scheduled"
+            try:
+                from services.notification_service import notify_appointment_restoration
+                notify_appointment_restoration(appt)
+            except Exception:
+                pass
+
+        db.session.commit()
+        msg = f"تمت استعادة {count} موعد مستقبلي وإعادتها إلى الجدول بنجاح!" if is_ar else f"Successfully restored {count} future appointments!"
+        current_app.logger.info(f"Restored all {count} future archived appointments")
+
+        if is_ajax:
+            return {"success": True, "message": msg, "restored_count": count}
+        flash(msg, "success")
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.exception("Failed to restore all archived appointments")
+        msg = f"حدث خطأ أثناء استعادة المواعيد: {str(e)}" if is_ar else f"Error restoring appointments: {str(e)}"
+        if is_ajax:
+            return {"success": False, "message": msg}, 500
+        flash(msg, "danger")
+
+    return redirect(url_for("appointments.appointments_archive"))
+
+
+@appointments_bp.route("/appointments/archive/permanent-delete-all", methods=["POST"])
+@role_required("admin", "receptionist")
+def permanent_delete_all_archived_appointments():
+    """Permanently deletes all archived (Cancelled/Deleted) appointments."""
+    is_ar = request.cookies.get("lang", "ar") != "en"
+    is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    try:
+        archived = Appointment.query.filter(
+            Appointment.status.in_(["Cancelled", "Deleted"])
+        ).all()
+
+        count = len(archived)
+        if count == 0:
+            msg = "لا توجد مواعيد مؤرشفة لحذفها نهائياً." if is_ar else "No archived appointments found to delete."
+            if is_ajax:
+                return {"success": False, "message": msg}, 400
+            flash(msg, "warning")
+            return redirect(url_for("appointments.appointments_archive"))
+
+        for appt in archived:
+            db.session.delete(appt)
+
+        db.session.commit()
+        msg = f"تم الحذف النهائي لجميع المواعيد المؤرشفة ({count} موعد) من قاعدة البيانات بنجاح." if is_ar else f"Permanently deleted all {count} archived appointments."
+        current_app.logger.info(f"Permanently deleted all {count} archived appointments")
+
+        if is_ajax:
+            return {"success": True, "message": msg, "deleted_count": count}
+        flash(msg, "success")
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.exception("Failed to permanent delete all archived appointments")
+        msg = f"حدث خطأ أثناء الحذف النهائي للمواعيد: {str(e)}" if is_ar else f"Error permanently deleting appointments: {str(e)}"
+        if is_ajax:
+            return {"success": False, "message": msg}, 500
+        flash(msg, "danger")
 
     return redirect(url_for("appointments.appointments_archive"))
 

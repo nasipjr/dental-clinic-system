@@ -66,6 +66,33 @@
                     style="background-color: rgba(225, 29, 72, 0.08); border: 1px solid rgba(225, 29, 72, 0.22);"></div>
                 <span style="color: #e11d48; font-weight: 600;">Cancelled</span>
             </label>
+
+            <!-- Quick Month & Year Jumper -->
+            <div class="d-flex align-items-center gap-2 ms-md-auto mt-2 mt-md-0 pt-2 pt-md-0 border-top border-md-0 border-secondary-subtle">
+                <i class="bi bi-calendar2-week text-primary fs-5"></i>
+                <span class="fw-bold opacity-75 small text-nowrap" style="color: var(--heading-color);">{% if current_lang == 'ar' %}الانتقال للتاريخ:{% else %}Jump to Date:{% endif %}</span>
+                <select id="calendar-month-select" class="form-select form-select-sm fw-bold border-secondary-subtle rounded-pill px-3 shadow-xs" style="width: auto; cursor: pointer;">
+                    <option value="0">{% if current_lang == 'ar' %}كانون الثاني (01){% else %}January (01){% endif %}</option>
+                    <option value="1">{% if current_lang == 'ar' %}شباط (02){% else %}February (02){% endif %}</option>
+                    <option value="2">{% if current_lang == 'ar' %}آذار (03){% else %}March (03){% endif %}</option>
+                    <option value="3">{% if current_lang == 'ar' %}نيسان (04){% else %}April (04){% endif %}</option>
+                    <option value="4">{% if current_lang == 'ar' %}أيار (05){% else %}May (05){% endif %}</option>
+                    <option value="5">{% if current_lang == 'ar' %}حزيران (06){% else %}June (06){% endif %}</option>
+                    <option value="6">{% if current_lang == 'ar' %}تموز (07){% else %}July (07){% endif %}</option>
+                    <option value="7">{% if current_lang == 'ar' %}آب (08){% else %}August (08){% endif %}</option>
+                    <option value="8">{% if current_lang == 'ar' %}أيلول (09){% else %}September (09){% endif %}</option>
+                    <option value="9">{% if current_lang == 'ar' %}تشرين الأول (10){% else %}October (10){% endif %}</option>
+                    <option value="10">{% if current_lang == 'ar' %}تشرين الثاني (11){% else %}November (11){% endif %}</option>
+                    <option value="11">{% if current_lang == 'ar' %}كانون الأول (12){% else %}December (12){% endif %}</option>
+                </select>
+                <select id="calendar-year-select" class="form-select form-select-sm fw-bold border-secondary-subtle rounded-pill px-3 shadow-xs" style="width: auto; cursor: pointer;">
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                </select>
+            </div>
         </div>
 
         <!-- Calendar Container -->
@@ -639,6 +666,28 @@
                 timeGridWeek: currentLang === 'ar' ? 'أسبوع' : 'Week',
                 listMonth: currentLang === 'ar' ? 'قائمة' : 'List'
             },
+            buttonHints: {
+                today: (buttonText) => currentLang === 'ar' ? 'اليوم الحالي' : `This ${buttonText}`,
+                month: (buttonText) => currentLang === 'ar' ? 'الشهر الحالي' : `This ${buttonText}`,
+                week: (buttonText) => currentLang === 'ar' ? 'الأسبوع الحالي' : `This ${buttonText}`,
+                day: (buttonText) => currentLang === 'ar' ? 'اليوم الحالي' : `This ${buttonText}`,
+                list: (buttonText) => currentLang === 'ar' ? 'قائمة المواعيد' : `This ${buttonText}`,
+                prev: (buttonText) => currentLang === 'ar' ? 'السابق' : `Previous ${buttonText}`,
+                next: (buttonText) => currentLang === 'ar' ? 'التالي' : `Next ${buttonText}`
+            },
+            titleFormatter: function(dateInfo) {
+                const monthsAr = [
+                    "كانون الثاني", "شباط", "آذار", "نيسان", "أيار", "حزيران",
+                    "تموز", "آب", "أيلول", "تشرين الأول", "تشرين الثاني", "كانون الأول"
+                ];
+                const monthsEn = [
+                    "January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"
+                ];
+                const d = dateInfo.date;
+                const mName = currentLang === 'ar' ? monthsAr[d.month] : monthsEn[d.month];
+                return `${mName} ${d.year}`;
+            },
             initialView: window.innerWidth < 768 ? 'listMonth' : 'dayGridMonth',
             allDaySlot: false,
         slotLabelFormat: {
@@ -734,6 +783,48 @@
                 const calInstance = info.view.calendar;
                 const currentFocused = calInstance.getDate();
                 
+                // Sync Month & Year Select dropdowns with current view date
+                const monthSelectEl = document.getElementById('calendar-month-select');
+                const yearSelectEl = document.getElementById('calendar-year-select');
+                if (monthSelectEl) monthSelectEl.value = currentFocused.getMonth();
+                if (yearSelectEl) yearSelectEl.value = currentFocused.getFullYear();
+
+                // Override FullCalendar header title to use Levantine Arabic month names in Arabic mode
+                if (currentLang === 'ar') {
+                    const monthsAr = [
+                        "كانون الثاني", "شباط", "آذار", "نيسان", "أيار", "حزيران",
+                        "تموز", "آب", "أيلول", "تشرين الأول", "تشرين الثاني", "كانون الأول"
+                    ];
+                    const titleEl = document.querySelector('.fc-toolbar-title');
+                    if (titleEl) {
+                        const mName = monthsAr[currentFocused.getMonth()];
+                        const yearVal = currentFocused.getFullYear();
+                        titleEl.textContent = `${mName} ${yearVal}`;
+                    }
+                }
+
+                // Translate/Fix any English button titles/tooltips
+                document.querySelectorAll('.fc-button').forEach(btn => {
+                    const title = btn.getAttribute('title') || '';
+                    if (title.includes('This') || title.includes('Previous') || title.includes('Next')) {
+                        if (btn.classList.contains('fc-dayGridMonth-button') || btn.classList.contains('fc-month-button')) {
+                            btn.setAttribute('title', currentLang === 'ar' ? 'الشهر الحالي' : 'This Month');
+                        } else if (btn.classList.contains('fc-timeGridWeek-button') || btn.classList.contains('fc-week-button')) {
+                            btn.setAttribute('title', currentLang === 'ar' ? 'الأسبوع الحالي' : 'This Week');
+                        } else if (btn.classList.contains('fc-timeGridDay-button') || btn.classList.contains('fc-day-button')) {
+                            btn.setAttribute('title', currentLang === 'ar' ? 'اليوم الحالي' : 'This Day');
+                        } else if (btn.classList.contains('fc-listMonth-button') || btn.classList.contains('fc-list-button')) {
+                            btn.setAttribute('title', currentLang === 'ar' ? 'قائمة المواعيد' : 'List View');
+                        } else if (btn.classList.contains('fc-today-button')) {
+                            btn.setAttribute('title', currentLang === 'ar' ? 'اليوم' : 'Today');
+                        } else if (btn.classList.contains('fc-prev-button')) {
+                            btn.setAttribute('title', currentLang === 'ar' ? 'السابق' : 'Previous');
+                        } else if (btn.classList.contains('fc-next-button')) {
+                            btn.setAttribute('title', currentLang === 'ar' ? 'التالي' : 'Next');
+                        }
+                    }
+                });
+
                 // If switching to Day/Week view and it defaults to the 1st of the current month, jump to today's date
                 if ((info.view.type === 'timeGridDay' || info.view.type === 'timeGridWeek') && 
                     currentFocused.getDate() === 1 && 
@@ -919,6 +1010,10 @@
                     else if (props.status === 'Cancelled') displayStatus = 'ملغي';
                     else if (props.status === 'Pending') displayStatus = 'قيد التثبيت';
                     else if (props.status === 'Rejected') displayStatus = 'تم الرفض';
+                    else if (props.status === 'In Chair' || props.status === 'In-Chair') displayStatus = 'في الجلسة';
+                    else if (props.status === 'Checked In' || props.status === 'Checked-In') displayStatus = 'في الانتظار';
+                } else {
+                    if (props.status === 'In Chair' || props.status === 'In-Chair') displayStatus = 'In Progress';
                 }
                 statusBadge.textContent = displayStatus;
                 statusBadge.className = 'badge';
@@ -1118,6 +1213,20 @@
         });
 
         calendar.render();
+
+        // Handle Quick Month & Year Jumpers
+        const monthSelectEl = document.getElementById('calendar-month-select');
+        const yearSelectEl = document.getElementById('calendar-year-select');
+
+        function handleQuickJump() {
+            if (!monthSelectEl || !yearSelectEl) return;
+            const y = parseInt(yearSelectEl.value, 10);
+            const m = parseInt(monthSelectEl.value, 10);
+            calendar.gotoDate(new Date(y, m, 1));
+        }
+
+        if (monthSelectEl) monthSelectEl.addEventListener('change', handleQuickJump);
+        if (yearSelectEl) yearSelectEl.addEventListener('change', handleQuickJump);
 
         // Register interactive status filter listeners
         const filters = ['filter-scheduled', 'filter-done', 'filter-cancelled'];

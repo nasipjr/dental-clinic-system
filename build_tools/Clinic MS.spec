@@ -1,18 +1,25 @@
 # -*- mode: python ; coding: utf-8 -*-
 import sys
-sys.path.insert(0, '.')
+import os
+
+SPEC_DIR = SPECPATH
+ROOT_DIR = os.path.dirname(SPEC_DIR)
+
+sys.path.insert(0, ROOT_DIR)
+sys.path.insert(0, SPEC_DIR)
+
 from version import APP_VERSION, APP_NAME
 
 EXE_NAME = f"{APP_NAME} v{APP_VERSION}"
 
 a = Analysis(
-    ['desktop_app.py'],
-    pathex=[],
+    [os.path.join(SPEC_DIR, 'desktop_app.py')],
+    pathex=[ROOT_DIR, SPEC_DIR],
     binaries=[],
     datas=[
-        ('static', 'static'),
-        ('templates', 'templates'),
-        ('version.py', '.'),
+        (os.path.join(ROOT_DIR, 'static'), 'static'),
+        (os.path.join(ROOT_DIR, 'templates'), 'templates'),
+        (os.path.join(SPEC_DIR, 'version.py'), '.'),
     ],
     hiddenimports=[],
     hookspath=[],
@@ -31,7 +38,7 @@ exe = EXE(
     a.datas,
     [],
     name=EXE_NAME,
-    icon='app_icon.ico',
+    icon=os.path.join(SPEC_DIR, 'app_icon.ico'),
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

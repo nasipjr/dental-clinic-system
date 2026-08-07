@@ -237,6 +237,16 @@ document.addEventListener("DOMContentLoaded", function () {
             const hasTime = info.dateStr.includes('T') || info.dateStr.includes(' ');
             let clickedDate = info.date;
             
+            if (hasTime && clickedDate < now) {
+                Swal.fire({
+                    icon: 'error',
+                    title: isArabic ? 'وقت غير صالح' : 'Invalid Time',
+                    text: isArabic ? 'الوقت المحدد في الماضي. يرجى اختيار وقت مستقبلي.' : 'Selected time is in the past. Please choose a future time.',
+                    confirmButtonColor: '#175cdd'
+                });
+                return;
+            }
+            
             // Generate available 30-min free time slots for this day within working hours
             const startVal = startHrs * 60 + startMins;
             const endVal = endHrs * 60 + endMins;

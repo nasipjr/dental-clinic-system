@@ -167,6 +167,19 @@ def format_price(value):
         return str(value)
 
 
+@app.template_filter("no_decimal")
+def no_decimal_filter(value):
+    if value is None or value == "":
+        return ""
+    try:
+        val = float(value)
+        if val % 1 == 0:
+            return str(int(val))
+        return f"{val:g}"
+    except (ValueError, TypeError):
+        return str(value)
+
+
 UNIVERSAL_TO_FDI_MAP = {
     '1': '18', '2': '17', '3': '16', '4': '15', '5': '14', '6': '13', '7': '12', '8': '11',
     '9': '21', '10': '22', '11': '23', '12': '24', '13': '25', '14': '26', '15': '27', '16': '28',

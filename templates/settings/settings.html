@@ -44,7 +44,12 @@
                     <button class="settings-nav-item" id="tab-appearance-btn" data-bs-toggle="pill"
                         data-bs-target="#tab-appearance" type="button" role="tab">
                         <i class="bi bi-palette"></i>
-                        <span>{% if current_lang == 'ar' %}المظهر والتحديثات{% else %}Appearance & Updates{% endif %}</span>
+                        <span>{% if current_lang == 'ar' %}المظهر واللغة{% else %}Appearance & Language{% endif %}</span>
+                    </button>
+                    <button class="settings-nav-item" id="tab-updates-btn" data-bs-toggle="pill"
+                        data-bs-target="#tab-updates" type="button" role="tab">
+                        <i class="bi bi-shield-check"></i>
+                        <span>{% if current_lang == 'ar' %}التحديثات والترخيص{% else %}Updates & Licensing{% endif %}</span>
                     </button>
                     <button class="settings-nav-item" id="tab-backups-btn" data-bs-toggle="pill"
                         data-bs-target="#tab-backups" type="button" role="tab">
@@ -62,6 +67,7 @@
             <!-- Tab Content -->
             <div class="col-lg-9 col-md-8">
                 <form id="main-settings-form" method="POST" action="{{ url_for('settings.settings_page') }}" novalidate>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <input type="hidden" name="active_tab" id="active-tab-input" value="#tab-general">
                     <div class="tab-content settings-content-card" id="settings-tabs-content">
 
@@ -414,24 +420,26 @@
                                             {% endif %}
 
                                             <!-- Actions -->
-                                            <div class="d-flex gap-2 mt-3">
-                                                <button type="submit" class="btn btn-primary rounded-pill px-4 fw-semibold flex-fill">
+                                            <div class="d-flex align-items-center gap-2 mt-3">
+                                                <button type="submit" class="btn btn-primary rounded-pill px-3 py-2 fw-bold flex-fill" style="min-height: 42px;">
                                                     <i class="bi bi-save me-1"></i>
-                                                    {% if current_lang=='ar' %}حفظ{% else %}Save{% endif %}
+                                                    {% if current_lang=='ar' %}حفظ الإعدادات{% else %}Save Salary{% endif %}
                                                 </button>
+
+                                                {% if sc and sc.is_active %}
+                                                <button type="button" class="btn rounded-pill px-3 py-2 fw-bold flex-fill d-inline-flex align-items-center justify-content-center text-nowrap"
+                                                        onclick="confirmDeductSalary(document.getElementById('deduct-salary-form-{{ staff.id }}'), event);"
+                                                        style="min-height: 42px; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); transition: all 0.25s ease;">
+                                                    <i class="bi bi-arrow-down-circle me-1"></i>
+                                                    {% if current_lang=='ar' %}خصم الآن{% else %}Deduct Now{% endif %}
+                                                </button>
+                                                {% endif %}
                                             </div>
                                         </form>
 
-                                        <!-- Deduct Now button (separate form) -->
                                         {% if sc and sc.is_active %}
-                                        <form method="POST" action="{{ url_for('settings.deduct_salary_now', user_id=staff.id) }}"
-                                              class="mt-2"
-                                              onsubmit="return confirmDeductSalary(this, event);">
+                                        <form id="deduct-salary-form-{{ staff.id }}" method="POST" action="{{ url_for('settings.deduct_salary_now', user_id=staff.id) }}" class="d-none">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                            <button type="submit" class="btn btn-outline-warning rounded-pill px-4 fw-semibold w-100">
-                                                <i class="bi bi-arrow-down-circle me-1"></i>
-                                                {% if current_lang=='ar' %}خصم الآن{% else %}Deduct Now{% endif %}
-                                            </button>
                                         </form>
                                         {% endif %}
                                     </div>
@@ -455,7 +463,7 @@
                                     <p>{% if current_lang == 'ar' %}إدارة أنواع الإجراءات والأسعار الافتراضية لكل إجراء{% else %}Manage procedure types and their default pricing{% endif %}</p>
                                 </div>
                                 <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 ms-auto"
-                                    id="add-procedure-btn">
+                                    id="add-procedure-btn" onclick="addNewProcedureRow()">
                                     <i class="bi bi-plus-circle me-1"></i> {% if current_lang == 'ar' %}إضافة إجراء جديد{% else %}Add New Procedure{% endif %}
                                 </button>
                             </div>
@@ -503,6 +511,7 @@
                                                 {% if not is_essential %}
                                                 <button type="button"
                                                     class="btn btn-outline-danger btn-sm rounded-circle delete-row-btn"
+                                                    onclick="deleteProcedureRow(this)"
                                                     data-tooltip="{% if current_lang == 'ar' %}حذف الإجراء{% else %}Delete Procedure{% endif %}"
                                                     style="width:34px;height:34px;padding:0 !important;">
                                                     <i class="bi bi-trash"></i>
@@ -689,13 +698,13 @@
                             </div>
                         </div>
 
-                        <!-- ═══════════ Theme & Appearance Tab ═══════════ -->
+                        <!-- ═══════════ Theme & Language Tab ═══════════ -->
                         <div class="tab-pane fade" id="tab-appearance" role="tabpanel">
                             <div class="settings-tab-header">
                                 <div class="settings-tab-icon"><i class="bi bi-palette"></i></div>
                                 <div>
-                                    <h4>{% if current_lang == 'ar' %}المظهر والتحديثات{% else %}Appearance &amp; Updates{% endif %}</h4>
-                                    <p>{% if current_lang == 'ar' %}تخصيص المظهر، لغة الواجهة، وتحديثات النظام البرمجية{% else %}Customize visual theme, language, and software updates{% endif %}</p>
+                                    <h4>{% if current_lang == 'ar' %}المظهر واللغة{% else %}Appearance &amp; Language{% endif %}</h4>
+                                    <p>{% if current_lang == 'ar' %}تخصيص مظهر النظام ولغة الواجهة الرئيسية{% else %}Customize visual theme and main system language{% endif %}</p>
                                 </div>
                             </div>
                             <div class="row g-4 pt-3">
@@ -728,7 +737,7 @@
                                             id="lang-en-btn" onclick="setAppLang('en')"
                                             style="border-radius: 16px; transition: all 0.3s ease;">
                                             <span class="fs-2 mb-2">🇺🇸</span>
-                                            <strong style="font-size: 1.05rem;">English</strong>
+                                            <strong style="font-size: 1.05rem;">English (الإنجليزيّة)</strong>
                                         </button>
                                         <button type="button"
                                             class="btn lang-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2 {% if current_lang == 'ar' %}active{% endif %}"
@@ -739,8 +748,20 @@
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
 
-                                <div class="col-md-12 mt-4 pt-4 border-top" style="border-top-color: rgba(13, 110, 253, 0.08) !important;">
+                        <!-- ═══════════ Updates & Licensing Tab ═══════════ -->
+                        <div class="tab-pane fade" id="tab-updates" role="tabpanel">
+                            <div class="settings-tab-header">
+                                <div class="settings-tab-icon"><i class="bi bi-shield-check"></i></div>
+                                <div>
+                                    <h4>{% if current_lang == 'ar' %}التحديثات والترخيص{% else %}Updates &amp; Licensing{% endif %}</h4>
+                                    <p>{% if current_lang == 'ar' %}حالة ترخيص النظام، واشتراك العيادة، وتحديثات البرمجيات{% else %}System licensing status, clinic subscription, and software updates{% endif %}</p>
+                                </div>
+                            </div>
+                            <div class="row g-4 pt-3">
+                                <div class="col-md-12">
                                     <label class="settings-label d-block mb-3">{% if current_lang == 'ar' %}حالة ترخيص النظام واشتراك العيادة{% else %}System License & Subscription Status{% endif %}</label>
                                     <div class="card p-4 border-0 shadow-sm rounded-4" style="background: rgba(255, 193, 7, 0.05); border: 1px solid rgba(255, 193, 7, 0.25) !important;">
                                         <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
@@ -1546,7 +1567,225 @@
 </div>
 
 <script>
+    // ── Global Scope Helpers (Available Immediately) ──────────────────────
+    function getIsArabic() {
+        try {
+            return document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
+        } catch (e) {
+            return document.documentElement.getAttribute('lang') === 'ar' || document.dir === 'rtl';
+        }
+    }
+
+    window.addNewProcedureRow = function () {
+        const list = document.getElementById("procedures-list");
+        if (list) {
+            const isAr = getIsArabic();
+            const namePlaceholder = isAr ? 'اسم الإجراء (مثال: تنظيف وتلميع)' : 'Procedure Name (e.g., Cleaning)';
+            const deleteTooltip = isAr ? 'حذف الإجراء' : 'Delete Procedure';
+            const currencySymbol = "{{ currency_symbol }}";
+            const row = document.createElement("tr");
+            row.className = "procedure-row";
+            row.innerHTML = `
+            <td>
+                <input type="text" name="procedure_names[]" form="main-settings-form" class="form-control settings-input" required placeholder="${namePlaceholder}">
+            </td>
+            <td>
+                <div class="input-group settings-input-group">
+                    <input type="text" name="procedure_prices[]" form="main-settings-form" class="form-control settings-input" required placeholder="0">
+                    <span class="input-group-text">${currencySymbol}</span>
+                </div>
+            </td>
+            <td class="text-center align-middle">
+                <button type="button" class="btn btn-outline-danger btn-sm rounded-circle delete-row-btn" onclick="deleteProcedureRow(this)" data-tooltip="${deleteTooltip}" style="width:34px;height:34px;padding:0 !important;">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
+            list.appendChild(row);
+            if (typeof window.initCustomTooltips === "function") {
+                window.initCustomTooltips();
+            }
+            const nameInput = row.querySelector('input[name="procedure_names[]"]');
+            if (nameInput) {
+                nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => nameInput.focus(), 150);
+            }
+        }
+    };
+
+    window.deleteProcedureRow = function (btn) {
+        const row = btn ? btn.closest("tr") : null;
+        if (!row) return;
+
+        const nameInput = row.querySelector('input[name="procedure_names[]"]');
+        const procName = nameInput ? nameInput.value.trim() : '';
+        const isAr = getIsArabic();
+
+        const confirmText = procName
+            ? (isAr ? `هل أنت متأكد من رغبتك في حذف الإجراء (${procName})؟` : `Are you sure you want to delete procedure "${procName}"?`)
+            : (isAr ? 'هل أنت متأكد من رغبتك في حذف هذا الإجراء؟' : 'Are you sure you want to delete this procedure?');
+
+        const doDelete = function() {
+            row.style.transition = 'opacity 0.25s, transform 0.25s';
+            row.style.opacity = '0';
+            row.style.transform = 'scale(0.95)';
+            setTimeout(() => { row.remove(); }, 250);
+        };
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: isAr ? '⚠️ تأكيد حذف الإجراء' : '⚠️ Confirm Delete Procedure',
+                text: confirmText,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: isAr ? 'نعم، حذف' : 'Yes, Delete',
+                cancelButtonText: isAr ? 'إلغاء' : 'Cancel',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    doDelete();
+                }
+            });
+        } else {
+            if (confirm(confirmText)) {
+                doDelete();
+            }
+        }
+    };
+
+    window.setAppTheme = function (theme) {
+        document.documentElement.setAttribute('data-bs-theme', theme);
+        localStorage.setItem('theme', theme);
+        document.cookie = "theme=" + theme + ";path=/;max-age=31536000;SameSite=Lax";
+        updateThemeButtons(theme);
+    };
+
+    function updateThemeButtons(theme) {
+        const lightBtn = document.getElementById('theme-light-btn');
+        const darkBtn = document.getElementById('theme-dark-btn');
+        if (!lightBtn || !darkBtn) return;
+
+        if (theme === 'dark') {
+            darkBtn.classList.add('active');
+            lightBtn.classList.remove('active');
+        } else {
+            lightBtn.classList.add('active');
+            darkBtn.classList.remove('active');
+        }
+    }
+
+    window.setAppLang = function (lang) {
+        document.cookie = "lang=" + lang + ";path=/;max-age=31536000;SameSite=Lax";
+        localStorage.setItem('lang', lang);
+        updateLangButtons(lang);
+        window.location.reload();
+    };
+
+    function updateLangButtons(lang) {
+        const enBtn = document.getElementById('lang-en-btn');
+        const arBtn = document.getElementById('lang-ar-btn');
+        if (!enBtn || !arBtn) return;
+
+        if (lang === 'ar') {
+            arBtn.classList.add('active');
+            enBtn.classList.remove('active');
+        } else {
+            enBtn.classList.add('active');
+            arBtn.classList.remove('active');
+        }
+    }
+
+    window.deleteUser = function (userId) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/settings/users/${userId}/delete`;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = "{{ csrf_token() }}";
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    };
+
+    window.confirmDeleteUser = function (userId, username) {
+        const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: isAr ? 'حذف حساب المستخدم' : 'Delete User Account',
+                text: isAr ? `هل أنت متأكد من رغبتك في حذف المستخدم (${username})؟` : `Are you sure you want to delete user (${username})?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: isAr ? 'نعم، حذف المستخدم' : 'Yes, delete user',
+                cancelButtonText: isAr ? 'إلغاء' : 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.deleteUser(userId);
+                }
+            });
+        } else {
+            if (confirm(isAr ? 'هل أنت متأكد من رغبتك في حذف هذا المستخدم؟' : 'Are you sure you want to delete this user?')) {
+                window.deleteUser(userId);
+            }
+        }
+    };
+
+    window.createBackup = function () {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = "{{ url_for('settings.create_backup') }}";
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = "{{ csrf_token() }}";
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    };
+
+    window.deleteBackup = function (filename) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/settings/backups/${encodeURIComponent(filename)}/delete`;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrf_token';
+        csrfInput.value = "{{ csrf_token() }}";
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    };
+
+    window.confirmDeleteBackup = function (filename) {
+        const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: isAr ? 'حذف النسخة الاحتياطية' : 'Delete Backup File',
+                text: isAr ? `هل أنت متأكد من رغبتك في حذف ملف النسخة الاحتياطية (${filename})؟` : `Are you sure you want to delete backup file (${filename})?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: isAr ? 'نعم، حذف الملف' : 'Yes, delete file',
+                cancelButtonText: isAr ? 'إلغاء' : 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.deleteBackup(filename);
+                }
+            });
+        } else {
+            if (confirm(isAr ? 'هل أنت متأكد من رغبتك في حذف ملف النسخة الاحتياطية هذا؟' : 'Are you sure you want to delete this backup file?')) {
+                window.deleteBackup(filename);
+            }
+        }
+    };
+
     function runSettingsInit() {
+        const mainForm = document.getElementById("main-settings-form");
         const tbody = document.getElementById("procedures-list");
         const currencySymbol = "{{ currency_symbol }}";
         const saveWrapper = document.getElementById("save-settings-btn-wrapper");
@@ -1583,7 +1822,7 @@
                     if (typeof window.initCustomTooltips === "function") {
                         window.initCustomTooltips();
                     }
-                    const nameInput = row.querySelector('input[name="procedure_names[]" form="main-settings-form"]');
+                    const nameInput = row.querySelector('input[name="procedure_names[]"]');
                     if (nameInput) {
                         nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         setTimeout(() => nameInput.focus(), 150);
@@ -1598,7 +1837,7 @@
                 const row = deleteBtn.closest("tr");
                 if (!row) return;
 
-                const nameInput = row.querySelector('input[name="procedure_names[]" form="main-settings-form"]');
+                const nameInput = row.querySelector('input[name="procedure_names[]"]');
                 const procName = nameInput ? nameInput.value.trim() : '';
                 const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
 
@@ -1649,19 +1888,22 @@
 
         // ── Toggle Save button visibility based on active tab ──
         function toggleSaveButton() {
+            if (!saveWrapper) return;
             const usersTab = document.getElementById("tab-users");
             const appearanceTab = document.getElementById("tab-appearance");
+            const updatesTab = document.getElementById("tab-updates");
             const backupsTab = document.getElementById("tab-backups");
             const notificationsTab = document.getElementById("tab-notifications");
             const notifLogsPane = document.getElementById("notif-logs-pane");
             
             const isUsersActive = usersTab && usersTab.classList.contains("show") && usersTab.classList.contains("active");
             const isAppearanceActive = appearanceTab && appearanceTab.classList.contains("show") && appearanceTab.classList.contains("active");
+            const isUpdatesActive = updatesTab && updatesTab.classList.contains("show") && updatesTab.classList.contains("active");
             const isBackupsActive = backupsTab && backupsTab.classList.contains("show") && backupsTab.classList.contains("active");
             
             const isLogsActive = notificationsTab && notificationsTab.classList.contains("show") && notificationsTab.classList.contains("active") && notifLogsPane && notifLogsPane.classList.contains("show") && notifLogsPane.classList.contains("active");
 
-            if (isUsersActive || isAppearanceActive || isBackupsActive || isLogsActive) {
+            if (isUsersActive || isAppearanceActive || isUpdatesActive || isBackupsActive || isLogsActive) {
                 saveWrapper.style.display = "none";
             } else {
                 saveWrapper.style.display = "flex";
@@ -1676,49 +1918,7 @@
             notifConfigTabBtn.addEventListener("shown.bs.tab", toggleSaveButton);
         }
 
-        // ── Theme Selector Logic ──
-        window.setAppTheme = function (theme) {
-            document.documentElement.setAttribute('data-bs-theme', theme);
-            localStorage.setItem('theme', theme);
-            document.cookie = "theme=" + theme + ";path=/;max-age=31536000;SameSite=Lax";
-            updateThemeButtons(theme);
-        };
 
-        function updateThemeButtons(theme) {
-            const lightBtn = document.getElementById('theme-light-btn');
-            const darkBtn = document.getElementById('theme-dark-btn');
-            if (!lightBtn || !darkBtn) return;
-
-            if (theme === 'dark') {
-                darkBtn.classList.add('active');
-                lightBtn.classList.remove('active');
-            } else {
-                lightBtn.classList.add('active');
-                darkBtn.classList.remove('active');
-            }
-        }
-
-        // ── Language Selector Logic ──
-        window.setAppLang = function (lang) {
-            document.cookie = "lang=" + lang + ";path=/;max-age=31536000;SameSite=Lax";
-            localStorage.setItem('lang', lang);
-            updateLangButtons(lang);
-            window.location.reload();
-        };
-
-        function updateLangButtons(lang) {
-            const enBtn = document.getElementById('lang-en-btn');
-            const arBtn = document.getElementById('lang-ar-btn');
-            if (!enBtn || !arBtn) return;
-
-            if (lang === 'ar') {
-                arBtn.classList.add('active');
-                enBtn.classList.remove('active');
-            } else {
-                enBtn.classList.add('active');
-                arBtn.classList.remove('active');
-            }
-        }
 
         // Initialize button states based on current theme and language
         const currentTheme = document.documentElement.getAttribute('data-bs-theme') || localStorage.getItem('theme') || 'light';
@@ -1744,7 +1944,6 @@
         toggleSaveButton();
 
         // ── Defensive Form Submit Verification with Custom Validation ──
-        const mainForm = document.getElementById("main-settings-form");
         if (mainForm) {
             mainForm.addEventListener("submit", function (event) {
                 const nameInput = document.getElementById("clinic_name");
@@ -1793,95 +1992,7 @@
             });
         }
 
-        // ── Delete User JS Form Submission ──
-        window.deleteUser = function (userId) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/settings/users/${userId}/delete`;
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = 'csrf_token';
-            csrfInput.value = "{{ csrf_token() }}";
-            form.appendChild(csrfInput);
-            document.body.appendChild(form);
-            form.submit();
-        };
 
-        window.confirmDeleteUser = function (userId, username) {
-            const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: isAr ? 'حذف حساب المستخدم' : 'Delete User Account',
-                    text: isAr ? `هل أنت متأكد من رغبتك في حذف المستخدم (${username})؟` : `Are you sure you want to delete user (${username})?`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: isAr ? 'نعم، حذف المستخدم' : 'Yes, delete user',
-                    cancelButtonText: isAr ? 'إلغاء' : 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.deleteUser(userId);
-                    }
-                });
-            } else {
-                if (confirm(isAr ? 'هل أنت متأكد من رغبتك في حذف هذا المستخدم؟' : 'Are you sure you want to delete this user?')) {
-                    window.deleteUser(userId);
-                }
-            }
-        };
-
-        // ── Create Backup JS Form Submission ──
-        window.createBackup = function () {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = "{{ url_for('settings.create_backup') }}";
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = 'csrf_token';
-            csrfInput.value = "{{ csrf_token() }}";
-            form.appendChild(csrfInput);
-            document.body.appendChild(form);
-            form.submit();
-        };
-
-        // ── Delete Backup JS Form Submission ──
-        window.deleteBackup = function (filename) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/settings/backups/${encodeURIComponent(filename)}/delete`;
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = 'csrf_token';
-            csrfInput.value = "{{ csrf_token() }}";
-            form.appendChild(csrfInput);
-            document.body.appendChild(form);
-            form.submit();
-        };
-
-        window.confirmDeleteBackup = function (filename) {
-            const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: isAr ? 'حذف النسخة الاحتياطية' : 'Delete Backup File',
-                    text: isAr ? `هل أنت متأكد من رغبتك في حذف ملف النسخة الاحتياطية (${filename})؟` : `Are you sure you want to delete backup file (${filename})?`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: isAr ? 'نعم، حذف الملف' : 'Yes, delete file',
-                    cancelButtonText: isAr ? 'إلغاء' : 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        window.deleteBackup(filename);
-                    }
-                });
-            } else {
-                if (confirm(isAr ? 'هل أنت متأكد من رغبتك في حذف ملف النسخة الاحتياطية هذا؟' : 'Are you sure you want to delete this backup file?')) {
-                    window.deleteBackup(filename);
-                }
-            }
-        };
 
         // ── Edit User Modal population ──
         document.querySelectorAll(".edit-user-btn").forEach(function (btn) {
@@ -1924,15 +2035,6 @@
                 if (inp) inp.value = target;
             });
         });
-
-        const hash = window.location.hash;
-        if (hash) {
-            const triggerEl = document.querySelector(`button[data-bs-target="${hash}"]`);
-            if (triggerEl) {
-                const tab = new bootstrap.Tab(triggerEl);
-                tab.show();
-            }
-        }
 
         // ── Test Buttons Event Listeners ─────────────────────────────────
         // Read CSRF token dynamically from the injected form input

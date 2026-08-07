@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Blueprint, render_template, current_app, request, redirect, url_for, flash, Response
+from flask import Blueprint, render_template, current_app, request, redirect, url_for, flash, Response, g
 from sqlalchemy import func
 from sqlalchemy.orm import subqueryload
 from utils.auth_helper import role_required
@@ -15,74 +15,206 @@ def reports_dashboard():
     current_app.logger.info("Reports dashboard page opened")
 
     try:
-        # 1. KPI Cards Data
-        total_patients = Patient.query.count()
-        total_appointments = Appointment.query.count()
-        total_invoiced = sum(float(inv.total_amount) for inv in Invoice.query.join(Invoice.appointment).filter(Appointment.status != "Cancelled").all())
-        total_payments = float(db.session.query(func.coalesce(func.sum(Payment.amount), 0.0)).scalar())
-        total_outstanding = max(0.0, total_invoiced - total_payments)
-        total_credit = max(0.0, total_payments - total_invoiced)
+        from sqlalchemy import extract
+        today = datetime.now()
 
-        # Expenses & Net Profit calculations
-        expenses = Expense.query.order_by(Expense.expense_date.desc(), Expense.id.desc()).all()
-        total_expenses = float(db.session.query(func.coalesce(func.sum(Expense.amount), 0.0)).scalar())
+        # Available years for filtering (Full contiguous range from oldest record to current/future)
+        min_year = today.year
+        max_year = today.year
+
+        for model, col_name in [(Invoice, 'issue_date'), (Payment, 'payment_date'), (Expense, 'expense_date')]:
+            col = getattr(model, col_name)
+            min_d, max_d = db.session.query(func.min(col), func.max(col)).first()
+            if min_d and min_d.year < min_year:
+                min_year = min_d.year
+            if max_d and max_d.year > max_year:
+                max_year = max_d.year
+
+        available_years = list(range(max_year, min_year - 1, -1))
+
+        # Year filter handling ('all' or specific integer year)
+        year_param = request.args.get("year", "all").strip().lower()
+        if year_param in ("all", "الكل", ""):
+            selected_year = "all"
+            filter_year = None
+        else:
+            try:
+                filter_year = int(year_param)
+                selected_year = str(filter_year)
+            except ValueError:
+                selected_year = "all"
+                filter_year = None
+
+        if filter_year:
+            start_date_year = datetime(filter_year, 1, 1)
+            end_date_year = datetime(filter_year + 1, 1, 1)
+        else:
+            start_date_year = None
+            end_date_year = None
+
+        # Reusable Invoice subqueries
+        subtotal_sub = (
+            db.select(func.coalesce(func.sum(Treatment.total_cost), 0.0))
+            .where(Treatment.appointment_id == Invoice.appointment_id)
+            .scalar_subquery()
+        )
+
+        discount_amt_sub = db.case(
+            (Invoice.discount_type == "percentage", subtotal_sub * func.coalesce(Invoice.discount, 0.0) / 100.0),
+            else_=func.coalesce(Invoice.discount, 0.0)
+        )
+
+        net_total_sub = db.case(
+            (subtotal_sub - discount_amt_sub + func.coalesce(Invoice.additional_charges, 0.0) > 0,
+             subtotal_sub - discount_amt_sub + func.coalesce(Invoice.additional_charges, 0.0)),
+            else_=0.0
+        )
+
+        # 1. KPI Cards Data (Filtered by year if selected)
+        if filter_year:
+            patient_cnt = Patient.query.join(Patient.appointments).filter(
+                Appointment.appointment_date >= start_date_year,
+                Appointment.appointment_date < end_date_year
+            ).distinct().count()
+            total_patients = patient_cnt if patient_cnt > 0 else Patient.query.count()
+
+            total_appointments = Appointment.query.filter(
+                Appointment.appointment_date >= start_date_year,
+                Appointment.appointment_date < end_date_year
+            ).count()
+
+            total_invoiced_q = db.session.query(
+                func.coalesce(func.sum(net_total_sub), 0.0)
+            ).join(Appointment, Invoice.appointment_id == Appointment.id).filter(
+                Appointment.status != "Cancelled",
+                Invoice.issue_date >= start_date_year,
+                Invoice.issue_date < end_date_year
+            )
+            total_invoiced = float(total_invoiced_q.scalar() or 0.0)
+
+            total_payments = float(db.session.query(func.coalesce(func.sum(Payment.amount), 0.0)).filter(
+                Payment.payment_date >= start_date_year,
+                Payment.payment_date < end_date_year
+            ).scalar() or 0.0)
+
+            expenses_q = Expense.query.filter(
+                Expense.expense_date >= start_date_year.date(),
+                Expense.expense_date < end_date_year.date()
+            )
+            expenses = expenses_q.order_by(Expense.expense_date.desc(), Expense.id.desc()).limit(50).all()
+            total_expenses = float(db.session.query(func.coalesce(func.sum(Expense.amount), 0.0)).filter(
+                Expense.expense_date >= start_date_year.date(),
+                Expense.expense_date < end_date_year.date()
+            ).scalar() or 0.0)
+        else:
+            total_patients = Patient.query.count()
+            total_appointments = Appointment.query.count()
+
+            total_invoiced_q = db.session.query(
+                func.coalesce(func.sum(net_total_sub), 0.0)
+            ).join(Appointment, Invoice.appointment_id == Appointment.id).filter(
+                Appointment.status != "Cancelled"
+            )
+            total_invoiced = float(total_invoiced_q.scalar() or 0.0)
+
+            total_payments = float(db.session.query(func.coalesce(func.sum(Payment.amount), 0.0)).scalar() or 0.0)
+
+            expenses = Expense.query.order_by(Expense.expense_date.desc(), Expense.id.desc()).limit(50).all()
+            total_expenses = float(db.session.query(func.coalesce(func.sum(Expense.amount), 0.0)).scalar() or 0.0)
 
         cash_net_profit = total_payments - total_expenses
         accrual_net_profit = total_invoiced - total_expenses
 
-        expense_categories = {
-            "Materials": 0.0,
-            "Rent": 0.0,
-            "Salaries": 0.0,
-            "Other": 0.0
-        }
-        exp_cat_rows = db.session.query(
-            Expense.category,
-            func.coalesce(func.sum(Expense.amount), 0.0)
-        ).group_by(Expense.category).all()
+        # Expense categories breakdown
+        expense_categories = {"Materials": 0.0, "Rent": 0.0, "Salaries": 0.0, "Other": 0.0}
+        exp_cat_query = db.session.query(Expense.category, func.coalesce(func.sum(Expense.amount), 0.0))
+        if filter_year:
+            exp_cat_query = exp_cat_query.filter(
+                Expense.expense_date >= start_date_year.date(),
+                Expense.expense_date < end_date_year.date()
+            )
+        exp_cat_rows = exp_cat_query.group_by(Expense.category).all()
         for cat, amt in exp_cat_rows:
             c_key = cat if cat in expense_categories else "Other"
             expense_categories[c_key] += float(amt)
 
-        # 2. Last 6 Months Income (Billed vs Paid) - DB Agnostic Python Logic
-        today = datetime.now()
-        months = []
-        for i in range(5, -1, -1):
-            year = today.year
-            month = today.month - i
-            if month <= 0:
-                month += 12
-                year -= 1
-            months.append((year, month, datetime(year, month, 1)))
+        # Pre-query monthly totals in bulk via SQL GROUP BY
+        monthly_billed_q = db.session.query(
+            extract('year', Invoice.issue_date).label('yr'),
+            extract('month', Invoice.issue_date).label('mon'),
+            func.coalesce(func.sum(net_total_sub), 0.0).label('total_billed')
+        ).join(Appointment, Invoice.appointment_id == Appointment.id).filter(
+            Appointment.status != "Cancelled"
+        )
+        if filter_year:
+            monthly_billed_q = monthly_billed_q.filter(
+                Invoice.issue_date >= start_date_year,
+                Invoice.issue_date < end_date_year
+            )
+        billed_by_month = {(int(yr), int(mon)): float(tot) for yr, mon, tot in monthly_billed_q.group_by('yr', 'mon').all() if yr and mon}
 
-        monthly_labels = [m[2].strftime("%B %Y") for m in months]
+        monthly_paid_q = db.session.query(
+            extract('year', Payment.payment_date).label('yr'),
+            extract('month', Payment.payment_date).label('mon'),
+            func.coalesce(func.sum(Payment.amount), 0.0).label('total_paid')
+        )
+        if filter_year:
+            monthly_paid_q = monthly_paid_q.filter(
+                Payment.payment_date >= start_date_year,
+                Payment.payment_date < end_date_year
+            )
+        paid_by_month = {(int(yr), int(mon)): float(tot) for yr, mon, tot in monthly_paid_q.group_by('yr', 'mon').all() if yr and mon}
+
+        monthly_exp_q = db.session.query(
+            extract('year', Expense.expense_date).label('yr'),
+            extract('month', Expense.expense_date).label('mon'),
+            func.coalesce(func.sum(Expense.amount), 0.0).label('total_exp')
+        )
+        if filter_year:
+            monthly_exp_q = monthly_exp_q.filter(
+                Expense.expense_date >= start_date_year.date(),
+                Expense.expense_date < end_date_year.date()
+            )
+        exp_by_month = {(int(yr), int(mon)): float(tot) for yr, mon, tot in monthly_exp_q.group_by('yr', 'mon').all() if yr and mon}
+
+        # 2. Monthly Income Chart (Billed vs Paid)
+        monthly_labels = []
         monthly_billed = []
         monthly_paid = []
 
-        for year, month, date_start in months:
-            if month == 12:
-                date_end = datetime(year + 1, 1, 1)
-            else:
-                date_end = datetime(year, month + 1, 1)
+        if filter_year:
+            target_months = [(filter_year, m, datetime(filter_year, m, 1)) for m in range(1, 13)]
+        else:
+            months_list = []
+            for i in range(11, -1, -1):
+                y = today.year
+                m = today.month - i
+                if m <= 0:
+                    m += 12
+                    y -= 1
+                months_list.append((y, m, datetime(y, m, 1)))
+            target_months = months_list
 
-            invoices_month = Invoice.query.join(Invoice.appointment).filter(
-                Appointment.status != "Cancelled",
-                Invoice.issue_date >= date_start,
-                Invoice.issue_date < date_end
-            ).all()
-            billed_month = sum(float(inv.total_amount) for inv in invoices_month)
-            monthly_billed.append(billed_month)
+        ARABIC_MONTHS = {
+            1: "كانون الثاني", 2: "شباط", 3: "آذار", 4: "نيسان",
+            5: "أيار", 6: "حزيران", 7: "تموز", 8: "آب",
+            9: "أيلول", 10: "تشرين الأول", 11: "تشرين الثاني", 12: "كانون الأول"
+        }
+        is_ar = request.cookies.get("lang") == "ar" or request.cookies.get("lang") != "en"
 
-            paid_month = db.session.query(func.coalesce(func.sum(Payment.amount), 0.0)).filter(
-                Payment.payment_date >= date_start,
-                Payment.payment_date < date_end
-            ).scalar()
-            monthly_paid.append(float(paid_month))
+        for yr, m, date_start in target_months:
+            monthly_labels.append(f"{ARABIC_MONTHS[m]} {yr}" if is_ar else date_start.strftime("%b %Y"))
+            monthly_billed.append(billed_by_month.get((yr, m), 0.0))
+            monthly_paid.append(paid_by_month.get((yr, m), 0.0))
 
         # 3. Appointment Status Counts
-        status_counts = db.session.query(
-            Appointment.status, func.count(Appointment.id)
-        ).group_by(Appointment.status).all()
+        appt_status_q = db.session.query(Appointment.status, func.count(Appointment.id))
+        if filter_year:
+            appt_status_q = appt_status_q.filter(
+                Appointment.appointment_date >= start_date_year,
+                Appointment.appointment_date < end_date_year
+            )
+        status_counts = appt_status_q.group_by(Appointment.status).all()
 
         appointment_statuses = {"Scheduled": 0, "Done": 0, "Cancelled": 0}
         for status, count in status_counts:
@@ -93,28 +225,45 @@ def reports_dashboard():
         appointment_status_values = list(appointment_statuses.values())
 
         # 4. Top 5 Procedures
-        procedure_counts = db.session.query(
+        proc_q = db.session.query(
             Treatment.procedure_type,
             func.count(Treatment.id),
             func.sum(Treatment.total_cost)
-        ).group_by(Treatment.procedure_type).order_by(func.count(Treatment.id).desc()).limit(5).all()
+        )
+        if filter_year:
+            proc_q = proc_q.join(Appointment, Treatment.appointment_id == Appointment.id).filter(
+                Appointment.appointment_date >= start_date_year,
+                Appointment.appointment_date < end_date_year
+            )
+        procedure_counts = proc_q.group_by(Treatment.procedure_type).order_by(func.count(Treatment.id).desc()).limit(5).all()
 
         procedure_labels = [p[0] for p in procedure_counts]
         procedure_values_counts = [p[1] for p in procedure_counts]
         procedure_values_revenue = [float(p[2] or 0.0) for p in procedure_counts]
 
         # 5. Patient Gender Demographics
-        gender_counts = db.session.query(
-            Patient.gender, func.count(Patient.id)
-        ).group_by(Patient.gender).all()
+        gender_q = db.session.query(Patient.gender, func.count(Patient.id))
+        if filter_year:
+            gender_q = gender_q.join(Patient.appointments).filter(
+                Appointment.appointment_date >= start_date_year,
+                Appointment.appointment_date < end_date_year
+            )
+        gender_counts = gender_q.group_by(Patient.gender).all()
+        if not gender_counts:
+            gender_counts = db.session.query(Patient.gender, func.count(Patient.id)).group_by(Patient.gender).all()
 
         gender_labels = [g[0] or "Not Specified" for g in gender_counts]
         gender_values = [g[1] for g in gender_counts]
 
-        # 6. Patient Balances: All Debtors and All Credited Patients
-        patient_invoiced = {}
-        for inv in Invoice.query.join(Invoice.appointment).filter(Appointment.status != "Cancelled").all():
-            patient_invoiced[inv.patient_id] = patient_invoiced.get(inv.patient_id, 0.0) + float(inv.total_amount)
+        # 6. Patient Balances: All Debtors and All Credited Patients (ALWAYS CUMULATIVE ALL TIME)
+        patient_invoiced_rows = db.session.query(
+            Invoice.patient_id,
+            func.coalesce(func.sum(net_total_sub), 0.0)
+        ).join(Appointment, Invoice.appointment_id == Appointment.id).filter(
+            Appointment.status != "Cancelled"
+        ).group_by(Invoice.patient_id).all()
+
+        patient_invoiced = {p_id: float(tot) for p_id, tot in patient_invoiced_rows if p_id}
 
         patient_payments = dict(
             db.session.query(
@@ -129,7 +278,10 @@ def reports_dashboard():
         all_debtors = []
         all_credited_patients = []
 
-        for p_id, p in all_patients_map.items():
+        for p_id in all_patient_ids:
+            p = all_patients_map.get(p_id)
+            if not p:
+                continue
             billed = float(patient_invoiced.get(p_id, 0.0))
             paid = float(patient_payments.get(p_id, 0.0))
             diff = billed - paid
@@ -158,82 +310,59 @@ def reports_dashboard():
         total_outstanding = sum(x["outstanding"] for x in all_debtors)
         total_credit = sum(x["credit"] for x in all_credited_patients)
 
-        # Available years for filtering
-        first_invoice = Invoice.query.order_by(Invoice.issue_date.asc()).first()
-        first_payment = Payment.query.order_by(Payment.payment_date.asc()).first()
-        first_expense = Expense.query.order_by(Expense.expense_date.asc()).first()
-        
-        years_with_data = {today.year}
-        if first_invoice:
-            years_with_data.add(first_invoice.issue_date.year)
-        if first_payment:
-            years_with_data.add(first_payment.payment_date.year)
-        if first_expense:
-            years_with_data.add(first_expense.expense_date.year)
-            
-        available_years = sorted(list(years_with_data), reverse=True)
-        selected_year = request.args.get("year", default=today.year, type=int)
-
-        # 7. Monthly Financial Summary for the Selected Calendar Year (January to December)
+        # 7. Monthly Financial Summary Table
         monthly_summary = []
-        for month in range(1, 13):
-            date_start = datetime(selected_year, month, 1)
-            if month == 12:
-                date_end = datetime(selected_year + 1, 1, 1)
-            else:
-                date_end = datetime(selected_year, month + 1, 1)
+        summary_years = [filter_year] if filter_year else sorted(available_years)
 
-            # Total Invoiced (Billed)
-            invoices_m = Invoice.query.join(Invoice.appointment).filter(
-                Appointment.status != "Cancelled",
-                Invoice.issue_date >= date_start,
-                Invoice.issue_date < date_end
-            ).all()
-            billed_m = sum(float(inv.total_amount) for inv in invoices_m)
+        for yr_val in summary_years:
+            for month in range(1, 13):
+                date_start = datetime(yr_val, month, 1)
 
-            # Total Payments (Paid)
-            paid_m = db.session.query(func.sum(Payment.amount)).filter(
-                Payment.payment_date >= date_start,
-                Payment.payment_date < date_end
-            ).scalar() or 0.0
-            paid_m = float(paid_m)
+                billed_m = billed_by_month.get((yr_val, month), 0.0)
+                paid_m = paid_by_month.get((yr_val, month), 0.0)
+                expenses_m = exp_by_month.get((yr_val, month), 0.0)
 
-            # Total Expenses
-            expenses_m = db.session.query(func.sum(Expense.amount)).filter(
-                Expense.expense_date >= date_start.date(),
-                Expense.expense_date < date_end.date()
-            ).scalar() or 0.0
-            expenses_m = float(expenses_m)
+                net_profit_m = paid_m - expenses_m
+                accrual_profit_m = billed_m - expenses_m
 
-            # Cash Net Profit
-            net_profit_m = paid_m - expenses_m
-            # Accrual Net Profit
-            accrual_profit_m = billed_m - expenses_m
+                if filter_year or billed_m > 0 or paid_m > 0 or expenses_m > 0:
+                    monthly_summary.append({
+                        "month_label": f"{ARABIC_MONTHS[month]} {yr_val}" if is_ar else date_start.strftime("%B %Y"),
+                        "billed": billed_m,
+                        "paid": paid_m,
+                        "expenses": expenses_m,
+                        "net_profit": net_profit_m,
+                        "accrual_profit": accrual_profit_m
+                    })
 
-            monthly_summary.append({
-                "month_label": date_start.strftime("%B %Y"),
-                "billed": billed_m,
-                "paid": paid_m,
-                "expenses": expenses_m,
-                "net_profit": net_profit_m,
-                "accrual_profit": accrual_profit_m
-            })
-
+        # 8. Doctor Revenue Share Report
         from models import User, StaffSalary
         doctors = User.query.filter_by(role="doctor").order_by(User.first_name).all()
-        doctors_report = []
-        for doc in doctors:
-            doc_appts = Appointment.query.filter_by(doctor_id=doc.id).count()
-            doc_treatment_count = Treatment.query.join(Appointment, Treatment.appointment_id == Appointment.id).filter(Appointment.doctor_id == doc.id).count()
-            doc_revenue = float(
-                db.session.query(func.coalesce(func.sum(Treatment.total_cost), 0.0))
-                .join(Appointment, Treatment.appointment_id == Appointment.id)
-                .filter(Appointment.doctor_id == doc.id)
-                .scalar() or 0.0
-            )
+        doc_ids = [d.id for d in doctors]
 
-            # Salary configuration and profit share
-            salary_cfg = StaffSalary.query.filter_by(user_id=doc.id).first()
+        salary_cfgs = {s.user_id: s for s in StaffSalary.query.filter(StaffSalary.user_id.in_(doc_ids)).all()} if doc_ids else {}
+
+        appts_cnt_q = db.session.query(Appointment.doctor_id, func.count(Appointment.id)).filter(Appointment.doctor_id.in_(doc_ids))
+        if filter_year:
+            appts_cnt_q = appts_cnt_q.filter(Appointment.appointment_date >= start_date_year, Appointment.appointment_date < end_date_year)
+        appts_by_doc = dict(appts_cnt_q.group_by(Appointment.doctor_id).all()) if doc_ids else {}
+
+        treat_q = db.session.query(
+            Appointment.doctor_id,
+            func.count(Treatment.id),
+            func.coalesce(func.sum(Treatment.total_cost), 0.0)
+        ).join(Appointment, Treatment.appointment_id == Appointment.id).filter(Appointment.doctor_id.in_(doc_ids))
+        if filter_year:
+            treat_q = treat_q.filter(Appointment.appointment_date >= start_date_year, Appointment.appointment_date < end_date_year)
+        treat_by_doc = {doc_id: (cnt, float(rev or 0.0)) for doc_id, cnt, rev in treat_q.group_by(Appointment.doctor_id).all()} if doc_ids else {}
+
+        doctors_report = []
+
+        for doc in doctors:
+            doc_appts = appts_by_doc.get(doc.id, 0)
+            doc_treatment_count, doc_revenue = treat_by_doc.get(doc.id, (0, 0.0))
+
+            salary_cfg = salary_cfgs.get(doc.id)
             salary_type = salary_cfg.salary_type if salary_cfg else "fixed"
             salary_amount = float(salary_cfg.amount) if salary_cfg else 0.0
 
@@ -424,8 +553,15 @@ def financial_calendar_data():
         month_str = request.args.get("month")
         
         today = datetime.now()
-        year = int(year_str) if year_str else today.year
-        month = int(month_str) if month_str else today.month
+        try:
+            year = int(year_str) if year_str and year_str.lower() != 'all' else today.year
+        except (ValueError, TypeError):
+            year = today.year
+
+        try:
+            month = int(month_str) if month_str else today.month
+        except (ValueError, TypeError):
+            month = today.month
         
         import calendar as py_calendar
         _, num_days = py_calendar.monthrange(year, month)
@@ -520,6 +656,8 @@ def expenses_list():
         page       = request.args.get("page", 1, type=int)
         per_page   = request.args.get("per_page", 10, type=int)
         category   = request.args.get("category", "").strip()
+        year_str   = request.args.get("year", "").strip()
+        month_str  = request.args.get("month", "").strip()
         date_from  = request.args.get("date_from", "").strip()
         date_to    = request.args.get("date_to", "").strip()
         search     = request.args.get("search", "").strip()
@@ -532,19 +670,51 @@ def expenses_list():
             query = query.filter(Expense.category == category)
         if search:
             query = query.filter(Expense.notes.ilike(f"%{search}%"))
-        if date_from:
+
+        from sqlalchemy import extract
+
+        has_yr = year_str and year_str not in ("all", "الكل")
+        has_mo = month_str and month_str not in ("all", "الكل")
+
+        if has_yr and has_mo:
+            try:
+                yr_val = int(year_str)
+                mo_val = int(month_str)
+                query = query.filter(
+                    extract("year", Expense.expense_date) == yr_val,
+                    extract("month", Expense.expense_date) == mo_val
+                )
+            except ValueError:
+                pass
+        elif has_yr:
             try:
                 from datetime import date
-                df = datetime.strptime(date_from, "%Y-%m-%d").date()
-                query = query.filter(Expense.expense_date >= df)
+                yr_val = int(year_str)
+                start_dt = date(yr_val, 1, 1)
+                end_dt = date(yr_val + 1, 1, 1)
+                query = query.filter(Expense.expense_date >= start_dt, Expense.expense_date < end_dt)
             except ValueError:
                 pass
-        if date_to:
+        elif has_mo:
             try:
-                dt = datetime.strptime(date_to, "%Y-%m-%d").date()
-                query = query.filter(Expense.expense_date <= dt)
+                mo_val = int(month_str)
+                query = query.filter(extract("month", Expense.expense_date) == mo_val)
             except ValueError:
                 pass
+        else:
+            if date_from:
+                try:
+                    from datetime import date
+                    df = datetime.strptime(date_from, "%Y-%m-%d").date()
+                    query = query.filter(Expense.expense_date >= df)
+                except ValueError:
+                    pass
+            if date_to:
+                try:
+                    dt = datetime.strptime(date_to, "%Y-%m-%d").date()
+                    query = query.filter(Expense.expense_date <= dt)
+                except ValueError:
+                    pass
 
         sort_map = {
             "date":     Expense.expense_date,
@@ -567,7 +737,7 @@ def expenses_list():
                 "notes":    e.notes or "",
             })
 
-        total_filtered = float(query.with_entities(
+        total_filtered = float(query.order_by(None).with_entities(
             func.coalesce(func.sum(Expense.amount), 0.0)
         ).scalar() or 0.0)
 
@@ -736,17 +906,33 @@ def doctor_revenue_share_report():
         sort_by   = request.args.get("sort", "revenue")
         order     = request.args.get("order", "desc")
         month     = request.args.get("month", "").strip()
+        year      = request.args.get("year", "").strip().lower()
         date_from = request.args.get("date_from", "").strip()
         date_to   = request.args.get("date_to", "").strip()
         search    = request.args.get("search", "").strip()
 
-        # If a specific month is selected (YYYY-MM), filter by that month
+        # If a specific month is selected (YYYY-MM) or full year (YYYY), filter by that period
         if month:
+            if len(month) == 4 and month.isdigit():
+                try:
+                    yr_val = int(month)
+                    date_from = f"{yr_val:04d}-01-01"
+                    date_to = f"{yr_val:04d}-12-31"
+                except ValueError:
+                    pass
+            else:
+                try:
+                    m_date = datetime.strptime(month, "%Y-%m")
+                    _, last_day = calendar.monthrange(m_date.year, m_date.month)
+                    date_from = f"{m_date.year:04d}-{m_date.month:02d}-01"
+                    date_to = f"{m_date.year:04d}-{m_date.month:02d}-{last_day:02d}"
+                except ValueError:
+                    pass
+        elif year and year not in ("all", "الكل"):
             try:
-                m_date = datetime.strptime(month, "%Y-%m")
-                _, last_day = calendar.monthrange(m_date.year, m_date.month)
-                date_from = f"{m_date.year:04d}-{m_date.month:02d}-01"
-                date_to = f"{m_date.year:04d}-{m_date.month:02d}-{last_day:02d}"
+                yr_val = int(year)
+                date_from = f"{yr_val:04d}-01-01"
+                date_to = f"{yr_val:04d}-12-31"
             except ValueError:
                 pass
 
@@ -818,11 +1004,79 @@ def doctor_revenue_share_report():
             deducted_count = t_base.filter(Treatment.salary_expense_id != None).count()
             pending_count = t_base.filter(Treatment.salary_expense_id == None).count()
 
+            # Pending months breakdown (global across all time so all pending months are visible)
+            from sqlalchemy import extract
+            pending_months_q = db.session.query(
+                extract('year', Appointment.appointment_date).label('yr'),
+                extract('month', Appointment.appointment_date).label('mon'),
+                func.count(Treatment.id).label('cnt')
+            ).join(Appointment, Treatment.appointment_id == Appointment.id).filter(
+                Appointment.doctor_id == doc.id,
+                Treatment.salary_expense_id == None
+            )
+
+            pending_months_rows = pending_months_q.group_by('yr', 'mon').order_by(extract('year', Appointment.appointment_date).desc(), extract('month', Appointment.appointment_date).desc()).all()
+
+            ARABIC_MONTHS = {
+                1: "كانون الثاني", 2: "شباط", 3: "آذار", 4: "نيسان",
+                5: "أيار", 6: "حزيران", 7: "تموز", 8: "آب",
+                9: "أيلول", 10: "تشرين الأول", 11: "تشرين الثاني", 12: "كانون الأول"
+            }
+
+            pending_months_list = []
+            for yr_v, mon_v, cnt_v in pending_months_rows:
+                if yr_v and mon_v:
+                    y_i = int(yr_v)
+                    m_i = int(mon_v)
+                    m_str = f"{y_i:04d}-{m_i:02d}"
+                    m_label_ar = f"{ARABIC_MONTHS[m_i]} {y_i}"
+                    m_label_en = f"{datetime(y_i, m_i, 1).strftime('%b %Y')}"
+                    pending_months_list.append({
+                        "ym": m_str,
+                        "label_ar": m_label_ar,
+                        "label_en": m_label_en,
+                        "count": cnt_v
+                    })
+
             sc = StaffSalary.query.filter_by(user_id=doc.id).first()
             s_type = sc.salary_type if sc else "fixed"
             s_amount = float(sc.amount) if sc else 0.0
             current_month_str = datetime.now().strftime("%Y-%m")
-            deducted_this_month = bool(sc and sc.last_deducted_month == current_month_str)
+
+            # Determine if this doctor's salary is already deducted for the selected period
+            if s_type == "percentage":
+                if month:
+                    # Check if an Expense row exists in the DB for exactly this doctor & this month
+                    from models import Expense as _Exp
+                    import calendar as _cal
+                    try:
+                        _m = datetime.strptime(month, "%Y-%m")
+                        _last_day = _cal.monthrange(_m.year, _m.month)[1]
+                        _start = _m.replace(day=1).date()
+                        _end   = _m.replace(day=_last_day).date()
+                        _name_part = doc.last_name or doc.first_name or doc.username
+                        _linked = (
+                            _Exp.query
+                            .filter(
+                                _Exp.category == "Salaries",
+                                _Exp.expense_date >= _start,
+                                _Exp.expense_date <= _end,
+                                _Exp.notes.ilike(f"%{_name_part}%")
+                            )
+                            .first()
+                        )
+                        is_period_deducted = _linked is not None
+                    except Exception:
+                        is_period_deducted = (deducted_count > 0 and pending_count == 0)
+                else:
+                    # No month filter → check current month via last_deducted_month
+                    is_period_deducted = bool(sc and sc.last_deducted_month == current_month_str)
+            else:
+                # Fixed salary: rely on last_deducted_month
+                if month:
+                    is_period_deducted = bool(sc and sc.last_deducted_month and sc.last_deducted_month >= month)
+                else:
+                    is_period_deducted = bool(sc and sc.last_deducted_month == current_month_str)
 
             if s_type == "percentage":
                 doc_earned = round(doc_revenue * s_amount / 100.0, 2)
@@ -855,7 +1109,9 @@ def doctor_revenue_share_report():
                 "pct_display": min(100.0, max(0.0, pct_rate)),
                 "deducted_count": deducted_count,
                 "pending_count": pending_count,
-                "deducted_this_month": deducted_this_month,
+                "pending_months": pending_months_list,
+                "is_deducted": is_period_deducted,
+                "deducted_this_month": is_period_deducted,
                 "last_deducted_month": sc.last_deducted_month if sc else None,
             })
 
@@ -968,22 +1224,42 @@ def export_financial_csv():
 def print_full_report():
     """Renders a dedicated, perfectly formatted multi-page document for PDF printing."""
     try:
+        today = datetime.now()
+        year_param = request.args.get("year", "all").strip().lower()
+        if year_param in ("all", "الكل", ""):
+            selected_year = "all"
+            filter_year = None
+        else:
+            try:
+                filter_year = int(year_param)
+                selected_year = str(filter_year)
+            except ValueError:
+                filter_year = today.year
+                selected_year = str(today.year)
+
+        if filter_year:
+            start_date_year = datetime(filter_year, 1, 1)
+            end_date_year = datetime(filter_year + 1, 1, 1)
+            total_invoiced = sum(float(inv.total_amount) for inv in Invoice.query.join(Invoice.appointment).filter(Appointment.status != "Cancelled", Invoice.issue_date >= start_date_year, Invoice.issue_date < end_date_year).all())
+            total_payments = float(db.session.query(func.coalesce(func.sum(Payment.amount), 0.0)).filter(Payment.payment_date >= start_date_year, Payment.payment_date < end_date_year).scalar())
+        else:
+            total_invoiced = sum(float(inv.total_amount) for inv in Invoice.query.join(Invoice.appointment).filter(Appointment.status != "Cancelled").all())
+            total_payments = float(db.session.query(func.coalesce(func.sum(Payment.amount), 0.0)).scalar())
+
         total_patients = Patient.query.count()
         total_appointments = Appointment.query.count()
-        total_invoiced = sum(float(inv.total_amount) for inv in Invoice.query.join(Invoice.appointment).filter(Appointment.status != "Cancelled").all())
-        total_payments = float(db.session.query(func.coalesce(func.sum(Payment.amount), 0.0)).scalar())
         total_outstanding = max(0.0, total_invoiced - total_payments)
         total_credit = max(0.0, total_payments - total_invoiced)
 
-        today = datetime.now()
-        selected_year = request.args.get("year", default=today.year, type=int)
-
         # Top 5 Procedures
-        procedure_counts = db.session.query(
+        proc_q = db.session.query(
             Treatment.procedure_type,
             func.count(Treatment.id),
             func.sum(Treatment.total_cost)
-        ).group_by(Treatment.procedure_type).order_by(func.count(Treatment.id).desc()).limit(5).all()
+        )
+        if filter_year:
+            proc_q = proc_q.join(Appointment, Treatment.appointment_id == Appointment.id).filter(Appointment.appointment_date >= start_date_year, Appointment.appointment_date < end_date_year)
+        procedure_counts = proc_q.group_by(Treatment.procedure_type).order_by(func.count(Treatment.id).desc()).limit(5).all()
 
         procedure_labels = [p[0] for p in procedure_counts]
         procedure_values_counts = [p[1] for p in procedure_counts]
@@ -997,37 +1273,47 @@ def print_full_report():
         gender_labels = [g[0] or "Not Specified" for g in gender_counts]
         gender_values = [g[1] for g in gender_counts]
 
-        # Monthly Summary for year
+        # Monthly Summary
         monthly_summary = []
-        for month in range(1, 13):
-            date_start = datetime(selected_year, month, 1)
-            date_end = datetime(selected_year + 1, 1, 1) if month == 12 else datetime(selected_year, month + 1, 1)
+        summary_years = [filter_year] if filter_year else [today.year]
 
-            invoices_m = Invoice.query.join(Invoice.appointment).filter(
-                Appointment.status != "Cancelled",
-                Invoice.issue_date >= date_start,
-                Invoice.issue_date < date_end
-            ).all()
-            billed_m = sum(float(inv.total_amount) for inv in invoices_m)
+        for yr_val in summary_years:
+            for month in range(1, 13):
+                date_start = datetime(yr_val, month, 1)
+                date_end = datetime(yr_val + 1, 1, 1) if month == 12 else datetime(yr_val, month + 1, 1)
 
-            paid_m = float(db.session.query(func.sum(Payment.amount)).filter(
-                Payment.payment_date >= date_start,
-                Payment.payment_date < date_end
-            ).scalar() or 0.0)
+                invoices_m = Invoice.query.join(Invoice.appointment).filter(
+                    Appointment.status != "Cancelled",
+                    Invoice.issue_date >= date_start,
+                    Invoice.issue_date < date_end
+                ).all()
+                billed_m = sum(float(inv.total_amount) for inv in invoices_m)
 
-            expenses_m = float(db.session.query(func.sum(Expense.amount)).filter(
-                Expense.expense_date >= date_start.date(),
-                Expense.expense_date < date_end.date()
-            ).scalar() or 0.0)
+                paid_m = float(db.session.query(func.sum(Payment.amount)).filter(
+                    Payment.payment_date >= date_start,
+                    Payment.payment_date < date_end
+                ).scalar() or 0.0)
 
-            monthly_summary.append({
-                "month_label": date_start.strftime("%B %Y"),
-                "billed": billed_m,
-                "paid": paid_m,
-                "expenses": expenses_m,
-                "net_profit": paid_m - expenses_m,
-                "accrual_profit": billed_m - expenses_m
-            })
+                expenses_m = float(db.session.query(func.sum(Expense.amount)).filter(
+                    Expense.expense_date >= date_start.date(),
+                    Expense.expense_date < date_end.date()
+                ).scalar() or 0.0)
+
+                ARABIC_MONTHS = {
+                    1: "كانون الثاني", 2: "شباط", 3: "آذار", 4: "نيسان",
+                    5: "أيار", 6: "حزيران", 7: "تموز", 8: "آب",
+                    9: "أيلول", 10: "تشرين الأول", 11: "تشرين الثاني", 12: "كانون الأول"
+                }
+                is_ar = request.cookies.get("lang") == "ar" or request.cookies.get("lang") != "en"
+
+                monthly_summary.append({
+                    "month_label": f"{ARABIC_MONTHS[month]} {yr_val}" if is_ar else date_start.strftime("%B %Y"),
+                    "billed": billed_m,
+                    "paid": paid_m,
+                    "expenses": expenses_m,
+                    "net_profit": paid_m - expenses_m,
+                    "accrual_profit": billed_m - expenses_m
+                })
 
         # Doctors Performance
         from models import User
@@ -1108,3 +1394,258 @@ def print_full_report():
         current_app.logger.exception("Failed to render print report")
         flash("فشل في تجهيز طباعة التقرير." if request.cookies.get("lang","ar")!="en" else "Failed to render print report.", "danger")
         return redirect(url_for("reports.reports_dashboard"))
+
+
+@reports_bp.route("/my-reports")
+@role_required("admin", "doctor")
+def my_reports():
+    current_app.logger.info("Doctor personal reports page opened")
+    user = g.get("current_user")
+
+    target_doctor_id = request.args.get("doctor_id", type=int)
+    if not target_doctor_id:
+        if user and user.role == "doctor":
+            target_doctor_id = user.id
+        else:
+            from models import User
+            first_doc = User.query.filter_by(role="doctor").first()
+            target_doctor_id = first_doc.id if first_doc else (user.id if user else 1)
+
+    return doctor_personal_report(target_doctor_id)
+
+
+@reports_bp.route("/clinic-guide")
+def clinic_guide_html():
+    return render_template("reports/../docs/dental_clinic_master_guide.html")
+
+
+@reports_bp.route("/clinic-guide-pdf")
+def clinic_guide_pdf():
+    import os
+    from flask import send_from_directory
+    static_docs = os.path.join(current_app.root_path, "static", "docs")
+    return send_from_directory(static_docs, "clinic_user_guide.pdf", as_attachment=False)
+
+
+@reports_bp.route("/reports/doctor-print/<int:doctor_id>")
+@role_required("admin", "doctor")
+def doctor_print_report(doctor_id):
+    user = g.get("current_user")
+    if user and user.role == "doctor" and user.id != doctor_id:
+        flash("غير مصرح لك بطباعة تقارير أطباء آخرين." if request.cookies.get("lang", "ar") != "en" else "You are not authorized to print reports of other doctors.", "danger")
+        return redirect(url_for("reports.my_reports"))
+    return doctor_personal_report(doctor_id, is_print=True)
+
+
+def doctor_personal_report(doctor_id, is_print=False):
+    from models import User, StaffSalary, Appointment, Treatment, Patient, Invoice
+    from sqlalchemy.orm import joinedload
+    import json
+
+    doctor = User.query.get_or_404(doctor_id)
+    all_doctors = User.query.filter_by(role="doctor").order_by(User.first_name).all()
+
+    # Salary configuration
+    salary_cfg = StaffSalary.query.filter_by(user_id=doctor.id).first()
+    salary_type = salary_cfg.salary_type if salary_cfg else "fixed"
+    salary_amount = float(salary_cfg.amount) if salary_cfg else 0.0
+
+    today = datetime.now()
+
+    # Available years for filter
+    min_year = today.year
+    max_year = today.year
+    min_date = db.session.query(func.min(Appointment.appointment_date)).filter(Appointment.doctor_id == doctor.id).scalar()
+    max_date = db.session.query(func.max(Appointment.appointment_date)).filter(Appointment.doctor_id == doctor.id).scalar()
+    if min_date and min_date.year < min_year:
+        min_year = min_date.year
+    if max_date and max_date.year > max_year:
+        max_year = max_date.year
+    available_years = list(range(max_year, min_year - 1, -1))
+
+    # Year and month filter params
+    year_param = request.args.get("year", "all").strip().lower()
+    month_param = request.args.get("month", "all").strip().lower()
+
+    if year_param in ("all", "الكل", ""):
+        selected_year = "all"
+        filter_year = None
+    else:
+        try:
+            filter_year = int(year_param)
+            selected_year = str(filter_year)
+        except ValueError:
+            selected_year = "all"
+            filter_year = None
+
+    if month_param in ("all", "الكل", ""):
+        selected_month = "all"
+        filter_month = None
+    else:
+        try:
+            filter_month = int(month_param)
+            selected_month = str(filter_month)
+        except ValueError:
+            selected_month = "all"
+            filter_month = None
+
+    # Base query for treatments
+    treatments_query = (
+        Treatment.query
+        .join(Appointment, Treatment.appointment_id == Appointment.id)
+        .options(
+            joinedload(Treatment.appointment).joinedload(Appointment.patient),
+            joinedload(Treatment.appointment).joinedload(Appointment.invoice)
+        )
+        .filter(Appointment.doctor_id == doctor.id)
+    )
+
+    if filter_year:
+        treatments_query = treatments_query.filter(func.extract('year', Appointment.appointment_date) == filter_year)
+    if filter_month:
+        treatments_query = treatments_query.filter(func.extract('month', Appointment.appointment_date) == filter_month)
+
+    treatments_raw = treatments_query.order_by(Appointment.appointment_date.desc(), Treatment.id.desc()).all()
+
+    treatments_list = []
+    total_revenue = 0.0
+    total_earned = 0.0
+
+    for t in treatments_raw:
+        cost = float(t.total_cost or 0.0)
+        total_revenue += cost
+
+        if salary_type == "percentage":
+            share = round(cost * (salary_amount / 100.0), 2)
+            pct_display = salary_amount
+        else:
+            share = 0.0
+            pct_display = 0.0
+
+        total_earned += share
+
+        treatments_list.append({
+            "id": t.id,
+            "procedure_name": t.procedure_type,
+            "tooth_number": t.tooth_number or "—",
+            "cost": cost,
+            "doctor_share": share,
+            "doctor_pct": pct_display,
+            "notes": t.notes or "",
+            "date": t.appointment.appointment_date if t.appointment else None,
+            "patient_id": t.appointment.patient.id if (t.appointment and t.appointment.patient) else None,
+            "patient_name": f"{t.appointment.patient.first_name} {t.appointment.patient.last_name}" if (t.appointment and t.appointment.patient) else "—",
+            "status": t.appointment.status if t.appointment else "—",
+            "invoice": t.appointment.invoice if t.appointment else None
+        })
+
+    if salary_type == "fixed":
+        total_earned = salary_amount
+
+    clinic_net = max(0.0, total_revenue - total_earned)
+
+    # Base query for appointments
+    appts_query = Appointment.query.filter_by(doctor_id=doctor.id)
+    if filter_year:
+        appts_query = appts_query.filter(func.extract('year', Appointment.appointment_date) == filter_year)
+    if filter_month:
+        appts_query = appts_query.filter(func.extract('month', Appointment.appointment_date) == filter_month)
+
+    total_appointments_count = appts_query.count()
+
+    status_counts = dict(
+        db.session.query(Appointment.status, func.count(Appointment.id))
+        .filter(Appointment.doctor_id == doctor.id)
+        .group_by(Appointment.status)
+        .all()
+    )
+
+    scheduled_count = status_counts.get("Scheduled", 0)
+    done_count = status_counts.get("Done", 0)
+    cancelled_count = status_counts.get("Cancelled", 0)
+    checked_in_count = status_counts.get("Checked In", 0)
+    in_chair_count = status_counts.get("In Chair", 0)
+
+    # Monthly chart data (12 months of current/filtered year)
+    chart_year = filter_year or today.year
+    monthly_revenue = [0.0] * 12
+    monthly_earned = [0.0] * 12
+
+    monthly_rows = (
+        db.session.query(
+            func.extract('month', Appointment.appointment_date).label('m'),
+            func.coalesce(func.sum(Treatment.total_cost), 0.0)
+        )
+        .join(Appointment, Treatment.appointment_id == Appointment.id)
+        .filter(Appointment.doctor_id == doctor.id)
+        .filter(func.extract('year', Appointment.appointment_date) == chart_year)
+        .group_by('m')
+        .all()
+    )
+
+    for m_val, rev in monthly_rows:
+        idx = int(m_val) - 1
+        r_val = float(rev or 0.0)
+        monthly_revenue[idx] = r_val
+        if salary_type == "percentage":
+            monthly_earned[idx] = round(r_val * (salary_amount / 100.0), 2)
+        else:
+            monthly_earned[idx] = salary_amount if r_val > 0 else 0.0
+
+    month_names_ar = [
+        "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
+        "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
+    ]
+
+    if is_print:
+        return render_template(
+            "reports/print_doctor_report.html",
+            doctor=doctor,
+            salary_cfg=salary_cfg,
+            salary_type=salary_type,
+            salary_amount=salary_amount,
+            selected_year=selected_year,
+            selected_month=selected_month,
+            treatments_list=treatments_list,
+            total_treatments_count=len(treatments_list),
+            total_revenue=total_revenue,
+            total_earned=total_earned,
+            clinic_net=clinic_net,
+            total_appointments_count=total_appointments_count,
+            scheduled_count=scheduled_count,
+            done_count=done_count,
+            cancelled_count=cancelled_count,
+            print_date=today.strftime("%Y-%m-%d %I:%M %p")
+        )
+
+    return render_template(
+        "reports/doctor_reports.html",
+        doctor=doctor,
+        all_doctors=all_doctors,
+        salary_cfg=salary_cfg,
+        salary_type=salary_type,
+        salary_amount=salary_amount,
+        available_years=available_years,
+        selected_year=selected_year,
+        selected_month=selected_month,
+        treatments_list=treatments_list,
+        total_treatments_count=len(treatments_list),
+        total_revenue=total_revenue,
+        total_earned=total_earned,
+        clinic_net=clinic_net,
+        total_appointments_count=total_appointments_count,
+        scheduled_count=scheduled_count,
+        done_count=done_count,
+        cancelled_count=cancelled_count,
+        checked_in_count=checked_in_count,
+        in_chair_count=in_chair_count,
+        chart_year=chart_year,
+        month_names_ar=json.dumps(month_names_ar, ensure_ascii=False),
+        monthly_revenue=json.dumps(monthly_revenue),
+        monthly_earned=json.dumps(monthly_earned),
+        status_counts_json=json.dumps({
+            "مجدول": scheduled_count + checked_in_count + in_chair_count,
+            "منجز": done_count,
+            "ملغى": cancelled_count
+        }, ensure_ascii=False)
+    )

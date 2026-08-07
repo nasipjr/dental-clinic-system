@@ -29,16 +29,21 @@ def home():
         today_start = datetime.combine(today, time.min)
         today_end = datetime.combine(today, time.max)
 
-        today_appointments = (
-            Appointment.query
+        from sqlalchemy import func
+        from models import Invoice
+
+        today_status_rows = (
+            db.session.query(Appointment.status, func.count(Appointment.id))
             .filter(Appointment.appointment_date >= today_start)
             .filter(Appointment.appointment_date <= today_end)
+            .group_by(Appointment.status)
             .all()
         )
-        today_checked_in = sum(1 for a in today_appointments if a.status == "Checked In")
-        today_in_chair = sum(1 for a in today_appointments if a.status == "In Chair")
-        today_done = sum(1 for a in today_appointments if a.status == "Done")
-        today_scheduled = sum(1 for a in today_appointments if a.status == "Scheduled")
+        status_dict = dict(today_status_rows)
+        today_checked_in = status_dict.get("Checked In", 0)
+        today_in_chair = status_dict.get("In Chair", 0)
+        today_done = status_dict.get("Done", 0)
+        today_scheduled = status_dict.get("Scheduled", 0)
 
         from flask import g
         user = g.get("current_user")
@@ -79,23 +84,38 @@ def home():
         today_done_appointments = done_query.order_by(Appointment.appointment_date.asc()).all()
 
         # ─── Per-patient financial breakdown (CRITICAL: never net credit against debt) ───
-        from models import Invoice
+        subtotal_sub = (
+            db.select(func.coalesce(func.sum(Treatment.total_cost), 0.0))
+            .where(Treatment.appointment_id == Invoice.appointment_id)
+            .scalar_subquery()
+        )
 
-        # Get all active invoices
-        all_invoices = Invoice.query.join(Invoice.appointment).filter(Appointment.status != "Cancelled").all()
-        all_payments = Payment.query.all()
+        discount_amt_sub = db.case(
+            (Invoice.discount_type == "percentage", subtotal_sub * func.coalesce(Invoice.discount, 0.0) / 100.0),
+            else_=func.coalesce(Invoice.discount, 0.0)
+        )
 
-        # Sum invoice amounts per patient (use Invoice.patient_id directly)
-        patient_invoiced = {}
-        for inv in all_invoices:
-            pid = inv.patient_id
-            patient_invoiced[pid] = patient_invoiced.get(pid, 0.0) + float(inv.total_amount)
+        net_total_sub = db.case(
+            (subtotal_sub - discount_amt_sub + func.coalesce(Invoice.additional_charges, 0.0) > 0,
+             subtotal_sub - discount_amt_sub + func.coalesce(Invoice.additional_charges, 0.0)),
+            else_=0.0
+        )
 
-        # Sum payments per patient
-        patient_paid = {}
-        for pay in all_payments:
-            pid = pay.patient_id
-            patient_paid[pid] = patient_paid.get(pid, 0.0) + float(pay.amount)
+        patient_invoiced_rows = db.session.query(
+            Invoice.patient_id,
+            func.coalesce(func.sum(net_total_sub), 0.0)
+        ).join(Appointment, Invoice.appointment_id == Appointment.id).filter(
+            Appointment.status != "Cancelled"
+        ).group_by(Invoice.patient_id).all()
+
+        patient_invoiced = {p_id: float(tot) for p_id, tot in patient_invoiced_rows if p_id}
+
+        patient_payments_rows = db.session.query(
+            Payment.patient_id,
+            func.coalesce(func.sum(Payment.amount), 0.0)
+        ).group_by(Payment.patient_id).all()
+
+        patient_paid = {p_id: float(tot) for p_id, tot in patient_payments_rows if p_id}
 
         # Per-patient balance — positives = debt owed to clinic, negatives = clinic credit
         all_patient_ids = set(list(patient_invoiced.keys()) + list(patient_paid.keys()))
@@ -109,20 +129,37 @@ def home():
                 total_credit += abs(balance)   # clinic owes patient
 
         total_revenue = sum(patient_invoiced.values())
-        total_paid    = sum(patient_paid.values())
+        total_paid = sum(patient_paid.values())
         total_remaining = total_outstanding - total_credit  # net for display widget only
 
-        today_payments_sum = sum(float(pay.amount) for pay in Payment.query.filter(Payment.payment_date >= today_start, Payment.payment_date <= today_end).all())
-        today_revenue_sum = sum(
-            float(inv.total_amount)
-            for inv in Invoice.query.join(Invoice.appointment).filter(
+        today_payments_sum = float(
+            db.session.query(func.coalesce(func.sum(Payment.amount), 0.0))
+            .filter(Payment.payment_date >= today_start, Payment.payment_date <= today_end)
+            .scalar() or 0.0
+        )
+        today_revenue_sum = float(
+            db.session.query(func.coalesce(func.sum(net_total_sub), 0.0))
+            .join(Appointment, Invoice.appointment_id == Appointment.id)
+            .filter(
                 Appointment.status != "Cancelled",
                 Invoice.issue_date >= today_start,
                 Invoice.issue_date <= today_end
-            ).all()
+            )
+            .scalar() or 0.0
         )
 
-        pending_query = Appointment.query.join(Patient).filter(Appointment.status == "Pending")
+        from routes.appointments import cleanup_expired_pending_appointments
+        cleanup_expired_pending_appointments()
+
+        pending_query = (
+            Appointment.query
+            .join(Patient)
+            .options(
+                joinedload(Appointment.patient),
+                joinedload(Appointment.doctor)
+            )
+            .filter(Appointment.status == "Pending")
+        )
         if doctor_filter_id:
             pending_query = pending_query.filter(Appointment.doctor_id == doctor_filter_id)
         pending_appointments = pending_query.order_by(Appointment.appointment_date.asc()).all()
@@ -134,6 +171,10 @@ def home():
         tomorrow_query = (
             Appointment.query
             .join(Patient)
+            .options(
+                joinedload(Appointment.patient),
+                joinedload(Appointment.doctor)
+            )
             .filter(Appointment.appointment_date >= tomorrow_start)
             .filter(Appointment.appointment_date <= tomorrow_end)
             .filter(Appointment.status == "Scheduled")

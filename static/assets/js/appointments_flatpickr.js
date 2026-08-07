@@ -46,6 +46,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 locale: currentLang === 'ar' && typeof flatpickr.l10ns.ar !== 'undefined' ? {
                     ...flatpickr.l10ns.ar,
+                    months: {
+                        shorthand: ["كانون الثاني", "شباط", "آذار", "نيسان", "أيار", "حزيران", "تموز", "آب", "أيلول", "تشرين الأول", "تشرين الثاني", "كانون الأول"],
+                        longhand: ["كانون الثاني", "شباط", "آذار", "نيسان", "أيار", "حزيران", "تموز", "آب", "أيلول", "تشرين الأول", "تشرين الثاني", "كانون الأول"]
+                    },
                     firstDayOfWeek: 0
                 } : {
                     firstDayOfWeek: 0
@@ -70,6 +74,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 ],
                 locale: currentLang === 'ar' && typeof flatpickr.l10ns.ar !== 'undefined' ? {
                     ...flatpickr.l10ns.ar,
+                    months: {
+                        shorthand: ["كانون الثاني", "شباط", "آذار", "نيسان", "أيار", "حزيران", "تموز", "آب", "أيلول", "تشرين الأول", "تشرين الثاني", "كانون الأول"],
+                        longhand: ["كانون الثاني", "شباط", "آذار", "نيسان", "أيار", "حزيران", "تموز", "آب", "أيلول", "تشرين الأول", "تشرين الثاني", "كانون الأول"]
+                    },
                     firstDayOfWeek: 0
                 } : {
                     firstDayOfWeek: 0

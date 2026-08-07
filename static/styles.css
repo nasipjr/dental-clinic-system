@@ -1644,6 +1644,19 @@
   transform: translate(-50%, 0) scale(1);
 }
 
+[data-tooltip-pos="left"]::after {
+  left: 0 !important;
+  transform: translate(0, 8px) scale(0.9);
+}
+[data-tooltip-pos="left"]::before {
+  left: 12px !important;
+  transform: translate(0, 4px) scale(0.9);
+}
+[data-tooltip-pos="left"]:hover::after,
+[data-tooltip-pos="left"]:hover::before {
+  transform: translate(0, 0) scale(1) !important;
+}
+
 
 /* ==========================================
    PREMIUM SETTINGS DASHBOARD STYLING
@@ -2510,8 +2523,19 @@ body[data-bs-theme="dark"] .flatpickr-calendar {
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
   border-radius: 16px !important;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
-  padding: 10px !important;
+  padding: 10px 14px !important;
   font-family: inherit !important;
+  width: 335px !important;
+  min-width: 335px !important;
+  box-sizing: border-box !important;
+}
+
+body .flatpickr-calendar .flatpickr-days,
+body .flatpickr-calendar .dayContainer,
+body .flatpickr-calendar .flatpickr-weekdays {
+  width: 308px !important;
+  min-width: 308px !important;
+  margin: 0 auto !important;
 }
 
 /* Arrow Navigation (< >) */
@@ -3828,10 +3852,8 @@ section, .section {
   padding: 25px 0 !important;
 }
 
-/* Appointment Tab Cards (Clear Outline & Visible Card Boundaries) */
+/* Appointment Tab Cards (Theme-Aware Light & Dark Mode Styling) */
 .appointment-tab-card {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
   border-radius: 16px !important;
   padding: 14px 20px !important;
   transition: all 0.2s ease-in-out !important;
@@ -3839,25 +3861,22 @@ section, .section {
   cursor: pointer;
 }
 
-.appointment-tab-card:hover {
-  background: rgba(56, 189, 248, 0.08) !important;
-  border-color: #38bdf8 !important;
-}
-
 .appointment-tab-card h2 {
-  font-size: 1.2rem !important;
+  font-size: 1.18rem !important;
   font-weight: 700 !important;
   margin-bottom: 4px !important;
-  color: #cbd5e1 !important;
   border-bottom: 2.5px solid transparent !important;
   display: inline-block !important;
   padding-bottom: 2px !important;
   transition: all 0.2s ease-in-out !important;
 }
 
+.appointment-tab-card p,
+.appointment-tab-card .text-muted {
+  transition: color 0.2s ease-in-out !important;
+}
+
 .appointment-tab-card .tab-count-badge {
-  background: rgba(255, 255, 255, 0.15) !important;
-  color: #f1f5f9 !important;
   font-size: 0.8rem !important;
   font-weight: 700 !important;
   padding: 2px 8px !important;
@@ -3868,11 +3887,113 @@ section, .section {
   transition: all 0.2s ease-in-out !important;
 }
 
-/* ACTIVE STATE - CLEAR BRIGHT BORDER & GLOW */
-.appointment-tab-card.active {
-  background: rgba(30, 41, 59, 0.95) !important;
+/* Light Mode Defaults & Specifics */
+.appointment-tab-card,
+[data-bs-theme="light"] .appointment-tab-card {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+.appointment-tab-card h2,
+[data-bs-theme="light"] .appointment-tab-card h2 {
+  color: #1e293b !important;
+}
+
+.appointment-tab-card p,
+.appointment-tab-card .text-muted,
+[data-bs-theme="light"] .appointment-tab-card p,
+[data-bs-theme="light"] .appointment-tab-card .text-muted {
+  color: #475569 !important;
+}
+
+.appointment-tab-card .tab-count-badge,
+[data-bs-theme="light"] .appointment-tab-card .tab-count-badge {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+}
+
+.appointment-tab-card:hover,
+[data-bs-theme="light"] .appointment-tab-card:hover {
+  background: #f0f9ff !important;
+  border-color: #0284c7 !important;
+}
+
+/* Light Mode Active State */
+.appointment-tab-card.active,
+[data-bs-theme="light"] .appointment-tab-card.active {
+  background: #f0f9ff !important;
+  border: 2px solid #0284c7 !important;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.18) !important;
+}
+
+.appointment-tab-card.active h2,
+[data-bs-theme="light"] .appointment-tab-card.active h2 {
+  color: #0284c7 !important;
+  border-bottom: 2.5px solid #0284c7 !important;
+}
+
+.appointment-tab-card.active p,
+.appointment-tab-card.active .text-muted,
+[data-bs-theme="light"] .appointment-tab-card.active p,
+[data-bs-theme="light"] .appointment-tab-card.active .text-muted {
+  color: #0f172a !important;
+  font-weight: 500 !important;
+}
+
+.appointment-tab-card.active .tab-count-badge,
+[data-bs-theme="light"] .appointment-tab-card.active .tab-count-badge {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3) !important;
+}
+
+/* Dark Mode Specifics */
+[data-bs-theme="dark"] .appointment-tab-card {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: none !important;
+}
+
+[data-bs-theme="dark"] .appointment-tab-card h2 {
+  color: #f1f5f9 !important;
+}
+
+[data-bs-theme="dark"] .appointment-tab-card p,
+[data-bs-theme="dark"] .appointment-tab-card .text-muted {
+  color: #94a3b8 !important;
+}
+
+[data-bs-theme="dark"] .appointment-tab-card .tab-count-badge {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .appointment-tab-card:hover {
+  background: rgba(56, 189, 248, 0.08) !important;
+  border-color: #38bdf8 !important;
+}
+
+[data-bs-theme="dark"] .appointment-tab-card.active {
+  background: rgba(15, 23, 42, 0.95) !important;
   border: 2px solid #38bdf8 !important;
   box-shadow: 0 0 16px rgba(56, 189, 248, 0.25), 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+[data-bs-theme="dark"] .appointment-tab-card.active h2 {
+  color: #38bdf8 !important;
+  border-bottom: 2.5px solid #38bdf8 !important;
+}
+
+[data-bs-theme="dark"] .appointment-tab-card.active p,
+[data-bs-theme="dark"] .appointment-tab-card.active .text-muted {
+  color: #cbd5e1 !important;
+}
+
+[data-bs-theme="dark"] .appointment-tab-card.active .tab-count-badge {
+  background: #38bdf8 !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.4) !important;
 }
 
 .alert.d-block {
@@ -4022,64 +4143,7 @@ section, .section {
   padding: 25px 0 !important;
 }
 
-/* Appointment Tab Cards (Clear Outline & Visible Card Boundaries) */
-.appointment-tab-card {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
-  border-radius: 16px !important;
-  padding: 14px 20px !important;
-  transition: all 0.2s ease-in-out !important;
-  text-align: center;
-  cursor: pointer;
-}
 
-.appointment-tab-card:hover {
-  background: rgba(56, 189, 248, 0.08) !important;
-  border-color: #38bdf8 !important;
-}
-
-.appointment-tab-card h2 {
-  font-size: 1.2rem !important;
-  font-weight: 700 !important;
-  margin-bottom: 4px !important;
-  color: #cbd5e1 !important;
-  border-bottom: 2.5px solid transparent !important;
-  display: inline-block !important;
-  padding-bottom: 2px !important;
-  transition: all 0.2s ease-in-out !important;
-}
-
-.appointment-tab-card .tab-count-badge {
-  background: rgba(255, 255, 255, 0.15) !important;
-  color: #f1f5f9 !important;
-  font-size: 0.8rem !important;
-  font-weight: 700 !important;
-  padding: 2px 8px !important;
-  border-radius: 50rem !important;
-  box-shadow: none !important;
-  vertical-align: middle !important;
-  display: inline-block !important;
-  transition: all 0.2s ease-in-out !important;
-}
-
-/* ACTIVE STATE - CLEAR BRIGHT BORDER & GLOW */
-.appointment-tab-card.active {
-  background: rgba(30, 41, 59, 0.95) !important;
-  border: 2px solid #38bdf8 !important;
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.25), 0 8px 24px rgba(0, 0, 0, 0.4) !important;
-}
-
-.appointment-tab-card.active h2 {
-  color: #38bdf8 !important;
-  border-bottom: 2.5px solid #38bdf8 !important;
-}
-
-.appointment-tab-card.active .tab-count-badge {
-  background: #38bdf8 !important;
-  color: #0f172a !important;
-  font-weight: 800 !important;
-  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.4) !important;
-}
 
 /* Application-wide Unified Table Action Buttons */
 .table-action-btn {
