@@ -19,6 +19,7 @@ a = Analysis(
     datas=[
         (os.path.join(ROOT_DIR, 'static'), 'static'),
         (os.path.join(ROOT_DIR, 'templates'), 'templates'),
+        (os.path.join(ROOT_DIR, 'docs'), 'docs'),
         (os.path.join(SPEC_DIR, 'version.py'), '.'),
     ],
     hiddenimports=[],
