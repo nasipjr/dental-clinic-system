@@ -207,20 +207,18 @@ def reset_clock_activity():
 def get_current_license_status() -> dict:
     """
     Returns current active license status details from DB.
+    Auto-grants a 15-day trial key on first launch if no key is present.
     """
-    from utils.settings_helper import get_setting
+    from utils.settings_helper import get_setting, set_setting
 
     active_key = get_setting("active_license_key", "")
 
     if not active_key:
-        return {
-            "is_active": False,
-            "status_code": "NO_LICENSE",
-            "message": "لم يتم تفعيل أي مفتاح ترخيص بعد.",
-            "days_remaining": 0,
-            "license_type": "None",
-            "expires_at": None,
-        }
+        # Auto-grant 15-day trial key on first app launch
+        auto_trial_key = generate_license_key(days=15, license_type="trial")
+        set_setting("active_license_key", auto_trial_key)
+        set_setting("auto_trial_created_at", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        active_key = auto_trial_key
 
     # Check clock tampering first
     is_tampered, tamper_msg = check_clock_tampering()
