@@ -164,19 +164,20 @@ def add_treatment_to_appointment(appointment_id):
             proc_lower = (procedure_type or "").lower()
             is_post_ext = "ما بعد القلع" in proc_lower or "post-extraction" in proc_lower or "post extraction" in proc_lower
             if not is_post_ext:
-                fdi_map_inv = {
+                univ_to_fdi = {
                     '1': '18', '2': '17', '3': '16', '4': '15', '5': '14', '6': '13', '7': '12', '8': '11',
                     '9': '21', '10': '22', '11': '23', '12': '24', '13': '25', '14': '26', '15': '27', '16': '28',
                     '17': '38', '18': '37', '19': '36', '20': '35', '21': '34', '22': '33', '23': '32', '24': '31',
                     '25': '41', '26': '42', '27': '43', '28': '44', '29': '45', '30': '46', '31': '47', '32': '48'
                 }
-                for k, v in list(fdi_map_inv.items()):
-                    fdi_map_inv[v] = k
+                fdi_to_univ = {v: k for k, v in univ_to_fdi.items()}
 
                 for t in teeth_list:
                     check_teeth = [t]
-                    if t in fdi_map_inv:
-                        check_teeth.append(fdi_map_inv[t])
+                    if t in univ_to_fdi:
+                        check_teeth.append(univ_to_fdi[t])
+                    if t in fdi_to_univ:
+                        check_teeth.append(fdi_to_univ[t])
 
                     has_prior_ext = ToothHistory.query.filter(
                         ToothHistory.patient_id == appointment.patient_id,

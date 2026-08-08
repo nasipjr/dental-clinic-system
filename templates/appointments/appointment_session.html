@@ -70,7 +70,18 @@
                 </div>
 
                 <div class="doctor-details">
-                    <h4>{{ patient.first_name }} {{ patient.last_name }}</h4>
+                    <h4 class="d-flex align-items-center flex-wrap gap-2 mb-1" style="font-size: 1.45rem;">
+                        {% if patient.title %}
+                            {% set title_map_ar = {'mr': 'السيد', 'ms': 'الآنسة', 'mrs': 'السيدة', 'dr': 'الدكتور', 'dr_f': 'الدكتورة', 'miss': 'آنسة'} %}
+                            {% set title_map_en = {'mr': 'Mr.', 'ms': 'Ms.', 'mrs': 'Mrs.', 'dr': 'Dr.', 'dr_f': 'Dr.', 'miss': 'Miss'} %}
+                            {% set p_title_key = patient.title|lower %}
+                            {% set display_title = title_map_ar.get(p_title_key, patient.title) if current_lang == 'ar' else title_map_en.get(p_title_key, patient.title) %}
+                            <span class="patient-title-text me-2" style="color: var(--accent-color); font-weight: 800; font-size: 1.35rem;">
+                                {{ display_title }}
+                            </span>
+                        {% endif %}
+                        <span class="fw-bold">{{ patient.first_name }} {{ patient.last_name }}</span>
+                    </h4>
                     <span class="specialty-tag">
                         {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date
                         else
@@ -80,18 +91,46 @@
             </div>
 
             <div class="patient-info-grid mt-4">
-                <div class="patient-info-box">
-                    <span class="info-label">Patient Phone</span>
-                    <p>{{ patient.phone or 'No phone number' }}</p>
+                <div class="patient-info-box" {% if patient.medical_information %}style="background: rgba(220, 53, 69, 0.06) !important; border: 1px solid rgba(220, 53, 69, 0.28) !important;"{% endif %}>
+                    <span class="info-label {% if patient.medical_information %}fw-bold{% endif %}" {% if patient.medical_information %}style="color: color-mix(in srgb, #dc3545, var(--default-color) 10%) !important;"{% endif %}>
+                        <i class="bi bi-heart-pulse-fill me-1 text-danger"></i>
+                        {% if current_lang == 'ar' %}المعلومات الطبية والتحسس{% else %}Medical Info & Allergies{% endif %}
+                    </span>
+                    <p class="{% if patient.medical_information %}fw-semibold{% else %}text-muted{% endif %}" {% if patient.medical_information %}style="color: color-mix(in srgb, #dc3545, var(--default-color) 20%) !important;"{% endif %}>
+                        {{ patient.medical_information or ('No medical information recorded' if current_lang != 'ar' else 'لا توجد معلومات طبية مسجلة') }}
+                    </p>
                 </div>
 
                 <div class="patient-info-box">
-                    <span class="info-label">Appointment Reason</span>
-                    <p>{{ appointment.reason or 'No reason provided' }}</p>
+                    <span class="info-label">{% if current_lang == 'ar' %}ملاحظات المريض{% else %}Patient Notes{% endif %}</span>
+                    <p>{{ patient.notes or ('No notes available' if current_lang != 'ar' else 'لا توجد ملاحظات') }}</p>
                 </div>
 
                 <div class="patient-info-box">
-                    <span class="info-label">Status</span>
+                    <span class="info-label">{% if current_lang == 'ar' %}سبب الموعد{% else %}Appointment Reason{% endif %}</span>
+                    <p>{{ appointment.reason or ('No reason provided' if current_lang != 'ar' else 'لم يحدد سبب') }}</p>
+                </div>
+
+                <div class="patient-info-box">
+                    <span class="info-label">{% if current_lang == 'ar' %}هاتف المريض{% else %}Patient Phone{% endif %}</span>
+                    <p>{{ patient.phone or ('No phone number' if current_lang != 'ar' else 'لا يوجد رقم هاتف') }}</p>
+                </div>
+
+                <div class="patient-info-box">
+                    <span class="info-label">{% if current_lang == 'ar' %}وضع الجلسة{% else %}Session Mode{% endif %}</span>
+                    {% if appointment.status in ('Scheduled', 'Checked In', 'In Chair') %}
+                    <p>{% if current_lang == 'ar' %}جلسة مفتوحة — يمكن إضافة المعالجات أو تعديلها.{% else %}Open session — treatments can be added or modified.{% endif %}</p>
+                    {% elif appointment.status == 'Done' %}
+                    <p>{% if current_lang == 'ar' %}جلسة مغلقة — وضع القراءة فقط.{% else %}Closed session — read-only mode.{% endif %}</p>
+                    {% elif appointment.status == 'Cancelled' %}
+                    <p>{% if current_lang == 'ar' %}موعد ملغي — لا يمكن إضافة معالجات.{% else %}Cancelled appointment — treatments cannot be added.{% endif %}</p>
+                    {% else %}
+                    <p>{% if current_lang == 'ar' %}حالة الموعد غير معروفة.{% else %}Unknown appointment status.{% endif %}</p>
+                    {% endif %}
+                </div>
+
+                <div class="patient-info-box">
+                    <span class="info-label">{% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}</span>
                     <p>
                         <span class="appointment-status
                             {% if appointment.status in ('Done', 'منجز') %}status-done
@@ -109,19 +148,6 @@
                             {% endif %}
                         </span>
                     </p>
-                </div>
-
-                <div class="patient-info-box">
-                    <span class="info-label">Session Mode</span>
-                    {% if appointment.status in ('Scheduled', 'Checked In', 'In Chair') %}
-                    <p>Open session — treatments can be added or modified.</p>
-                    {% elif appointment.status == 'Done' %}
-                    <p>Closed session — read-only mode.</p>
-                    {% elif appointment.status == 'Cancelled' %}
-                    <p>Cancelled appointment — treatments cannot be added.</p>
-                    {% else %}
-                    <p>Unknown appointment status.</p>
-                    {% endif %}
                 </div>
             </div>
 
@@ -1477,7 +1503,20 @@
         if (!treatment.tooth) return false;
         const teeth = treatment.tooth.split(',').map(s => s.trim());
         const fdiNum = fdiMap[toothNum];
-        return teeth.includes(toothNum) || (fdiNum && teeth.includes(fdiNum));
+        
+        // 1. Direct match with FDI number (primary match for FDI dental chart)
+        if (fdiNum && teeth.includes(fdiNum)) {
+            return true;
+        }
+
+        // 2. Match with Universal toothNum ONLY if entry in teeth is a non-FDI number
+        const fdiRegex = /^(1[1-8]|2[1-8]|3[1-8]|4[1-8]|5[1-5]|6[1-5]|7[1-5]|8[1-5])$/;
+        return teeth.some(t => {
+            if (!fdiRegex.test(t)) {
+                return t === toothNum;
+            }
+            return false;
+        });
     }
 
     // Helper to check if a treatment is tooth extraction

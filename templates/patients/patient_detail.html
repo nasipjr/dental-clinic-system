@@ -57,7 +57,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function appliesToTooth(treatment, toothNum) {
         if (!treatment.tooth) return false;
         const teeth = treatment.tooth.split(',').map(s => s.trim());
-        return teeth.includes(toothNum);
+        const fdiNum = (typeof fdiMap !== 'undefined') ? fdiMap[toothNum] : null;
+        if (fdiNum && teeth.includes(fdiNum)) return true;
+        const fdiRegex = /^(1[1-8]|2[1-8]|3[1-8]|4[1-8]|5[1-5]|6[1-5]|7[1-5]|8[1-5])$/;
+        return teeth.some(t => !fdiRegex.test(t) && t === toothNum);
     }
 
     function isExtractionProcedure(procName) {
@@ -2159,7 +2162,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!treatment.tooth) return false;
         const teeth = treatment.tooth.split(',').map(s => s.trim());
         const fdiNum = fdiMap[toothNum];
-        return teeth.includes(toothNum) || (fdiNum && teeth.includes(fdiNum));
+        if (fdiNum && teeth.includes(fdiNum)) return true;
+        const fdiRegex = /^(1[1-8]|2[1-8]|3[1-8]|4[1-8]|5[1-5]|6[1-5]|7[1-5]|8[1-5])$/;
+        return teeth.some(t => !fdiRegex.test(t) && t === toothNum);
     }
 
     function isExtractionProcedure(procName) {

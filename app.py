@@ -160,9 +160,7 @@ def format_price(value):
             value = value.replace(",", "").strip()
         val = Decimal(str(value))
         # Format with whole number and thousands separator
-        formatted = "{:,.0f}".format(val)
-        # Replace commas with dots
-        return formatted.replace(",", ".")
+        return "{:,.0f}".format(val)
     except (ValueError, TypeError, InvalidOperation):
         return str(value)
 

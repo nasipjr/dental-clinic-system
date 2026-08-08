@@ -117,6 +117,10 @@
 
             <!-- Actions -->
             <div class="action-buttons justify-content-center gap-3 mt-4 d-print-none">
+                <a href="{{ url_for('payments.edit_patient_payment', payment_id=payment.id) }}" class="btn btn-primary px-4 d-inline-flex align-items-center gap-2">
+                    <i class="bi bi-pencil-square"></i>
+                    <span>{% if current_lang == 'ar' %}تعديل الدفعة{% else %}Edit Payment{% endif %}</span>
+                </a>
                 <a href="{{ url_for('payments.payments') }}" class="btn-outline-main px-4">
                     {% if current_lang == 'ar' %}العودة للمدفوعات{% else %}Back to Payments{% endif %}
                 </a>

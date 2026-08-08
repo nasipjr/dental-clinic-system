@@ -313,6 +313,7 @@ class Invoice(db.Model):
     discount_type = db.Column(db.String(20), default="value", nullable=False)
     additional_charges = db.Column(db.Numeric(10, 2), default=0.00, nullable=False)
     tax_rate = db.Column(db.Numeric(5, 2), default=0.00, nullable=False)
+    notes = db.Column(db.Text, nullable=True)
 
     payment_allocations = db.relationship(
         "PaymentAllocation",

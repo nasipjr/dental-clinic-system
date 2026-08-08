@@ -156,11 +156,11 @@
                             <i class="bi bi-eye"></i>
                         </a>
 
-                        <a href="{{ url_for('patients.patient_detail', patient_id=payment.patient_id) }}"
-                           class="table-action-btn session-btn"
-                           title="{% if request.cookies.get('lang', 'en') == 'ar' %}فتح ملف المريض{% else %}Open Patient Profile{% endif %}"
-                           data-tooltip="{% if request.cookies.get('lang', 'en') == 'ar' %}فتح ملف المريض{% else %}Open Patient Profile{% endif %}">
-                            <i class="bi bi-person"></i>
+                        <a href="{{ url_for('payments.edit_patient_payment', payment_id=payment.id) }}"
+                           class="table-action-btn edit-btn"
+                           title="{% if request.cookies.get('lang', 'en') == 'ar' %}تعديل الدفعة{% else %}Edit Payment{% endif %}"
+                           data-tooltip="{% if request.cookies.get('lang', 'en') == 'ar' %}تعديل الدفعة{% else %}Edit Payment{% endif %}">
+                            <i class="bi bi-pencil-square"></i>
                         </a>
 
                         <a href="{{ url_for('invoices.invoices', search=payment.patient.phone or payment.patient.first_name) }}"

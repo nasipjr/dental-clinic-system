@@ -272,6 +272,108 @@ def view_payment(payment_id):
         ), 500
 
 
+@payments_bp.route("/payments/<int:payment_id>/edit", methods=["GET", "POST"])
+@role_required("admin", "receptionist")
+def edit_patient_payment(payment_id):
+    current_app.logger.info(f"Edit payment page/request | payment_id={payment_id}")
+
+    try:
+        payment = Payment.query.get_or_404(payment_id)
+        patients = Patient.query.order_by(
+            Patient.first_name.asc(),
+            Patient.last_name.asc(),
+        ).all()
+
+        selected_patient_id = request.args.get("patient_id", type=int) or payment.patient_id
+        selected_patient = Patient.query.get(selected_patient_id) if selected_patient_id else payment.patient
+
+        next_url = request.args.get("next") or request.referrer or ""
+        if any(k in next_url for k in ["/edit", "/delete"]):
+            next_url = ""
+
+        if request.method == "POST":
+            new_patient_id = request.form.get("patient_id", type=int) or payment.patient_id
+            payment_amount_raw = request.form.get("payment_amount", "")
+            notes = request.form.get("notes", "").strip()
+            payment_date_str = request.form.get("payment_date", "").strip()
+
+            new_patient = Patient.query.get(new_patient_id)
+
+            if not new_patient:
+                return render_template(
+                    "payments/edit_payment.html",
+                    payment=payment,
+                    patients=patients,
+                    selected_patient=selected_patient,
+                    error_message="Please select a valid patient.",
+                    current_lang=request.cookies.get('lang', 'en'),
+                    next_url=next_url,
+                ), 400
+
+            payment_amount, payment_error = parse_invoice_payment_amount(payment_amount_raw)
+
+            if payment_error:
+                return render_template(
+                    "payments/edit_payment.html",
+                    payment=payment,
+                    patients=patients,
+                    selected_patient=new_patient,
+                    error_message=payment_error,
+                    current_lang=request.cookies.get('lang', 'en'),
+                    next_url=next_url,
+                ), 400
+
+            old_patient_id = payment.patient_id
+
+            if payment_date_str:
+                try:
+                    payment.payment_date = datetime.strptime(payment_date_str, "%Y-%m-%dT%H:%M")
+                except ValueError:
+                    try:
+                        payment.payment_date = datetime.strptime(payment_date_str, "%Y-%m-%d")
+                    except ValueError:
+                        pass
+
+            payment.patient_id = new_patient.id
+            payment.amount = payment_amount
+            payment.notes = notes
+
+            db.session.flush()
+
+            allocate_patient_payments_to_invoices(old_patient_id)
+            if old_patient_id != new_patient.id:
+                allocate_patient_payments_to_invoices(new_patient.id)
+
+            db.session.commit()
+
+            current_app.logger.info(
+                f"Payment updated successfully | payment_id={payment.id}, amount={payment_amount}"
+            )
+
+            if next_url:
+                return redirect(next_url)
+            return redirect(url_for("payments.view_payment", payment_id=payment.id))
+
+        return render_template(
+            "payments/edit_payment.html",
+            payment=payment,
+            patients=patients,
+            selected_patient=selected_patient,
+            current_lang=request.cookies.get('lang', 'en'),
+            next_url=next_url,
+        )
+
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(f"Failed to edit payment | payment_id={payment_id}")
+        return render_template(
+            "error_message.html",
+            title="Error",
+            message="Failed to edit payment.",
+            back_url=url_for("payments.payments"),
+        ), 500
+
+
 @payments_bp.route("/payments/quick-settle/<int:patient_id>", methods=["POST"])
 @role_required("admin", "receptionist")
 def quick_settle_patient_debt(patient_id):

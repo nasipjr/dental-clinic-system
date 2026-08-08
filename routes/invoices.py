@@ -515,11 +515,44 @@ def view_invoice(invoice_id):
         ), 500
 
 
+def make_invoice_json_data(invoice, is_ar, message):
+    from utils.settings_helper import get_currency_symbol
+    currency = get_currency_symbol()
+    disc_label = f"({invoice.discount:,.0f}%)" if invoice.discount_type == "percentage" else ""
+    return {
+        "success": True,
+        "message": message,
+        "subtotal": float(invoice.subtotal),
+        "subtotal_formatted": f"{invoice.subtotal:,.0f}",
+        "discount": float(invoice.discount),
+        "discount_type": invoice.discount_type,
+        "discount_label": disc_label,
+        "discount_amount": float(invoice.discount_amount),
+        "discount_amount_formatted": f"{invoice.discount_amount:,.0f}",
+        "additional_charges": float(invoice.additional_charges),
+        "additional_charges_amount": float(invoice.additional_charges_amount),
+        "additional_charges_amount_formatted": f"{invoice.additional_charges_amount:,.0f}",
+        "total_amount": float(invoice.total_amount),
+        "total_amount_formatted": f"{invoice.total_amount:,.0f}",
+        "total_paid": float(invoice.total_paid),
+        "total_paid_formatted": f"{invoice.total_paid:,.0f}",
+        "outstanding_amount": float(invoice.outstanding_amount),
+        "outstanding_amount_formatted": f"{invoice.outstanding_amount:,.0f}",
+        "credit": float(invoice.credit),
+        "credit_formatted": f"{invoice.credit:,.0f}",
+        "status": invoice.status,
+        "currency": currency,
+        "notes": invoice.notes or "",
+    }
+
+
 @invoices_bp.route("/invoices/<int:invoice_id>/discount", methods=["POST"])
 @role_required("admin", "receptionist")
 def update_invoice_discount(invoice_id):
     current_app.logger.info(f"Update discount request | invoice_id={invoice_id}")
     is_ar = request.cookies.get("lang", "ar") == "ar"
+    is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.is_json or "application/json" in request.headers.get("Accept", "")
+
     try:
         invoice = Invoice.query.get_or_404(invoice_id)
         
@@ -535,16 +568,25 @@ def update_invoice_discount(invoice_id):
                 if discount_val < 0:
                     discount_val = 0.0
             except ValueError:
-                flash("قيمة الخصم غير صحيحة." if is_ar else "Invalid discount amount.", "danger")
+                err_msg = "قيمة الخصم غير صحيحة." if is_ar else "Invalid discount amount."
+                if is_ajax:
+                    return {"success": False, "message": err_msg}, 400
+                flash(err_msg, "danger")
                 redirect_url = request.referrer or url_for("invoices.view_invoice", invoice_id=invoice_id)
                 return redirect(redirect_url)
         
         if discount_type == "percentage" and discount_val > 100.0:
-            flash("لا يمكن أن تتجاوز نسبة الخصم 100%." if is_ar else "Discount percentage cannot exceed 100%.", "danger")
+            err_msg = "لا يمكن أن تتجاوز نسبة الخصم 100%." if is_ar else "Discount percentage cannot exceed 100%."
+            if is_ajax:
+                return {"success": False, "message": err_msg}, 400
+            flash(err_msg, "danger")
             redirect_url = request.referrer or url_for("invoices.view_invoice", invoice_id=invoice_id)
             return redirect(redirect_url)
         elif discount_type == "value" and discount_val > float(invoice.subtotal):
-            flash("لا يمكن أن يتجاوز الخصم المجموع الفرعي." if is_ar else "Discount cannot exceed the subtotal.", "danger")
+            err_msg = "لا يمكن أن يتجاوز الخصم المجموع الفرعي." if is_ar else "Discount cannot exceed the subtotal."
+            if is_ajax:
+                return {"success": False, "message": err_msg}, 400
+            flash(err_msg, "danger")
             redirect_url = request.referrer or url_for("invoices.view_invoice", invoice_id=invoice_id)
             return redirect(redirect_url)
             
@@ -557,11 +599,17 @@ def update_invoice_discount(invoice_id):
         allocate_patient_payments_to_invoices(invoice.patient_id)
         db.session.commit()
         
-        flash("تم تحديث الخصم بنجاح!" if is_ar else "Discount updated successfully!", "success")
+        succ_msg = "تم تحديث الخصم بنجاح!" if is_ar else "Discount updated successfully!"
+        if is_ajax:
+            return make_invoice_json_data(invoice, is_ar, succ_msg)
+        flash(succ_msg, "success")
     except Exception:
         db.session.rollback()
         current_app.logger.exception(f"Failed to update discount for invoice {invoice_id}")
-        flash("فشل في تحديث الخصم." if is_ar else "Failed to update discount.", "danger")
+        err_msg = "فشل في تحديث الخصم." if is_ar else "Failed to update discount."
+        if is_ajax:
+            return {"success": False, "message": err_msg}, 500
+        flash(err_msg, "danger")
         
     redirect_url = request.referrer or url_for("invoices.view_invoice", invoice_id=invoice_id)
     return redirect(redirect_url)
@@ -572,6 +620,8 @@ def update_invoice_discount(invoice_id):
 def update_invoice_additional_charges(invoice_id):
     current_app.logger.info(f"Update additional charges request | invoice_id={invoice_id}")
     is_ar = request.cookies.get("lang", "ar") == "ar"
+    is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.is_json or "application/json" in request.headers.get("Accept", "")
+
     try:
         invoice = Invoice.query.get_or_404(invoice_id)
         
@@ -583,7 +633,10 @@ def update_invoice_additional_charges(invoice_id):
                 if charges_val < 0:
                     charges_val = 0.0
             except ValueError:
-                flash("قيمة التكاليف الإضافية غير صحيحة." if is_ar else "Invalid additional charges amount.", "danger")
+                err_msg = "قيمة التكاليف الإضافية غير صحيحة." if is_ar else "Invalid additional charges amount."
+                if is_ajax:
+                    return {"success": False, "message": err_msg}, 400
+                flash(err_msg, "danger")
                 redirect_url = request.referrer or url_for("invoices.view_invoice", invoice_id=invoice_id)
                 return redirect(redirect_url)
             
@@ -595,11 +648,46 @@ def update_invoice_additional_charges(invoice_id):
         allocate_patient_payments_to_invoices(invoice.patient_id)
         db.session.commit()
         
-        flash("تم تحديث التكاليف الإضافية بنجاح!" if is_ar else "Additional charges updated successfully!", "success")
+        succ_msg = "تم تحديث التكاليف الإضافية بنجاح!" if is_ar else "Additional charges updated successfully!"
+        if is_ajax:
+            return make_invoice_json_data(invoice, is_ar, succ_msg)
+        flash(succ_msg, "success")
     except Exception:
         db.session.rollback()
         current_app.logger.exception(f"Failed to update additional charges for invoice {invoice_id}")
-        flash("فشل في تحديث التكاليف الإضافية." if is_ar else "Failed to update additional charges.", "danger")
+        err_msg = "فشل في تحديث التكاليف الإضافية." if is_ar else "Failed to update additional charges."
+        if is_ajax:
+            return {"success": False, "message": err_msg}, 500
+        flash(err_msg, "danger")
+        
+    redirect_url = request.referrer or url_for("invoices.view_invoice", invoice_id=invoice_id)
+    return redirect(redirect_url)
+
+
+@invoices_bp.route("/invoices/<int:invoice_id>/notes", methods=["POST"])
+@role_required("admin", "receptionist")
+def update_invoice_notes(invoice_id):
+    current_app.logger.info(f"Update invoice notes request | invoice_id={invoice_id}")
+    is_ar = request.cookies.get("lang", "ar") == "ar"
+    is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.is_json or "application/json" in request.headers.get("Accept", "")
+
+    try:
+        invoice = Invoice.query.get_or_404(invoice_id)
+        notes = request.form.get("notes", "").strip()
+        invoice.notes = notes
+        db.session.commit()
+        
+        succ_msg = "تم تحديث ملاحظات الفاتورة بنجاح!" if is_ar else "Invoice notes updated successfully!"
+        if is_ajax:
+            return make_invoice_json_data(invoice, is_ar, succ_msg)
+        flash(succ_msg, "success")
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(f"Failed to update notes for invoice {invoice_id}")
+        err_msg = "فشل في تحديث ملاحظات الفاتورة." if is_ar else "Failed to update invoice notes."
+        if is_ajax:
+            return {"success": False, "message": err_msg}, 500
+        flash(err_msg, "danger")
         
     redirect_url = request.referrer or url_for("invoices.view_invoice", invoice_id=invoice_id)
     return redirect(redirect_url)

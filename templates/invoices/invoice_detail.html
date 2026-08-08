@@ -59,55 +59,73 @@
                 </div>
 
                 <div class="patient-info-box">
-                    <span class="info-label">Invoice Total</span>
-                    <p>{{ invoice.total_amount | format_price }} {{ currency_symbol }}</p>
+                    <span class="info-label">{% if current_lang == 'ar' %}إجمالي الفاتورة{% else %}Invoice Total{% endif %}</span>
+                    <p id="top-invoice-total">{{ invoice.total_amount | format_price }} {{ currency_symbol }}</p>
                 </div>
 
                 <div class="patient-info-box">
-                    <span class="info-label">Total Payments</span>
-                    <p>{{ invoice.total_paid | format_price }} {{ currency_symbol }}</p>
+                    <span class="info-label">{% if current_lang == 'ar' %}إجمالي السداد{% else %}Total Payments{% endif %}</span>
+                    <p id="top-total-paid">{{ invoice.total_paid | format_price }} {{ currency_symbol }}</p>
                 </div>
 
                 <div class="patient-info-box">
-                    <span class="info-label">Outstanding / Credit</span>
-                    <p>
+                    <span class="info-label">{% if current_lang == 'ar' %}المبلغ المتبقي / الرصيد{% else %}Outstanding / Credit{% endif %}</span>
+                    <p id="top-outstanding-container">
                         {% if invoice.credit > 0 %}
                             <span class="credit-amount">
                                 {{ invoice.credit | format_price }} {{ currency_symbol }}
-                                <span class="credit-badge">Credit</span>
+                                <span class="credit-badge">{% if current_lang == 'ar' %}رصيد{% else %}Credit{% endif %}</span>
                             </span>
                         {% elif invoice.outstanding_amount > 0 %}
                             <span class="remaining-due">
                                 {{ invoice.outstanding_amount | format_price }} {{ currency_symbol }}
-                                <span class="due-badge">Due</span>
+                                <span class="due-badge">{% if current_lang == 'ar' %}مستحق{% else %}Due{% endif %}</span>
                             </span>
                         {% else %}
                             <span class="remaining-clear">
                                 0 {{ currency_symbol }}
-                                <span class="paid-badge">Paid</span>
+                                <span class="paid-badge">{% if current_lang == 'ar' %}خالص{% else %}Paid{% endif %}</span>
                             </span>
                         {% endif %}
                     </p>
                 </div>
 
                 <div class="patient-info-box">
-                    <span class="info-label">Invoice Status</span>
-                    <p>
+                    <span class="info-label">{% if current_lang == 'ar' %}حالة الفاتورة{% else %}Invoice Status{% endif %}</span>
+                    <p id="top-status-container">
                         {% if invoice.status == 'Credit' %}
-                            <span class="credit-badge">Credit</span>
+                            <span class="credit-badge">{% if current_lang == 'ar' %}رصيد مالي{% else %}Credit{% endif %}</span>
                         {% elif invoice.status == 'Paid' %}
-                            <span class="paid-badge">Paid</span>
+                            <span class="paid-badge">{% if current_lang == 'ar' %}مدفوعة بالكامل{% else %}Paid{% endif %}</span>
                         {% elif invoice.status == 'Partially Paid' %}
-                            <span class="due-badge">Partial</span>
+                            <span class="due-badge">{% if current_lang == 'ar' %}دفعة جزئية{% else %}Partial{% endif %}</span>
                         {% else %}
-                            <span class="due-badge">Unpaid</span>
+                            <span class="due-badge">{% if current_lang == 'ar' %}غير مدفوعة{% else %}Unpaid{% endif %}</span>
                         {% endif %}
                     </p>
                 </div>
 
                 <div class="patient-info-box text-center d-flex flex-column align-items-center justify-content-center">
-                    <span class="info-label mb-2">Invoice Summary</span>
+                    <span class="info-label mb-2">{% if current_lang == 'ar' %}ملخص الفاتورة{% else %}Invoice Summary{% endif %}</span>
                     <canvas id="invoice-qrcode" style="width: 90px; height: 90px;"></canvas>
+                </div>
+
+                <div class="patient-info-box d-flex flex-column justify-content-between position-relative">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="info-label mb-0">{% if current_lang == 'ar' %}ملاحظات الفاتورة{% else %}Invoice Notes{% endif %}</span>
+                        {% if current_user.role in ('admin', 'receptionist') %}
+                        <button type="button" class="btn btn-xs btn-outline-secondary p-1 py-0 rounded-2" data-bs-toggle="collapse" data-bs-target="#edit-notes-form" title="{% if current_lang == 'ar' %}تعديل الملاحظات{% else %}Edit Notes{% endif %}">
+                            <i class="bi bi-pencil" style="font-size: 0.8rem;"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                    <p class="mb-0 text-wrap text-break small mt-1" id="top-invoice-notes">
+                        {% if invoice.notes %}
+                            {{ invoice.notes }}
+                        {% else %}
+                            <span class="text-muted italic">{% if current_lang == 'ar' %}لا توجد ملاحظات{% else %}No notes available{% endif %}</span>
+                        {% endif %}
+                    </p>
                 </div>
 
             </div>
@@ -209,17 +227,17 @@
 
                     <tfoot>
                         <tr>
-                            <th colspan="5" class="text-end">Subtotal</th>
+                            <th colspan="5" class="text-end">{% if current_lang == 'ar' %}المجموع الفرعي{% else %}Subtotal{% endif %}</th>
                             <th>
-                                <span class="price-badge">
+                                <span class="price-badge" id="inv-subtotal-val">
                                     {{ invoice.subtotal | format_price }} {{ currency_symbol }}
                                 </span>
                             </th>
                         </tr>
                         <tr>
-                            <th colspan="5" class="text-end">Discount {% if invoice.discount_type == 'percentage' %}({{ "{:,.0f}".format(invoice.discount) }}%){% endif %}</th>
+                            <th colspan="5" class="text-end" id="discount-row-label">{% if current_lang == 'ar' %}الخصم{% else %}Discount{% endif %} {% if invoice.discount_type == 'percentage' %}({{ "{:,.0f}".format(invoice.discount) }}%){% endif %}</th>
                             <th>
-                                <span class="price-badge text-danger">
+                                <span class="price-badge text-danger" id="discount-amount-badge">
                                     - {{ invoice.discount_amount | format_price }} {{ currency_symbol }}
                                 </span>
                                 {% if current_user.role in ('admin', 'receptionist') %}
@@ -232,14 +250,14 @@
                         <!-- Collapsible Edit Discount Form -->
                         <tr class="collapse" id="edit-discount-form">
                             <td colspan="6" class="p-3" style="background: rgba(30, 41, 59, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-                                <form method="POST" action="{{ url_for('invoices.update_invoice_discount', invoice_id=invoice.id) }}" class="d-flex align-items-center justify-content-end gap-3">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <form method="POST" action="{{ url_for('invoices.update_invoice_discount', invoice_id=invoice.id) }}" class="d-flex align-items-center justify-content-end gap-3" id="ajax-discount-form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <label for="discount" class="form-label mb-0 fw-semibold text-secondary" style="font-size: 0.9rem;">
                                         {% if current_lang == 'ar' %}تعديل قيمة الخصم:{% else %}Edit Discount:{% endif %}
                                     </label>
-                                    <div class="input-group input-group-sm rounded-3 overflow-hidden shadow-xs" style="width: 220px;">
-                                        <input type="number" step="any" min="0" name="discount" class="form-control border-end-0 settings-input" value="{{ invoice.discount }}" required style="background: rgba(255, 255, 255, 0.07); color: #fff; border-color: rgba(255, 255, 255, 0.15);">
-                                        <select name="discount_type" class="form-select border-start-0 text-white" style="max-width: 95px; background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.15);">
+                                    <div class="input-group input-group-sm rounded-3 overflow-hidden border" style="width: 220px; border-color: rgba(255, 255, 255, 0.2) !important; background: rgba(255, 255, 255, 0.07);">
+                                        <input type="number" step="1" min="0" name="discount" class="form-control border-0 text-white shadow-none" value="{{ invoice.discount | int if invoice.discount else 0 }}" required style="background: transparent;">
+                                        <select name="discount_type" class="form-select border-0 text-white shadow-none" style="max-width: 80px; background: rgba(255, 255, 255, 0.12);">
                                             <option value="value" {% if invoice.discount_type == 'value' %}selected{% endif %} class="bg-dark text-white">{{ currency_symbol }}</option>
                                             <option value="percentage" {% if invoice.discount_type == 'percentage' %}selected{% endif %} class="bg-dark text-white">%</option>
                                         </select>
@@ -255,7 +273,7 @@
                         <tr>
                             <th colspan="5" class="text-end">{% if current_lang == 'ar' %}التكاليف الإضافية{% else %}Additional Charges{% endif %}</th>
                             <th>
-                                <span class="price-badge text-warning">
+                                <span class="price-badge text-warning" id="charges-amount-badge">
                                     + {{ invoice.additional_charges_amount | format_price }} {{ currency_symbol }}
                                 </span>
                                 {% if current_user.role in ('admin', 'receptionist') %}
@@ -268,14 +286,14 @@
                         <!-- Collapsible Edit Additional Charges Form -->
                         <tr class="collapse" id="edit-additional-charges-form">
                             <td colspan="6" class="p-3" style="background: rgba(30, 41, 59, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-                                <form method="POST" action="{{ url_for('invoices.update_invoice_additional_charges', invoice_id=invoice.id) }}" class="d-flex align-items-center justify-content-end gap-3">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <form method="POST" action="{{ url_for('invoices.update_invoice_additional_charges', invoice_id=invoice.id) }}" class="d-flex align-items-center justify-content-end gap-3" id="ajax-charges-form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <label for="additional_charges" class="form-label mb-0 fw-semibold text-secondary" style="font-size: 0.9rem;">
                                         {% if current_lang == 'ar' %}إضافة تكاليف إضافية للفاتورة:{% else %}Additional Charges:{% endif %}
                                     </label>
-                                    <div class="input-group input-group-sm rounded-3 overflow-hidden shadow-xs" style="width: 220px;">
-                                        <input type="number" step="any" min="0" name="additional_charges" class="form-control border-end-0 settings-input" value="{{ invoice.additional_charges }}" required style="background: rgba(255, 255, 255, 0.07); color: #fff; border-color: rgba(255, 255, 255, 0.15);">
-                                        <span class="input-group-text bg-dark text-white border-start-0" style="border-color: rgba(255, 255, 255, 0.15);">{{ currency_symbol }}</span>
+                                    <div class="input-group input-group-sm rounded-3 overflow-hidden border" style="width: 220px; border-color: rgba(255, 255, 255, 0.2) !important; background: rgba(255, 255, 255, 0.07);">
+                                        <input type="number" step="1" min="0" name="additional_charges" class="form-control border-0 text-white shadow-none" value="{{ invoice.additional_charges | int if invoice.additional_charges else 0 }}" required style="background: transparent;">
+                                        <span class="input-group-text border-0 text-white fw-bold px-3" style="background: rgba(255, 255, 255, 0.12);">{{ currency_symbol }}</span>
                                     </div>
                                     <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3.5 py-1.5 fw-bold shadow-xs">
                                         <i class="bi bi-check2 me-1"></i>{% if current_lang == 'ar' %}تطبيق التكاليف الإضافية{% else %}Apply{% endif %}
@@ -284,10 +302,42 @@
                             </td>
                         </tr>
 
+                        <!-- Invoice Notes Row -->
                         <tr>
-                            <th colspan="5" class="text-end">Invoice Total</th>
+                            <th colspan="5" class="text-end">{% if current_lang == 'ar' %}ملاحظات الفاتورة{% else %}Invoice Notes{% endif %}</th>
                             <th>
-                                <span class="price-badge">
+                                <span class="text-secondary small italic" id="invoice-notes-text">
+                                    {% if invoice.notes %}{{ invoice.notes }}{% else %}{% if current_lang == 'ar' %}لا توجد ملاحظات{% else %}No notes{% endif %}{% endif %}
+                                </span>
+                                {% if current_user.role in ('admin', 'receptionist') %}
+                                <button type="button" class="btn btn-sm btn-outline-secondary ms-2 p-1 py-0 rounded-2" data-bs-toggle="collapse" data-bs-target="#edit-notes-form" title="{% if current_lang == 'ar' %}تعديل الملاحظات{% else %}Edit Notes{% endif %}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                {% endif %}
+                            </th>
+                        </tr>
+                        <!-- Collapsible Edit Notes Form -->
+                        <tr class="collapse" id="edit-notes-form">
+                            <td colspan="6" class="p-3" style="background: rgba(30, 41, 59, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                <form method="POST" action="{{ url_for('invoices.update_invoice_notes', invoice_id=invoice.id) }}" class="d-flex flex-column gap-2" id="ajax-notes-form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <div class="d-flex align-items-center justify-content-between mb-1">
+                                        <label for="notes" class="form-label mb-0 fw-semibold text-secondary" style="font-size: 0.9rem;">
+                                            {% if current_lang == 'ar' %}تعديل ملاحظات الفاتورة:{% else %}Edit Invoice Notes:{% endif %}
+                                        </label>
+                                        <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3.5 py-1 fw-bold shadow-xs">
+                                            <i class="bi bi-check2 me-1"></i>{% if current_lang == 'ar' %}حفظ الملاحظات{% else %}Save Notes{% endif %}
+                                        </button>
+                                    </div>
+                                    <textarea name="notes" class="form-control settings-input" rows="2" placeholder="{% if current_lang == 'ar' %}أدخل أي ملاحظات خاصة بالفاتورة...{% else %}Enter invoice notes...{% endif %}" style="background: rgba(255, 255, 255, 0.07); color: #fff; border-color: rgba(255, 255, 255, 0.15);">{{ invoice.notes or '' }}</textarea>
+                                </form>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th colspan="5" class="text-end">{% if current_lang == 'ar' %}إجمالي الفاتورة{% else %}Invoice Total{% endif %}</th>
+                            <th>
+                                <span class="price-badge" id="bottom-invoice-total">
                                     {{ invoice.total_amount | format_price }} {{ currency_symbol }}
                                 </span>
                             </th>
@@ -365,29 +415,34 @@
             <!-- Invoice Actions -->
             <div class="action-buttons justify-content-center gap-3 mt-4 d-print-none">
 
+                <button type="button" id="btn-save-invoice" class="btn btn-success px-4.5 py-2.5 d-inline-flex align-items-center gap-2 rounded-pill shadow-sm fw-bold">
+                    <i class="bi bi-check-circle-fill fs-5"></i>
+                    <span>{% if current_lang == 'ar' %}حفظ الفاتورة{% else %}Save Invoice{% endif %}</span>
+                </button>
+
                 <a href="{{ url_for('invoices.invoices') }}" class="btn-outline-main px-4">
-                    Back to Invoices
+                    {% if current_lang == 'ar' %}العودة للفواتير{% else %}Back to Invoices{% endif %}
                 </a>
 
                 <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}" class="btn-outline-main px-4">
-                    View Appointment
+                    {% if current_lang == 'ar' %}عرض الموعد{% else %}View Appointment{% endif %}
                 </a>
 
                 {% if current_user.role == 'admin' or (current_user.role == 'doctor' and (not appointment.doctor_id or appointment.doctor_id == current_user.id) and appointment.status != 'Cancelled') %}
                 <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}" class="btn btn-primary px-4">
-                    Open Session
+                    {% if current_lang == 'ar' %}فتح الجلسة{% else %}Open Session{% endif %}
                 </a>
                 {% endif %}
 
                 {% if current_user.role in ('admin', 'receptionist') %}
                 <a href="{{ url_for('payments.add_patient_payment', patient_id=patient.id, invoice_id=invoice.id) }}" class="btn btn-primary px-4">
-                    Add Payment
+                    {% if current_lang == 'ar' %}إضافة دفعة{% else %}Add Payment{% endif %}
                 </a>
                 {% endif %}
 
-                <button onclick="window.print()" class="btn btn-success px-4 d-inline-flex align-items-center gap-2">
+                <button onclick="window.print()" class="btn btn-outline-light px-4 d-inline-flex align-items-center gap-2">
                     <i class="bi bi-printer"></i>
-                    <span>Print Invoice</span>
+                    <span>{% if current_lang == 'ar' %}طباعة الفاتورة{% else %}Print Invoice{% endif %}</span>
                 </button>
 
             </div>
@@ -503,6 +558,12 @@
         </tfoot>
     </table>
 
+    <!-- Printable Invoice Notes -->
+    <div id="print-notes-section" class="mt-3 p-2 border rounded {% if not invoice.notes %}d-none{% endif %}" style="background-color: #f8f9fa;">
+        <strong>{% if current_lang == 'ar' %}ملاحظات الفاتورة:{% else %}Invoice Notes:{% endif %}</strong>
+        <p id="print-notes-text" class="mb-0 text-dark small" style="white-space: pre-wrap;">{{ invoice.notes or '' }}</p>
+    </div>
+
     <!-- Installments / Payment Allocations History -->
     {% if invoice.payment_allocations %}
     <div class="mb-4">
@@ -608,33 +669,275 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // QR Code inputs
-    const clinicName = "{{ clinic_name | escape }}";
-    const issueDateISO = "{{ invoice.issue_date.isoformat() }}";
-    const totalAmount = "{{ invoice.total_amount }}";
-    const invoiceNum = "{{ invoice.invoice_number }}";
-    
-    const qrValue = `Clinic: ${clinicName}\nInvoice: ${invoiceNum}\nDate: ${issueDateISO}\nTotal: ${totalAmount} {{ currency_symbol }}`;
-    
-    // Render on-screen QR Code
-    const canvasScreen = document.getElementById("invoice-qrcode");
-    if (canvasScreen) {
-        new QRious({
-            element: canvasScreen,
-            value: qrValue,
-            size: 150
-        });
-    }
-    
-    // Render printable QR Code
-    const canvasPrint = document.getElementById("print-invoice-qrcode");
-    if (canvasPrint) {
-        new QRious({
-            element: canvasPrint,
-            value: qrValue,
-            size: 150
-        });
+    try {
+        const clinicName = "{{ clinic_name | escape }}";
+        const issueDateISO = "{{ invoice.issue_date.isoformat() }}";
+        const totalAmount = "{{ invoice.total_amount }}";
+        const invoiceNum = "{{ invoice.invoice_number }}";
+        const qrValue = `Clinic: ${clinicName}\nInvoice: ${invoiceNum}\nDate: ${issueDateISO}\nTotal: ${totalAmount} {{ currency_symbol }}`;
+        
+        const canvasScreen = document.getElementById("invoice-qrcode");
+        if (canvasScreen && typeof QRious !== 'undefined') {
+            new QRious({ element: canvasScreen, value: qrValue, size: 150 });
+        }
+        
+        const canvasPrint = document.getElementById("print-invoice-qrcode");
+        if (canvasPrint && typeof QRious !== 'undefined') {
+            new QRious({ element: canvasPrint, value: qrValue, size: 150 });
+        }
+    } catch (e) {
+        console.warn("QR Code render skipped:", e);
     }
 });
+
+// Dynamic AJAX Handler for Discount & Additional Charges Forms (Global Event Delegation)
+(function() {
+    function updateInvoiceDOM(data) {
+        const isAr = document.documentElement.lang === 'ar' || document.cookie.includes('lang=ar');
+
+        // 1. Discount amount badge
+        const discBadge = document.getElementById('discount-amount-badge');
+        if (discBadge) {
+            discBadge.textContent = `- ${data.discount_amount_formatted} ${data.currency}`;
+        }
+
+        // 2. Discount row label
+        const discLabel = document.getElementById('discount-row-label');
+        if (discLabel) {
+            let labelText = isAr ? 'الخصم' : 'Discount';
+            if (data.discount_label) {
+                labelText += ` ${data.discount_label}`;
+            }
+            discLabel.textContent = labelText;
+        }
+
+        // 3. Additional charges amount badge
+        const chargesBadge = document.getElementById('charges-amount-badge');
+        if (chargesBadge) {
+            chargesBadge.textContent = `+ ${data.additional_charges_amount_formatted} ${data.currency}`;
+        }
+
+        // 4. Bottom invoice total
+        const bottomTotal = document.getElementById('bottom-invoice-total');
+        if (bottomTotal) {
+            bottomTotal.textContent = `${data.total_amount_formatted} ${data.currency}`;
+        }
+
+        // 5. Top invoice total
+        const topTotal = document.getElementById('top-invoice-total');
+        if (topTotal) {
+            topTotal.textContent = `${data.total_amount_formatted} ${data.currency}`;
+        }
+
+        // 6. Top total paid
+        const topPaid = document.getElementById('top-total-paid');
+        if (topPaid) {
+            topPaid.textContent = `${data.total_paid_formatted} ${data.currency}`;
+        }
+
+        // 7. Top outstanding / credit container
+        const topOut = document.getElementById('top-outstanding-container');
+        if (topOut) {
+            if (data.credit > 0) {
+                topOut.innerHTML = `<span class="credit-amount">${data.credit_formatted} ${data.currency} <span class="credit-badge">${isAr ? 'رصيد' : 'Credit'}</span></span>`;
+            } else if (data.outstanding_amount > 0) {
+                topOut.innerHTML = `<span class="remaining-due">${data.outstanding_amount_formatted} ${data.currency} <span class="due-badge">${isAr ? 'مستحق' : 'Due'}</span></span>`;
+            } else {
+                topOut.innerHTML = `<span class="remaining-clear">0 ${data.currency} <span class="paid-badge">${isAr ? 'خالص' : 'Paid'}</span></span>`;
+            }
+        }
+
+        // 8. Top invoice status container
+        const topStatus = document.getElementById('top-status-container');
+        if (topStatus) {
+            if (data.status === 'Credit') {
+                topStatus.innerHTML = `<span class="credit-badge">${isAr ? 'رصيد مالي' : 'Credit'}</span>`;
+            } else if (data.status === 'Paid') {
+                topStatus.innerHTML = `<span class="paid-badge">${isAr ? 'مدفوعة بالكامل' : 'Paid'}</span>`;
+            } else if (data.status === 'Partially Paid') {
+                topStatus.innerHTML = `<span class="due-badge">${isAr ? 'دفعة جزئية' : 'Partial'}</span>`;
+            } else {
+                topStatus.innerHTML = `<span class="due-badge">${isAr ? 'غير مدفوعة' : 'Unpaid'}</span>`;
+            }
+        }
+
+        // 9. Invoice Notes
+        const notesText = document.getElementById('invoice-notes-text');
+        if (notesText) {
+            notesText.textContent = data.notes || (isAr ? 'لا توجد ملاحظات' : 'No notes');
+        }
+        const topNotes = document.getElementById('top-invoice-notes');
+        if (topNotes) {
+            if (data.notes) {
+                topNotes.innerHTML = data.notes.replace(/\n/g, '<br>');
+            } else {
+                topNotes.innerHTML = `<span class="text-muted italic">${isAr ? 'لا توجد ملاحظات' : 'No notes available'}</span>`;
+            }
+        }
+        const printNotesSec = document.getElementById('print-notes-section');
+        const printNotesTxt = document.getElementById('print-notes-text');
+        if (printNotesSec && printNotesTxt) {
+            if (data.notes) {
+                printNotesTxt.textContent = data.notes;
+                printNotesSec.classList.remove('d-none');
+            } else {
+                printNotesSec.classList.add('d-none');
+            }
+        }
+    }
+
+    function showWarningNotification(msg) {
+        const isAr = document.documentElement.lang === 'ar' || document.cookie.includes('lang=ar');
+        const titleText = isAr ? 'تنبيـه' : 'Warning';
+        
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'warning',
+                title: titleText,
+                text: msg || (isAr ? 'تعذر حفظ الفاتورة.' : 'Failed to update invoice.'),
+                confirmButtonText: isAr ? 'موافق' : 'OK',
+                confirmButtonColor: '#38bdf8',
+                background: '#1e293b',
+                color: '#ffffff',
+                customClass: {
+                    popup: 'rounded-4 shadow-lg border border-secondary-subtle'
+                }
+            });
+        } else {
+            alert(msg || 'Error updating invoice');
+        }
+    }
+
+    function showSaveSuccessNotification(msg) {
+        const isAr = document.documentElement.lang === 'ar' || document.cookie.includes('lang=ar');
+        const titleText = isAr ? 'تم حفظ الفاتورة بنجاح!' : 'Invoice Saved Successfully!';
+        const bodyText = msg || (isAr ? 'تمت معالجة وتثبيت كافة بيانات الفاتورة بنجاح في النظام.' : 'Invoice data updated and saved.');
+        
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'success',
+                title: titleText,
+                text: bodyText,
+                timer: 2000,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end',
+                background: '#1e293b',
+                color: '#ffffff'
+            });
+        } else {
+            alert(titleText + '\n' + bodyText);
+        }
+    }
+
+    // Save Invoice Main Button Handler -> Save & Redirect to /invoices
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('#btn-save-invoice');
+        if (!btn) return;
+        
+        e.preventDefault();
+        const origHtml = btn.innerHTML;
+        const isAr = document.documentElement.lang === 'ar' || document.cookie.includes('lang=ar');
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> <span>${isAr ? 'جاري الحفظ...' : 'Saving...'}</span>`;
+
+        const openForms = document.querySelectorAll('.collapse.show form');
+        const fetchPromises = [];
+
+        if (openForms.length > 0) {
+            openForms.forEach(f => {
+                fetchPromises.push(
+                    fetch(f.action, {
+                        method: 'POST',
+                        body: new FormData(f),
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    }).then(res => res.json())
+                );
+            });
+        }
+
+        Promise.all(fetchPromises).then(results => {
+            let hasError = false;
+            let errorMsg = '';
+            results.forEach(res => {
+                if (res && res.success === false) {
+                    hasError = true;
+                    errorMsg = res.message;
+                }
+            });
+            if (hasError) {
+                btn.disabled = false;
+                btn.innerHTML = origHtml;
+                showWarningNotification(errorMsg);
+            } else {
+                showSaveSuccessNotification(isAr ? 'تم حفظ التعديلات والانتقال إلى قائمة الفواتير...' : 'Saved successfully! Redirecting...');
+                setTimeout(function() {
+                    window.location.href = "{{ url_for('invoices.invoices') }}";
+                }, 1200);
+            }
+        }).catch(err => {
+            console.error(err);
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+            showWarningNotification(isAr ? 'حدث خطأ أثناء الاتصال بالسيرفر.' : 'Connection error.');
+        });
+    });
+
+    document.addEventListener('submit', function (e) {
+        const form = e.target;
+        if (!form || (form.id !== 'ajax-discount-form' && form.id !== 'ajax-charges-form' && form.id !== 'ajax-notes-form')) {
+            return;
+        }
+
+        e.preventDefault();
+        const collapseId = form.id === 'ajax-discount-form' ? 'edit-discount-form' : (form.id === 'ajax-charges-form' ? 'edit-additional-charges-form' : 'edit-notes-form');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const origHtml = submitBtn ? submitBtn.innerHTML : '';
+
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>';
+        }
+
+        fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = origHtml;
+            }
+            if (data.success) {
+                updateInvoiceDOM(data);
+                const collapseEl = document.getElementById(collapseId);
+                if (collapseEl && typeof bootstrap !== 'undefined') {
+                    const bsCollapse = bootstrap.Collapse.getInstance(collapseEl) || new bootstrap.Collapse(collapseEl, { toggle: false });
+                    bsCollapse.hide();
+                }
+                showSaveSuccessNotification(data.message);
+            } else {
+                showWarningNotification(data.message);
+            }
+        })
+        .catch(err => {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = origHtml;
+            }
+            console.error(err);
+            showWarningNotification(document.documentElement.lang === 'ar' || document.cookie.includes('lang=ar') ? 'حدث خطأ أثناء حفظ البيانات.' : 'Error saving data.');
+        });
+    });
+})();
 </script>
 {% endblock %}
