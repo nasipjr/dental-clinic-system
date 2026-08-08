@@ -193,7 +193,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
 
                 <div class="doctor-details">
-                    <h4>{{ patient.first_name }} {{ patient.last_name }}</h4>
+                    <h4 class="d-flex align-items-center flex-wrap gap-2 mb-1" style="font-size: 1.45rem;">
+                        {% if patient.title %}
+                            {% set title_map_ar = {'mr': 'السيد', 'ms': 'الآنسة', 'mrs': 'السيدة', 'dr': 'الدكتور', 'dr_f': 'الدكتورة', 'miss': 'آنسة'} %}
+                            {% set title_map_en = {'mr': 'Mr.', 'ms': 'Ms.', 'mrs': 'Mrs.', 'dr': 'Dr.', 'dr_f': 'Dr.', 'miss': 'Miss'} %}
+                            {% set p_title_key = patient.title|lower %}
+                            {% set display_title = title_map_ar.get(p_title_key, patient.title) if current_lang == 'ar' else title_map_en.get(p_title_key, patient.title) %}
+                            <span class="patient-title-text me-2" style="color: var(--accent-color); font-weight: 800; font-size: 1.35rem;">
+                                {{ display_title }}
+                            </span>
+                        {% endif %}
+                        <span class="fw-bold">{{ patient.first_name }} {{ patient.last_name }}</span>
+                    </h4>
                     <span class="specialty-tag">{{ patient.phone or ('No phone number' if current_lang != 'ar' else 'لا يوجد رقم هاتف') }}</span>
                 </div>
             </div>
