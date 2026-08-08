@@ -131,6 +131,7 @@ def home():
         total_revenue = sum(patient_invoiced.values())
         total_paid = sum(patient_paid.values())
         total_remaining = total_outstanding - total_credit  # net for display widget only
+        collection_rate = round((total_paid / total_revenue * 100), 1) if total_revenue > 0 else 100.0
 
         today_payments_sum = float(
             db.session.query(func.coalesce(func.sum(Payment.amount), 0.0))
@@ -196,6 +197,7 @@ def home():
             total_remaining=total_remaining,
             total_outstanding=total_outstanding,
             total_credit=total_credit,
+            collection_rate=collection_rate,
             today_scheduled_appointments=today_scheduled_appointments,
             today_done_appointments=today_done_appointments,
             tomorrow_appointments=tomorrow_appointments,

@@ -1129,9 +1129,22 @@
 .dashboard-stat-card h3 {
   margin: 0;
   color: var(--accent-color, #0d6efd);
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 800;
-  line-height: 1.1;
+  line-height: 1.2;
+  display: inline-flex;
+  direction: ltr;
+  align-items: baseline;
+  flex-wrap: nowrap;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.dashboard-stat-card .stat-unit {
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.85;
+  margin-left: 2px;
 }
 
 .dashboard-stat-card p {
@@ -1971,29 +1984,61 @@ select.settings-input option {
   }
 }
 
-/* Topbar Logout Button */
-.topbar-logout-btn {
+/* Unified Topbar Actions Glassmorphic Theme */
+.topbar-btn {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  padding: 4px 12px !important;
-  font-size: 11px !important;
-  font-weight: 600 !important;
-  border-radius: 6px !important;
-  color: rgba(255, 255, 255, 0.9) !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.25) !important;
-  transition: all 0.25s ease !important;
+  height: 32px !important;
+  padding: 0 14px !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border-radius: 999px !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
   text-decoration: none !important;
-  box-shadow: none !important;
-  gap: 4px !important;
+  gap: 6px !important;
   cursor: pointer !important;
+  user-select: none !important;
+  line-height: 1 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
 }
 
-.topbar-logout-btn:hover {
-  background: rgba(220, 53, 69, 0.2) !important;
-  border-color: rgba(220, 53, 69, 0.45) !important;
-  color: #ff9aa5 !important;
+.topbar-btn:hover {
+  background: rgba(255, 255, 255, 0.28) !important;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.topbar-btn-icon {
+  width: 32px !important;
+  padding: 0 !important;
+  font-size: 0.9rem !important;
+}
+
+.topbar-user-badge {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  cursor: default !important;
+}
+
+.topbar-user-badge:hover {
+  transform: none !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.topbar-btn-logout:hover {
+  background: rgba(239, 68, 68, 0.3) !important;
+  border-color: rgba(239, 68, 68, 0.55) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25) !important;
 }
 
 /* Redesigned Footer Overrides */
@@ -2212,6 +2257,16 @@ html[data-bs-theme="dark"] .footer-16 .footer-bottom .copyright strong {
 }
 
 /* Dashboard Live Clinic Activity Improvements */
+#todayStatusContainer {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+#todayStatusContainer::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 .clinic-status-card {
   padding: 10px 14px;
   border-radius: 12px;
@@ -2306,6 +2361,19 @@ html[data-bs-theme="dark"] .footer-16 .footer-bottom .copyright strong {
   height: 42px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.topbar .contact-info a,
+.topbar .contact-info span,
+.topbar .contact-info i {
+  color: #ffffff !important;
+  opacity: 0.95;
+  font-size: 13px;
+}
+
+.topbar .contact-info a:hover {
+  opacity: 1;
+  text-decoration: underline !important;
 }
 
 /* Scrolled state transitions */

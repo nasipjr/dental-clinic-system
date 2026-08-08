@@ -258,7 +258,7 @@
         <div class="value">{{ total_outstanding | format_price }} {{ currency_symbol }}</div>
       </div>
       <div class="metric-box credit">
-        <div class="label">{% if current_lang == 'ar' %}الأرصدة الدائنة{% else %}Clinic Credit{% endif %}</div>
+        <div class="label">{% if current_lang == 'ar' %}رصيد المرضى{% else %}Patient Credit{% endif %}</div>
         <div class="value">{{ total_credit | format_price }} {{ currency_symbol }}</div>
       </div>
     </div>
