@@ -199,6 +199,16 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
 
             <div class="patient-info-grid mt-4">
+                <div class="patient-info-box {% if patient.medical_information %}border-danger-subtle bg-danger-subtle bg-opacity-10{% endif %}">
+                    <span class="info-label {% if patient.medical_information %}text-danger fw-bold{% endif %}">
+                        <i class="bi bi-heart-pulse-fill me-1 text-danger"></i>
+                        {% if current_lang == 'ar' %}المعلومات الطبية والتحسس{% else %}Medical Info & Allergies{% endif %}
+                    </span>
+                    <p class="{% if patient.medical_information %}fw-semibold text-danger-emphasis{% else %}text-muted{% endif %}">
+                        {{ patient.medical_information or ('No medical information recorded' if current_lang != 'ar' else 'لا توجد معلومات طبية مسجلة') }}
+                    </p>
+                </div>
+
                 <div class="patient-info-box">
                     <span class="info-label">{% if current_lang == 'ar' %}العنوان{% else %}Address{% endif %}</span>
                     <p>{{ patient.address or ('No address provided' if current_lang != 'ar' else 'لا يوجد عنوان مسجل') }}</p>
@@ -274,6 +284,47 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                 </div>
+
+                <div class="patient-info-box">
+                    <span class="info-label">
+                        <i class="bi bi-person-lines-fill me-1"></i>
+                        {% if current_lang == 'ar' %}جهة اتصال الطوارئ والبيانات الشخصية{% else %}Emergency Contact & Personal Details{% endif %}
+                    </span>
+                    <div class="d-flex flex-column gap-2 mt-1">
+                        <div>
+                            <span class="small opacity-75 d-block mb-0.5">{% if current_lang == 'ar' %}جهة اتصال الطوارئ:{% else %}Emergency Contact:{% endif %}</span>
+                            <p class="mb-0 fw-semibold">
+                                {% if patient.emergency_contact %}
+                                    <i class="bi bi-telephone-fill me-1 text-warning"></i><span dir="ltr">{{ patient.emergency_contact }}</span>
+                                {% else %}
+                                    <span class="opacity-50 fst-italic">{% if current_lang == 'ar' %}غير مسجلة{% else %}Not specified{% endif %}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary border-opacity-25 gap-2 flex-wrap">
+                            <div>
+                                <span class="small opacity-75 d-block">{% if current_lang == 'ar' %}تاريخ الميلاد:{% else %}Date of Birth:{% endif %}</span>
+                                <strong class="small fw-semibold">
+                                    {% if patient.date_of_birth %}
+                                        <i class="bi bi-calendar-event me-1 text-info"></i><span dir="ltr">{{ patient.date_of_birth.strftime('%Y-%m-%d') }}</span>
+                                    {% else %}
+                                        <span class="opacity-50 fst-italic">{% if current_lang == 'ar' %}غير مسجل{% else %}N/A{% endif %}</span>
+                                    {% endif %}
+                                </strong>
+                            </div>
+                            <div>
+                                <span class="small opacity-75 d-block">{% if current_lang == 'ar' %}المهنة:{% else %}Occupation:{% endif %}</span>
+                                <strong class="small fw-semibold">
+                                    {% if patient.occupation %}
+                                        <i class="bi bi-briefcase me-1 opacity-75"></i>{{ patient.occupation }}
+                                    {% else %}
+                                        <span class="opacity-50 fst-italic">{% if current_lang == 'ar' %}غير مسجلة{% else %}N/A{% endif %}</span>
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="action-buttons mt-4 patient-main-actions">
@@ -284,10 +335,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 {% endif %}
 
                 {% if current_user.role in ('admin', 'receptionist', 'doctor') %}
-                <a href="{{ url_for('appointments.add_appointment', patient_id=patient.id) }}" class="btn-outline-main">
-                    {% if current_lang == 'ar' %}حجز موعد جديد{% else %}Add Appointment{% endif %}
-                </a>
-
                 {% if patient.user %}
                 <button type="button" class="btn-outline-main" data-bs-toggle="modal" data-bs-target="#resetPortalPasswordModal">
                     <i class="bi bi-key-fill me-1"></i> {% if current_lang == 'ar' %}تغيير كلمة سر البوابة{% else %}Change Portal Password{% endif %}
@@ -297,6 +344,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     <i class="bi bi-person-plus-fill me-1"></i> {% if current_lang == 'ar' %}إنشاء حساب بوابة{% else %}Create Portal Account{% endif %}
                 </button>
                 {% endif %}
+
+                <a href="{{ url_for('patients.view_patient', patient_id=patient.id) }}" class="btn-outline-main">
+                    <i class="bi bi-eye me-1"></i> {% if current_lang == 'ar' %}بيانات المريض{% else %}Patient Data{% endif %}
+                </a>
+
+                <a href="{{ url_for('appointments.add_appointment', patient_id=patient.id) }}" class="btn-outline-main">
+                    {% if current_lang == 'ar' %}حجز موعد جديد{% else %}Add Appointment{% endif %}
+                </a>
                 {% endif %}
 
                 {% if current_user.role == 'admin' and not patient_appointments %}

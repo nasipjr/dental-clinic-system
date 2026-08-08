@@ -845,14 +845,22 @@ def view_patient(patient_id):
 
     try:
         patient = Patient.query.get_or_404(patient_id)
+        all_patients = Patient.query.filter(Patient.id != patient_id).order_by(Patient.first_name, Patient.last_name).all()
+
+        next_url = request.args.get("next") or request.referrer or ""
+        if any(k in next_url for k in ["/view", "/edit", "/delete"]):
+            next_url = ""
 
         return render_template(
             "patients/edit_patient.html",
             patient=patient,
             mode="view",
+            all_patients=all_patients,
+            next_url=next_url,
         )
 
     except Exception:
+        db.session.rollback()
         current_app.logger.exception(f"Failed to view patient | patient_id={patient_id}")
         return "Failed to view patient", 500
 

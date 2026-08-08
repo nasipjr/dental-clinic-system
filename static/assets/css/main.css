@@ -1063,16 +1063,18 @@ section,
 }
 
 .hero .hero-content h1 {
-  font-size: 3.5rem;
+  font-size: 2.6rem;
   font-weight: 700;
-  line-height: 1.2;
-  margin: 1.5rem 0;
+  line-height: 1.45;
+  margin: 1.2rem 0;
   color: var(--heading-color);
 }
 
 .hero .hero-content h1 .highlight {
   color: var(--accent-color);
   position: relative;
+  display: inline-block;
+  padding-bottom: 6px;
 }
 
 .hero .hero-content h1 .highlight::after {
@@ -1088,13 +1090,15 @@ section,
 
 @media (max-width: 992px) {
   .hero .hero-content h1 {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
+    line-height: 1.4;
   }
 }
 
 @media (max-width: 576px) {
   .hero .hero-content h1 {
-    font-size: 2rem;
+    font-size: 1.8rem;
+    line-height: 1.4;
   }
 }
 

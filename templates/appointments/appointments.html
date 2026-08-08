@@ -342,7 +342,7 @@
                         </label>
                         <select id="appointments-per-page-select-top"
                                 class="form-select form-select-sm rounded-pill px-3 fw-semibold shadow-sm"
-                                style="width: auto; cursor: pointer; border-width: 1.5px; background: var(--surface-color); color: var(--text-color); border-color: rgba(255,255,255,0.15);"
+                                style="width: auto; cursor: pointer; border-width: 1.5px; background: var(--surface-color); color: var(--heading-color); border-color: color-mix(in srgb, var(--heading-color), transparent 85%);"
                                 onchange="changeTablePerPage(this.value, 'appointments')">
                             <option value="5" {% if per_page == 5 %}selected{% endif %}>5</option>
                             <option value="10" {% if per_page == 10 or not per_page %}selected{% endif %}>10</option>

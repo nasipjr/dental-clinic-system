@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}
-{{ 'View Patient' if mode|default('edit') == 'view' else 'Edit Patient' }}
+{% if mode|default('edit') == 'view' %}
+    {% if current_lang == 'ar' %}بيانات المريض{% else %}View Patient{% endif %}
+{% else %}
+    {% if current_lang == 'ar' %}تعديل بيانات المريض{% else %}Edit Patient{% endif %}
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -14,10 +18,19 @@
                 <div class="add-patient-wrapper">
 
                     <div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
-                        <h2>{{ 'View Patient' if current_mode == 'view' else 'Edit Patient' }}</h2>
+                        <h2>
+                            {% if current_mode == 'view' %}
+                                {% if current_lang == 'ar' %}بيانات المريض{% else %}View Patient{% endif %}
+                            {% else %}
+                                {% if current_lang == 'ar' %}تعديل بيانات المريض{% else %}Edit Patient{% endif %}
+                            {% endif %}
+                        </h2>
                         <p>
-                            {{ 'View patient information without editing.' if current_mode == 'view' else 'Update the
-                            patient information.' }}
+                            {% if current_mode == 'view' %}
+                                {% if current_lang == 'ar' %}عرض معلومات وتفاصيل المريض (عرض فقط){% else %}View patient information (read-only).{% endif %}
+                            {% else %}
+                                {% if current_lang == 'ar' %}تحديث وتعديل معلومات المريض.{% else %}Update the patient information.{% endif %}
+                            {% endif %}
                         </p>
                     </div>
 
@@ -157,12 +170,14 @@
                                 <div class="col-md-12">
                                     <label for="phone_input" class="form-label">Phone</label>
                                     <div class="input-group" dir="ltr">
-                                        <span class="input-group-text border border-secondary px-3 d-flex align-items-center gap-2 rounded-start-3 shadow-sm" style="background: rgba(15, 23, 42, 0.7) !important; border-color: rgba(255, 255, 255, 0.15) !important;">
-                                            <span class="fs-6 me-1" style="line-height: 1;">🇸🇾</span>
-                                            <span class="fw-bold" style="color: #38bdf8; font-family: monospace; font-size: 1.05rem; letter-spacing: 0.5px;">+963</span>
+                                        <span class="input-group-text border px-3 d-flex align-items-center gap-1.5 rounded-start-3 shadow-xs"
+                                              style="background: color-mix(in srgb, var(--surface-color), var(--accent-color) 6%); border-color: color-mix(in srgb, var(--heading-color), transparent 85%) !important;">
+                                            <span class="fw-bold px-2 py-0.5 rounded me-1" style="background: rgba(13, 110, 253, 0.15); color: #0d6efd !important; font-size: 0.78rem; font-family: sans-serif; letter-spacing: 0.5px; display: inline-block;">SY</span>
+                                            <span class="fw-bold text-primary" style="font-family: monospace; font-size: 1.05rem; letter-spacing: 0.5px;">+963</span>
                                         </span>
                                         <input type="text" id="phone_input" class="form-control text-start fs-6 py-2.5 rounded-end-3" placeholder="9XXXXXXXX" maxlength="13" required
-                                            value="{{ (patient.phone.replace('+963', '') if patient.phone else '') }}" autocomplete="off" style="border-color: rgba(255, 255, 255, 0.15); font-family: monospace; font-size: 1.05rem !important;">
+                                            value="{{ (patient.phone.replace('+963', '') if patient.phone else '') }}" autocomplete="off"
+                                            style="border-color: color-mix(in srgb, var(--heading-color), transparent 85%) !important; background: var(--surface-color); color: var(--heading-color); font-family: monospace; font-size: 1.05rem !important;">
                                     </div>
                                     <input type="hidden" id="phone" name="phone" value="{{ patient.phone or '' }}">
                                 </div>
@@ -210,20 +225,66 @@
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label for="emergency_contact" class="form-label">{% if request.cookies.get('lang', 'en') == 'ar' %}جهة اتصال الطوارئ (من قائمة المرضى){% else %}Emergency Contact (Registered Patients Only){% endif %}</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text border border-secondary text-warning px-3 rounded-start-3 shadow-sm" style="background: rgba(15, 23, 42, 0.7) !important; border-color: rgba(255, 255, 255, 0.15) !important;">
-                                            <i class="bi bi-telephone-plus-fill"></i>
+                                    <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-1">
+                                        <label for="emergency_contact" class="form-label mb-0">{% if request.cookies.get('lang', 'en') == 'ar' %}جهة اتصال الطوارئ{% else %}Emergency Contact{% endif %}</label>
+                                        <div class="d-inline-flex align-items-center p-0.5 rounded-pill shadow-xs border"
+                                             style="background: color-mix(in srgb, var(--surface-color), var(--heading-color) 4%); border-color: color-mix(in srgb, var(--heading-color), transparent 85%) !important;" id="emergency-mode-toggle">
+                                            <button type="button" class="btn btn-xs rounded-pill px-2.5 py-0.5 emergency-mode-btn" id="emergency-mode-select"
+                                                    style="font-size: 0.72rem; font-weight: 600; transition: all 0.2s ease; background: var(--accent-color, #0d6efd) !important; color: #ffffff !important; box-shadow: 0 2px 6px rgba(13, 110, 253, 0.25) !important;">
+                                                <i class="bi bi-people me-1"></i>{% if request.cookies.get('lang', 'en') == 'ar' %}من القائمة{% else %}From List{% endif %}
+                                            </button>
+                                            <button type="button" class="btn btn-xs rounded-pill px-2.5 py-0.5 emergency-mode-btn" id="emergency-mode-manual"
+                                                    style="font-size: 0.72rem; font-weight: 600; transition: all 0.2s ease; background: transparent !important; color: var(--heading-color) !important; box-shadow: none !important;">
+                                                <i class="bi bi-telephone me-1"></i>{% if request.cookies.get('lang', 'en') == 'ar' %}يدوي +963{% else %}Manual{% endif %}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <input type="hidden" id="emergency_contact" name="emergency_contact" value="{{ patient.emergency_contact or '' }}">
+
+                                    <!-- Mode 1: Select Registered Patient -->
+                                    <div id="emergency-select-container" class="input-group">
+                                        <span class="input-group-text border text-muted px-3 rounded-start-3 shadow-xs"
+                                              style="background: color-mix(in srgb, var(--surface-color), var(--accent-color) 6%); border-color: color-mix(in srgb, var(--heading-color), transparent 85%) !important;">
+                                            <i class="bi bi-person-lines-fill"></i>
                                         </span>
-                                        <select id="emergency_contact" name="emergency_contact" class="form-select py-2.5 rounded-end-3" style="border-color: rgba(255, 255, 255, 0.15);">
-                                            <option value="">{% if request.cookies.get('lang', 'en') == 'ar' %}-- اختر مريضاً كجهة اتصال طوارئ (اختياري) --{% else %}-- Select Emergency Contact --{% endif %}</option>
+                                        <select id="emergency_patient_select" class="form-select py-2.5 rounded-end-3"
+                                                style="border-color: color-mix(in srgb, var(--heading-color), transparent 85%) !important; background: var(--surface-color); color: var(--heading-color);">
+                                            <option value="" data-phone="">{% if request.cookies.get('lang', 'en') == 'ar' %}-- اختر مريضاً كجهة اتصال طوارئ (اختياري) --{% else %}-- Select Emergency Contact --{% endif %}</option>
                                             {% for p in all_patients %}
                                             {% set p_opt = p.first_name ~ ' ' ~ p.last_name ~ (' (' ~ p.phone ~ ')' if p.phone else '') %}
-                                            <option value="{{ p_opt }}" {% if patient.emergency_contact == p_opt %}selected{% endif %}>
+                                            <option value="{{ p_opt }}" data-phone="{{ (p.phone.replace('+963', '').replace('+', '').strip() if p.phone else '') }}" {% if patient.emergency_contact == p_opt %}selected{% endif %}>
                                                 {{ p.first_name }} {{ p.last_name }} {% if p.phone %}- {{ p.phone }}{% endif %}
                                             </option>
                                             {% endfor %}
                                         </select>
+                                        <button type="button" class="btn border-0 text-muted px-2.5 d-none rounded-end-3" id="emergency_clear_btn" title="{% if request.cookies.get('lang', 'en') == 'ar' %}إلغاء الاختيار{% else %}Clear selection{% endif %}"
+                                                style="background: color-mix(in srgb, var(--surface-color), var(--heading-color) 4%); border: 1px solid color-mix(in srgb, var(--heading-color), transparent 85%) !important; border-start-0 !important;">
+                                            <i class="bi bi-x-lg text-danger fw-bold"></i>
+                                        </button>
+                                    </div>
+
+                                    <!-- Mode 2: Manual Phone Input (+963) -->
+                                    <div id="emergency-manual-container" class="input-group d-none" dir="ltr">
+                                        <span class="input-group-text border px-3 d-flex align-items-center gap-1.5 rounded-start-3 shadow-xs"
+                                              style="background: color-mix(in srgb, var(--surface-color), var(--accent-color) 6%); border-color: color-mix(in srgb, var(--heading-color), transparent 85%) !important;">
+                                            <span class="fw-bold px-2 py-0.5 rounded me-1" style="background: rgba(13, 110, 253, 0.15); color: #0d6efd !important; font-size: 0.78rem; font-family: sans-serif; letter-spacing: 0.5px; display: inline-block;">SY</span>
+                                            <span class="fw-bold text-primary" style="font-family: monospace; font-size: 1.05rem; letter-spacing: 0.5px;">+963</span>
+                                        </span>
+                                        <input type="text" id="emergency_phone_input" class="form-control text-start fs-6 py-2.5 rounded-end-3" placeholder="9XXXXXXXX" maxlength="13" autocomplete="off"
+                                               style="border-color: color-mix(in srgb, var(--heading-color), transparent 85%) !important; background: var(--surface-color); color: var(--heading-color); font-family: monospace; font-size: 1.05rem !important;">
+                                    </div>
+
+                                    <!-- Match notification containers -->
+                                    <div id="emergency-match-badge" class="mt-1.5 small text-success fw-semibold d-none align-items-center gap-2 flex-wrap">
+                                        <span><i class="bi bi-check-circle-fill"></i> <span id="emergency-match-text"></span></span>
+                                        <button type="button" class="btn btn-xs btn-outline-danger rounded-pill px-2 py-0.5" id="emergency_badge_clear_btn" style="font-size: 0.72rem;">
+                                            <i class="bi bi-x-lg me-1"></i>{% if request.cookies.get('lang', 'en') == 'ar' %}إلغاء الاختيار{% else %}Clear{% endif %}
+                                        </button>
+                                    </div>
+                                    <div id="emergency-multi-match-box" class="mt-2 p-2 rounded-3 border bg-body-tertiary d-none">
+                                        <div class="small fw-semibold mb-1 text-primary"><i class="bi bi-people-fill me-1"></i>{% if request.cookies.get('lang', 'en') == 'ar' %}يتطابق هذا الرقم مع أكثر من مريض، اختر أحدهم:{% else %}Multiple patients match this number, select one:{% endif %}</div>
+                                        <div id="emergency-multi-match-list" class="d-flex flex-wrap gap-1.5"></div>
                                     </div>
                                 </div>
 
@@ -270,18 +331,20 @@
                         <div class="col-12 text-center pt-4">
                             {% if current_mode == 'edit' %}
                             <button type="submit" class="save-patient-btn">
-                                Save Changes
+                                {% if current_lang == 'ar' %}حفظ التغييرات{% else %}Save Changes{% endif %}
                             </button>
                             {% endif %}
 
                             {% if current_mode == 'view' %}
+                            {% if current_user.role in ('admin', 'receptionist') %}
                             <a href="{{ url_for('patients.edit_patient', patient_id=patient.id) }}" class="btn-primary px-4">
-                                Edit Patient
+                                <i class="bi bi-pencil-square me-1"></i>{% if current_lang == 'ar' %}تعديل البيانات{% else %}Edit Patient{% endif %}
                             </a>
                             {% endif %}
+                            {% endif %}
 
-                            <a href="{{ url_for('patients.patients') }}" class="btn-outline-main px-4 ms-2">
-                                Back
+                            <a href="{{ next_url or url_for('patients.patient_detail', patient_id=patient.id) }}" class="btn-outline-main px-4 ms-2">
+                                <i class="bi bi-arrow-right me-1"></i>{% if current_lang == 'ar' %}رجوع{% else %}Back{% endif %}
                             </a>
                         </div>
 
@@ -327,7 +390,8 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    const phoneInput = document.getElementById("phone");
+    const phoneInputLocal = document.getElementById("phone_input");
+    const phoneHidden = document.getElementById("phone");
     const form = document.getElementById("add-patient-form");
     const firstNameInput = document.getElementById("first_name");
     const lastNameInput = document.getElementById("last_name");
@@ -335,26 +399,246 @@ document.addEventListener("DOMContentLoaded", function() {
     const liveList = document.getElementById("live-duplicate-list");
     const patientId = {{ patient.id }};
 
-    function validatePhone() {
-        if (!phoneInput) return true;
-        const val = phoneInput.value.trim();
-        if (val === "") {
-            phoneInput.classList.remove("is-invalid");
-            return true;
-        }
-        const regex = /^\+963\d{9}$/;
-        if (!regex.test(val)) {
-            phoneInput.classList.add("is-invalid");
-            return false;
-        } else {
-            phoneInput.classList.remove("is-invalid");
-            return true;
+    // --- Emergency Contact DOM Elements ---
+    const emergencySelectContainer = document.getElementById("emergency-select-container");
+    const emergencyManualContainer = document.getElementById("emergency-manual-container");
+    const emergencyPatientSelect = document.getElementById("emergency_patient_select");
+    const emergencyPhoneInput = document.getElementById("emergency_phone_input");
+    const emergencyHiddenInput = document.getElementById("emergency_contact");
+    const btnEmergencySelect = document.getElementById("emergency-mode-select");
+    const btnEmergencyManual = document.getElementById("emergency-mode-manual");
+
+    const emergencyMatchBadge = document.getElementById("emergency-match-badge");
+    const emergencyMatchText = document.getElementById("emergency-match-text");
+    const emergencyMultiMatchBox = document.getElementById("emergency-multi-match-box");
+    const emergencyMultiMatchList = document.getElementById("emergency-multi-match-list");
+
+    const emergencyClearBtn = document.getElementById("emergency_clear_btn");
+    const emergencyBadgeClearBtn = document.getElementById("emergency_badge_clear_btn");
+
+    function toggleClearBtnVisibility() {
+        const hasVal = !!(emergencyHiddenInput && emergencyHiddenInput.value.trim());
+        if (emergencyClearBtn) {
+            if (hasVal) {
+                emergencyClearBtn.classList.remove("d-none");
+                emergencyClearBtn.classList.add("d-flex", "align-items-center");
+                if (emergencyPatientSelect) emergencyPatientSelect.classList.remove("rounded-end-3");
+            } else {
+                emergencyClearBtn.classList.add("d-none");
+                emergencyClearBtn.classList.remove("d-flex", "align-items-center");
+                if (emergencyPatientSelect) emergencyPatientSelect.classList.add("rounded-end-3");
+            }
         }
     }
 
-    if (phoneInput) {
-        phoneInput.addEventListener("input", validatePhone);
-        phoneInput.addEventListener("blur", validatePhone);
+    function clearEmergencySelection() {
+        if (emergencyPatientSelect) emergencyPatientSelect.selectedIndex = 0;
+        if (emergencyPhoneInput) emergencyPhoneInput.value = "";
+        if (emergencyHiddenInput) emergencyHiddenInput.value = "";
+        hideMatchNotices();
+        toggleClearBtnVisibility();
+    }
+
+    if (emergencyClearBtn) {
+        emergencyClearBtn.addEventListener("click", function(e) { e.preventDefault(); clearEmergencySelection(); });
+    }
+    if (emergencyBadgeClearBtn) {
+        emergencyBadgeClearBtn.addEventListener("click", function(e) { e.preventDefault(); clearEmergencySelection(); });
+    }
+
+    function setEmergencyMode(mode) {
+        if (mode === "select") {
+            if (btnEmergencySelect) {
+                btnEmergencySelect.style.setProperty("background", "var(--accent-color, #0d6efd)", "important");
+                btnEmergencySelect.style.setProperty("color", "#ffffff", "important");
+                btnEmergencySelect.style.setProperty("box-shadow", "0 2px 6px rgba(13, 110, 253, 0.25)", "important");
+            }
+            if (btnEmergencyManual) {
+                btnEmergencyManual.style.setProperty("background", "transparent", "important");
+                btnEmergencyManual.style.setProperty("color", "var(--heading-color)", "important");
+                btnEmergencyManual.style.setProperty("box-shadow", "none", "important");
+            }
+            emergencySelectContainer?.classList.remove("d-none");
+            emergencyManualContainer?.classList.add("d-none");
+            syncEmergencyFromSelect();
+        } else {
+            if (btnEmergencyManual) {
+                btnEmergencyManual.style.setProperty("background", "var(--accent-color, #0d6efd)", "important");
+                btnEmergencyManual.style.setProperty("color", "#ffffff", "important");
+                btnEmergencyManual.style.setProperty("box-shadow", "0 2px 6px rgba(13, 110, 253, 0.25)", "important");
+            }
+            if (btnEmergencySelect) {
+                btnEmergencySelect.style.setProperty("background", "transparent", "important");
+                btnEmergencySelect.style.setProperty("color", "var(--heading-color)", "important");
+                btnEmergencySelect.style.setProperty("box-shadow", "none", "important");
+            }
+            emergencyManualContainer?.classList.remove("d-none");
+            emergencySelectContainer?.classList.add("d-none");
+            syncEmergencyFromManual();
+        }
+        toggleClearBtnVisibility();
+    }
+
+    function hideMatchNotices() {
+        if (emergencyMatchBadge) {
+            emergencyMatchBadge.classList.add("d-none");
+            emergencyMatchBadge.classList.remove("d-flex");
+        }
+        if (emergencyMultiMatchBox) {
+            emergencyMultiMatchBox.classList.add("d-none");
+        }
+    }
+
+    function syncEmergencyFromSelect() {
+        if (!emergencyHiddenInput || !emergencyPatientSelect) return;
+        const selVal = emergencyPatientSelect.value.trim();
+        emergencyHiddenInput.value = selVal;
+
+        if (selVal && emergencyPatientSelect.selectedIndex >= 0) {
+            const selOpt = emergencyPatientSelect.options[emergencyPatientSelect.selectedIndex];
+            const pPhone = selOpt.getAttribute("data-phone");
+            if (pPhone && emergencyPhoneInput) {
+                emergencyPhoneInput.value = pPhone;
+            }
+        }
+        toggleClearBtnVisibility();
+    }
+
+    function syncEmergencyFromManual() {
+        if (!emergencyPhoneInput || !emergencyHiddenInput) return;
+        let digits = emergencyPhoneInput.value.trim().replace(/\D/g, "");
+        if (digits.startsWith("963")) digits = digits.slice(3);
+        if (digits.startsWith("0")) digits = digits.slice(1);
+        digits = digits.slice(0, 9);
+        emergencyPhoneInput.value = digits;
+
+        hideMatchNotices();
+
+        if (digits.length === 9) {
+            emergencyHiddenInput.value = "+963" + digits;
+
+            const matches = [];
+            if (emergencyPatientSelect) {
+                for (let i = 1; i < emergencyPatientSelect.options.length; i++) {
+                    const opt = emergencyPatientSelect.options[i];
+                    const pPhone = (opt.getAttribute("data-phone") || "").trim();
+                    if (pPhone && pPhone === digits) {
+                        matches.push({ index: i, option: opt });
+                    }
+                }
+            }
+
+            if (matches.length === 1) {
+                emergencyPatientSelect.selectedIndex = matches[0].index;
+                emergencyHiddenInput.value = matches[0].option.value.trim();
+                setEmergencyMode("select");
+
+                if (emergencyMatchBadge && emergencyMatchText) {
+                    emergencyMatchText.textContent = `تم الربط تلقائياً مع المريض: ${matches[0].option.text}`;
+                    emergencyMatchBadge.classList.remove("d-none");
+                    emergencyMatchBadge.classList.add("d-flex");
+                }
+            } else if (matches.length > 1) {
+                setEmergencyMode("select");
+                if (emergencyMultiMatchBox && emergencyMultiMatchList) {
+                    emergencyMultiMatchList.innerHTML = "";
+                    matches.forEach(m => {
+                        const btn = document.createElement("button");
+                        btn.type = "button";
+                        btn.className = "btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 text-nowrap";
+                        btn.innerHTML = `<i class="bi bi-person-check me-1"></i>${m.option.text}`;
+                        btn.addEventListener("click", function(e) {
+                            e.preventDefault();
+                            emergencyPatientSelect.selectedIndex = m.index;
+                            syncEmergencyFromSelect();
+                            hideMatchNotices();
+                            if (emergencyMatchBadge && emergencyMatchText) {
+                                emergencyMatchText.textContent = `تم التطابق مع: ${m.option.text}`;
+                                emergencyMatchBadge.classList.remove("d-none");
+                                emergencyMatchBadge.classList.add("d-flex");
+                            }
+                        });
+                        emergencyMultiMatchList.appendChild(btn);
+                    });
+                    emergencyMultiMatchBox.classList.remove("d-none");
+                }
+            }
+        } else {
+            emergencyHiddenInput.value = digits ? ("+963" + digits) : "";
+        }
+        toggleClearBtnVisibility();
+    }
+
+    if (btnEmergencySelect) {
+        btnEmergencySelect.addEventListener("click", function(e) { e.preventDefault(); setEmergencyMode("select"); });
+    }
+    if (btnEmergencyManual) {
+        btnEmergencyManual.addEventListener("click", function(e) { e.preventDefault(); setEmergencyMode("manual"); });
+    }
+    if (emergencyPatientSelect) {
+        emergencyPatientSelect.addEventListener("change", function() {
+            syncEmergencyFromSelect();
+            hideMatchNotices();
+        });
+    }
+    if (emergencyPhoneInput) {
+        emergencyPhoneInput.addEventListener("input", syncEmergencyFromManual);
+        emergencyPhoneInput.addEventListener("blur", syncEmergencyFromManual);
+    }
+
+    const initVal = emergencyHiddenInput ? (emergencyHiddenInput.value || "").trim() : "";
+    if (initVal) {
+        let foundInSelect = false;
+        if (emergencyPatientSelect) {
+            for (let opt of emergencyPatientSelect.options) {
+                if (opt.value === initVal && initVal !== "") {
+                    opt.selected = true;
+                    foundInSelect = true;
+                    break;
+                }
+            }
+        }
+        if (foundInSelect) {
+            setEmergencyMode("select");
+        } else if (initVal.startsWith("+963") || /^\+?\d{7,15}$/.test(initVal)) {
+            setEmergencyMode("manual");
+            let digits = initVal.replace(/\D/g, "");
+            if (digits.startsWith("963")) digits = digits.slice(3);
+            if (digits.startsWith("0")) digits = digits.slice(1);
+            if (emergencyPhoneInput) emergencyPhoneInput.value = digits.slice(0, 9);
+            syncEmergencyFromManual();
+        } else {
+            setEmergencyMode("select");
+        }
+    } else {
+        setEmergencyMode("select");
+    }
+    toggleClearBtnVisibility();
+
+    // --- Main Phone Prefix Sync ---
+    function syncPhone() {
+        if (!phoneInputLocal || !phoneHidden) return true;
+        let digits = phoneInputLocal.value.trim().replace(/\D/g, "");
+        if (digits.startsWith("963")) digits = digits.slice(3);
+        if (digits.startsWith("0")) digits = digits.slice(1);
+        digits = digits.slice(0, 9);
+        phoneInputLocal.value = digits;
+
+        if (digits.length === 9) {
+            phoneHidden.value = "+963" + digits;
+            phoneInputLocal.classList.remove("is-invalid");
+            return true;
+        } else {
+            phoneHidden.value = digits ? ("+963" + digits) : "";
+            phoneInputLocal.classList.add("is-invalid");
+            return false;
+        }
+    }
+
+    if (phoneInputLocal) {
+        phoneInputLocal.addEventListener("input", syncPhone);
+        phoneInputLocal.addEventListener("blur", syncPhone);
+        syncPhone();
     }
 
     if (form) {
