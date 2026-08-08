@@ -210,12 +210,12 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
 
             <div class="patient-info-grid mt-4">
-                <div class="patient-info-box {% if patient.medical_information %}border-danger-subtle bg-danger-subtle bg-opacity-10{% endif %}">
-                    <span class="info-label {% if patient.medical_information %}text-danger fw-bold{% endif %}">
+                <div class="patient-info-box" {% if patient.medical_information %}style="background: rgba(220, 53, 69, 0.06) !important; border: 1px solid rgba(220, 53, 69, 0.28) !important;"{% endif %}>
+                    <span class="info-label {% if patient.medical_information %}fw-bold{% endif %}" {% if patient.medical_information %}style="color: color-mix(in srgb, #dc3545, var(--default-color) 10%) !important;"{% endif %}>
                         <i class="bi bi-heart-pulse-fill me-1 text-danger"></i>
                         {% if current_lang == 'ar' %}المعلومات الطبية والتحسس{% else %}Medical Info & Allergies{% endif %}
                     </span>
-                    <p class="{% if patient.medical_information %}fw-semibold text-danger-emphasis{% else %}text-muted{% endif %}">
+                    <p class="{% if patient.medical_information %}fw-semibold{% else %}text-muted{% endif %}" {% if patient.medical_information %}style="color: color-mix(in srgb, #dc3545, var(--default-color) 20%) !important;"{% endif %}>
                         {{ patient.medical_information or ('No medical information recorded' if current_lang != 'ar' else 'لا توجد معلومات طبية مسجلة') }}
                     </p>
                 </div>
