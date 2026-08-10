@@ -11,6 +11,7 @@ def ensure_database_schema(app, db):
             ("invoice", "discount_type", "ALTER TABLE invoice ADD COLUMN discount_type VARCHAR(20) NOT NULL DEFAULT 'value'"),
             ("invoice", "additional_charges", "ALTER TABLE invoice ADD COLUMN additional_charges DECIMAL(10, 2) NOT NULL DEFAULT 0.00"),
             ("invoice", "tax_rate", "ALTER TABLE invoice ADD COLUMN tax_rate DECIMAL(5, 2) NOT NULL DEFAULT 0.00"),
+            ("invoice", "patient_id", "ALTER TABLE invoice ADD COLUMN patient_id INT NULL"),
             ("user", "patient_id", "ALTER TABLE user ADD COLUMN patient_id INT NULL"),
             ("appointment", "session_opened_at", "ALTER TABLE appointment ADD COLUMN session_opened_at DATETIME NULL"),
             ("patient", "telegram_chat_id", "ALTER TABLE patient ADD COLUMN telegram_chat_id VARCHAR(50) NULL"),
@@ -18,6 +19,9 @@ def ensure_database_schema(app, db):
             ("patient", "primary_doctor_id", "ALTER TABLE patient ADD COLUMN primary_doctor_id INT NULL"),
             ("appointment", "doctor_id", "ALTER TABLE appointment ADD COLUMN doctor_id INT NULL"),
             ("treatment", "doctor_id", "ALTER TABLE treatment ADD COLUMN doctor_id INT NULL"),
+            ("treatment", "use_anesthesia", "ALTER TABLE treatment ADD COLUMN use_anesthesia BOOLEAN NOT NULL DEFAULT 0"),
+            ("treatment", "anesthesia_needles", "ALTER TABLE treatment ADD COLUMN anesthesia_needles INT NOT NULL DEFAULT 0"),
+            ("treatment", "anesthesia_cost", "ALTER TABLE treatment ADD COLUMN anesthesia_cost DECIMAL(10, 2) NOT NULL DEFAULT 0.00"),
             ("treatment", "teeth_range", "ALTER TABLE treatment ADD COLUMN teeth_range VARCHAR(100) NULL"),
             ("treatment", "quadrant", "ALTER TABLE treatment ADD COLUMN quadrant VARCHAR(50) NULL"),
             ("treatment", "jaw", "ALTER TABLE treatment ADD COLUMN jaw VARCHAR(50) NULL"),
@@ -38,3 +42,16 @@ def ensure_database_schema(app, db):
                 except Exception as e:
                     db.session.rollback()
                     app.logger.debug(f"Migration note for {table}.{column}: {e}")
+
+        # Backfill invoice.patient_id from appointment.patient_id for existing records where patient_id is NULL
+        try:
+            db.session.execute(text(
+                "UPDATE invoice SET patient_id = ("
+                "SELECT appointment.patient_id FROM appointment WHERE appointment.id = invoice.appointment_id"
+                ") WHERE invoice.patient_id IS NULL"
+            ))
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            app.logger.debug(f"Backfill invoice.patient_id note: {e}")
+

@@ -100,11 +100,11 @@ def home():
         )
 
         patient_invoiced_rows = db.session.query(
-            Invoice.patient_id,
+            func.coalesce(Invoice.patient_id, Appointment.patient_id),
             func.coalesce(func.sum(net_total_sub), 0.0)
         ).join(Appointment, Invoice.appointment_id == Appointment.id).filter(
             Appointment.status != "Cancelled"
-        ).group_by(Invoice.patient_id).all()
+        ).group_by(func.coalesce(Invoice.patient_id, Appointment.patient_id)).all()
 
         patient_invoiced = {p_id: float(tot) for p_id, tot in patient_invoiced_rows if p_id}
 
