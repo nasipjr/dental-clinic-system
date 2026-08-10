@@ -41,7 +41,7 @@ def appointment_session(appointment_id):
         if user_role in ("doctor", "admin") and user_id and not appointment.doctor_id:
             appointment.doctor_id = user_id
 
-        if appointment.status in ("Scheduled", "Checked In", "In Chair") and appointment.session_opened_at is None:
+        if appointment.status == "Scheduled" and appointment.session_opened_at is None:
             from datetime import datetime
             appointment.session_opened_at = datetime.now()
             
@@ -123,7 +123,7 @@ def add_treatment_to_appointment(appointment_id):
     try:
         appointment = Appointment.query.get_or_404(appointment_id)
 
-        if appointment.status not in ("Scheduled", "Checked In", "In Chair"):
+        if appointment.status != "Scheduled":
             return render_template(
                 "error_message.html",
                 title="Action Not Allowed",
@@ -132,7 +132,11 @@ def add_treatment_to_appointment(appointment_id):
             ), 403
 
         if request.method == "POST":
-            treatment_date = appointment.appointment_date
+            from datetime import datetime
+            now = datetime.now()
+            treatment_date = now
+            if appointment.appointment_date and appointment.appointment_date > now:
+                appointment.appointment_date = now
             procedure_type = request.form.get("procedure_type", "").strip()
 
             if procedure_type not in TREATMENT_PROCEDURE_TYPES:
@@ -302,7 +306,7 @@ def end_appointment_session(appointment_id):
     try:
         appointment = Appointment.query.get_or_404(appointment_id)
 
-        if appointment.status not in ("Scheduled", "Checked In", "In Chair"):
+        if appointment.status != "Scheduled":
             return render_template(
                 "error_message.html",
                 title="Action Not Allowed",
@@ -311,6 +315,11 @@ def end_appointment_session(appointment_id):
             ), 400
 
         appointment.status = "Done"
+        from datetime import datetime
+        now = datetime.now()
+        if appointment.appointment_date and appointment.appointment_date > now:
+            appointment.appointment_date = now
+
         from flask import g
         if g.get("current_user") and g.current_user.role in ("doctor", "admin"):
             appointment.doctor_id = g.current_user.id
@@ -628,7 +637,7 @@ def delete_treatment(treatment_id):
         appointment_id = treatment.appointment_id
         patient_id = treatment.appointment.patient_id
 
-        if treatment.appointment.status not in ("Scheduled", "Checked In", "In Chair"):
+        if treatment.appointment.status != "Scheduled":
             return render_template(
                 "error_message.html",
                 title="Action Not Allowed",

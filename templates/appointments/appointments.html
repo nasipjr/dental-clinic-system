@@ -59,6 +59,10 @@
             </div>
 
             <div class="d-flex gap-2 align-items-center">
+                <a href="{{ url_for('appointments.appointments_archive') }}" class="btn btn-outline-secondary rounded-pill px-3.5 py-2 fw-bold d-inline-flex align-items-center gap-1.5 shadow-sm">
+                    <i class="bi bi-archive-fill text-warning"></i>
+                    <span>{% if current_lang == 'ar' %}أرشيف المواعيد{% else %}Appointments Archive{% endif %}</span>
+                </a>
                 {% if current_user.role in ('admin', 'receptionist', 'doctor') %}
                 <a href="{{ url_for('appointments.add_appointment_direct') }}" class="btn btn-primary" style="border-radius: 30px; font-weight: 600; padding: 10px 24px;">
                     <i class="bi bi-plus-circle me-1"></i>
@@ -221,48 +225,6 @@
             {% endif %}
         {% else %}
 
-            {% if date_filter in ('today', 'tomorrow', 'all') %}
-            {% set sub_stats = today_stats if date_filter == 'today' else (tomorrow_stats if date_filter == 'tomorrow' else appointment_stats) %}
-            <!-- Sub-Tabs Navigation for Appointments -->
-            <div class="d-flex justify-content-center mb-4">
-                <div class="sub-tabs-bar p-1.5 rounded-pill border d-inline-flex gap-2 flex-wrap justify-content-center shadow-sm" style="background: var(--surface-color); border-color: rgba(255,255,255,0.08) !important;">
-                    <!-- الكل / All -->
-                    <a href="{{ url_for('appointments.appointments', date_filter=date_filter, status='', search=search_query) }}"
-                       class="sub-tab-item btn btn-sm rounded-pill px-3.5 py-2 fw-semibold text-nowrap transition-all {% if not status_filter %}btn-primary text-white shadow-sm{% else %}btn-outline-secondary border-0 text-body opacity-75{% endif %}">
-                        <i class="bi bi-grid-fill me-1"></i>
-                        {% if current_lang == 'ar' %}الكل{% else %}All{% endif %}
-                        <span class="badge rounded-pill {% if not status_filter %}bg-white text-primary fw-bold{% else %}bg-primary-subtle text-primary-emphasis{% endif %} ms-1" style="font-size: 0.78rem;">{{ sub_stats.all_count if sub_stats and sub_stats.all_count is not none else 0 }}</span>
-                    </a>
-
-                    <!-- المجدولة / Scheduled -->
-                    <a href="{{ url_for('appointments.appointments', date_filter=date_filter, status='Scheduled', search=search_query) }}"
-                       class="sub-tab-item btn btn-sm rounded-pill px-3.5 py-2 fw-semibold text-nowrap transition-all {% if status_filter == 'Scheduled' %}btn-info text-white shadow-sm{% else %}btn-outline-secondary border-0 text-body opacity-75{% endif %}">
-                        <i class="bi bi-calendar-event me-1"></i>
-                        {% if current_lang == 'ar' %}المجدولة{% else %}Scheduled{% endif %}
-                        <span class="badge rounded-pill bg-info-subtle text-info-emphasis ms-1" style="font-size: 0.78rem;">{{ sub_stats.active_count if sub_stats else 0 }}</span>
-                    </a>
-
-                    {% if date_filter != 'tomorrow' %}
-                    <!-- المنجزة / Done -->
-                    <a href="{{ url_for('appointments.appointments', date_filter=date_filter, status='Done', search=search_query) }}"
-                       class="sub-tab-item btn btn-sm rounded-pill px-3.5 py-2 fw-semibold text-nowrap transition-all {% if status_filter == 'Done' %}btn-success text-white shadow-sm{% else %}btn-outline-secondary border-0 text-body opacity-75{% endif %}">
-                        <i class="bi bi-check-circle-fill me-1"></i>
-                        {% if current_lang == 'ar' %}المنجزة{% else %}Done{% endif %}
-                        <span class="badge rounded-pill bg-success-subtle text-success-emphasis ms-1" style="font-size: 0.78rem;">{{ sub_stats.completed_count if sub_stats else 0 }}</span>
-                    </a>
-                    {% endif %}
-
-                    <!-- الملغية / Cancelled -->
-                    <a href="{{ url_for('appointments.appointments', date_filter=date_filter, status='Cancelled', search=search_query) }}"
-                       class="sub-tab-item btn btn-sm rounded-pill px-3.5 py-2 fw-semibold text-nowrap transition-all {% if status_filter == 'Cancelled' %}btn-danger text-white shadow-sm{% else %}btn-outline-secondary border-0 text-body opacity-75{% endif %}">
-                        <i class="bi bi-x-circle-fill me-1"></i>
-                        {% if current_lang == 'ar' %}الملغية{% else %}Cancelled{% endif %}
-                        <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis ms-1" style="font-size: 0.78rem;">{{ sub_stats.cancelled_count if sub_stats else 0 }}</span>
-                    </a>
-                </div>
-            </div>
-            {% endif %}
-
             <!-- Sleek Search Bar -->
             <form id="appointments-filter-form" method="GET" action="{{ url_for('appointments.appointments_table') }}" class="appointments-filter-bar mb-4">
                 <input type="hidden" name="date_filter" value="{{ date_filter }}">
@@ -358,27 +320,6 @@
 
             <div id="appointments-table-container">
                 {% include "partials/_appointments_table.html" %}
-            </div>
-
-            <!-- Bottom Actions Bar: Archive & Delete All Cancelled -->
-            <div class="d-flex justify-content-end align-items-center gap-2.5 mt-4 pt-3 border-top border-secondary border-opacity-25 flex-wrap">
-                {% if current_user.role in ('admin', 'receptionist') %}
-                <a href="{{ url_for('appointments.appointments_archive') }}"
-                   class="btn rounded-pill px-4 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-2"
-                   style="background: rgba(59, 130, 246, 0.12) !important; color: #60a5fa !important; border: 1px solid rgba(59, 130, 246, 0.3) !important;">
-                    <i class="bi bi-archive-fill"></i>
-                    <span>{% if current_lang == 'ar' %}أرشيف المواعيد (الملغاة والمحذوفة){% else %}Appointments Archive{% endif %}</span>
-                </a>
-                {% endif %}
-                {% if has_cancelled and current_user.role in ('admin', 'receptionist') %}
-                <button type="button"
-                        class="btn rounded-pill px-4 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-2"
-                        style="background: rgba(239, 68, 68, 0.12) !important; color: #f87171 !important; border: 1px solid rgba(239, 68, 68, 0.3) !important;"
-                        data-bs-toggle="modal" data-bs-target="#deleteAllCancelledModal">
-                    <i class="bi bi-trash3-fill"></i>
-                    <span>{% if current_lang == 'ar' %}حذف جميع المواعيد الملغاة{% else %}Delete All Cancelled{% endif %}</span>
-                </button>
-                {% endif %}
             </div>
         {% endif %}
         </div>

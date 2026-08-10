@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
 {% block title %}
-{% if current_lang == 'ar' %}أرشيف المواعيد الملغاة والمحذوفة{% else %}Appointments Archive{% endif %}
+{% if current_lang == 'ar' %}أرشيف المواعيد{% else %}Appointments Archive{% endif %}
 {% endblock %}
 
 {% block content %}
 <div class="container section-title" data-aos="fade-up">
-  <h2>{% if current_lang == 'ar' %}أرشيف المواعيد الملغاة والمحذوفة{% else %}Cancelled & Archived Appointments{% endif %}</h2>
-  <p>{% if current_lang == 'ar' %}استعرِض وراجع المواعيد التي تم إلغاؤها أو حذفها، مع الترتيب والفرز والاستعادة المباشرة المتقدمة.{% else %}Review archived appointments with real-time AJAX sorting, filtering, and instant 1-click restoration.{% endif %}</p>
+  <h2>{% if current_lang == 'ar' %}أرشيف المواعيد{% else %}Appointments Archive{% endif %}</h2>
+  <p>{% if current_lang == 'ar' %}استعرض وراجع المواعيد المنجزة والملغاة، مع الترتيب والفرز وإمكانية الاستعادة للمواعيد المستقبلية.{% else %}Review completed and cancelled appointments with sorting, filtering, and restoration options.{% endif %}</p>
 </div>
 
 <section id="appointments-archive-section" class="find-a-doctor section pt-0" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
@@ -18,7 +18,7 @@
       <div>
         <h4 class="mb-1 text-main fw-bold">
           <i class="bi bi-archive me-2 text-warning"></i>
-          {% if current_lang == 'ar' %}سجل الأرشيف والاستعادة{% else %}Archive & Restoration Ledger{% endif %}
+          {% if current_lang == 'ar' %}سجل أرشيف المواعيد (المنجزة والملغاة){% else %}Archived Appointments Ledger{% endif %}
         </h4>
         <p class="text-secondary small mb-0">
           {% if current_lang == 'ar' %}إجمالي المواعيد المؤرشفة:{% else %}Total Archived Appointments:{% endif %} 
@@ -27,27 +27,9 @@
       </div>
 
       <div class="d-flex gap-2 flex-wrap">
-        {% if current_user.role in ('admin', 'receptionist') %}
-        <button type="button"
-                class="btn rounded-pill px-3.5 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-2"
-                style="background: rgba(16, 185, 129, 0.12) !important; color: #34d399 !important; border: 1px solid rgba(16, 185, 129, 0.3) !important;"
-                id="restore-all-btn">
-          <i class="bi bi-arrow-counterclockwise fs-5"></i>
-          <span>{% if current_lang == 'ar' %}استعادة الكل القابل للاستعادة{% else %}Restore All Restorable{% endif %}</span>
-        </button>
-
-        <button type="button"
-                class="btn rounded-pill px-3.5 py-2 fw-bold shadow-xs d-inline-flex align-items-center gap-2"
-                style="background: rgba(239, 68, 68, 0.12) !important; color: #f87171 !important; border: 1px solid rgba(239, 68, 68, 0.3) !important;"
-                id="permanent-delete-all-btn">
-          <i class="bi bi-trash3-fill fs-5"></i>
-          <span>{% if current_lang == 'ar' %}حذف نهائي للكل{% else %}Permanently Delete All{% endif %}</span>
-        </button>
-        {% endif %}
-
         <a href="{{ url_for('appointments.appointments') }}" class="btn btn-outline-secondary rounded-pill px-4 fw-semibold d-inline-flex align-items-center gap-2">
           <i class="bi bi-arrow-left"></i>
-          <span>{% if current_lang == 'ar' %}العودة لقائمة المواعيد{% else %}Back to Appointments{% endif %}</span>
+          <span>{% if current_lang == 'ar' %}العودة لقائمة المواعيد المجدولة{% else %}Back to Scheduled Appointments{% endif %}</span>
         </a>
       </div>
     </div>
@@ -63,9 +45,9 @@
         </div>
         <div class="col-md-5 col-lg-4 d-flex gap-2">
           <select name="status" id="archive-status-select" class="form-select rounded-pill">
-            <option value="" {% if not status_filter %}selected{% endif %}>{% if current_lang == 'ar' %}جميع الحالات (الملغاة والمحذوفة){% else %}All Statuses{% endif %}</option>
+            <option value="" {% if not status_filter %}selected{% endif %}>{% if current_lang == 'ar' %}جميع المواعيد المؤرشفة{% else %}All Archived Statuses{% endif %}</option>
+            <option value="Done" {% if status_filter == 'Done' %}selected{% endif %}>{% if current_lang == 'ar' %}المنجزة فقط{% else %}Completed Only{% endif %}</option>
             <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>{% if current_lang == 'ar' %}الملغاة فقط{% else %}Cancelled Only{% endif %}</option>
-            <option value="Deleted" {% if status_filter == 'Deleted' %}selected{% endif %}>{% if current_lang == 'ar' %}المحذوفة فقط{% else %}Deleted Only{% endif %}</option>
           </select>
           <a href="{{ url_for('appointments.appointments_archive') }}" class="btn btn-outline-secondary rounded-pill text-nowrap" id="archive-reset-btn">
             <i class="bi bi-arrow-counterclockwise"></i>

@@ -49,7 +49,7 @@
             {% endif %}
           </a>
         </th>
-        <th class="text-end">{% if current_lang == 'ar' %}الإجراءات والتحكم{% else %}Actions{% endif %}</th>
+        <th class="text-center">{% if current_lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
       </tr>
     </thead>
     <tbody>
@@ -85,45 +85,37 @@
           <span class="text-secondary small">{{ appt.reason or '—' }}</span>
         </td>
         <td>
-          {% if appt.status == 'Deleted' %}
-          <span class="badge bg-dark bg-opacity-25 text-danger rounded-pill px-3 py-1.5 fw-semibold border border-danger border-opacity-25">
-            <i class="bi bi-trash-fill me-1"></i>
-            {% if current_lang == 'ar' %}محذوف{% else %}Deleted{% endif %}
+          {% if appt.status == 'Done' or appt.status == 'منجز' %}
+          <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1.5 fw-semibold border border-success border-opacity-25">
+            <i class="bi bi-check-circle-fill me-1"></i>
+            {% if current_lang == 'ar' %}منجز{% else %}Done{% endif %}
           </span>
           {% else %}
-          <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-3 py-1.5 fw-semibold border border-warning border-opacity-25">
-            <i class="bi bi-x-circle me-1"></i>
+          <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-1.5 fw-semibold border border-danger border-opacity-25">
+            <i class="bi bi-x-circle-fill me-1"></i>
             {% if current_lang == 'ar' %}ملغى{% else %}Cancelled{% endif %}
           </span>
           {% endif %}
         </td>
-        <td class="text-end">
-          <div class="d-flex justify-content-end gap-2">
-            <!-- Restore Appointment Form (Future Only) -->
-            {% if appt.appointment_date and appt.appointment_date >= now %}
-            <form method="POST" action="{{ url_for('appointments.restore_appointment', appointment_id=appt.id) }}" class="d-inline">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold" title="{% if current_lang == 'ar' %}استعادة الموعد وإعادته للجدول{% else %}Restore Appointment{% endif %}">
-                <i class="bi bi-arrow-counterclockwise me-1"></i>
-                {% if current_lang == 'ar' %}استعادة للجدول{% else %}Restore{% endif %}
-              </button>
-            </form>
-            {% else %}
-            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 opacity-50" disabled title="{% if current_lang == 'ar' %}انتهى تاريخ الموعد - لا يمكن الاستعادة{% else %}Past Date - Cannot Restore{% endif %}">
-              <i class="bi bi-clock-history me-1"></i>
-              {% if current_lang == 'ar' %}انتهى موعده{% else %}Past Date{% endif %}
-            </button>
+        <td class="text-center">
+          <div class="appointments-actions justify-content-center">
+            <!-- Open / Reopen Session Button (Not shown for Cancelled appointments) -->
+            {% if appt.status not in ('Cancelled', 'ملغي') and (current_user.role in ('admin', 'receptionist') or (current_user.role == 'doctor' and (not appt.doctor_id or appt.doctor_id == current_user.id))) %}
+            <a href="{{ url_for('treatments.appointment_session', appointment_id=appt.id) }}"
+                class="table-action-btn session-btn"
+                title="{% if current_lang == 'ar' %}فتح الجلسة{% else %}Open Session{% endif %}"
+                data-tooltip="{% if current_lang == 'ar' %}فتح الجلسة{% else %}Open Session{% endif %}">
+                <i class="bi bi-clipboard2-pulse"></i>
+            </a>
             {% endif %}
 
-            {% if current_user.role in ('admin', 'receptionist') %}
-            <form method="POST" action="{{ url_for('appointments.permanent_delete_appointment', appointment_id=appt.id) }}" class="d-inline">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold" title="{% if current_lang == 'ar' %}حذف نهائي{% else %}Delete Permanently{% endif %}">
-                <i class="bi bi-trash me-1"></i>
-                {% if current_lang == 'ar' %}حذف نهائي{% else %}Delete{% endif %}
-              </button>
-            </form>
-            {% endif %}
+            <!-- View Appointment Button -->
+            <a href="{{ url_for('appointments.view_appointment', appointment_id=appt.id) }}"
+                class="table-action-btn view-btn"
+                title="{% if current_lang == 'ar' %}عرض الموعد{% else %}View Appointment{% endif %}"
+                data-tooltip="{% if current_lang == 'ar' %}عرض الموعد{% else %}View Appointment{% endif %}">
+                <i class="bi bi-eye"></i>
+            </a>
           </div>
         </td>
       </tr>

@@ -40,14 +40,16 @@ def cancel_expired_appointments():
         if close_minutes > 0:
             session_cutoff = now - timedelta(minutes=close_minutes)
             open_sessions = Appointment.query.filter(
-                Appointment.status.in_(["In Chair", "Checked In"])
+                Appointment.status == "Scheduled",
+                Appointment.session_opened_at != None,
+                Appointment.appointment_date <= now
             ).all()
 
             auto_closed = 0
             for appt in open_sessions:
                 ref_time = appt.session_opened_at or appt.appointment_date
                 if ref_time and ref_time <= session_cutoff:
-                    if appt.treatments or appt.session_opened_at:
+                    if appt.treatments:
                         appt.status = "Done"
                     else:
                         appt.status = "Cancelled"
@@ -58,12 +60,12 @@ def cancel_expired_appointments():
         else:
             # If set to 0 (disabled for same day), auto-close sessions from previous days
             past_active = Appointment.query.filter(
-                Appointment.status.in_(["In Chair", "Checked In"]),
+                Appointment.status == "Scheduled",
                 Appointment.appointment_date < today_start
             ).all()
             if past_active:
                 for appt in past_active:
-                    if appt.treatments or appt.session_opened_at:
+                    if appt.treatments:
                         appt.status = "Done"
                     else:
                         appt.status = "Cancelled"
@@ -151,10 +153,7 @@ def get_appointments_context():
         except ValueError:
             pass
 
-    if status_filter:
-        query = query.filter(Appointment.status == status_filter)
-    else:
-        query = query.filter(~Appointment.status.in_(["Pending", "Deleted"]))
+    query = query.filter(Appointment.status == "Scheduled")
 
     date_filter = request.args.get("date_filter", "").strip().lower()
 
@@ -163,7 +162,7 @@ def get_appointments_context():
     today_end = today_start + timedelta(days=1)
     tomorrow_end = today_start + timedelta(days=2)
 
-    base_active = Appointment.query.filter(~Appointment.status.in_(["Pending", "Deleted"]))
+    base_active = Appointment.query.filter(Appointment.status == "Scheduled")
     today_count = base_active.filter(
         Appointment.appointment_date >= today_start,
         Appointment.appointment_date < today_end
@@ -224,17 +223,15 @@ def get_appointments_context():
 
     completed_count = sum(1 for appt in all_appts if appt.status == "Done")
     scheduled_count = sum(1 for appt in all_appts if appt.status == "Scheduled")
-    checked_in_count = sum(1 for appt in all_appts if appt.status == "Checked In")
-    in_chair_count = sum(1 for appt in all_appts if appt.status == "In Chair")
     cancelled_count = sum(1 for appt in all_appts if appt.status == "Cancelled")
 
-    active_count = scheduled_count + checked_in_count + in_chair_count
+    active_count = scheduled_count
 
     completion_rate = float((completed_count / total_appts_count * 100)) if total_appts_count > 0 else 100.0
     cancellation_rate = float((cancelled_count / total_appts_count * 100)) if total_appts_count > 0 else 0.0
 
     # Top 5 upcoming active appointments
-    upcoming_list = [appt for appt in all_appts if appt.status in ("Scheduled", "Checked In", "In Chair") and appt.appointment_date and appt.appointment_date >= now]
+    upcoming_list = [appt for appt in all_appts if appt.status == "Scheduled" and appt.appointment_date and appt.appointment_date >= now]
     top_upcoming_appointments = sorted(upcoming_list, key=lambda appt: appt.appointment_date)[:5]
 
     appointment_stats = {
@@ -250,7 +247,7 @@ def get_appointments_context():
     today_appts = [appt for appt in all_appts if appt.appointment_date and today_start <= appt.appointment_date < today_end]
     today_stats = {
         "all_count": today_count,
-        "active_count": sum(1 for appt in today_appts if appt.status in ("Scheduled", "Checked In", "In Chair")),
+        "active_count": sum(1 for appt in today_appts if appt.status == "Scheduled"),
         "completed_count": sum(1 for appt in today_appts if appt.status == "Done"),
         "cancelled_count": sum(1 for appt in today_appts if appt.status == "Cancelled"),
     }
@@ -258,7 +255,7 @@ def get_appointments_context():
     tomorrow_appts = [appt for appt in all_appts if appt.appointment_date and today_end <= appt.appointment_date < tomorrow_end]
     tomorrow_stats = {
         "all_count": tomorrow_count,
-        "active_count": sum(1 for appt in tomorrow_appts if appt.status in ("Scheduled", "Checked In", "In Chair")),
+        "active_count": sum(1 for appt in tomorrow_appts if appt.status == "Scheduled"),
         "completed_count": sum(1 for appt in tomorrow_appts if appt.status == "Done"),
         "cancelled_count": sum(1 for appt in tomorrow_appts if appt.status == "Cancelled"),
     }
@@ -756,6 +753,10 @@ def quick_done(appointment_id):
             return jsonify({"success": False, "message": "Only scheduled appointments can be marked as Done."}), 400
 
         appointment.status = "Done"
+        now = datetime.now()
+        if appointment.appointment_date and appointment.appointment_date > now:
+            appointment.appointment_date = now
+
         from services.invoice_service import sync_invoice_for_appointment
         sync_invoice_for_appointment(appointment)
         db.session.commit()
@@ -1075,29 +1076,9 @@ def update_appointment_status(appointment_id):
         data = request.get_json() or {}
         new_status = data.get("status")
         
-        valid_statuses = ["Scheduled", "Checked In", "In Chair", "Done", "Cancelled"]
+        valid_statuses = ["Scheduled", "Done", "Cancelled"]
         if new_status not in valid_statuses:
             return jsonify({"success": False, "message": "Invalid status."}), 400
-            
-        # Business logic: Maximum 1 patient in the chair at a time for today
-        if new_status == "In Chair":
-            from datetime import datetime, time
-            today = datetime.now().date()
-            today_start = datetime.combine(today, time.min)
-            today_end = datetime.combine(today, time.max)
-            
-            existing_in_chair = (
-                Appointment.query
-                .filter(Appointment.appointment_date >= today_start)
-                .filter(Appointment.appointment_date <= today_end)
-                .filter(Appointment.status == "In Chair")
-                .filter(Appointment.id != appointment_id)
-                .first()
-            )
-            if existing_in_chair:
-                lang = request.cookies.get('lang', 'en')
-                msg = "لا يمكن وضع المريض على الكرسي لوجود مريض آخر قيد العلاج حالياً." if lang == 'ar' else "Cannot seat patient because another patient is currently in the dental chair."
-                return jsonify({"success": False, "message": msg}), 400
 
         appt.status = new_status
         db.session.commit()
@@ -1148,7 +1129,7 @@ def get_archive_context():
 
     query = (
         Appointment.query
-        .filter(Appointment.status.in_(["Cancelled", "Deleted"]))
+        .filter(Appointment.status.in_(["Done", "Cancelled"]))
         .options(
             joinedload(Appointment.patient),
             joinedload(Appointment.doctor)
@@ -1161,7 +1142,7 @@ def get_archive_context():
             (Patient.last_name.ilike(f"%{search_query}%"))
         )
 
-    if status_filter in ["Cancelled", "Deleted"]:
+    if status_filter in ["Done", "Cancelled"]:
         query = query.filter(Appointment.status == status_filter)
 
     sort_columns = {
@@ -1191,7 +1172,7 @@ def get_archive_context():
         error_out=False,
     )
 
-    archived_count = Appointment.query.filter(Appointment.status.in_(["Cancelled", "Deleted"])).count()
+    archived_count = Appointment.query.filter(Appointment.status.in_(["Done", "Cancelled"])).count()
 
     return {
         "pagination": pagination,

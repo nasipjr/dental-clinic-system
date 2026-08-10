@@ -312,7 +312,7 @@ def booked_slots():
         limit_date = now + timedelta(days=booking_window_days)
         
         occupied = Appointment.query.filter(
-            Appointment.status.in_(["Scheduled", "Pending", "Done", "Checked In", "In Chair"]),
+            Appointment.status.in_(["Scheduled", "Pending", "Done"]),
             Appointment.appointment_date >= now.date(),
             Appointment.appointment_date <= limit_date
         ).all()
@@ -336,7 +336,7 @@ def portal_events():
         limit_date = now + timedelta(days=booking_window_days)
         
         occupied = Appointment.query.filter(
-            Appointment.status.in_(["Scheduled", "Pending", "Done", "Checked In", "In Chair"]),
+            Appointment.status.in_(["Scheduled", "Pending", "Done"]),
             Appointment.appointment_date >= now.date(),
             Appointment.appointment_date <= limit_date
         ).all()

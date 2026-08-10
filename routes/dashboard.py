@@ -40,8 +40,6 @@ def home():
             .all()
         )
         status_dict = dict(today_status_rows)
-        today_checked_in = status_dict.get("Checked In", 0)
-        today_in_chair = status_dict.get("In Chair", 0)
         today_done = status_dict.get("Done", 0)
         today_scheduled = status_dict.get("Scheduled", 0)
 
@@ -59,7 +57,7 @@ def home():
             )
             .filter(Appointment.appointment_date >= today_start)
             .filter(Appointment.appointment_date <= today_end)
-            .filter(Appointment.status.in_(["Scheduled", "Checked In", "In Chair"]))
+            .filter(Appointment.status == "Scheduled")
         )
         if doctor_filter_id:
             scheduled_query = scheduled_query.filter(Appointment.doctor_id == doctor_filter_id)
@@ -204,8 +202,6 @@ def home():
             today_payments_sum=today_payments_sum,
             today_revenue_sum=today_revenue_sum,
             pending_appointments=pending_appointments,
-            today_checked_in=today_checked_in,
-            today_in_chair=today_in_chair,
             today_done=today_done,
             today_scheduled=today_scheduled
         )

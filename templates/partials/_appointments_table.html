@@ -128,7 +128,7 @@
                 <td class="text-center">
                     <div class="appointments-actions">
                         <!-- Open Session Button -->
-                        {% if appointment.status not in ('Cancelled', 'ملغي') and (current_user.role in ('admin', 'receptionist') or (current_user.role == 'doctor' and (not appointment.doctor_id or appointment.doctor_id == current_user.id))) %}
+                        {% if current_user.role in ('admin', 'receptionist') or (current_user.role == 'doctor' and (not appointment.doctor_id or appointment.doctor_id == current_user.id)) %}
                         <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
                             class="table-action-btn session-btn"
                             title="{% if current_lang == 'ar' %}فتح الجلسة{% else %}Open Session{% endif %}"
@@ -145,7 +145,7 @@
                         </a>
 
                         <!-- Edit Button -->
-                        {% if appointment.status not in ('Cancelled', 'ملغي', 'Done', 'منجز') and (current_user.role == 'admin' or (appointment.status == 'Scheduled' and (current_user.role == 'receptionist' or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id)))) %}
+                        {% if current_user.role == 'admin' or current_user.role == 'receptionist' or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id) %}
                         <a href="{{ url_for('appointments.edit_appointment', appointment_id=appointment.id) }}"
                             class="table-action-btn edit-btn"
                             title="{% if current_lang == 'ar' %}تعديل الموعد{% else %}Edit Appointment{% endif %}">
@@ -154,7 +154,7 @@
                         {% endif %}
 
                         <!-- WhatsApp Reminder (Receptionist Only) -->
-                        {% if appointment.status not in ('Cancelled', 'ملغي', 'Done', 'منجز') and appointment.status == 'Scheduled' and current_user.role == 'receptionist' %}
+                        {% if current_user.role == 'receptionist' %}
                         <button type="button"
                             class="table-action-btn whatsapp-btn border-0"
                             onclick="sendWhatsAppReminder('{{ appointment.patient.phone or '' }}', '{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}', '{{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else '' }}', '{{ clinic_name }}', {{ appointment.id }})"
@@ -165,21 +165,21 @@
                         {% endif %}
 
                         <!-- Quick Cancel Button -->
-                        {% if appointment.status not in ('Cancelled', 'ملغي', 'Done', 'منجز') and appointment.status == 'Scheduled' and (current_user.role in ('admin', 'receptionist') or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id)) %}
+                        {% if current_user.role in ('admin', 'receptionist') or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id) %}
                         <button type="button"
                             class="table-action-btn cancel-btn quick-action-btn border-0"
                             data-action-url="{{ url_for('appointments.quick_cancel', appointment_id=appointment.id) }}"
-                            data-confirm-msg="هل أنت متأكد من رغبتك في إلغاء هذا الموعد؟"
-                            title="{% if current_lang == 'ar' %}إلغاء الموعد{% else %}Cancel Appointment{% endif %}">
+                            data-confirm-msg="{% if current_lang == 'ar' %}هل أنت متأكد من رغبتك في إلغاء هذا الموعد ونقله إلى الأرشيف؟{% else %}Are you sure you want to cancel this appointment and move it to Archive?{% endif %}"
+                            title="{% if current_lang == 'ar' %}إلغاء الموعد ونقله للأرشيف{% else %}Cancel Appointment{% endif %}">
                             <i class="bi bi-x-circle"></i>
                         </button>
                         {% endif %}
 
                         <!-- Permanent Delete -->
-                        {% if current_user.role in ('admin', 'receptionist') and appointment.status != 'Done' and appointment.status != 'منجز' and not appointment.treatments %}
+                        {% if current_user.role in ('admin', 'receptionist') and not appointment.treatments %}
                         <a href="{{ url_for('appointments.delete_appointment', appointment_id=appointment.id) }}"
                             class="table-action-btn delete-table-btn"
-                            title="{% if current_lang == 'ar' %}حذف الموعد{% else %}Delete Appointment{% endif %}">
+                            title="{% if current_lang == 'ar' %}حذف نهائي من قاعدة البيانات{% else %}Delete Permanently{% endif %}">
                             <i class="bi bi-trash"></i>
                         </a>
                         {% endif %}
