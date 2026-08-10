@@ -12,11 +12,17 @@ def ensure_database_schema(app, db):
             ("invoice", "additional_charges", "ALTER TABLE invoice ADD COLUMN additional_charges DECIMAL(10, 2) NOT NULL DEFAULT 0.00"),
             ("invoice", "tax_rate", "ALTER TABLE invoice ADD COLUMN tax_rate DECIMAL(5, 2) NOT NULL DEFAULT 0.00"),
             ("invoice", "patient_id", "ALTER TABLE invoice ADD COLUMN patient_id INT NULL"),
+            ("invoice", "notes", "ALTER TABLE invoice ADD COLUMN notes TEXT NULL"),
+            ("invoice", "issue_date", "ALTER TABLE invoice ADD COLUMN issue_date DATETIME NULL"),
             ("user", "patient_id", "ALTER TABLE user ADD COLUMN patient_id INT NULL"),
             ("appointment", "session_opened_at", "ALTER TABLE appointment ADD COLUMN session_opened_at DATETIME NULL"),
             ("patient", "telegram_chat_id", "ALTER TABLE patient ADD COLUMN telegram_chat_id VARCHAR(50) NULL"),
             ("patient", "reminders_enabled", "ALTER TABLE patient ADD COLUMN reminders_enabled BOOLEAN NOT NULL DEFAULT 1"),
             ("patient", "primary_doctor_id", "ALTER TABLE patient ADD COLUMN primary_doctor_id INT NULL"),
+            ("patient", "appointment_notes", "ALTER TABLE patient ADD COLUMN appointment_notes TEXT NULL"),
+            ("patient", "occupation", "ALTER TABLE patient ADD COLUMN occupation VARCHAR(150) NULL"),
+            ("patient", "emergency_contact", "ALTER TABLE patient ADD COLUMN emergency_contact VARCHAR(150) NULL"),
+            ("patient", "medicare_number", "ALTER TABLE patient ADD COLUMN medicare_number VARCHAR(100) NULL"),
             ("appointment", "doctor_id", "ALTER TABLE appointment ADD COLUMN doctor_id INT NULL"),
             ("treatment", "doctor_id", "ALTER TABLE treatment ADD COLUMN doctor_id INT NULL"),
             ("treatment", "use_anesthesia", "ALTER TABLE treatment ADD COLUMN use_anesthesia BOOLEAN NOT NULL DEFAULT 0"),
@@ -29,6 +35,7 @@ def ensure_database_schema(app, db):
             ("tooth_history", "appointment_id", "ALTER TABLE tooth_history ADD COLUMN appointment_id INT NULL"),
             ("tooth_history", "history_date", "ALTER TABLE tooth_history ADD COLUMN history_date DATE NULL"),
         ]
+
 
         for table, column, sql in migrations:
             try:
