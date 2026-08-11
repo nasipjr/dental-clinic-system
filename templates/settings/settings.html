@@ -3,6 +3,97 @@
 {% block title %}System Settings{% endblock %}
 
 {% block content %}
+<style>
+.treatment-card-box {
+    background: var(--surface-color, rgba(30, 41, 59, 0.5)) !important;
+    border: 1px solid color-mix(in srgb, var(--default-color), transparent 88%) !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+    transition: all 0.3s ease !important;
+}
+.treatment-card-header {
+    background: color-mix(in srgb, var(--default-color), transparent 96%) !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--default-color), transparent 90%) !important;
+}
+.treatment-table th {
+    background: color-mix(in srgb, var(--default-color), transparent 97%) !important;
+    color: color-mix(in srgb, var(--default-color), transparent 30%) !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--default-color), transparent 90%) !important;
+    font-weight: 600 !important;
+    font-size: 0.82rem !important;
+    letter-spacing: 0.3px !important;
+}
+.treatment-table tr {
+    border-bottom: 1px solid color-mix(in srgb, var(--default-color), transparent 93%) !important;
+    transition: background 0.2s ease !important;
+}
+.treatment-table tr:hover {
+    background: color-mix(in srgb, var(--accent-color, #6366f1), transparent 94%) !important;
+}
+.treatment-input-pill {
+    background: color-mix(in srgb, var(--default-color), transparent 94%) !important;
+    border: 1px solid color-mix(in srgb, var(--default-color), transparent 82%) !important;
+    border-radius: 50rem !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+.treatment-input-pill:focus-within {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18) !important;
+}
+.treatment-input-pill input {
+    color: var(--default-color) !important;
+}
+.treatment-input-pill .unit-badge {
+    background: transparent !important;
+    color: color-mix(in srgb, var(--default-color), transparent 35%) !important;
+    font-size: 0.8rem !important;
+}
+.treatment-name-input {
+    color: var(--default-color) !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    background: transparent !important;
+    border: none !important;
+}
+.treatment-name-input:focus {
+    background: color-mix(in srgb, var(--accent-color, #6366f1), transparent 92%) !important;
+    border-radius: 8px !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3) !important;
+}
+.treatment-search-input {
+    background: color-mix(in srgb, var(--default-color), transparent 94%) !important;
+    border: 1px solid color-mix(in srgb, var(--default-color), transparent 82%) !important;
+    color: var(--default-color) !important;
+    border-radius: 50rem !important;
+}
+.treatment-search-input::placeholder {
+    color: color-mix(in srgb, var(--default-color), transparent 50%) !important;
+}
+.treatment-search-input:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+}
+.cat-pill-btn {
+    background: color-mix(in srgb, var(--default-color), transparent 96%) !important;
+    border: 1px solid color-mix(in srgb, var(--default-color), transparent 88%) !important;
+    color: var(--default-color) !important;
+    transition: all 0.25s ease !important;
+    font-size: 0.82rem !important;
+}
+.cat-pill-btn:hover {
+    background: rgba(99,102,241,0.15) !important;
+    border-color: rgba(99,102,241,0.4) !important;
+    color: #818cf8 !important;
+    transform: translateY(-1px);
+}
+.cat-pill-btn.active {
+    background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+    border-color: #6366f1 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(99,102,241,0.4) !important;
+}
+</style>
 <!-- Section Title -->
 <div class="container section-title" data-aos="fade-up">
     <h2>System Settings</h2>
@@ -202,15 +293,78 @@
                                 </div>
                             </div>
                             <div class="row g-3">
+                                {% set time_options = [
+                                    ('00:00', '12:00 منتصف الليل (00:00)', '12:00 AM (00:00)'),
+                                    ('00:30', '12:30 بعد منتصف الليل (00:30)', '12:30 AM (00:30)'),
+                                    ('01:00', '01:00 فجراً (01:00)', '01:00 AM (01:00)'),
+                                    ('01:30', '01:30 فجراً (01:30)', '01:30 AM (01:30)'),
+                                    ('02:00', '02:00 فجراً (02:00)', '02:00 AM (02:00)'),
+                                    ('02:30', '02:30 فجراً (02:30)', '02:30 AM (02:30)'),
+                                    ('03:00', '03:00 فجراً (03:00)', '03:00 AM (03:00)'),
+                                    ('03:30', '03:30 فجراً (03:30)', '03:30 AM (03:30)'),
+                                    ('04:00', '04:00 فجراً (04:00)', '04:00 AM (04:00)'),
+                                    ('04:30', '04:30 فجراً (04:30)', '04:30 AM (04:30)'),
+                                    ('05:00', '05:00 فجراً (05:00)', '05:00 AM (05:00)'),
+                                    ('05:30', '05:30 فجراً (05:30)', '05:30 AM (05:30)'),
+                                    ('06:00', '06:00 صباحاً (06:00)', '06:00 AM (06:00)'),
+                                    ('06:30', '06:30 صباحاً (06:30)', '06:30 AM (06:30)'),
+                                    ('07:00', '07:00 صباحاً (07:00)', '07:00 AM (07:00)'),
+                                    ('07:30', '07:30 صباحاً (07:30)', '07:30 AM (07:30)'),
+                                    ('08:00', '08:00 صباحاً (08:00)', '08:00 AM (08:00)'),
+                                    ('08:30', '08:30 صباحاً (08:30)', '08:30 AM (08:30)'),
+                                    ('09:00', '09:00 صباحاً (09:00 - الافتراضي)', '09:00 AM (09:00 - Default)'),
+                                    ('09:30', '09:30 صباحاً (09:30)', '09:30 AM (09:30)'),
+                                    ('10:00', '10:00 صباحاً (10:00)', '10:00 AM (10:00)'),
+                                    ('10:30', '10:30 صباحاً (10:30)', '10:30 AM (10:30)'),
+                                    ('11:00', '11:00 صباحاً (11:00)', '11:00 AM (11:00)'),
+                                    ('11:30', '11:30 صباحاً (11:30)', '11:30 AM (11:30)'),
+                                    ('12:00', '12:00 ظهراً (12:00)', '12:00 PM (12:00)'),
+                                    ('12:30', '12:30 ظهراً (12:30)', '12:30 PM (12:30)'),
+                                    ('13:00', '01:00 عصراً (13:00)', '01:00 PM (13:00)'),
+                                    ('13:30', '01:30 عصراً (13:30)', '01:30 PM (13:30)'),
+                                    ('14:00', '02:00 عصراً (14:00)', '02:00 PM (14:00)'),
+                                    ('14:30', '02:30 عصراً (14:30)', '02:30 PM (14:30)'),
+                                    ('15:00', '03:00 عصراً (15:00)', '03:00 PM (15:00)'),
+                                    ('15:30', '03:30 عصراً (15:30)', '03:30 PM (15:30)'),
+                                    ('16:00', '04:00 عصراً (16:00)', '04:00 PM (16:00)'),
+                                    ('16:30', '04:30 عصراً (16:30)', '04:30 PM (16:30)'),
+                                    ('17:00', '05:00 مساءً (17:00 - الافتراضي)', '05:00 PM (17:00 - Default)'),
+                                    ('17:30', '05:30 مساءً (17:30)', '05:30 PM (17:30)'),
+                                    ('18:00', '06:00 مساءً (18:00)', '06:00 PM (18:00)'),
+                                    ('18:30', '06:30 مساءً (18:30)', '06:30 PM (18:30)'),
+                                    ('19:00', '07:00 مساءً (19:00)', '07:00 PM (19:00)'),
+                                    ('19:30', '07:30 مساءً (19:30)', '07:30 PM (19:30)'),
+                                    ('20:00', '08:00 مساءً (20:00)', '08:00 PM (20:00)'),
+                                    ('20:30', '08:30 مساءً (20:30)', '08:30 PM (20:30)'),
+                                    ('21:00', '09:00 مساءً (21:00)', '09:00 PM (21:00)'),
+                                    ('21:30', '09:30 مساءً (21:30)', '09:30 PM (21:30)'),
+                                    ('22:00', '10:00 مساءً (22:00)', '10:00 PM (22:00)'),
+                                    ('22:30', '10:30 مساءً (22:30)', '10:30 PM (22:30)'),
+                                    ('23:00', '11:00 ليلاً (23:00)', '11:00 PM (23:00)'),
+                                    ('23:30', '11:30 ليلاً (23:30)', '11:30 PM (23:30)')
+                                ] %}
+                                {% set cur_start = (settings.working_hours_start[:5] if settings.working_hours_start else '09:00') %}
+                                {% set cur_end = (settings.working_hours_end[:5] if settings.working_hours_end else '17:00') %}
+
                                 <div class="col-md-6">
                                     <label for="working_hours_start" class="settings-label">{% if current_lang == 'ar' %}بداية ساعات العمل اليومية{% else %}Daily Working Hours Start{% endif %}</label>
-                                    <input type="time" class="form-control settings-input" id="working_hours_start"
-                                        name="working_hours_start" value="{{ settings.working_hours_start }}">
+                                    <select class="form-select settings-input fw-semibold" id="working_hours_start" name="working_hours_start" form="main-settings-form">
+                                        {% for val_code, lbl_ar, lbl_en in time_options %}
+                                        <option value="{{ val_code }}" {% if cur_start == val_code %}selected{% endif %}>
+                                            {% if current_lang == 'ar' %}{{ lbl_ar }}{% else %}{{ lbl_en }}{% endif %}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="working_hours_end" class="settings-label">{% if current_lang == 'ar' %}نهاية ساعات العمل اليومية{% else %}Daily Working Hours End{% endif %}</label>
-                                    <input type="time" class="form-control settings-input" id="working_hours_end"
-                                        name="working_hours_end" value="{{ settings.working_hours_end }}">
+                                    <select class="form-select settings-input fw-semibold" id="working_hours_end" name="working_hours_end" form="main-settings-form">
+                                        {% for val_code, lbl_ar, lbl_en in time_options %}
+                                        <option value="{{ val_code }}" {% if cur_end == val_code %}selected{% endif %}>
+                                            {% if current_lang == 'ar' %}{{ lbl_ar }}{% else %}{{ lbl_en }}{% endif %}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
                                 </div>
                                 <div class="col-md-12">
                                     <label for="default_appointment_duration" class="settings-label">{% if current_lang == 'ar' %}مدة الجلسة الافتراضية{% else %}Default Session Duration{% endif %}</label>
@@ -312,8 +466,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        </form>
 
                         <!-- ═══════════ Billing & Finance Tab ═══════════ -->
                         <div class="tab-pane fade" id="tab-billing" role="tabpanel">
@@ -515,76 +667,210 @@
 
                         <!-- ═══════════ Treatment Pricing Tab ═══════════ -->
                         <div class="tab-pane fade" id="tab-treatments" role="tabpanel">
-                            <div class="settings-tab-header">
-                                <div class="settings-tab-icon"><i class="bi bi-clipboard2-pulse"></i></div>
+                            <input type="hidden" name="anesthesia_needle_price" form="main-settings-form" value="{{ settings.anesthesia_needle_price or 50000 }}">
+                            <div class="settings-tab-header align-items-center mb-3">
+                                <div class="settings-tab-icon"><i class="bi bi-journal-medical"></i></div>
                                 <div>
-                                    <h4>{% if current_lang == 'ar' %}خدمات وأسعار المعالجات{% else %}Treatment Services & Prices{% endif %}</h4>
-                                    <p>{% if current_lang == 'ar' %}إدارة أنواع الإجراءات والأسعار الافتراضية لكل إجراء{% else %}Manage procedure types and their default pricing{% endif %}</p>
+                                    <h4 class="fw-bold mb-1">{% if current_lang == 'ar' %}خدمات وأسعار المعالجات والتخدير{% else %}Treatment Services, Anesthesia & Prices{% endif %}</h4>
+                                    <p class="text-muted mb-0 small">{% if current_lang == 'ar' %}إدارة الإجراءات الطبية والتخدير والأسعار والمدة التقديرية لكافة التخصصات{% else %}Manage procedures, anesthesia types, prices, and default duration per service{% endif %}</p>
                                 </div>
-                                <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 ms-auto"
+                                <button type="button" class="btn btn-primary btn-sm rounded-pill px-3.5 ms-auto shadow-sm d-flex align-items-center gap-1.5"
                                     id="add-procedure-btn" onclick="addNewProcedureRow()">
-                                    <i class="bi bi-plus-circle me-1"></i> {% if current_lang == 'ar' %}إضافة إجراء جديد{% else %}Add New Procedure{% endif %}
+                                    <i class="bi bi-plus-lg me-1"></i> {% if current_lang == 'ar' %}إضافة إجراء جديد{% else %}Add New Procedure{% endif %}
                                 </button>
                             </div>
 
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-12">
-                                    <label for="anesthesia_needle_price" class="settings-label">{% if current_lang == 'ar' %}سعر إبرة / جرعة التخدير (لكل تطبيق){% else %}Anesthesia / Needle Price (Per Application){% endif %}</label>
-                                    <div class="input-group">
-                                        <input type="number" class="form-control settings-input" id="anesthesia_needle_price"
-                                            name="anesthesia_needle_price" form="main-settings-form" value="{{ settings.anesthesia_needle_price }}" min="0" required>
-                                        <span class="input-group-text">{{ currency_symbol }}</span>
+                            <!-- ════════ Anesthesia Types Section ════════ -->
+                            <div class="card treatment-card-box border-0 mb-4 shadow-sm overflow-hidden">
+                                <div class="card-header treatment-card-header d-flex align-items-center justify-content-between py-3 px-3.5">
+                                    <div class="d-flex align-items-center gap-2.5">
+                                        <div class="rounded-3 d-flex align-items-center justify-content-center px-2.5 py-2" style="background: rgba(99,102,241,0.15); color: #818cf8;">
+                                            <i class="bi bi-eyedropper fs-5"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="fw-bold mb-0">{% if current_lang == 'ar' %}أنواع التخدير والجرعات والأسعار{% else %}Anesthesia Types & Dose Prices{% endif %}</h6>
+                                            <p class="text-muted small mb-0">{% if current_lang == 'ar' %}إدارة أنواع إبر وجرعات التخدير المتاحة وتكلفة كل تطبيق للجلسة{% else %}Manage dental anesthesia dose types and pricing{% endif %}</p>
+                                        </div>
                                     </div>
-                                    <div class="settings-hint"><i class="bi bi-info-circle me-1"></i>{% if current_lang == 'ar' %}يتم ضرب هذه التكلفة في عدد مرات إعطاء التخدير (المعبّر عنها بعدد الإبر المستعملة).{% else %}This cost will be multiplied by the number of times anesthesia is administered (expressed as needles used).{% endif %}</div>
+                                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="addNewAnesthesiaRow()">
+                                        <i class="bi bi-plus-circle me-1"></i>{% if current_lang == 'ar' %}إضافة نوع تخدير{% else %}Add Anesthesia Type{% endif %}
+                                    </button>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table treatment-table align-middle mb-0" style="background: transparent;">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width: 55%;" class="ps-3.5 py-2.5">{% if current_lang == 'ar' %}اسم نوع التخدير / الجرعة{% else %}Anesthesia Type Name{% endif %}</th>
+                                                    <th style="width: 33%;" class="py-2.5">{% if current_lang == 'ar' %}سعر الإبرة / التطبيق{% else %}Price per Application{% endif %}</th>
+                                                    <th style="width: 12%;" class="text-center pe-3.5 py-2.5">{% if current_lang == 'ar' %}إجراءات{% else %}Actions{% endif %}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="anesthesia-types-list">
+                                                {% for item in (anesthesia_types if anesthesia_types else []) %}
+                                                {% set clean_aprice = "%.0f"|format(item.price|float) %}
+                                                <tr class="anesthesia-row">
+                                                    <td class="ps-3.5 py-2">
+                                                        <input type="text" name="anesthesia_names[]" form="main-settings-form" class="form-control form-control-sm treatment-name-input px-2 py-1" value="{{ item.name }}" required placeholder="{% if current_lang == 'ar' %}اسم نوع التخدير{% else %}Anesthesia Type Name{% endif %}">
+                                                    </td>
+                                                    <td class="py-2">
+                                                        <div class="input-group input-group-sm treatment-input-pill overflow-hidden" style="max-width: 170px;">
+                                                            <input type="text" name="anesthesia_prices[]" form="main-settings-form" class="form-control form-control-sm border-0 bg-transparent font-monospace text-end fw-bold px-2.5" value="{{ clean_aprice }}" required placeholder="0">
+                                                            <span class="input-group-text unit-badge border-0 text-primary small fw-bold px-2.5">{{ currency_symbol }}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-center pe-3.5 py-2">
+                                                        <button type="button" class="btn btn-outline-danger btn-sm rounded-circle d-inline-flex align-items-center justify-content-center p-0" style="width:30px;height:30px;border: 1px solid rgba(239, 68, 68, 0.25); background: rgba(239, 68, 68, 0.08); color: #f87171;" onclick="deleteAnesthesiaRow(this)" data-tooltip="{% if current_lang == 'ar' %}حذف نوع التخدير{% else %}Delete Anesthesia{% endif %}">
+                                                            <i class="bi bi-trash3"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="table-responsive">
-                                <table class="table settings-table" id="procedures-table"
-                                    style="table-layout: fixed; width: 100%;">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 55%;">{% if current_lang == 'ar' %}اسم الإجراء{% else %}Procedure Name{% endif %}</th>
-                                            <th style="width: 30%;">{% if current_lang == 'ar' %}السعر الافتراضي{% else %}Default Price{% endif %}</th>
-                                            <th style="width: 15%;" class="text-center">{% if current_lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="procedures-list">
-                                        {% for name, price in treatment_prices.items() %}
-                                        {% set is_essential = (name in ['قلع سن', 'معالجة ما بعد القلع', 'Extraction', 'Tooth Extraction', 'Post-Extraction Treatment']) %}
-                                        <tr class="procedure-row {% if is_essential %}table-active-subtle{% endif %}">
-                                            <td>
-                                                <input type="text" name="procedure_names[]" form="main-settings-form"
-                                                    class="form-control settings-input {% if is_essential %}bg-light-subtle fw-bold{% endif %}" value="{{ name }}" required
-                                                    placeholder="{% if current_lang == 'ar' %}اسم الإجراء{% else %}e.g., Cleaning{% endif %}" {% if is_essential %}readonly title="{{ 'إجراء أساسي محمي بالنظام' if current_lang == 'ar' else 'Essential procedure name locked' }}"{% endif %}>
-                                            </td>
-                                            <td>
-                                                <div class="input-group settings-input-group">
-                                                    <input type="text" name="procedure_prices[]" form="main-settings-form"
-                                                        class="form-control settings-input" value="{{ price }}" required
-                                                        placeholder="0">
-                                                    <span class="input-group-text">{{ currency_symbol }}</span>
-                                                </div>
-                                            </td>
-                                            <td class="text-center align-middle">
-                                                {% if not is_essential %}
-                                                <button type="button"
-                                                    class="btn btn-outline-danger btn-sm rounded-circle delete-row-btn"
-                                                    onclick="deleteProcedureRow(this)"
-                                                    data-tooltip="{% if current_lang == 'ar' %}حذف الإجراء{% else %}Delete Procedure{% endif %}"
-                                                    style="width:34px;height:34px;padding:0 !important;">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                                {% else %}
-                                                <span class="badge bg-secondary-subtle text-secondary border px-2.5 py-1 text-xs" title="{% if current_lang == 'ar' %}إجراء أساسي محمي لا يمكن حذفه{% else %}Protected essential procedure{% endif %}">
-                                                    <i class="bi bi-shield-lock me-1 text-primary"></i>{% if current_lang == 'ar' %}محمي{% else %}Protected{% endif %}
-                                                </span>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
+                            <!-- ════════ Treatment Services Header & Search Bar ════════ -->
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                                <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                                    <i class="bi bi-list-stars text-primary"></i>
+                                    {% if current_lang == 'ar' %}قائمة أسباب وإجراءات المعالجة{% else %}Treatment Procedure Library{% endif %}
+                                </h6>
+                                <div class="position-relative" style="min-width: 270px; max-width: 380px;">
+                                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-primary"></i>
+                                    <input type="text" id="search-settings-procedures" class="form-control form-control-sm treatment-search-input ps-5 pe-3 py-1.5"
+                                        placeholder="{% if current_lang == 'ar' %}بحث فوري في قائمة المعالجات...{% else %}Search procedures...{% endif %}" onkeyup="filterSettingsProcedures()">
+                                </div>
+                            </div>
+
+                            <!-- Category Filter Badges -->
+                            <div class="d-flex flex-wrap gap-2 mb-4 p-2.5 rounded-4 shadow-sm" style="background: color-mix(in srgb, var(--default-color), transparent 97%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);" id="procedure-cat-pills">
+                                <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 cat-pill-btn active" data-cat="all" onclick="filterCategoryPill('all', this)">
+                                    {% if current_lang == 'ar' %}جميع التخصصات{% else %}All Categories{% endif %}
+                                </button>
+                                <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 cat-pill-btn" data-cat="فحص وتشخيص" onclick="filterCategoryPill('فحص وتشخيص', this)">
+                                    🩺 {% if current_lang == 'ar' %}فحص وتشخيص{% else %}Diagnostic{% endif %}
+                                </button>
+                                <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 cat-pill-btn" data-cat="حشوات ومعالجات تجميلية" onclick="filterCategoryPill('حشوات ومعالجات تجميلية', this)">
+                                    ✨ {% if current_lang == 'ar' %}حشوات ومعالجات تجميلية{% else %}Restorative{% endif %}
+                                </button>
+                                <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 cat-pill-btn" data-cat="علاج عصب وجذور" onclick="filterCategoryPill('علاج عصب وجذور', this)">
+                                    ⚡ {% if current_lang == 'ar' %}علاج عصب وجذور{% else %}Endodontics{% endif %}
+                                </button>
+                                <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 cat-pill-btn" data-cat="جراحة وقلع" onclick="filterCategoryPill('جراحة وقلع', this)">
+                                    🔪 {% if current_lang == 'ar' %}جراحة وقلع{% else %}Oral Surgery{% endif %}
+                                </button>
+                                <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 cat-pill-btn" data-cat="تعويضات وتيجان" onclick="filterCategoryPill('تعويضات وتيجان', this)">
+                                    👑 {% if current_lang == 'ar' %}تعويضات وتيجان{% else %}Prosthodontics{% endif %}
+                                </button>
+                                <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 cat-pill-btn" data-cat="تقويم أسنان" onclick="filterCategoryPill('تقويم أسنان', this)">
+                                    🪥 {% if current_lang == 'ar' %}تقويم أسنان{% else %}Orthodontics{% endif %}
+                                </button>
+                                <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 cat-pill-btn" data-cat="أسنان أطفال" onclick="filterCategoryPill('أسنان أطفال', this)">
+                                    👶 {% if current_lang == 'ar' %}أسنان أطفال{% else %}Pediatric{% endif %}
+                                </button>
+                                <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 cat-pill-btn" data-cat="إجراءات عامة وأخرى" onclick="filterCategoryPill('إجراءات عامة وأخرى', this)">
+                                    🌐 {% if current_lang == 'ar' %}إجراءات عامة وأخرى{% else %}General & Other{% endif %}
+                                </button>
+                            </div>
+
+                            {% set details_map = treatment_details if treatment_details else {} %}
+                            {% set defined_categories = [
+                                ('فحص وتشخيص', 'bi-search-heart', 'فحص وتشخيص', 'Diagnostic'),
+                                ('حشوات ومعالجات تجميلية', 'bi-magic', 'حشوات ومعالجات تجميلية', 'Restorative & Cosmetic'),
+                                ('علاج عصب وجذور', 'bi-activity', 'علاج عصب وجذور', 'Endodontics'),
+                                ('جراحة وقلع', 'bi-scissors', 'جراحة وقلع', 'Oral Surgery'),
+                                ('تعويضات وتيجان', 'bi-award', 'تعويضات وتيجان', 'Prosthodontics'),
+                                ('تقويم أسنان', 'bi-grid-3x3', 'تقويم أسنان', 'Orthodontics'),
+                                ('أسنان أطفال', 'bi-emoji-smile', 'أسنان أطفال', 'Pediatric Dentistry'),
+                                ('إجراءات عامة وأخرى', 'bi-folder-plus', 'إجراءات عامة وأخرى', 'General & Other Procedures')
+                            ] %}
+
+                            <div id="procedures-categories-wrapper">
+                                {% for cat_key, cat_icon, cat_title_ar, cat_title_en in defined_categories %}
+                                {% set cat_items = [] %}
+                                {% for name, price in treatment_prices.items() %}
+                                    {% set item_detail = details_map.get(name, {}) %}
+                                    {% set item_cat = item_detail.get('category', 'إجراءات عامة وأخرى') %}
+                                    {% if item_cat == cat_key or (cat_key == 'إجراءات عامة وأخرى' and item_cat not in ['فحص وتشخيص', 'حشوات ومعالجات تجميلية', 'علاج عصب وجذور', 'جراحة وقلع', 'تعويضات وتيجان', 'تقويم أسنان', 'أسنان أطفال', 'إجراءات عامة وأخرى']) %}
+                                        {% set _ = cat_items.append((name, price, item_detail)) %}
+                                    {% endif %}
+                                {% endfor %}
+
+                                <div class="card treatment-card-box border-0 mb-3 procedure-category-block {% if cat_items|length == 0 %}d-none{% endif %}" data-category="{{ cat_key }}">
+                                    <div class="card-header treatment-card-header d-flex align-items-center justify-content-between py-2.5 px-3.5">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi {{ cat_icon }} text-primary fs-5"></i>
+                                            <h6 class="fw-bold mb-0">{% if current_lang == 'ar' %}{{ cat_title_ar }}{% else %}{{ cat_title_en }}{% endif %}</h6>
+                                            <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 small cat-count-badge">{{ cat_items|length }}</span>
+                                        </div>
+                                        <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 text-muted hover-text-light" onclick="addNewProcedureRow('{{ cat_key }}')">
+                                            <i class="bi bi-plus-circle me-1"></i>{% if current_lang == 'ar' %}إضافة خدمة لهذا التصنيف{% else %}Add to Category{% endif %}
+                                        </button>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive">
+                                            <table class="table treatment-table align-middle mb-0" style="table-layout: fixed; width: 100%; background: transparent;">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 42%;" class="ps-3.5 py-2.5">{% if current_lang == 'ar' %}اسم الإجراء الطبي{% else %}Procedure Name{% endif %}</th>
+                                                        <th style="width: 22%;" class="py-2.5">{% if current_lang == 'ar' %}المدة (بالدقائق){% else %}Duration{% endif %}</th>
+                                                        <th style="width: 24%;" class="py-2.5">{% if current_lang == 'ar' %}السعر الافتراضي{% else %}Default Price{% endif %}</th>
+                                                        <th style="width: 12%;" class="text-center pe-3.5 py-2.5">{% if current_lang == 'ar' %}إجراءات{% else %}Action{% endif %}</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="procedures-group-list">
+                                                    {% for name, price, item_detail in cat_items %}
+                                                    {% set is_essential = (name in ['قلع سن عادي', 'قلع سن', 'معالجة ما بعد القلع', 'Extraction', 'Tooth Extraction', 'Post-Extraction Treatment']) %}
+                                                    {% set clean_price = "%.0f"|format(price|float) %}
+                                                    <tr class="procedure-row {% if is_essential %}table-active-subtle{% endif %}">
+                                                        <td class="ps-3.5 py-2">
+                                                            <input type="text" name="procedure_names[]" form="main-settings-form"
+                                                                class="form-control form-control-sm treatment-name-input px-2 py-1 text-truncate" value="{{ name }}" required
+                                                                placeholder="{% if current_lang == 'ar' %}اسم الإجراء{% else %}Procedure Name{% endif %}" {% if is_essential %}readonly title="{{ 'إجراء أساسي محمي بالنظام' if current_lang == 'ar' else 'Essential procedure locked' }}"{% endif %}>
+                                                            <input type="hidden" name="procedure_categories[]" form="main-settings-form" value="{{ cat_key }}">
+                                                            <input type="hidden" name="procedure_actives[]" form="main-settings-form" value="true">
+                                                        </td>
+                                                        <td class="py-2">
+                                                            <div class="input-group input-group-sm treatment-input-pill overflow-hidden" style="max-width: 130px;">
+                                                                <input type="number" name="procedure_durations[]" form="main-settings-form"
+                                                                    class="form-control form-control-sm border-0 bg-transparent text-center font-monospace fw-bold" value="{{ item_detail.get('duration', 30) }}" min="5" max="300" step="5" required
+                                                                    placeholder="30">
+                                                                <span class="input-group-text unit-badge border-0 small px-2.5">{% if current_lang == 'ar' %}دقيقة{% else %}min{% endif %}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="py-2">
+                                                            <div class="input-group input-group-sm treatment-input-pill overflow-hidden" style="max-width: 160px;">
+                                                                <input type="text" name="procedure_prices[]" form="main-settings-form"
+                                                                    class="form-control form-control-sm border-0 bg-transparent font-monospace text-end fw-bold px-2.5" value="{{ clean_price }}" required
+                                                                    placeholder="0">
+                                                                <span class="input-group-text unit-badge border-0 text-primary small fw-bold px-2.5">{{ currency_symbol }}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="text-center pe-3.5 py-2">
+                                                            {% if not is_essential %}
+                                                            <button type="button"
+                                                                class="btn btn-outline-danger btn-sm rounded-circle d-inline-flex align-items-center justify-content-center p-0" style="width:30px;height:30px;border: 1px solid rgba(239, 68, 68, 0.25); background: rgba(239, 68, 68, 0.08); color: #f87171;"
+                                                                onclick="deleteProcedureRow(this)"
+                                                                data-tooltip="{% if current_lang == 'ar' %}حذف الإجراء{% else %}Delete Procedure{% endif %}">
+                                                                <i class="bi bi-trash3"></i>
+                                                            </button>
+                                                            {% else %}
+                                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 small" title="{% if current_lang == 'ar' %}إجراء محمي لا يمكن حذفه{% else %}Protected procedure{% endif %}">
+                                                                <i class="bi bi-shield-lock text-primary"></i>
+                                                            </span>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
                             </div>
                         </div>
 
@@ -852,10 +1138,25 @@
                                             </a>
                                         </div>
                                         <div class="mt-3 pt-3 border-top border-warning border-opacity-25">
-                                            <label class="settings-label small text-muted d-block mb-1">{% if current_lang == 'ar' %}رقم واتساب المطوّر المباشر للتفعيل والدعم{% else %}Developer WhatsApp Phone Number{% endif %}</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text bg-dark border-secondary text-warning"><i class="bi bi-whatsapp"></i></span>
-                                                <input type="text" class="form-control settings-input border-secondary text-light fw-bold" value="+963958948727" readonly style="opacity: 0.9; cursor: not-allowed; direction: ltr; text-align: left;">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label class="settings-label small text-muted d-block mb-1">{% if current_lang == 'ar' %}رقم واتساب المطوّر المباشر للتفعيل والدعم{% else %}Developer WhatsApp (Activation & Support){% endif %}</label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control settings-input border-secondary text-light fw-bold" value="+963958948727" readonly style="opacity: 0.9; cursor: default; direction: ltr; text-align: left;">
+                                                        <a href="https://wa.me/963958948727" target="_blank" rel="noopener noreferrer" class="input-group-text bg-dark border-secondary text-warning text-decoration-none" style="cursor: pointer; transition: all 0.2s ease;" title="{% if current_lang == 'ar' %}مراسلة المطور عبر واتساب{% else %}Chat on WhatsApp{% endif %}">
+                                                            <i class="bi bi-whatsapp fs-5"></i>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="settings-label small text-muted d-block mb-1">{% if current_lang == 'ar' %}رقم واتساب المطوّر المباشر للأسئلة و الاستفسارات{% else %}Developer WhatsApp (Questions & Inquiries){% endif %}</label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control settings-input border-secondary text-light fw-bold" value="+963934570355" readonly style="opacity: 0.9; cursor: default; direction: ltr; text-align: left;">
+                                                        <a href="https://wa.me/963934570355" target="_blank" rel="noopener noreferrer" class="input-group-text bg-dark border-secondary text-warning text-decoration-none" style="cursor: pointer; transition: all 0.2s ease;" title="{% if current_lang == 'ar' %}مراسلة المطور عبر واتساب{% else %}Chat on WhatsApp{% endif %}">
+                                                            <i class="bi bi-whatsapp fs-5"></i>
+                                                        </a>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -946,18 +1247,18 @@
                                 </table>
                             </div>
 
-                            <!-- Reset Clinic Section (Danger Zone) -->
+                            <!-- Reset Operational Records Section -->
                             <div class="mt-4 pt-4 border-top" style="border-top-color: rgba(220, 53, 69, 0.2) !important;">
                                 <div class="card border-danger border-opacity-25 bg-danger bg-opacity-10 rounded-3 p-3">
                                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                                         <div>
                                             <h5 class="text-danger fw-bold mb-1">
-                                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                                {% if current_lang == 'ar' %}إعادة ضبط العيادة{% else %}Reset Clinic{% endif %}
+                                                <i class="bi bi-arrow-counterclockwise me-2"></i>
+                                                {% if current_lang == 'ar' %}إعادة ضبط سجلات العيادة{% else %}Reset Operational Data{% endif %}
                                             </h5>
                                             <p class="text-muted small mb-0">
                                                 {% if current_lang == 'ar' %}
-                                                    حذف جميع سجلات المرضى والمواعيد والمعالجات والفواتير بشكل دائم، مع الحفاظ على الإعدادات، التوكنز، وحسابات المستخدمين.
+                                                    حذف جميع سجلات المرضى والمواعيد والمعالجات والفواتير والمصاريف بشكل دائم، مع الحفاظ على الإعدادات، التوكنز، وحسابات المستخدمين.
                                                 {% else %}
                                                     Permanently delete all patient records, appointments, treatments, and financial data while maintaining system settings, tokens, and user accounts.
                                                 {% endif %}
@@ -965,7 +1266,32 @@
                                         </div>
                                         <button type="button" class="btn btn-danger text-nowrap rounded-pill px-4 py-2 fw-semibold shadow-sm" onclick="triggerResetClinicFlow()">
                                             <i class="bi bi-arrow-counterclockwise me-1"></i>
-                                            {% if current_lang == 'ar' %}إعادة ضبط العيادة{% else %}Reset Clinic{% endif %}
+                                            {% if current_lang == 'ar' %}تصفير السجلات التشغيلية{% else %}Reset Operational Data{% endif %}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Full Factory Reset Section -->
+                            <div class="mt-3">
+                                <div class="card border-danger border-opacity-40 bg-dark rounded-3 p-3" style="background: rgba(220, 53, 69, 0.08) !important;">
+                                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                                        <div>
+                                            <h5 class="text-danger fw-bold mb-1">
+                                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                                {% if current_lang == 'ar' %}إعادة الضبط المصنعي (تصفير شامل){% else %}Full Factory Reset{% endif %}
+                                            </h5>
+                                            <p class="text-muted small mb-0">
+                                                {% if current_lang == 'ar' %}
+                                                    حذف وتصفير جميع السجلات والمرضى والمواعيد والمعالجات والفواتير وكافة حسابات المستخدمين بالكامل، وإعادة ضبط العيادة للقيم الافتراضية مع إنشاء حساب المدير الافتراضي الوحيد (admin / admin123).
+                                                {% else %}
+                                                    Perform a full factory reset: permanently delete all patients, appointments, treatments, financial records, and user accounts. Restores all clinic settings to default values and creates a single admin account (admin / admin123).
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-danger text-nowrap rounded-pill px-4 py-2 fw-semibold shadow-sm" onclick="triggerFactoryResetClinicFlow()">
+                                            <i class="bi bi-shield-x me-1"></i>
+                                            {% if current_lang == 'ar' %}ضبط مصنعي شامل{% else %}Full Factory Reset{% endif %}
                                         </button>
                                     </div>
                                 </div>
@@ -1370,6 +1696,7 @@
                             <i class="bi bi-check-circle me-1"></i> Save All Settings
                         </button>
                     </div>
+                </form>
             </div>
         </div>
 
@@ -1382,11 +1709,11 @@
 <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content settings-modal">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold" id="addUserModalLabel">
+            <div class="modal-header border-0 pb-0 d-flex align-items-center justify-content-between w-100">
+                <h5 class="modal-title fw-bold mb-0" id="addUserModalLabel">
                     <i class="bi bi-person-plus me-2" style="color: var(--accent-color);"></i>Create User Account
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close ms-0 me-auto m-0" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('settings.add_user') }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -1438,11 +1765,11 @@
 <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content settings-modal">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold" id="editUserModalLabel">
+            <div class="modal-header border-0 pb-0 d-flex align-items-center justify-content-between w-100">
+                <h5 class="modal-title fw-bold mb-0" id="editUserModalLabel">
                     <i class="bi bi-pencil-square me-2" style="color: #ffd666;"></i>Edit User Account
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close ms-0 me-auto m-0" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="editUserForm" method="POST" action="">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -1500,17 +1827,17 @@
 </div>
 
 <!-- ═══════════════════════════════════════════
-     Reset Clinic Admin Verification Modal
+     Reset Operational Data Modal
      ═══════════════════════════════════════════ -->
 <div class="modal fade" id="resetClinicModal" tabindex="-1" aria-labelledby="resetClinicModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content settings-modal border border-danger">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold text-danger" id="resetClinicModalLabel">
+            <div class="modal-header border-0 pb-0 d-flex align-items-center justify-content-between w-100">
+                <h5 class="modal-title fw-bold text-danger mb-0" id="resetClinicModalLabel">
                     <i class="bi bi-shield-lock-fill me-2"></i>
-                    {% if current_lang == 'ar' %}التحقق الأمني لإعادة ضبط العيادة{% else %}Admin Verification — Reset Clinic{% endif %}
+                    {% if current_lang == 'ar' %}التحقق الأمني لتصفير سجلات العيادة{% else %}Admin Verification — Reset Operational Data{% endif %}
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close ms-0 me-auto m-0" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('settings.reset_clinic') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
@@ -1519,9 +1846,9 @@
                         <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0 mt-1"></i>
                         <div class="small">
                             {% if current_lang == 'ar' %}
-                                <strong>تنبيه نهائي:</strong> سيتم حذف كافة سجلات المرضى والمواعيد والمعالجات والفواتير بالكامل. يرجى إدخال اسم المستخدم وكلمة المرور لحساب المدير (Admin) للتأكيد والتحقق.
+                                <strong>تنبيه:</strong> سيتم حذف كافة سجلات المرضى والمواعيد والمعالجات والفواتير والمصاريف بشكل دائم، مع الحفاظ على الإعدادات، التوكنز، وحسابات المستخدمين والكوادر. يرجى إدخال اسم المستخدم وكلمة المرور للمدير للتأكيد.
                             {% else %}
-                                <strong>Final Warning:</strong> All patients, appointments, treatments, and billing data will be wiped out. Please enter your Admin credentials to authorize this action.
+                                <strong>Warning:</strong> All patients, appointments, treatments, and billing data will be permanently wiped out while maintaining settings and user accounts. Please enter your Admin credentials to authorize.
                             {% endif %}
                         </div>
                     </div>
@@ -1546,7 +1873,62 @@
                     </button>
                     <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">
                         <i class="bi bi-trash3-fill me-1"></i>
-                        {% if current_lang == 'ar' %}تأكيد وتصفير العيادة نهائياً{% else %}Confirm & Wipe Database{% endif %}
+                        {% if current_lang == 'ar' %}تأكيد وتصفير السجلات{% else %}Confirm & Clear Records{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     Factory Reset Clinic Modal
+     ═══════════════════════════════════════════ -->
+<div class="modal fade" id="factoryResetClinicModal" tabindex="-1" aria-labelledby="factoryResetClinicModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content settings-modal border border-danger">
+            <div class="modal-header border-0 pb-0 d-flex align-items-center justify-content-between w-100">
+                <h5 class="modal-title fw-bold text-danger mb-0" id="factoryResetClinicModalLabel">
+                    <i class="bi bi-shield-x me-2"></i>
+                    {% if current_lang == 'ar' %}التحقق الأمني للضبط المصنعي الشامل{% else %}Admin Verification — Full Factory Reset{% endif %}
+                </h5>
+                <button type="button" class="btn-close ms-0 me-auto m-0" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('settings.factory_reset_clinic') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                <div class="modal-body py-3">
+                    <div class="alert alert-danger d-flex align-items-start gap-2 mb-3">
+                        <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0 mt-1"></i>
+                        <div class="small">
+                            {% if current_lang == 'ar' %}
+                                <strong>تنبيه نهائي خطير:</strong> سيتم إجراء ضبط مصنعي كامل وتصفير قاعدة البيانات وحذف جميع المرضى والمواعيد والمعالجات وكافة حسابات المستخدمين وإعادة جميع الإعدادات للقيم الافتراضية. الحساب الوحيد المتبقي سيكون حساب المدير الافتراضي (admin / admin123). يرجى إدخال اسم المستخدم وكلمة المرور للمدير للتأكيد.
+                            {% else %}
+                                <strong>Critical Warning:</strong> This will perform a full factory reset, wiping all patients, appointments, financial records, and user accounts. All clinic settings will be restored to defaults, leaving only the default admin (admin / admin123). Enter your current admin credentials to authorize.
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="factory_reset_admin_username" class="settings-label">
+                            {% if current_lang == 'ar' %}اسم المستخدم للمدير (Admin Username){% else %}Admin Username{% endif %}
+                        </label>
+                        <input type="text" class="form-control settings-input" id="factory_reset_admin_username" name="admin_username"
+                            required placeholder="{% if current_lang == 'ar' %}أدخل اسم المستخدم للآدمن{% else %}Enter admin username{% endif %}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="factory_reset_admin_password" class="settings-label">
+                            {% if current_lang == 'ar' %}كلمة المرور للمدير (Admin Password){% else %}Admin Password{% endif %}
+                        </label>
+                        <input type="password" class="form-control settings-input" id="factory_reset_admin_password" name="admin_password"
+                            required placeholder="{% if current_lang == 'ar' %}أدخل كلمة المرور للآدمن{% else %}Enter admin password{% endif %}">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">
+                        {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                    </button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">
+                        <i class="bi bi-trash3-fill me-1"></i>
+                        {% if current_lang == 'ar' %}تأكيد وتصفير العيادة نهائياً{% else %}Confirm Factory Reset{% endif %}
                     </button>
                 </div>
             </form>
@@ -1560,14 +1942,14 @@
 <div class="modal fade" id="restoreBackupModal" tabindex="-1" aria-labelledby="restoreBackupModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content settings-modal border border-warning">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold text-warning text-dark-emphasis" id="restoreBackupModalLabel">
+            <div class="modal-header border-0 pb-0 d-flex align-items-center justify-content-between w-100">
+                <h5 class="modal-title fw-bold text-warning text-dark-emphasis mb-0" id="restoreBackupModalLabel">
                     <i class="bi bi-shield-lock-fill me-2"></i>
                     {% if current_lang == 'ar' %}تأكيد استعادة نسخة احتياطية{% else %}Admin Verification — Restore Backup{% endif %}
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close ms-0 me-auto m-0" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="POST" action="{{ url_for('settings.restore_backup') }}">
+            <form method="POST" action="{{ url_for('settings.restore_backup') }}" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
                 <div class="modal-body py-3">
                     <div class="alert alert-warning d-flex align-items-start gap-2 mb-3">
@@ -1585,16 +1967,29 @@
                             {% if current_lang == 'ar' %}اختر النسخة الاحتياطية المراد استعادتها{% else %}Select Backup File to Restore{% endif %}
                         </label>
                         <select class="form-select settings-input" id="restore_backup_filename" name="backup_filename" required>
+                            <option value="__upload__">
+                                📂 {% if current_lang == 'ar' %}اختيار يدوي من الجهاز (رفع ملف)...{% else %}Manual file selection (Upload file)...{% endif %}
+                            </option>
                             {% for b in backups %}
                                 <option value="{{ b.filename }}">
                                     📅 {{ b.mtime }} — ({{ b.size }})
                                 </option>
                             {% else %}
-                                <option value="" disabled selected>
-                                    {% if current_lang == 'ar' %}لا تتوفر نسخ احتياطية محفوظة{% else %}No saved backups available{% endif %}
+                                <option value="__upload__" selected>
+                                    📂 {% if current_lang == 'ar' %}اختيار يدوي من الجهاز (رفع ملف)...{% else %}Manual file selection (Upload file)...{% endif %}
                                 </option>
                             {% endfor %}
                         </select>
+                    </div>
+                    <div class="mb-3 d-none" id="manual_backup_file_container">
+                        <label for="manual_backup_file" class="settings-label">
+                            {% if current_lang == 'ar' %}اختر ملف النسخة الاحتياطية (.db أو .sql){% else %}Select Backup File (.db or .sql){% endif %}
+                        </label>
+                        <input type="file" class="form-control settings-input" id="manual_backup_file" name="manual_backup_file" accept=".db,.sql">
+                        <div class="settings-hint mt-1 text-warning small">
+                            <i class="bi bi-info-circle me-1"></i>
+                            {% if current_lang == 'ar' %}سيتم رفع وفحص واستعادة البيانات مباشرة من هذا الملف.{% else %}Data will be uploaded, verified, and restored directly from this file.{% endif %}
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="restore_admin_username" class="settings-label">
@@ -1635,40 +2030,159 @@
         }
     }
 
-    window.addNewProcedureRow = function () {
-        const list = document.getElementById("procedures-list");
-        if (list) {
-            const isAr = getIsArabic();
-            const namePlaceholder = isAr ? 'اسم الإجراء (مثال: تنظيف وتلميع)' : 'Procedure Name (e.g., Cleaning)';
-            const deleteTooltip = isAr ? 'حذف الإجراء' : 'Delete Procedure';
-            const currencySymbol = "{{ currency_symbol }}";
-            const row = document.createElement("tr");
-            row.className = "procedure-row";
-            row.innerHTML = `
-            <td>
-                <input type="text" name="procedure_names[]" form="main-settings-form" class="form-control settings-input" required placeholder="${namePlaceholder}">
+    window.addNewAnesthesiaRow = function () {
+        const tbody = document.getElementById('anesthesia-types-list');
+        if (!tbody) return;
+        const isAr = getIsArabic();
+        const namePlaceholder = isAr ? 'اسم نوع التخدير الجديد' : 'New Anesthesia Type Name';
+        const deleteTooltip = isAr ? 'حذف نوع التخدير' : 'Delete Anesthesia';
+        const currencySymbol = "{{ currency_symbol }}";
+        const row = document.createElement("tr");
+        row.className = "anesthesia-row";
+        row.innerHTML = `
+            <td class="ps-3.5 py-2">
+                <input type="text" name="anesthesia_names[]" form="main-settings-form" class="form-control form-control-sm treatment-name-input px-2 py-1" required placeholder="${namePlaceholder}">
             </td>
-            <td>
-                <div class="input-group settings-input-group">
-                    <input type="text" name="procedure_prices[]" form="main-settings-form" class="form-control settings-input" required placeholder="0">
-                    <span class="input-group-text">${currencySymbol}</span>
+            <td class="py-2">
+                <div class="input-group input-group-sm treatment-input-pill overflow-hidden" style="max-width: 170px;">
+                    <input type="text" name="anesthesia_prices[]" form="main-settings-form" class="form-control form-control-sm border-0 bg-transparent font-monospace text-end fw-bold px-2.5" value="50000" required placeholder="0">
+                    <span class="input-group-text unit-badge border-0 text-primary small fw-bold px-2.5">${currencySymbol}</span>
                 </div>
             </td>
-            <td class="text-center align-middle">
-                <button type="button" class="btn btn-outline-danger btn-sm rounded-circle delete-row-btn" onclick="deleteProcedureRow(this)" data-tooltip="${deleteTooltip}" style="width:34px;height:34px;padding:0 !important;">
-                    <i class="bi bi-trash"></i>
+            <td class="text-center pe-3.5 py-2">
+                <button type="button" class="btn btn-outline-danger btn-sm rounded-circle d-inline-flex align-items-center justify-content-center p-0" style="width:30px;height:30px;border: 1px solid rgba(239, 68, 68, 0.25); background: rgba(239, 68, 68, 0.08); color: #f87171;" onclick="deleteAnesthesiaRow(this)" data-tooltip="${deleteTooltip}">
+                    <i class="bi bi-trash3"></i>
                 </button>
             </td>
         `;
-            list.appendChild(row);
-            if (typeof window.initCustomTooltips === "function") {
-                window.initCustomTooltips();
+        tbody.appendChild(row);
+        const input = row.querySelector('input[name="anesthesia_names[]"]');
+        if (input) {
+            input.focus();
+        }
+    };
+
+    window.deleteAnesthesiaRow = function (btn) {
+        const row = btn ? btn.closest("tr") : null;
+        if (!row) return;
+        row.remove();
+    };
+
+    window.filterCategoryPill = function (catKey, btn) {
+        document.querySelectorAll('#procedure-cat-pills .cat-pill-btn').forEach(b => {
+            b.classList.remove('active');
+        });
+        if (btn) btn.classList.add('active');
+
+        const searchInput = document.getElementById('search-settings-procedures');
+        if (searchInput && catKey !== 'all') {
+            searchInput.value = '';
+        }
+
+        const blocks = document.querySelectorAll('.procedure-category-block');
+        blocks.forEach(block => {
+            const blockCat = block.getAttribute('data-category');
+            if (catKey === 'all') {
+                const countBadge = block.querySelector('.cat-count-badge');
+                const cnt = countBadge ? parseInt(countBadge.textContent || '0', 10) : 0;
+                if (cnt > 0) {
+                    block.classList.remove('d-none');
+                    block.style.display = '';
+                } else {
+                    block.style.display = 'none';
+                }
+            } else if (blockCat === catKey) {
+                block.classList.remove('d-none');
+                block.style.display = '';
+            } else {
+                block.style.display = 'none';
             }
-            const nameInput = row.querySelector('input[name="procedure_names[]"]');
-            if (nameInput) {
-                nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                setTimeout(() => nameInput.focus(), 150);
+        });
+    };
+
+    window.filterSettingsProcedures = function () {
+        const input = document.getElementById('search-settings-procedures');
+        if (!input) return;
+        const q = input.value.toLowerCase().trim();
+
+        const blocks = document.querySelectorAll('.procedure-category-block');
+        blocks.forEach(block => {
+            let hasMatch = false;
+            const rows = block.querySelectorAll('tr.procedure-row');
+            rows.forEach(r => {
+                const inp = r.querySelector('input[name="procedure_names[]"]');
+                const txt = inp ? inp.value.toLowerCase() : '';
+                if (!q || txt.includes(q)) {
+                    r.style.display = '';
+                    hasMatch = true;
+                } else {
+                    r.style.display = 'none';
+                }
+            });
+            if (q) {
+                block.style.display = hasMatch ? '' : 'none';
+            } else {
+                const activePill = document.querySelector('#procedure-cat-pills .cat-pill-btn.active');
+                const currentCat = activePill ? activePill.getAttribute('data-cat') : 'all';
+                block.style.display = (currentCat === 'all' || block.getAttribute('data-category') === currentCat) ? '' : 'none';
             }
+        });
+    };
+
+    window.addNewProcedureRow = function (targetCategory) {
+        const catKey = targetCategory || 'إجراءات عامة وأخرى';
+        let targetBlock = document.querySelector(`.procedure-category-block[data-category="${catKey}"]`);
+        if (!targetBlock) {
+            targetBlock = document.querySelector('.procedure-category-block[data-category="إجراءات عامة وأخرى"]') || document.querySelector('.procedure-category-block');
+        }
+        if (!targetBlock) return;
+
+        const tbody = targetBlock.querySelector('tbody.procedures-group-list');
+        if (!tbody) return;
+
+        const isAr = getIsArabic();
+        const namePlaceholder = isAr ? 'اسم الإجراء الجديد' : 'New Procedure Name';
+        const deleteTooltip = isAr ? 'حذف الإجراء' : 'Delete Procedure';
+        const currencySymbol = "{{ currency_symbol }}";
+        const row = document.createElement("tr");
+        row.className = "procedure-row";
+        row.innerHTML = `
+            <td class="ps-3.5 py-2">
+                <input type="text" name="procedure_names[]" form="main-settings-form" class="form-control form-control-sm treatment-name-input px-2 py-1 text-truncate" required placeholder="${namePlaceholder}">
+                <input type="hidden" name="procedure_categories[]" form="main-settings-form" value="${catKey}">
+                <input type="hidden" name="procedure_actives[]" form="main-settings-form" value="true">
+            </td>
+            <td class="py-2">
+                <div class="input-group input-group-sm treatment-input-pill overflow-hidden" style="max-width: 130px;">
+                    <input type="number" name="procedure_durations[]" form="main-settings-form" class="form-control form-control-sm border-0 bg-transparent text-center font-monospace fw-bold" value="30" min="5" max="300" step="5" required placeholder="30">
+                    <span class="input-group-text unit-badge border-0 small px-2.5">${isAr ? 'دقيقة' : 'min'}</span>
+                </div>
+            </td>
+            <td class="py-2">
+                <div class="input-group input-group-sm treatment-input-pill overflow-hidden" style="max-width: 160px;">
+                    <input type="text" name="procedure_prices[]" form="main-settings-form" class="form-control form-control-sm border-0 bg-transparent font-monospace text-end fw-bold px-2.5" value="50000" required placeholder="0">
+                    <span class="input-group-text unit-badge border-0 text-primary small fw-bold px-2.5">${currencySymbol}</span>
+                </div>
+            </td>
+            <td class="text-center pe-3.5 py-2">
+                <button type="button" class="btn btn-outline-danger btn-sm rounded-circle d-inline-flex align-items-center justify-content-center p-0" style="width:30px;height:30px;border: 1px solid rgba(239, 68, 68, 0.25); background: rgba(239, 68, 68, 0.08); color: #f87171;" onclick="deleteProcedureRow(this)" data-tooltip="${deleteTooltip}">
+                    <i class="bi bi-trash3"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+
+        targetBlock.classList.remove('d-none');
+        targetBlock.style.display = '';
+        const badge = targetBlock.querySelector('.cat-count-badge');
+        if (badge) {
+            badge.textContent = tbody.querySelectorAll('tr.procedure-row').length;
+        }
+
+        const nameInput = row.querySelector('input[name="procedure_names[]"]');
+        if (nameInput) {
+            nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => nameInput.focus(), 150);
         }
     };
 
@@ -2009,44 +2523,14 @@
                 const currencyInput = document.getElementById("currency_symbol");
                 const bookingDaysInput = document.getElementById("booking_window_days");
                 
-                let errors = [];
                 if (nameInput && !nameInput.value.trim()) {
-                    errors.push("Clinic Name is required.");
+                    nameInput.value = "عيادة الأسنان";
                 }
                 if (currencyInput && !currencyInput.value.trim()) {
-                    errors.push("Currency Symbol is required.");
+                    currencyInput.value = "SP";
                 }
-                if (bookingDaysInput) {
-                    const daysVal = parseInt(bookingDaysInput.value, 10);
-                    if (isNaN(daysVal) || daysVal <= 0) {
-                        errors.push("Booking Window Days must be a positive integer.");
-                    }
-                }
-                
-                if (errors.length > 0) {
-                    event.preventDefault();
-                    alert(errors.join("\n"));
-                    
-                    // Switch to the first tab with an error
-                    if (nameInput && !nameInput.value.trim()) {
-                        const tabButton = document.getElementById("tab-general-btn");
-                        if (tabButton) {
-                            const tab = new bootstrap.Tab(tabButton);
-                            tab.show();
-                        }
-                    } else if (bookingDaysInput && (isNaN(parseInt(bookingDaysInput.value, 10)) || parseInt(bookingDaysInput.value, 10) <= 0)) {
-                        const tabButton = document.getElementById("tab-calendar-btn");
-                        if (tabButton) {
-                            const tab = new bootstrap.Tab(tabButton);
-                            tab.show();
-                        }
-                    } else if (currencyInput && !currencyInput.value.trim()) {
-                        const tabButton = document.getElementById("tab-billing-btn");
-                        if (tabButton) {
-                            const tab = new bootstrap.Tab(tabButton);
-                            tab.show();
-                        }
-                    }
+                if (bookingDaysInput && (isNaN(parseInt(bookingDaysInput.value, 10)) || parseInt(bookingDaysInput.value, 10) <= 0)) {
+                    bookingDaysInput.value = "30";
                 }
             });
         }
@@ -2294,31 +2778,92 @@
 
             if (typeof Swal !== 'undefined') {
                 Swal.fire({
-                    title: isAr ? '⚠️ تحذير شديد الخطورة!' : '⚠️ CRITICAL WARNING!',
+                    title: isAr ? '⚠️ تصفير سجلات العيادة' : '⚠️ Reset Operational Data',
                     html: isAr ? `
                         <div class="text-end dir-rtl p-1" style="direction: rtl; text-align: right;">
-                            <p class="fw-bold text-danger mb-2 fs-6">هل أنت متأكد تماماً من رغبتك في إعادة ضبط العيادة وتصفير كافة البيانات؟</p>
+                            <p class="fw-bold text-danger mb-3 fs-6" style="line-height: 1.5;">هل أنت متأكد من رغبتك في تصفير وحذف سجلات العيادة التشغيلية؟</p>
                             <div class="p-3 bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded-3 mb-3 small">
-                                <div class="fw-bold mb-1 text-danger"><i class="bi bi-x-circle-fill me-1"></i> سيتم حذف:</div>
-                                <ul class="mb-0 pe-3 text-secondary" style="list-style-type: square;">
-                                    <li>جميع المرضى والملفات الطبية</li>
-                                    <li>جميع المواعيد والجلسات</li>
+                                <div class="fw-bold mb-2 text-danger d-flex align-items-center gap-2" style="font-size: 0.92rem;">
+                                    <i class="bi bi-x-circle-fill fs-6"></i>
+                                    <span>سيتم حذف:</span>
+                                </div>
+                                <ul class="mb-0 text-secondary" style="list-style-type: disc; padding-right: 1.25rem; padding-left: 0; margin-right: 0.25rem; text-align: right; direction: rtl;">
+                                    <li class="mb-1">جميع المرضى والملفات والتقارير الطبية</li>
+                                    <li class="mb-1">جميع المواعيد والجلسات المعالجة</li>
                                     <li>كافة الفواتير والمدفوعات والمصاريف</li>
                                 </ul>
                             </div>
                             <div class="p-2.5 bg-success bg-opacity-10 border border-success border-opacity-25 rounded-3 small">
-                                <div class="fw-bold text-success"><i class="bi bi-check-circle-fill me-1"></i> سيتم الحفاظ على:</div>
-                                <span class="text-secondary small">إعدادات العيادة، توكنز الإشعارات، الأسعار، وحسابات المستخدمين والمدراء.</span>
+                                <div class="fw-bold text-success mb-1 d-flex align-items-center gap-2" style="font-size: 0.92rem;">
+                                    <i class="bi bi-check-circle-fill fs-6"></i>
+                                    <span>سيتم الحفاظ على:</span>
+                                </div>
+                                <span class="text-secondary small d-block" style="padding-right: 0.25rem;">إعدادات العيادة، توكنز الإشعارات، أسعار المعالجات، وحسابات المستخدمين والكوادر والمدراء.</span>
                             </div>
                         </div>
-                    ` : 'Are you sure you want to reset all clinic data?',
+                    ` : 'Are you sure you want to reset operational clinic data?',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#dc3545',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: isAr ? 'متابعة للتحقق الأمني ➔' : 'Proceed to Admin Verification ➔',
+                    confirmButtonText: isAr ? 'متابعة للتحقق الأمني ⟵' : 'Proceed to Admin Verification ➔',
                     cancelButtonText: isAr ? 'إلغاء' : 'Cancel',
-                    reverseButtons: true
+                    reverseButtons: isAr ? false : true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        openModal();
+                    }
+                });
+            } else {
+                openModal();
+            }
+        };
+
+        window.triggerFactoryResetClinicFlow = function() {
+            const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
+
+            const openModal = function() {
+                const modalEl = document.getElementById('factoryResetClinicModal');
+                if (modalEl) {
+                    const bsModal = new bootstrap.Modal(modalEl);
+                    bsModal.show();
+                }
+            };
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: isAr ? '⚠️ تحذير شديد الخطورة (ضبط مصنعي)' : '⚠️ CRITICAL WARNING (Factory Reset)',
+                    html: isAr ? `
+                        <div class="text-end dir-rtl p-1" style="direction: rtl; text-align: right;">
+                            <p class="fw-bold text-danger mb-3 fs-6" style="line-height: 1.5;">هل أنت متأكد تماماً من رغبتك في تصفير العيادة بالكامل وإعادتها لضبط المصنع؟</p>
+                            <div class="p-3 bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded-3 mb-3 small">
+                                <div class="fw-bold mb-2 text-danger d-flex align-items-center gap-2" style="font-size: 0.92rem;">
+                                    <i class="bi bi-x-circle-fill fs-6"></i>
+                                    <span>سيتم مسح وتصفير:</span>
+                                </div>
+                                <ul class="mb-0 text-secondary" style="list-style-type: disc; padding-right: 1.25rem; padding-left: 0; margin-right: 0.25rem; text-align: right; direction: rtl;">
+                                    <li class="mb-1">جميع المرضى والملفات والتقارير الطبية</li>
+                                    <li class="mb-1">جميع المواعيد والجلسات المعالجة</li>
+                                    <li class="mb-1">كافة الفواتير والمدفوعات والمصاريف</li>
+                                    <li>جميع حسابات المستخدمين والكوادر والمدراء</li>
+                                </ul>
+                            </div>
+                            <div class="p-2.5 bg-primary bg-opacity-10 border border-primary border-opacity-25 rounded-3 small">
+                                <div class="fw-bold text-primary mb-1 d-flex align-items-center gap-2" style="font-size: 0.92rem;">
+                                    <i class="bi bi-arrow-counterclockwise fs-6"></i>
+                                    <span>سيتم الاستعادة التلقائية:</span>
+                                </div>
+                                <span class="text-secondary small d-block" style="padding-right: 0.25rem;">استعادة كافة الإعدادات والأسعار والأزمنة الافتراضية، وإنشاء حساب المدير الافتراضي الوحيد (admin / admin123).</span>
+                            </div>
+                        </div>
+                    ` : 'Are you sure you want to perform a full factory reset of the clinic?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: isAr ? 'متابعة للتحقق الأمني ⟵' : 'Proceed to Admin Verification ➔',
+                    cancelButtonText: isAr ? 'إلغاء' : 'Cancel',
+                    reverseButtons: isAr ? false : true
                 }).then((result) => {
                     if (result.isConfirmed) {
                         openModal();
@@ -2345,10 +2890,13 @@
                     title: isAr ? '⚠️ استعادة أحدث نسخة احتياطية' : '⚠️ Restore Latest Backup',
                     html: isAr ? `
                         <div class="text-end dir-rtl p-1" style="direction: rtl; text-align: right;">
-                            <p class="fw-bold text-warning text-dark-emphasis mb-2 fs-6">هل أنت متأكد من رغبتك في استعادة كافة بيانات العيادة؟</p>
+                            <p class="fw-bold text-warning text-dark-emphasis mb-2 fs-6" style="line-height: 1.5;">هل أنت متأكد من رغبتك في استعادة كافة بيانات العيادة؟</p>
                             <div class="p-3 bg-warning bg-opacity-10 border border-warning border-opacity-25 rounded-3 mb-2 small text-secondary">
-                                <i class="bi bi-info-circle-fill text-warning me-1"></i>
-                                سيتم استبدال واسترجاع كافة سجلات المرضى والمواعيد والفواتير الموجودة بأحدث نسخة احتياطية محفوظة تلقائياً في النظام.
+                                <div class="d-flex align-items-center gap-2 text-warning mb-1 fw-bold">
+                                    <i class="bi bi-info-circle-fill"></i>
+                                    <span>تنبيه الاستعادة:</span>
+                                </div>
+                                <span class="d-block" style="padding-right: 0.25rem;">سيتم استبدال واسترجاع كافة سجلات المرضى والمواعيد والفواتير الموجودة بأحدث نسخة احتياطية محفوظة تلقائياً في النظام.</span>
                             </div>
                         </div>
                     ` : 'Are you sure you want to restore clinic database from the latest saved backup file?',
@@ -2356,9 +2904,9 @@
                     showCancelButton: true,
                     confirmButtonColor: '#ffc107',
                     cancelButtonColor: '#6c757d',
-                    confirmButtonText: isAr ? 'متابعة للتحقق الأمني ➔' : 'Proceed to Admin Verification ➔',
+                    confirmButtonText: isAr ? 'متابعة للتحقق الأمني ⟵' : 'Proceed to Admin Verification ➔',
                     cancelButtonText: isAr ? 'إلغاء' : 'Cancel',
-                    reverseButtons: true
+                    reverseButtons: isAr ? false : true
                 }).then((result) => {
                     if (result.isConfirmed) {
                         openModal();
@@ -2392,6 +2940,24 @@
                     btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status"></span> ${isAr ? 'جاري استعادة البيانات...' : 'Restoring data...'}`;
                 }
             });
+        }
+
+        const restoreBackupSelect = document.getElementById('restore_backup_filename');
+        const manualFileContainer = document.getElementById('manual_backup_file_container');
+        const manualFileInput = document.getElementById('manual_backup_file');
+        if (restoreBackupSelect && manualFileContainer && manualFileInput) {
+            const handleBackupSelectChange = function() {
+                if (restoreBackupSelect.value === '__upload__') {
+                    manualFileContainer.classList.remove('d-none');
+                    manualFileInput.required = true;
+                } else {
+                    manualFileContainer.classList.add('d-none');
+                    manualFileInput.required = false;
+                    manualFileInput.value = '';
+                }
+            };
+            restoreBackupSelect.addEventListener('change', handleBackupSelectChange);
+            handleBackupSelectChange(); // initial trigger
         }
     }
 

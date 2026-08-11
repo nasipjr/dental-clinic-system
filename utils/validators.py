@@ -146,11 +146,23 @@ def parse_patient_data(form):
 
 
 def parse_appointment_data(form):
+    from flask import request
+    lang = request.cookies.get("lang", "en") if request else "ar"
+    is_ar = (lang == "ar") or (request and not request.cookies.get("lang"))
+
     appointment_date_raw = form.get("appointment_date", "").strip()
-    reason = form.get("reason", "").strip()
+    reason_sel = form.get("reason", "").strip()
+    custom_reason = form.get("custom_reason", "").strip()
+
+    if reason_sel == "__custom__" or reason_sel.startswith("إجراء مخصص") or reason_sel.startswith("سبب آخر"):
+        reason = custom_reason if custom_reason else ("معالجة أسنان مخصصة" if is_ar else "Custom Dental Treatment")
+    elif not reason_sel and custom_reason:
+        reason = custom_reason
+    else:
+        reason = reason_sel if reason_sel else ("معالجة أسنان" if is_ar else "Dental Treatment")
 
     if not appointment_date_raw:
-        return None, "Appointment date and time is required."
+        return None, "يرجى تحديد تاريخ ووقت الموعد." if is_ar else "Appointment date and time is required."
 
     # Normalize Arabic AM/PM markers (ص and م) to AM/PM for Python strptime
     appointment_date_raw_normalized = appointment_date_raw.replace('ص', 'AM').replace('م', 'PM').strip()
@@ -164,10 +176,10 @@ def parse_appointment_data(form):
             try:
                 appointment_date = datetime.strptime(appointment_date_raw_normalized, "%Y-%m-%d %I:%M %p")
             except ValueError:
-                return None, "Appointment date and time must be valid."
+                return None, "صيغة تاريخ ووقت الموعد غير صحيحة." if is_ar else "Appointment date and time must be valid."
 
 
-    from utils.settings_helper import get_setting
+    from utils.settings_helper import get_setting, get_treatment_prices
     try:
         booking_window_days = int(get_setting("booking_window_days", "30"))
     except ValueError:
@@ -196,24 +208,25 @@ def parse_appointment_data(form):
         clinic_end_time = time(18, 0)
 
     if appointment_date < now:
-        return None, "Appointment date and time cannot be in the past."
+        return None, "لا يمكن تحديد موعد في الماضي." if is_ar else "Appointment date and time cannot be in the past."
 
     if appointment_date > max_appointment_date:
-        return None, f"Appointment date cannot be more than {booking_window_days} days from today."
+        return None, f"لا يمكن تجاوز الموعد أكثر من {booking_window_days} يوماً." if is_ar else f"Appointment date cannot be more than {booking_window_days} days from today."
 
     # Validate dynamic working days of the week (0 = Sunday, 6 = Saturday)
     day_str = appointment_date.strftime("%w")
     if day_str not in working_days_list:
-        return None, "Clinic is closed on this day (holiday)."
+        return None, "العيادة مغلقة في هذا اليوم." if is_ar else "Clinic is closed on this day (holiday)."
 
     if appointment_date.time() < clinic_start_time or appointment_date.time() > clinic_end_time:
-        return None, f"Appointment time must be between {start_str} and {end_str}."
+        return None, f"وقت الموعد يجب أن يكون بين {start_str} و {end_str}." if is_ar else f"Appointment time must be between {start_str} and {end_str}."
 
     if not reason:
-        return None, "Appointment reason is required."
+        return None, "يرجى اختيار سبب الموعد." if is_ar else "Appointment reason is required."
 
-    if reason not in APPOINTMENT_REASONS:
-        return None, "Invalid appointment reason."
+    active_prices = get_treatment_prices()
+    if reason not in active_prices and not custom_reason:
+        return None, "سبب المعالجة المختارة غير معروف بجدول الخدمات." if is_ar else "Invalid appointment reason."
 
     doctor_id_raw = form.get("doctor_id", "").strip()
     doctor_id = None
@@ -319,4 +332,4 @@ def check_appointment_conflict(appointment_date, current_appointment_id=None, do
 
 
 import threading
-booking_lock = threading.Lock()
+booking_lock = threading.Lock()

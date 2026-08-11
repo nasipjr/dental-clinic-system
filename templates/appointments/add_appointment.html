@@ -47,19 +47,18 @@
                             value="{{ next_url or request.args.get('next', '') or request.referrer or '' }}">
                         {% if patients %}
                         <div class="col-md-12">
-                            <label for="patient_id" class="form-label">Patient</label>
+                            <label for="patient_id" class="form-label">{% if request.cookies.get('lang', 'en') == 'ar' %}المريض{% else %}Patient{% endif %}</label>
                             <select id="patient_id" name="patient_id" class="form-select" required>
-                                <option value="">Select a Patient</option>
+                                <option value="">{% if request.cookies.get('lang', 'en') == 'ar' %}اختر المريض...{% else %}Select a Patient...{% endif %}</option>
                                 {% for p in patients %}
-                                <option value="{{ p.id }}">{{ p.first_name }} {{ p.last_name }} ({{ p.phone or 'No
-                                    phone' }})</option>
+                                <option value="{{ p.id }}">{{ p.first_name }} {{ p.last_name }} ({{ p.phone or ('لا يوجد هاتف' if request.cookies.get('lang', 'en') == 'ar' else 'No phone') }})</option>
                                 {% endfor %}
                             </select>
                         </div><br>
                         {% endif %}
 
                         <div class="col-md-12">
-                            <label for="appointment_date" class="form-label">Date Of Appointment</label>
+                            <label for="appointment_date" class="form-label">{% if request.cookies.get('lang', 'en') == 'ar' %}تاريخ ووقت الموعد{% else %}Date & Time Of Appointment{% endif %}</label>
                             <input type="datetime-local" id="appointment_date" name="appointment_date"
                                 class="form-control" min="{{ appointment_min_datetime }}"
                                 max="{{ appointment_max_datetime }}" value="{{ prefilled_date }}"
@@ -69,17 +68,145 @@
                         </div><br>
 
                         <div class="col-md-12">
-                            <label for="reason" class="form-label">{% if request.cookies.get('lang', 'en') == 'ar'
-                                %}السبب / نوع المعالجة{% else %}Reason / Procedure Type{% endif %}</label>
-                            <select id="reason" name="reason" class="form-select" required>
-                                <option value="">{% if request.cookies.get('lang', 'en') == 'ar' %}-- اختر السبب --{%
-                                    else %}-- Select Reason --{% endif %}</option>
-                                {% for proc_name in (treatment_prices.keys() if treatment_prices else ['فحص دوري',
-                                'تنظيف وتلميع', 'حشوة أسنان', 'علاج عصب السن', 'قلع سن', 'تاج / جسر', 'تقويم الأسنان',
-                                'تبييض الأسنان', 'ألم طارئ', 'متابعة']) %}
-                                <option value="{{ proc_name }}">{{ proc_name }}</option>
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label for="reason" class="form-label fw-bold fs-6 mb-0 d-flex align-items-center gap-2 text-primary">
+                                        <i class="bi bi-layers-half fs-5 text-primary"></i>
+                                        {% if request.cookies.get('lang', 'en') == 'ar' %}السبب وتصنيف المعالجة الطبية{% else %}Reason & Procedure Category{% endif %}
+                                </div>
+
+                            <!-- Category Pills Filter Navigation -->
+                            <div class="category-pills-wrapper mb-2">
+                                <button type="button" class="btn procedure-cat-pill active" data-cat="all" onclick="filterAppointmentCategory('all', this)">{% if request.cookies.get('lang', 'en') == 'ar' %}جميع التخصصات{% else %}All Categories{% endif %}</button>
+                                <button type="button" class="btn procedure-cat-pill" data-cat="فحص وتشخيص" onclick="filterAppointmentCategory('فحص وتشخيص', this)">🩺 {% if request.cookies.get('lang', 'en') == 'ar' %}فحص وتشخيص{% else %}Diagnostic{% endif %}</button>
+                                <button type="button" class="btn procedure-cat-pill" data-cat="حشوات ومعالجات تجميلية" onclick="filterAppointmentCategory('حشوات ومعالجات تجميلية', this)">✨ {% if request.cookies.get('lang', 'en') == 'ar' %}حشوات ومعالجات تجميلية{% else %}Restorative{% endif %}</button>
+                                <button type="button" class="btn procedure-cat-pill" data-cat="علاج عصب وجذور" onclick="filterAppointmentCategory('علاج عصب وجذور', this)">⚡ {% if request.cookies.get('lang', 'en') == 'ar' %}علاج عصب وجذور{% else %}Endodontics{% endif %}</button>
+                                <button type="button" class="btn procedure-cat-pill" data-cat="جراحة وقلع" onclick="filterAppointmentCategory('جراحة وقلع', this)">🔪 {% if request.cookies.get('lang', 'en') == 'ar' %}جراحة وقلع{% else %}Surgery{% endif %}</button>
+                                <button type="button" class="btn procedure-cat-pill" data-cat="تعويضات وتيجان" onclick="filterAppointmentCategory('تعويضات وتيجان', this)">👑 {% if request.cookies.get('lang', 'en') == 'ar' %}تعويضات وتيجان{% else %}Prosthetics{% endif %}</button>
+                                <button type="button" class="btn procedure-cat-pill" data-cat="تقويم أسنان" onclick="filterAppointmentCategory('تقويم أسنان', this)">🪥 {% if request.cookies.get('lang', 'en') == 'ar' %}تقويم أسنان{% else %}Ortho{% endif %}</button>
+                                <button type="button" class="btn procedure-cat-pill" data-cat="أسنان أطفال" onclick="filterAppointmentCategory('أسنان أطفال', this)">👶 {% if request.cookies.get('lang', 'en') == 'ar' %}أسنان أطفال{% else %}Pediatric{% endif %}</button>
+                                <button type="button" class="btn procedure-cat-pill" data-cat="إجراءات عامة وأخرى" onclick="filterAppointmentCategory('إجراءات عامة وأخرى', this)">🌐 {% if request.cookies.get('lang', 'en') == 'ar' %}إجراءات عامة وأخرى{% else %}General & Other{% endif %}</button>
+                            </div>
+
+                            <!-- Sub-procedure Quick Selection Grid (الخيارات التفرعية) -->
+                            <div id="sub-procedure-cards-container" class="row g-2.5 mb-3">
+                                {% set details_map = treatment_details if treatment_details else {} %}
+                                {% for proc_name, price in (treatment_prices.items() if treatment_prices else []) %}
+                                    {% set item_detail = details_map.get(proc_name, {}) %}
+                                    {% set item_cat = item_detail.get('category', 'إجراءات عامة وأخرى') %}
+                                    {% set dur = item_detail.get('duration', 30) %}
+                                    <div class="col-md-6 sub-proc-item-card" data-category="{{ item_cat }}" data-proc-name="{{ proc_name }}" data-duration="{{ dur }}" data-price="{{ price }}">
+                                        <div class="procedure-quick-card cursor-pointer d-flex justify-content-between align-items-center h-100" onclick="selectQuickProcedure('{{ proc_name }}', '{{ dur }}', '{{ price }}', this)">
+                                            <div>
+                                                <span class="fw-bold d-block proc-title mb-1">{{ proc_name }}</span>
+                                                <span class="badge duration-badge">
+                                                    <i class="bi bi-clock me-1"></i>{{ dur }} {% if request.cookies.get('lang', 'en') == 'ar' %}دقيقة{% else %}min{% endif %}
+                                                </span>
+                                            </div>
+                                            <span class="badge price-badge ms-2">
+                                                {{ price | format_price }} {{ currency_symbol }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 {% endfor %}
+                            </div>
+
+                            <select id="reason" name="reason" class="form-select custom-reason-select d-none" onchange="handleReasonChange(this)" required>
+                                <option value="">{% if request.cookies.get('lang', 'en') == 'ar' %}-- اختر سبب المعالجة --{% else %}-- Select Reason --{% endif %}</option>
+                                {% set details_map = treatment_details if treatment_details else {} %}
+                                {% set defined_cats = ['فحص وتشخيص', 'حشوات ومعالجات تجميلية', 'علاج عصب وجذور', 'جراحة وقلع', 'تعويضات وتيجان', 'تقويم أسنان', 'أسنان أطفال', 'إجراءات عامة وأخرى'] %}
+                                {% for cat in defined_cats %}
+                                    {% set ns = namespace(has_items=false) %}
+                                    {% for proc_name, price in (treatment_prices.items() if treatment_prices else []) %}
+                                        {% set item_detail = details_map.get(proc_name, {}) %}
+                                        {% set item_cat = item_detail.get('category', 'إجراءات عامة وأخرى') %}
+                                        {% if item_cat == cat or (cat == 'إجراءات عامة وأخرى' and item_cat not in defined_cats) %}
+                                            {% set ns.has_items = true %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if ns.has_items %}
+                                    <optgroup label="── {{ cat }} ──" data-group-category="{{ cat }}">
+                                        {% for proc_name, price in (treatment_prices.items() if treatment_prices else []) %}
+                                            {% set item_detail = details_map.get(proc_name, {}) %}
+                                            {% set item_cat = item_detail.get('category', 'إجراءات عامة وأخرى') %}
+                                            {% if item_cat == cat or (cat == 'إجراءات عامة وأخرى' and item_cat not in defined_cats) %}
+                                                {% set dur = item_detail.get('duration', 30) %}
+                                                <option value="{{ proc_name }}" data-category="{{ item_cat }}" data-duration="{{ dur }}" data-price="{{ price }}">{{ proc_name }} ({{ dur }} {% if request.cookies.get('lang', 'en') == 'ar' %}دقيقة{% else %}min{% endif %})</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </optgroup>
+                                    {% endif %}
+                                {% endfor %}
+                                <option value="__custom__" class="fw-bold text-primary">-- {% if request.cookies.get('lang', 'en') == 'ar' %}سبب آخر / إجراء مخصص...{% else %}Other / Custom Reason...{% endif %} --</option>
                             </select>
+
+                            <div class="d-flex justify-content-start align-items-center mt-2 mb-1">
+                                <button type="button" class="btn btn-outline-info btn-sm rounded-3 px-3 py-1.5 fw-bold d-flex align-items-center gap-2 shadow-sm" style="border-width: 1.5px; background: rgba(56, 189, 248, 0.08);" onclick="toggleCustomReasonInput()">
+                                    <i class="bi bi-plus-circle-dotted fs-6 text-info"></i>
+                                    <span>{% if request.cookies.get('lang', 'en') == 'ar' %}إضافة سبب / إجراء نصي مخصص غير مدرج{% else %}Add Custom / Unlisted Procedure{% endif %}</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-12 mt-3" id="custom_reason_container" style="display: none;">
+                            <div class="card p-4 rounded-4 shadow-sm border border-info border-opacity-40" style="background: #1e293b; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+                                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                                    <h6 class="fw-bold mb-0 text-info d-flex align-items-center gap-2">
+                                        <i class="bi bi-pencil-square fs-5"></i>
+                                        {% if request.cookies.get('lang', 'en') == 'ar' %}تفاصيل الإجراء النصي المخصص الجديد{% else %}Custom Procedure Details{% endif %}
+                                    </h6>
+                                    <button type="button" class="btn-close btn-close-white" onclick="toggleCustomReasonInput()" aria-label="Close"></button>
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-md-12 mb-2">
+                                        <label for="custom_reason" class="form-label small fw-bold text-light mb-1.5">
+                                            <i class="bi bi-input-cursor-text me-1 text-info"></i>{% if request.cookies.get('lang', 'en') == 'ar' %}اسم الإجراء / الخدمة المخصصة{% else %}Procedure Name{% endif %}
+                                        </label>
+                                        <input type="text" id="custom_reason" name="custom_reason" class="form-control settings-input border-secondary text-light fw-bold py-2" placeholder="{% if request.cookies.get('lang', 'en') == 'ar' %}مثال: استشارة قبل زراعة عظام أسنان{% else %}e.g. Pre-implant consultation{% endif %}">
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="custom_reason_category" class="form-label small fw-bold text-light mb-1.5">
+                                            <i class="bi bi-tags me-1 text-info"></i>{% if request.cookies.get('lang', 'en') == 'ar' %}التخصص / التصنيف{% else %}Category{% endif %}
+                                        </label>
+                                        <select id="custom_reason_category" name="custom_reason_category" class="form-select settings-input border-secondary text-light py-2">
+                                            <option value="فحص وتشخيص">فحص وتشخيص</option>
+                                            <option value="حشوات ومعالجات تجميلية">حشوات ومعالجات تجميلية</option>
+                                            <option value="علاج عصب وجذور">علاج عصب وجذور</option>
+                                            <option value="جراحة وقلع">جراحة وقلع</option>
+                                            <option value="تعويضات وتيجان">تعويضات وتيجان</option>
+                                            <option value="تقويم أسنان">تقويم أسنان</option>
+                                            <option value="أسنان أطفال">أسنان أطفال</option>
+                                            <option value="إجراءات عامة وأخرى" selected>إجراءات عامة وأخرى</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="custom_reason_duration" class="form-label small fw-bold text-light mb-1.5">
+                                            <i class="bi bi-clock me-1 text-info"></i>{% if request.cookies.get('lang', 'en') == 'ar' %}المدة المتوقعة (بالدقائق){% else %}Duration (min){% endif %}
+                                        </label>
+                                        <input type="number" id="custom_reason_duration" name="custom_reason_duration" class="form-control settings-input border-secondary text-light fw-bold py-2" value="30" min="5" max="300" step="5" onchange="onCustomDurationChange(this)">
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="custom_reason_price" class="form-label small fw-bold text-light mb-1.5">
+                                            <i class="bi bi-cash-stack me-1 text-info"></i>{% if request.cookies.get('lang', 'en') == 'ar' %}التكلفة / السعر (ل.س){% else %}Price{% endif %}
+                                        </label>
+                                        <input type="number" id="custom_reason_price" name="custom_reason_price" class="form-control settings-input border-secondary text-light fw-bold py-2" placeholder="0" value="0">
+                                    </div>
+
+                                    <div class="col-12 mt-3 pt-2.5 border-top border-secondary border-opacity-25 d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+                                        <div id="custom_proc_confirmed_status" class="fw-bold small text-success d-none align-items-center gap-1.5 p-2 rounded-3" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);">
+                                            <i class="bi bi-check-circle-fill fs-5 text-success"></i>
+                                            <span id="custom_proc_confirmed_msg"></span>
+                                        </div>
+                                        <button type="button" class="btn btn-success btn-sm rounded-3 px-4 py-2 fw-bold ms-auto d-flex align-items-center gap-2 shadow-sm" style="background: linear-gradient(135deg, #10b981, #059669); border: none;" onclick="confirmCustomProcedureCard()">
+                                            <i class="bi bi-check-circle-fill fs-6"></i>
+                                            <span>{% if request.cookies.get('lang', 'en') == 'ar' %}تأكيد واعتماد الإجراء المخصص{% else %}Confirm Custom Procedure{% endif %}</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div><br>
 
                         <div class="col-md-12">
@@ -117,4 +244,351 @@
     </div>
 </section>
 <script src="{{ url_for('static', filename='assets/js/appointments_flatpickr.js') }}"></script>
+<script>
+function filterAppointmentCategory(category, pillBtn) {
+    document.querySelectorAll('.procedure-cat-pill').forEach(btn => btn.classList.remove('active', 'btn-primary'));
+    if (pillBtn) pillBtn.classList.add('active');
+
+    const cards = document.querySelectorAll('.sub-proc-item-card');
+    cards.forEach(card => {
+        const itemCat = card.dataset.category || 'عام';
+        if (category === 'all' || itemCat === category) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    const reasonSelect = document.getElementById('reason');
+    if (reasonSelect) {
+        Array.from(reasonSelect.options).forEach(opt => {
+            if (opt.value === '' || opt.value === '__custom__') return;
+            const optCat = opt.dataset.category || 'عام';
+            if (category === 'all' || optCat === category) {
+                opt.style.display = '';
+            } else {
+                opt.style.display = 'none';
+            }
+        });
+    }
+}
+
+function selectQuickProcedure(procName, duration, price, cardEl) {
+    document.querySelectorAll('.procedure-quick-card').forEach(c => {
+        c.classList.remove('selected-card');
+        c.style.background = '';
+        c.style.borderColor = '';
+    });
+    if (cardEl) {
+        cardEl.classList.add('selected-card');
+    }
+
+    const reasonSelect = document.getElementById('reason');
+    if (reasonSelect) {
+        reasonSelect.value = procName;
+        handleReasonChange(reasonSelect);
+    }
+}
+
+function confirmCustomProcedureCard() {
+    const isAr = document.cookie.includes("lang=ar") || !document.cookie.includes("lang=en");
+    const customReasonInput = document.getElementById('custom_reason');
+    const customCatInput = document.getElementById('custom_reason_category');
+    const customDurInput = document.getElementById('custom_reason_duration');
+    const customPriceInput = document.getElementById('custom_reason_price');
+    const reasonSelect = document.getElementById('reason');
+
+    const nameVal = customReasonInput ? customReasonInput.value.trim() : '';
+    if (!nameVal) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'warning',
+                title: isAr ? 'اسم الإجراء مطلوب' : 'Name Required',
+                text: isAr ? 'يرجى كتابة اسم الإجراء النصي المخصص أولاً.' : 'Please enter the custom procedure name first.',
+                confirmButtonColor: '#0ea5e9',
+                background: '#1e293b',
+                color: '#f8fafc'
+            });
+        } else {
+            alert(isAr ? 'يرجى كتابة اسم الإجراء النصي المخصص أولاً.' : 'Please enter the custom procedure name first.');
+        }
+        if (customReasonInput) customReasonInput.focus();
+        return;
+    }
+
+    const catVal = customCatInput ? customCatInput.value : 'إجراءات عامة وأخرى';
+    const durVal = customDurInput ? customDurInput.value : '30';
+    const priceVal = customPriceInput ? customPriceInput.value : '0';
+
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+    fetch('/treatments/types/quick-add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-Token': csrfToken
+        },
+        body: JSON.stringify({
+            name: nameVal,
+            category: catVal,
+            duration: durVal,
+            price: priceVal
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success && data.service) {
+            const sName = data.service.name;
+            const sDur = data.service.duration;
+            const sPrice = data.service.price;
+            const sCat = data.service.category || catVal;
+
+            if (reasonSelect) {
+                let existingOpt = null;
+                try {
+                    existingOpt = reasonSelect.querySelector(`option[value="${CSS.escape(sName)}"]`);
+                } catch(e) {
+                    existingOpt = reasonSelect.querySelector(`option[value="${sName}"]`);
+                }
+
+                if (!existingOpt) {
+                    const newOpt = document.createElement('option');
+                    newOpt.value = sName;
+                    newOpt.setAttribute('data-category', sCat);
+                    newOpt.setAttribute('data-duration', sDur);
+                    newOpt.setAttribute('data-price', sPrice);
+                    newOpt.textContent = `${sName} (${sDur} ${isAr ? 'دقيقة' : 'min'})`;
+                    
+                    const customOpt = reasonSelect.querySelector('option[value="__custom__"]');
+                    if (customOpt) {
+                        reasonSelect.insertBefore(newOpt, customOpt);
+                    } else {
+                        reasonSelect.appendChild(newOpt);
+                    }
+                }
+                reasonSelect.value = sName;
+                handleReasonChange(reasonSelect);
+            }
+
+            const cardsGrid = document.getElementById('sub-procedure-cards-container');
+            if (cardsGrid) {
+                let existingCard = null;
+                try {
+                    existingCard = cardsGrid.querySelector(`.sub-proc-item-card[data-proc-name="${CSS.escape(sName)}"]`);
+                } catch(e) {
+                    existingCard = cardsGrid.querySelector(`.sub-proc-item-card[data-proc-name="${sName}"]`);
+                }
+
+                if (!existingCard) {
+                    const colDiv = document.createElement('div');
+                    colDiv.className = 'col-md-6 sub-proc-item-card';
+                    colDiv.setAttribute('data-category', sCat);
+                    colDiv.setAttribute('data-proc-name', sName);
+                    colDiv.setAttribute('data-duration', sDur);
+                    colDiv.setAttribute('data-price', sPrice);
+
+                    const priceFormatted = Number(sPrice).toLocaleString();
+                    const currencyLabel = document.querySelector('[data-currency]') ? document.querySelector('[data-currency]').getAttribute('data-currency') : (isAr ? 'ل.س' : 'SP');
+
+                    colDiv.innerHTML = `
+                        <div class="procedure-quick-card cursor-pointer d-flex justify-content-between align-items-center h-100" onclick="selectQuickProcedure('${sName}', '${sDur}', '${sPrice}', this)">
+                            <div>
+                                <span class="fw-bold d-block proc-title mb-1">${sName}</span>
+                                <span class="badge duration-badge">
+                                    <i class="bi bi-clock me-1"></i>${sDur} ${isAr ? 'دقيقة' : 'min'}
+                                </span>
+                            </div>
+                            <span class="badge price-badge ms-2">
+                                ${priceFormatted} ${currencyLabel}
+                            </span>
+                        </div>
+                    `;
+                    cardsGrid.appendChild(colDiv);
+                    existingCard = colDiv;
+                }
+
+                const cardInner = existingCard.querySelector('.procedure-quick-card');
+                if (cardInner) {
+                    selectQuickProcedure(sName, sDur, sPrice, cardInner);
+                }
+
+                let matchingPill = null;
+                try {
+                    matchingPill = document.querySelector(`.procedure-cat-pill[data-cat="${CSS.escape(sCat)}"]`);
+                } catch(e) {
+                    matchingPill = document.querySelector(`.procedure-cat-pill[data-cat="${sCat}"]`);
+                }
+                if (matchingPill) {
+                    filterAppointmentCategory(sCat, matchingPill);
+                }
+            }
+
+            const customContainer = document.getElementById('custom_reason_container');
+            if (customContainer) customContainer.style.display = 'none';
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: isAr ? 'تم حفظ وإدراج الإجراء بجدول خدمات العيادة بنجاح ✔️' : 'Service Added & Confirmed ✔️',
+                    text: isAr ? `تمت إضافة "${sName}" وتصنيفه تحت (${sCat})` : `Added "${sName}" under (${sCat})`,
+                    timer: 2000,
+                    showConfirmButton: false,
+                    background: '#1e293b',
+                    color: '#f8fafc'
+                });
+            }
+        } else {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'error', title: isAr ? 'خطأ' : 'Error', text: data.message || 'فشل في حفظ الخدمة' });
+            } else {
+                alert(data.message || 'Error saving service');
+            }
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'error', title: isAr ? 'خطأ' : 'Error', text: isAr ? 'فشل الاتصال بالخادم' : 'Server error' });
+        }
+    });
+}
+
+function onCustomDurationChange(input) {
+    const apptDateInput = document.getElementById('appointment_date');
+    if (apptDateInput && input.value) {
+        apptDateInput.setAttribute('data-duration', input.value);
+    }
+}
+
+function toggleCustomReasonInput() {
+    const container = document.getElementById('custom_reason_container');
+    const reasonSel = document.getElementById('reason');
+    if (container) {
+        if (container.style.display === 'none' || !container.style.display) {
+            container.style.display = 'block';
+            if (reasonSel) {
+                reasonSel.value = '__custom__';
+                handleReasonChange(reasonSel);
+            }
+            const input = document.getElementById('custom_reason');
+            if (input) input.focus();
+        } else {
+            container.style.display = 'none';
+        }
+    }
+}
+
+function handleReasonChange(selectEl) {
+    const customContainer = document.getElementById('custom_reason_container');
+    const customInput = document.getElementById('custom_reason');
+    const apptDateInput = document.getElementById('appointment_date');
+    const selectedOption = selectEl.options[selectEl.selectedIndex];
+    
+    if (selectEl.value === '__custom__') {
+        if (customContainer) customContainer.style.display = 'block';
+        if (customInput) customInput.setAttribute('required', 'required');
+        if (apptDateInput) apptDateInput.setAttribute('data-duration', '30');
+    } else {
+        if (customContainer) customContainer.style.display = 'none';
+        if (customInput) customInput.removeAttribute('required');
+        if (selectedOption && selectedOption.dataset.duration && apptDateInput) {
+            apptDateInput.setAttribute('data-duration', selectedOption.dataset.duration);
+        }
+    }
+}
+
+function openQuickAddServiceModal() {
+    const isAr = document.cookie.includes("lang=ar") || !document.cookie.includes("lang=en");
+    Swal.fire({
+        title: isAr ? 'إضافة خدمة جديدة للقائمة' : 'Add New Service',
+        html: `
+            <div class="text-start">
+                <label class="form-label fw-bold small mb-1">${isAr ? 'اسم الإجراء / الخدمة' : 'Service Name'}</label>
+                <input id="swal-service-name" class="form-control mb-3" placeholder="${isAr ? 'مثال: حشوة تجميلية ملونة' : 'e.g. Composite Filling'}">
+                <label class="form-label fw-bold small mb-1">${isAr ? 'تصنيف المعالجة / التخصص' : 'Category / Specialty'}</label>
+                <select id="swal-service-category" class="form-select mb-3">
+                    <option value="فحص وتشخيص">${isAr ? 'فحص وتشخيص' : 'Diagnostic'}</option>
+                    <option value="حشوات ومعالجات تجميلية" selected>${isAr ? 'حشوات ومعالجات تجميلية' : 'Restorative & Cosmetic'}</option>
+                    <option value="علاج عصب وجذور">${isAr ? 'علاج عصب وجذور' : 'Endodontics'}</option>
+                    <option value="جراحة وقلع">${isAr ? 'جراحة وقلع' : 'Oral Surgery'}</option>
+                    <option value="تعويضات وتيجان">${isAr ? 'تعويضات وتيجان' : 'Prosthodontics'}</option>
+                    <option value="تقويم أسنان">${isAr ? 'تقويم أسنان' : 'Orthodontics'}</option>
+                    <option value="أسنان أطفال">${isAr ? 'أسنان أطفال' : 'Pediatric'}</option>
+                    <option value="إجراءات عامة وأخرى">${isAr ? 'إجراءات عامة وأخرى' : 'General & Other'}</option>
+                </select>
+                <label class="form-label fw-bold small mb-1">${isAr ? 'المدة المتوقعة (بالدقائق)' : 'Duration (minutes)'}</label>
+                <input id="swal-service-duration" type="number" class="form-control mb-3" value="30" min="5" max="300" step="5">
+                <label class="form-label fw-bold small mb-1">${isAr ? 'السعر الافتراضي' : 'Default Price'}</label>
+                <input id="swal-service-price" type="number" class="form-control mb-1" placeholder="0">
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: isAr ? 'حفظ وإضافة' : 'Save & Add',
+        cancelButtonText: isAr ? 'إلغاء' : 'Cancel',
+        confirmButtonColor: '#175cdd',
+        preConfirm: () => {
+            const name = document.getElementById('swal-service-name').value.trim();
+            const category = document.getElementById('swal-service-category').value;
+            const duration = document.getElementById('swal-service-duration').value.trim();
+            const price = document.getElementById('swal-service-price').value.trim();
+            if (!name) {
+                Swal.showValidationMessage(isAr ? 'يرجى كتابة اسم الإجراء' : 'Please enter service name');
+                return false;
+            }
+            return { name, category, duration, price };
+        }
+    }).then((result) => {
+        if (result.isConfirmed && result.value) {
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+            
+            fetch('/treatments/types/quick-add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-Token': csrfToken
+                },
+                body: JSON.stringify(result.value)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.service) {
+                    const sel = document.getElementById('reason');
+                    if (sel) {
+                        const newOpt = document.createElement('option');
+                        newOpt.value = data.service.name;
+                        newOpt.setAttribute('data-duration', data.service.duration);
+                        newOpt.setAttribute('data-price', data.service.price);
+                        newOpt.textContent = `${data.service.name} (${data.service.duration} ${isAr ? 'دقيقة' : 'min'})`;
+                        
+                        const customOpt = sel.querySelector('option[value="__custom__"]');
+                        if (customOpt) {
+                            sel.insertBefore(newOpt, customOpt);
+                        } else {
+                            sel.appendChild(newOpt);
+                        }
+                        sel.value = data.service.name;
+                        handleReasonChange(sel);
+                    }
+                    Swal.fire({
+                        icon: 'success',
+                        title: data.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'خطأ', text: data.message || 'حدث خطأ' });
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire({ icon: 'error', title: 'خطأ', text: 'فشل الاتصال بالخادم' });
+            });
+        }
+    });
+}
+</script>
 {% endblock %}

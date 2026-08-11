@@ -4445,6 +4445,262 @@ section, .section {
   margin-left: 0 !important;
 }
 
+/* Ensure modal header close button (X) is correctly positioned on the left in RTL mode */
+[dir="rtl"] .modal-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+[dir="rtl"] .modal-header .btn-close {
+  margin-right: auto !important;
+  margin-left: 0 !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* 🏷️ CATEGORY FILTER PILLS & PROCEDURE QUICK CARDS SYSTEM (Ultra-Modern UI)  */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+.category-pills-wrapper {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin !important; /* Visible thin scrollbar */
+  scrollbar-color: #0ea5e9 rgba(15, 23, 42, 0.8) !important;
+  padding: 10px 12px 14px 12px !important;
+  gap: 10px !important;
+  border-radius: 16px !important;
+  background: #1e293b !important;
+  border: 1.5px solid #334155 !important;
+  align-items: center !important;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-bs-theme="light"] .category-pills-wrapper {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.05) !important;
+  scrollbar-color: #0284c7 #e2e8f0 !important;
+}
+
+.category-pills-wrapper::-webkit-scrollbar {
+  height: 6px !important;
+  display: block !important;
+}
+
+.category-pills-wrapper::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border-radius: 999px !important;
+}
+
+[data-bs-theme="light"] .category-pills-wrapper::-webkit-scrollbar-track {
+  background: #e2e8f0 !important;
+}
+
+.category-pills-wrapper::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #0ea5e9, #2563eb) !important;
+  border-radius: 999px !important;
+}
+
+.procedure-cat-pill,
+.tooth-cat-pill,
+.cat-pill-btn {
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+  font-size: 0.86rem !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 1.1rem !important;
+  border-radius: 999px !important;
+  border: 1.5px solid #334155 !important;
+  background: #0f172a !important;
+  color: #cbd5e1 !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+[data-bs-theme="light"] .procedure-cat-pill,
+[data-bs-theme="light"] .tooth-cat-pill,
+[data-bs-theme="light"] .cat-pill-btn {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+.procedure-cat-pill:hover,
+.tooth-cat-pill:hover,
+.cat-pill-btn:hover {
+  background: #1e293b !important;
+  color: #38bdf8 !important;
+  border-color: #38bdf8 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25) !important;
+}
+
+.procedure-cat-pill.active,
+.tooth-cat-pill.active,
+.cat-pill-btn.active {
+  background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 50%, #6366f1 100%) !important;
+  color: #ffffff !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.5) !important;
+  font-weight: 700 !important;
+  transform: scale(1.03) !important;
+}
+
+/* 🎴 Procedure Quick Cards Container & Custom Visible Scrollbars */
+#sub-procedure-cards-container,
+#modal-sub-procedure-cards-container {
+  max-height: 280px !important;
+  overflow-y: auto !important;
+  padding: 6px 10px !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: #0ea5e9 rgba(15, 23, 42, 0.8) !important;
+}
+
+#sub-procedure-cards-container::-webkit-scrollbar,
+#modal-sub-procedure-cards-container::-webkit-scrollbar {
+  width: 7px !important;
+  display: block !important;
+}
+
+#sub-procedure-cards-container::-webkit-scrollbar-track,
+#modal-sub-procedure-cards-container::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.8) !important;
+  border-radius: 999px !important;
+}
+
+[data-bs-theme="light"] #sub-procedure-cards-container::-webkit-scrollbar-track,
+[data-bs-theme="light"] #modal-sub-procedure-cards-container::-webkit-scrollbar-track {
+  background: #e2e8f0 !important;
+}
+
+#sub-procedure-cards-container::-webkit-scrollbar-thumb,
+#modal-sub-procedure-cards-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #0ea5e9, #2563eb) !important;
+  border-radius: 999px !important;
+}
+
+/* 🎴 High-Contrast Solid Procedure Quick Cards */
+.procedure-quick-card,
+.modal-procedure-quick-card {
+  background: #1e293b !important;
+  border: 1.5px solid #334155 !important;
+  border-radius: 16px !important;
+  padding: 14px 18px !important;
+  min-height: 72px !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+  cursor: pointer !important;
+}
+
+[data-bs-theme="light"] .procedure-quick-card,
+[data-bs-theme="light"] .modal-procedure-quick-card {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+}
+
+.procedure-quick-card:hover,
+.modal-procedure-quick-card:hover {
+  background: #25334c !important;
+  transform: translateY(-2px) !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 6px 22px rgba(56, 189, 248, 0.3) !important;
+}
+
+[data-bs-theme="light"] .procedure-quick-card:hover,
+[data-bs-theme="light"] .modal-procedure-quick-card:hover {
+  background: #f0f9ff !important;
+  border-color: #0284c7 !important;
+}
+
+.procedure-quick-card.selected-card,
+.modal-procedure-quick-card.selected-card {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.25), rgba(37, 99, 235, 0.25)) !important;
+  border: 2px solid #38bdf8 !important;
+  box-shadow: 0 0 22px rgba(56, 189, 248, 0.5) !important;
+}
+
+.proc-title {
+  color: #ffffff !important;
+  font-size: 0.98rem !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+}
+
+[data-bs-theme="light"] .proc-title {
+  color: #0f172a !important;
+}
+
+.duration-badge {
+  background: #0f172a !important;
+  color: #cbd5e1 !important;
+  border: 1.5px solid #334155 !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  padding: 5px 12px !important;
+  border-radius: 999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+[data-bs-theme="light"] .duration-badge {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border-color: #cbd5e1 !important;
+}
+
+.price-badge {
+  background: rgba(14, 165, 233, 0.18) !important;
+  color: #38bdf8 !important;
+  border: 1.5px solid rgba(56, 189, 248, 0.45) !important;
+  font-size: 0.88rem !important;
+  font-weight: 800 !important;
+  padding: 6px 14px !important;
+  border-radius: 999px !important;
+  letter-spacing: 0.3px !important;
+  white-space: nowrap !important;
+}
+
+[data-bs-theme="light"] .price-badge {
+  background: rgba(14, 165, 233, 0.1) !important;
+  color: #0284c7 !important;
+  border-color: rgba(2, 132, 199, 0.35) !important;
+}
+
+/* 🔽 Custom Reason Select Dropdown */
+.custom-reason-select,
+#reason,
+#modal-procedure-type {
+  background-color: #1e293b !important;
+  border: 1.5px solid #334155 !important;
+  color: #ffffff !important;
+  padding: 14px 18px !important;
+  border-radius: 14px !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  transition: all 0.25s ease !important;
+}
+
+[data-bs-theme="light"] .custom-reason-select,
+[data-bs-theme="light"] #reason,
+[data-bs-theme="light"] #modal-procedure-type {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.custom-reason-select:focus,
+#reason:focus,
+#modal-procedure-type:focus {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.35) !important;
+  outline: none !important;
+}
+
 /* Dark mode overrides for alerts */
 [data-bs-theme="dark"] .alert-success {
   background-color: rgba(40, 167, 69, 0.15) !important;
@@ -4956,6 +5212,43 @@ body.dark-mode .doctor-badge {
   .page-break {
     page-break-before: always !important;
   }
+/* Hide default Flatpickr year number input wrapper */
+.flatpickr-current-month .numInputWrapper {
+  display: none !important;
+}
+
+/* Custom Flatpickr Year Dropdown Select */
+.flatpickr-year-select,
+.flatpickr-current-month .flatpickr-monthDropdown-months.flatpickr-year-dropdown {
+  display: inline-block !important;
+  appearance: auto !important;
+  -webkit-appearance: auto !important;
+  -moz-appearance: auto !important;
+  background-color: #0f172a !important;
+  color: #38bdf8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  border-radius: 8px !important;
+  padding: 3px 8px !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  outline: none !important;
+  cursor: pointer !important;
+  margin: 0 4px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease-in-out;
+}
+.flatpickr-year-select:hover,
+.flatpickr-year-select:focus,
+.flatpickr-current-month .flatpickr-monthDropdown-months.flatpickr-year-dropdown:hover,
+.flatpickr-current-month .flatpickr-monthDropdown-months.flatpickr-year-dropdown:focus {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3) !important;
+}
+.flatpickr-year-select option,
+.flatpickr-current-month .flatpickr-monthDropdown-months.flatpickr-year-dropdown option {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  padding: 4px 8px !important;
 }
 
 

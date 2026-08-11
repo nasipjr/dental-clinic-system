@@ -52,7 +52,7 @@
                         sort='amount',
                         order='asc' if sort_by != 'amount' or order == 'desc' else 'desc'
                     ) }}">
-                        Amount
+                        {% if request.cookies.get('lang', 'en') == 'ar' or current_lang == 'ar' %}المبلغ المدفوع{% else %}Payment Amount{% endif %}
                         {% if sort_by == 'amount' %}
                         <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
@@ -66,30 +66,16 @@
                         sort='allocated',
                         order='asc' if sort_by != 'allocated' or order == 'desc' else 'desc'
                     ) }}">
-                        Allocated
+                        {% if request.cookies.get('lang', 'en') == 'ar' or current_lang == 'ar' %}مخصص{% else %}Allocated{% endif %}
                         {% if sort_by == 'allocated' %}
                         <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
                     </a>
                 </th>
 
-                <th>
-                    <a class="payments-ajax-link" href="{{ url_for(
-                        'payments.payments_table',
-                        search=search_query,
-                        sort='credit',
-                        order='asc' if sort_by != 'credit' or order == 'desc' else 'desc'
-                    ) }}">
-                        Credit
-                        {% if sort_by == 'credit' %}
-                        <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
-                        {% endif %}
-                    </a>
-                </th>
+                <th>{% if request.cookies.get('lang', 'en') == 'ar' or current_lang == 'ar' %}ملاحظات{% else %}Notes{% endif %}</th>
 
-                <th>Notes</th>
-
-                <th class="text-center">Actions</th>
+                <th class="text-center">{% if request.cookies.get('lang', 'en') == 'ar' or current_lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
             </tr>
         </thead>
 
@@ -112,7 +98,14 @@
                 </td>
 
                 <td>
-                    {{ payment.payment_date.strftime('%Y-%m-%d %I:%M %p') if payment.payment_date else 'No date' }}
+                    {% if payment.payment_date %}
+                        <div class="fw-semibold text-nowrap" style="font-size: 0.93rem;">{{ payment.payment_date.strftime('%Y-%m-%d') }}</div>
+                        <div class="text-muted text-nowrap" style="font-size: 0.82rem; margin-top: 2px;">
+                            <i class="bi bi-clock me-1" style="font-size: 0.78rem;"></i>{{ payment.payment_date.strftime('%I:%M %p') }}
+                        </div>
+                    {% else %}
+                        <span class="text-muted">{% if request.cookies.get('lang', 'en') == 'ar' or current_lang == 'ar' %}لا يوجد تاريخ{% else %}No date{% endif %}</span>
+                    {% endif %}
                 </td>
 
                 <td>
@@ -122,24 +115,9 @@
                 </td>
 
                 <td>
-                    <span class="remaining-clear">
+                    <span class="badge rounded-pill px-3 py-1.5 fw-semibold" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 0.88rem;">
                         {{ payment.allocated_amount | format_price }} {{ currency_symbol }}
-                        <span class="paid-badge">Allocated</span>
                     </span>
-                </td>
-
-                <td>
-                    {% if payment.unallocated_amount > 0 %}
-                    <span class="credit-amount">
-                        {{ payment.unallocated_amount | format_price }} {{ currency_symbol }}
-                        <span class="credit-badge">{% if request.cookies.get('lang', 'en') == 'ar' %}رصيد متبقي{% else %}Credit{% endif %}</span>
-                    </span>
-                    {% else %}
-                    <span class="remaining-clear">
-                        0 {{ currency_symbol }}
-                        <span class="paid-badge">{% if request.cookies.get('lang', 'en') == 'ar' %}موزّع بالكامل{% else %}Clear{% endif %}</span>
-                    </span>
-                    {% endif %}
                 </td>
 
                 <td>

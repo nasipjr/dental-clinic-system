@@ -1,4 +1,54 @@
 (function () {
+    function setupCustomYearSelect(instance, isDob) {
+        if (!instance || !instance.calendarContainer) return;
+        const calendarContainer = instance.calendarContainer;
+        const monthContainers = calendarContainer.querySelectorAll(".flatpickr-current-month");
+
+        monthContainers.forEach(container => {
+            let yearSelect = container.querySelector(".flatpickr-year-dropdown");
+            const numWrapper = container.querySelector(".numInputWrapper");
+            const curYearInput = container.querySelector(".cur-year");
+
+            const currentYear = new Date().getFullYear();
+            const minYear = isDob ? 1920 : 1940;
+            const maxYear = isDob ? currentYear : currentYear + 10;
+
+            if (!yearSelect) {
+                yearSelect = document.createElement("select");
+                yearSelect.className = "flatpickr-monthDropdown-months flatpickr-year-dropdown";
+                yearSelect.setAttribute("aria-label", "Year");
+
+                for (let y = maxYear; y >= minYear; y--) {
+                    const opt = document.createElement("option");
+                    opt.value = y;
+                    opt.textContent = y;
+                    yearSelect.appendChild(opt);
+                }
+
+                yearSelect.addEventListener("change", function (e) {
+                    e.stopPropagation();
+                    const chosenYear = parseInt(e.target.value, 10);
+                    instance.changeYear(chosenYear);
+                });
+
+                if (numWrapper) {
+                    numWrapper.style.setProperty("display", "none", "important");
+                }
+                if (curYearInput) {
+                    curYearInput.style.setProperty("display", "none", "important");
+                }
+
+                container.appendChild(yearSelect);
+            }
+
+            if (yearSelect) {
+                if (numWrapper) numWrapper.style.setProperty("display", "none", "important");
+                if (curYearInput) curYearInput.style.setProperty("display", "none", "important");
+                yearSelect.value = instance.currentYear;
+            }
+        });
+    }
+
     function initGlobalDatePickers() {
         if (typeof flatpickr === "undefined") {
             setTimeout(initGlobalDatePickers, 100);
@@ -8,7 +58,9 @@
         const isAr = document.cookie.includes('lang=ar') || !document.cookie.includes('lang=en');
 
         // Select all date inputs across the app
-        const dateInputs = document.querySelectorAll('input[type="date"]');
+        const dateInputs = document.querySelectorAll(
+            'input[type="date"], input[name="date_of_birth"], input#date_of_birth, input.dob-picker, input[name="history_date"], input#edit-history-date'
+        );
 
         dateInputs.forEach(input => {
             if (input.dataset.flatpickrBound) return;
@@ -19,8 +71,10 @@
             let inputMax = input.getAttribute("max");
             let inputMin = input.getAttribute("min");
 
-            // Prior tooth history dates MUST be past/today dates (cannot be future dates!)
-            if (input.name === "history_date" || input.id === "edit-history-date") {
+            const isDob = (input.name === "date_of_birth" || input.id === "date_of_birth" || input.classList.contains("dob-picker"));
+
+            // Birth dates & prior tooth history dates MUST be past/today dates (cannot be future dates!)
+            if (isDob || input.name === "history_date" || input.id === "edit-history-date") {
                 inputMax = "today";
             }
 
@@ -42,6 +96,21 @@
                     firstDayOfWeek: 0
                 } : {
                     firstDayOfWeek: 0
+                },
+                onReady: function (selectedDates, dateStr, instance) {
+                    setupCustomYearSelect(instance, isDob);
+                },
+                onMonthChange: function (selectedDates, dateStr, instance) {
+                    setupCustomYearSelect(instance, isDob);
+                },
+                onYearChange: function (selectedDates, dateStr, instance) {
+                    setupCustomYearSelect(instance, isDob);
+                },
+                onOpen: function (selectedDates, dateStr, instance) {
+                    setupCustomYearSelect(instance, isDob);
+                },
+                onValueUpdate: function (selectedDates, dateStr, instance) {
+                    setupCustomYearSelect(instance, isDob);
                 }
             };
 

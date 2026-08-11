@@ -185,6 +185,17 @@ UNIVERSAL_TO_FDI_MAP = {
     '25': '41', '26': '42', '27': '43', '28': '44', '29': '45', '30': '46', '31': '47', '32': '48'
 }
 
+VALID_FDI_NUMBERS = set(
+    [str(x) for x in range(11, 19)] +
+    [str(x) for x in range(21, 29)] +
+    [str(x) for x in range(31, 39)] +
+    [str(x) for x in range(41, 49)] +
+    [str(x) for x in range(51, 56)] +
+    [str(x) for x in range(61, 66)] +
+    [str(x) for x in range(71, 76)] +
+    [str(x) for x in range(81, 86)]
+)
+
 @app.template_filter("format_tooth_number")
 @app.template_filter("fdi_tooth")
 def format_tooth_number_filter(value):
@@ -196,7 +207,9 @@ def format_tooth_number_filter(value):
     parts = [p.strip() for p in val_str.split(',') if p.strip()]
     converted = []
     for p in parts:
-        if p in UNIVERSAL_TO_FDI_MAP:
+        if p in VALID_FDI_NUMBERS:
+            converted.append(p)
+        elif p in UNIVERSAL_TO_FDI_MAP:
             converted.append(UNIVERSAL_TO_FDI_MAP[p])
         else:
             converted.append(p)

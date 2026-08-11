@@ -341,7 +341,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
 
-            <div class="action-buttons mt-4 patient-main-actions">
+            <div class="action-buttons mt-4 patient-main-actions d-flex align-items-center gap-2 flex-wrap">
+                {% if current_user.role in ('admin', 'doctor', 'receptionist') %}
+                <form method="POST" action="{{ url_for('patients.start_quick_session', patient_id=patient.id) }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-success rounded-pill px-4 py-2.5 fw-bold shadow-sm d-inline-flex align-items-center gap-2" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; font-size: 0.95rem;">
+                        <i class="bi bi-lightning-charge-fill fs-5"></i>
+                        <span>{% if current_lang == 'ar' %}جلسة جديدة سريعة{% else %}Quick New Session{% endif %}</span>
+                    </button>
+                </form>
+                {% endif %}
+
                 {% if current_user.role in ('admin', 'receptionist') %}
                 <a href="{{ url_for('patients.edit_patient', patient_id=patient.id) }}" class="btn-primary">
                     {% if current_lang == 'ar' %}تعديل البيانات{% else %}Edit Patient{% endif %}

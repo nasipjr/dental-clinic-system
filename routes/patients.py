@@ -6,6 +6,7 @@ from models import db, Patient, Appointment, Treatment, Payment, Invoice, Patien
 from utils.validators import parse_patient_data
 from utils.auth_helper import role_required, get_safe_redirect_url
 from utils.constants import TREATMENT_PROCEDURE_TYPES
+from utils.settings_helper import get_treatment_details, get_treatment_prices
 
 
 patients_bp = Blueprint("patients", __name__)
@@ -455,6 +456,8 @@ def patient_detail(patient_id):
             ledger_entries=ledger_entries,
             tooth_history_dict=tooth_history_dict,
             treatment_procedure_types=list(TREATMENT_PROCEDURE_TYPES),
+            treatment_details=get_treatment_details(),
+            treatment_prices=get_treatment_prices(),
             bot_username=get_bot_username()
         )
 
@@ -1232,3 +1235,55 @@ def get_patient_fdi_chart_api(patient_id):
         "tooth_history": dict(history_dict),
         "clinic_treatments": dict(treatments_dict)
     })
+
+
+@patients_bp.route("/patients/<int:patient_id>/quick-session", methods=["POST", "GET"])
+@role_required("admin", "doctor", "receptionist")
+def start_quick_session(patient_id):
+    current_app.logger.info(f"Start quick session for patient | patient_id={patient_id}")
+    try:
+        from datetime import datetime, timedelta
+        patient = Patient.query.get_or_404(patient_id)
+        now = datetime.now()
+
+        from flask import session as flask_session
+        user_id = flask_session.get("user_id")
+
+        # Check if patient already has an open/scheduled appointment today
+        today_start = datetime(now.year, now.month, now.day, 0, 0, 0)
+        today_end = today_start + timedelta(days=1)
+
+        existing_today = Appointment.query.filter(
+            Appointment.patient_id == patient.id,
+            Appointment.status == "Scheduled",
+            Appointment.appointment_date >= today_start,
+            Appointment.appointment_date < today_end
+        ).first()
+
+        if existing_today:
+            existing_today.session_opened_at = now
+            if user_id and not existing_today.doctor_id:
+                existing_today.doctor_id = user_id
+            db.session.commit()
+            return redirect(url_for("treatments.appointment_session", appointment_id=existing_today.id))
+
+        new_appointment = Appointment(
+            patient_id=patient.id,
+            appointment_date=now,
+            duration=30,
+            reason="جلسة جديدة سريعة" if request.cookies.get("lang") == "ar" else "Quick Session",
+            status="Scheduled",
+            session_opened_at=now,
+            doctor_id=user_id if flask_session.get("role") in ("doctor", "admin") else None
+        )
+        db.session.add(new_appointment)
+        db.session.commit()
+
+        current_app.logger.info(f"Quick session created successfully | appt_id={new_appointment.id}")
+        return redirect(url_for("treatments.appointment_session", appointment_id=new_appointment.id))
+
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(f"Failed to start quick session for patient_id={patient_id}")
+        flash("حدث خطأ أثناء فتح الجلسة السريعة." if request.cookies.get("lang") == "ar" else "Failed to start quick session.", "danger")
+        return redirect(url_for("patients.patient_detail", patient_id=patient_id))

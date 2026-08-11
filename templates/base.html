@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{% set current_lang = request.cookies.get('lang', 'en') %}
+{% set current_lang = request.cookies.get('lang', 'ar') %}
 <html lang="{{ current_lang }}" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
 
 <head>
@@ -15,7 +15,7 @@
       document.documentElement.setAttribute('data-bs-theme', savedTheme);
       localStorage.setItem('theme', savedTheme);
 
-      const currentLang = getCookie('lang') || '{{ current_lang }}' || 'en';
+      const currentLang = getCookie('lang') || '{{ current_lang }}' || 'ar';
       localStorage.setItem('lang', currentLang);
     })();
   </script>
@@ -57,7 +57,7 @@
 
   <!-- Main CSS File -->
   <link href="{{ url_for('static', filename='assets/css/main.css') }}?v=1.1" rel="stylesheet">
-  <link href="{{ url_for('static', filename='styles.css') }}?v=2.9" rel="stylesheet">
+  <link href="{{ url_for('static', filename='styles.css') }}?v=3.0" rel="stylesheet">
 
 
 
@@ -410,7 +410,7 @@
   <script src="{{ url_for('static', filename='assets/vendor/swiper/swiper-bundle.min.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ar.js"></script>
-  <script src="{{ url_for('static', filename='assets/js/global_datepicker.js') }}?v=2.0"></script>
+  <script src="{{ url_for('static', filename='assets/js/global_datepicker.js') }}?v=3.0"></script>
 
   <!-- Main JS File -->
   <script src="{{ url_for('static', filename='assets/js/main.js') }}"></script>
@@ -561,7 +561,7 @@
       "Back to Appointments": "العودة إلى المواعيد",
       "Back to Home": "العودة إلى الرئيسية",
       "Back to Invoices": "العودة إلى الفواتير",
-      "Back to Patient": "العودة إلى المريض",
+      "Back to Patient": "ملف المريض",
       "Back to Session": "العودة إلى الجلسة",
       "Billing & Finance": "الفوترة والمالية",
       "Billing & Finance Settings": "إعدادات الفوترة والمالية",

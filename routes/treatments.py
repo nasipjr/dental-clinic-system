@@ -1,11 +1,11 @@
-from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash
+from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash, session, jsonify
 
 from models import db, Appointment, Treatment, ToothHistory
 from services.invoice_service import sync_invoice_for_appointment
 from services.payment_service import allocate_patient_payments_to_invoices
 from utils.constants import TREATMENT_PRICES, TREATMENT_PROCEDURE_TYPES
 from utils.auth_helper import role_required, get_safe_redirect_url
-from utils.settings_helper import get_setting
+from utils.settings_helper import get_setting, get_treatment_prices, get_treatment_details, get_anesthesia_types
 
 
 treatments_bp = Blueprint("treatments", __name__)
@@ -41,9 +41,17 @@ def appointment_session(appointment_id):
         if user_role in ("doctor", "admin") and user_id and not appointment.doctor_id:
             appointment.doctor_id = user_id
 
-        if appointment.status == "Scheduled" and appointment.session_opened_at is None:
-            from datetime import datetime
-            appointment.session_opened_at = datetime.now()
+        from datetime import datetime
+        now = datetime.now()
+
+        # If opening a session for a scheduled appointment whose date is not today,
+        # sync its appointment date to NOW so session, treatments, and appointments share the exact same date!
+        if appointment.status == "Scheduled":
+            if appointment.appointment_date and appointment.appointment_date.date() != now.date():
+                appointment.appointment_date = now
+
+            if appointment.session_opened_at is None:
+                appointment.session_opened_at = now
             
         db.session.commit()
 
@@ -95,7 +103,9 @@ def appointment_session(appointment_id):
             total_remaining_sum=total_remaining_sum,
             credit_amount=credit_amount,
             previous_treatments=previous_treatments,
-            treatment_prices=dict(TREATMENT_PRICES),
+            treatment_prices=get_treatment_prices(),
+            treatment_details=get_treatment_details(),
+            anesthesia_types=get_anesthesia_types(),
             treatment_procedure_types=list(TREATMENT_PROCEDURE_TYPES),
             tooth_history_dict=tooth_history_dict,
             anesthesia_needle_price=float(get_setting("anesthesia_needle_price", 50000)),
@@ -139,13 +149,13 @@ def add_treatment_to_appointment(appointment_id):
                 appointment.appointment_date = now
             procedure_type = request.form.get("procedure_type", "").strip()
 
-            if procedure_type not in TREATMENT_PROCEDURE_TYPES:
+            if not procedure_type:
                 return render_template(
                     "treatments/add_treatment.html",
                     appointment=appointment,
                     patient=appointment.patient,
                     treatment_prices=dict(TREATMENT_PRICES),
-                    error_message="Invalid treatment procedure type.",
+                    error_message="Treatment procedure type is required.",
                 ), 400
 
             tooth_number = request.form.get("tooth_number", "").strip()
@@ -208,9 +218,20 @@ def add_treatment_to_appointment(appointment_id):
             
             use_anesthesia = request.form.get("use_anesthesia") == "on"
             anesthesia_needles = int(request.form.get("anesthesia_needles", 0)) if use_anesthesia else 0
+            anesthesia_type_val = request.form.get("anesthesia_type", "").strip() if use_anesthesia else None
             
             if use_anesthesia:
-                needle_p = float(get_setting("anesthesia_needle_price", 50000))
+                needle_p = None
+                if anesthesia_type_val:
+                    for at in get_anesthesia_types():
+                        if at.get("name") == anesthesia_type_val:
+                            try:
+                                needle_p = float(at.get("price", 50000))
+                            except (ValueError, TypeError):
+                                needle_p = 50000.0
+                            break
+                if needle_p is None:
+                    needle_p = float(get_setting("anesthesia_needle_price", 50000))
                 anesthesia_cost = anesthesia_needles * needle_p
             else:
                 anesthesia_cost = 0.0
@@ -243,6 +264,7 @@ def add_treatment_to_appointment(appointment_id):
                 use_anesthesia=use_anesthesia,
                 anesthesia_needles=anesthesia_needles,
                 anesthesia_cost=anesthesia_cost,
+                anesthesia_type=anesthesia_type_val,
                 doctor_id=treating_doctor_id,
             )
 
@@ -296,6 +318,124 @@ def add_treatment_to_appointment(appointment_id):
             message="Failed to add treatment.",
             back_url=url_for("treatments.appointment_session", appointment_id=appointment_id),
         ), 500
+
+
+@treatments_bp.route("/appointments/<int:appointment_id>/treatments/bulk-add", methods=["POST"])
+@role_required("admin", "doctor")
+def bulk_add_treatment(appointment_id):
+    """AJAX endpoint: add one treatment covering multiple selected teeth at once."""
+    import json
+    from datetime import datetime
+
+    try:
+        appointment = Appointment.query.get_or_404(appointment_id)
+
+        if appointment.status != "Scheduled":
+            return jsonify({"success": False, "error": "الجلسة مغلقة أو ملغاة"}), 403
+
+        data = request.get_json(force=True, silent=True) or {}
+
+        procedure_type = (data.get("procedure_type") or "").strip()
+        if not procedure_type:
+            return jsonify({"success": False, "error": "يرجى اختيار نوع المعالجة"}), 400
+
+        teeth_list = data.get("teeth", [])
+        if not teeth_list or not isinstance(teeth_list, list):
+            return jsonify({"success": False, "error": "يرجى اختيار سن واحد على الأقل"}), 400
+
+        # Deduplicate & stringify
+        teeth_list = [str(t).strip() for t in teeth_list if str(t).strip()]
+        tooth_number = ", ".join(teeth_list)
+        num_teeth = len(teeth_list)
+
+        notes = (data.get("notes") or "").strip()
+
+        # Anesthesia
+        use_anesthesia = bool(data.get("use_anesthesia", False))
+        anesthesia_needles = int(data.get("anesthesia_needles", 1)) if use_anesthesia else 0
+        anesthesia_type_val = (data.get("anesthesia_type") or "").strip() if use_anesthesia else None
+
+        if use_anesthesia:
+            needle_p = None
+            if anesthesia_type_val:
+                for at in get_anesthesia_types():
+                    if at.get("name") == anesthesia_type_val:
+                        try:
+                            needle_p = float(at.get("price", 50000))
+                        except (ValueError, TypeError):
+                            needle_p = 50000.0
+                        break
+            if needle_p is None:
+                needle_p = float(get_setting("anesthesia_needle_price", 50000))
+            anesthesia_cost = anesthesia_needles * needle_p
+        else:
+            anesthesia_cost = 0.0
+
+        # Procedure base price & custom cost override
+        custom_cost_val = data.get("custom_cost")
+        if custom_cost_val is not None and str(custom_cost_val).strip() != "":
+            try:
+                total_cost = float(str(custom_cost_val).strip())
+                if total_cost < 0:
+                    total_cost = 0.0
+            except ValueError:
+                proc_price = float(get_treatment_prices().get(procedure_type, TREATMENT_PRICES.get(procedure_type, 0)))
+                total_cost = (proc_price * num_teeth) + anesthesia_cost
+        else:
+            proc_price = float(get_treatment_prices().get(procedure_type, TREATMENT_PRICES.get(procedure_type, 0)))
+            total_cost = (proc_price * num_teeth) + anesthesia_cost
+
+        # Doctor
+        from flask import g
+        treating_doctor_id = None
+        if g.get("current_user") and g.current_user.role in ("doctor", "admin"):
+            treating_doctor_id = g.current_user.id
+        elif appointment.doctor_id:
+            treating_doctor_id = appointment.doctor_id
+
+        now = datetime.now()
+        if appointment.appointment_date and appointment.appointment_date > now:
+            appointment.appointment_date = now
+
+        new_treatment = Treatment(
+            appointment_id=appointment.id,
+            treatment_date=now,
+            procedure_type=procedure_type,
+            tooth_number=tooth_number,
+            notes=notes,
+            total_cost=total_cost,
+            use_anesthesia=use_anesthesia,
+            anesthesia_needles=anesthesia_needles,
+            anesthesia_cost=anesthesia_cost,
+            anesthesia_type=anesthesia_type_val,
+            doctor_id=treating_doctor_id,
+        )
+
+        db.session.add(new_treatment)
+        if treating_doctor_id:
+            appointment.doctor_id = treating_doctor_id
+        db.session.flush()
+
+        sync_invoice_for_appointment(appointment)
+        allocate_patient_payments_to_invoices(appointment.patient_id)
+        db.session.commit()
+
+        current_app.logger.info(
+            f"Bulk treatment added | treatment_id={new_treatment.id}, teeth={tooth_number}, appointment_id={appointment.id}"
+        )
+
+        return jsonify({
+            "success": True,
+            "treatment_id": new_treatment.id,
+            "teeth_count": num_teeth,
+            "total_cost": total_cost,
+            "redirect": url_for("treatments.appointment_session", appointment_id=appointment.id)
+        })
+
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(f"bulk_add_treatment failed | appointment_id={appointment_id}")
+        return jsonify({"success": False, "error": "حدث خطأ أثناء حفظ المعالجة"}), 500
 
 
 @treatments_bp.route("/appointments/<int:appointment_id>/end-session", methods=["POST"])
@@ -456,6 +596,7 @@ def edit_treatment(treatment_id):
                     patient=treatment.appointment.patient,
                     mode="edit",
                     treatment_prices=dict(TREATMENT_PRICES),
+                    anesthesia_types=get_anesthesia_types(),
                     error_message="Invalid treatment procedure type.",
                 ), 400
 
@@ -468,6 +609,7 @@ def edit_treatment(treatment_id):
                     patient=treatment.appointment.patient,
                     mode="edit",
                     treatment_prices=dict(TREATMENT_PRICES),
+                    anesthesia_types=get_anesthesia_types(),
                     error_message="Tooth number cannot exceed 50 characters.",
                 ), 400
 
@@ -481,9 +623,20 @@ def edit_treatment(treatment_id):
             
             use_anesthesia = request.form.get("use_anesthesia") == "on"
             anesthesia_needles = int(request.form.get("anesthesia_needles", 0)) if use_anesthesia else 0
+            anesthesia_type_val = request.form.get("anesthesia_type", "").strip() if use_anesthesia else None
             
             if use_anesthesia:
-                needle_p = float(get_setting("anesthesia_needle_price", 50000))
+                needle_p = None
+                if anesthesia_type_val:
+                    for at in get_anesthesia_types():
+                        if at.get("name") == anesthesia_type_val:
+                            try:
+                                needle_p = float(at.get("price", 50000))
+                            except (ValueError, TypeError):
+                                needle_p = 50000.0
+                            break
+                if needle_p is None:
+                    needle_p = float(get_setting("anesthesia_needle_price", 50000))
                 anesthesia_cost = anesthesia_needles * needle_p
             else:
                 anesthesia_cost = 0.0
@@ -500,6 +653,7 @@ def edit_treatment(treatment_id):
             treatment.use_anesthesia = use_anesthesia
             treatment.anesthesia_needles = anesthesia_needles
             treatment.anesthesia_cost = anesthesia_cost
+            treatment.anesthesia_type = anesthesia_type_val
 
             custom_cost_str = request.form.get("custom_cost")
             if custom_cost_str is not None and custom_cost_str.strip() != "":
@@ -570,6 +724,7 @@ def edit_treatment(treatment_id):
             treatments=treatments,
             previous_treatments=previous_treatments,
             treatment_prices=dict(TREATMENT_PRICES),
+            anesthesia_types=get_anesthesia_types(),
             tooth_history_dict=tooth_history_dict,
             anesthesia_needle_price=float(get_setting("anesthesia_needle_price", 50000)),
         )
@@ -613,6 +768,7 @@ def view_treatment(treatment_id):
             treatments=treatments,
             previous_treatments=previous_treatments,
             treatment_prices=dict(TREATMENT_PRICES),
+            anesthesia_types=get_anesthesia_types(),
             anesthesia_needle_price=float(get_setting("anesthesia_needle_price", 50000)),
         )
 
@@ -707,3 +863,67 @@ def revert_session(appointment_id):
         msg = "حدث خطأ أثناء التراجع عن فتح الجلسة." if is_ar else "An error occurred while undoing session start."
         flash(msg, "danger")
         return redirect(url_for("appointments.appointments"))
+
+
+@treatments_bp.route("/treatments/types/quick-add", methods=["POST"])
+@role_required("admin", "doctor", "receptionist")
+def quick_add_treatment_type():
+    current_app.logger.info("Quick add treatment type requested")
+    is_ar = request.cookies.get("lang") != "en" and session.get("lang") != "en"
+    try:
+        data = request.get_json(silent=True)
+        if not data:
+            data = request.form or {}
+        name = (data.get("name") or "").strip()
+        price_raw = str(data.get("price") or 0).strip().replace(",", "")
+        duration_raw = str(data.get("duration") or 30).strip()
+        category = (data.get("category") or "إجراءات عامة وأخرى").strip()
+
+        if not name:
+            msg = "يرجى كتابة اسم الإجراء." if is_ar else "Procedure name is required."
+            return jsonify({"success": False, "message": msg}), 400
+
+        try:
+            price_val = float(price_raw) if '.' in price_raw else int(price_raw)
+            if price_val < 0:
+                price_val = 0
+        except ValueError:
+            price_val = 0
+
+        try:
+            duration_val = int(duration_raw)
+            if duration_val <= 0:
+                duration_val = 30
+        except ValueError:
+            duration_val = 30
+
+        from utils.settings_helper import get_treatment_details, set_setting
+        import json
+
+        current_details = get_treatment_details()
+        current_details[name] = {
+            "price": price_val,
+            "duration": duration_val,
+            "active": True,
+            "category": category
+        }
+
+        set_setting("treatment_prices", json.dumps(current_details, ensure_ascii=False))
+
+        msg = "تمت إضافة الخدمة الجديدة بنجاح." if is_ar else "New service added successfully."
+        return jsonify({
+            "success": True,
+            "message": msg,
+            "service": {
+                "name": name,
+                "price": price_val,
+                "duration": duration_val,
+                "active": True,
+                "category": category
+            }
+        })
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Failed to quick add treatment type")
+        msg = "حدث خطأ أثناء إضافة الخدمة." if is_ar else "Failed to add service."
+        return jsonify({"success": False, "message": msg}), 500

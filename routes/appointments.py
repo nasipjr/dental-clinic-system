@@ -10,7 +10,8 @@ from utils.validators import (
     booking_lock,
 )
 from utils.auth_helper import role_required, get_safe_redirect_url
-from utils.constants import TREATMENT_PRICES
+from utils.constants import TREATMENT_PRICES, TREATMENT_DETAILS
+from utils.settings_helper import get_treatment_prices, get_treatment_details
 
 
 appointments_bp = Blueprint("appointments", __name__)
@@ -263,6 +264,42 @@ def get_appointments_context():
     # Fetch doctors for the doctor filter dropdown
     doctors_list = User.query.filter(User.role.in_(["admin", "doctor"])).order_by(User.first_name.asc()).all()
 
+    today_completed_appointments = []
+    if date_filter == "today":
+        today_comp_query = Appointment.query.join(Patient).options(
+            joinedload(Appointment.patient),
+            joinedload(Appointment.doctor),
+            joinedload(Appointment.invoice)
+        ).filter(
+            Appointment.status == "Done",
+            Appointment.appointment_date >= today_start,
+            Appointment.appointment_date < today_end
+        )
+        if search_query:
+            today_comp_query = today_comp_query.filter(
+                (Patient.first_name.ilike(f"%{search_query}%")) |
+                (Patient.last_name.ilike(f"%{search_query}%")) |
+                ((Patient.first_name + " " + Patient.last_name).ilike(f"%{search_query}%"))
+            )
+        if doctor_filter:
+            try:
+                today_comp_query = today_comp_query.filter(Appointment.doctor_id == int(doctor_filter))
+            except ValueError:
+                pass
+
+        if sort_by == "doctor":
+            today_comp_query = today_comp_query.outerjoin(User, Appointment.doctor_id == User.id)
+            comp_sort_column = User.first_name
+        else:
+            comp_sort_column = sort_columns.get(sort_by, Appointment.appointment_date)
+
+        if order == "asc":
+            today_comp_query = today_comp_query.order_by(comp_sort_column.asc())
+        else:
+            today_comp_query = today_comp_query.order_by(comp_sort_column.desc())
+
+        today_completed_appointments = today_comp_query.all()
+
     return {
         "appointments": pagination.items,
         "pagination": pagination,
@@ -282,6 +319,9 @@ def get_appointments_context():
         "doctors_list": doctors_list,
         "doctor_filter": doctor_filter,
         "per_page": per_page,
+        "today_completed_appointments": today_completed_appointments,
+        "treatment_prices": get_treatment_prices(),
+        "treatment_details": get_treatment_details(),
     }
 
 
@@ -342,7 +382,8 @@ def add_appointment_direct():
                     "appointments/add_appointment.html",
                     patients=patients,
                     doctors=doctors,
-                    treatment_prices=dict(TREATMENT_PRICES),
+                    treatment_prices=get_treatment_prices(),
+                    treatment_details=get_treatment_details(),
                     error_message="Patient ID is required.",
                     appointment_min_datetime=appointment_min_datetime,
                     appointment_max_datetime=appointment_max_datetime,
@@ -357,7 +398,8 @@ def add_appointment_direct():
                     "appointments/add_appointment.html",
                     patients=patients,
                     doctors=doctors,
-                    treatment_prices=dict(TREATMENT_PRICES),
+                    treatment_prices=get_treatment_prices(),
+                    treatment_details=get_treatment_details(),
                     error_message=appointment_error,
                     appointment_min_datetime=appointment_min_datetime,
                     appointment_max_datetime=appointment_max_datetime,
@@ -379,7 +421,8 @@ def add_appointment_direct():
                         "appointments/add_appointment.html",
                         patients=patients,
                         doctors=doctors,
-                        treatment_prices=dict(TREATMENT_PRICES),
+            treatment_prices=get_treatment_prices(),
+            treatment_details=get_treatment_details(),
                         error_message=err_msg,
                         appointment_min_datetime=appointment_min_datetime,
                         appointment_max_datetime=appointment_max_datetime,
@@ -411,7 +454,8 @@ def add_appointment_direct():
             "appointments/add_appointment.html",
             patients=patients,
             doctors=doctors,
-            treatment_prices=dict(TREATMENT_PRICES),
+            treatment_prices=get_treatment_prices(),
+            treatment_details=get_treatment_details(),
             appointment_min_datetime=appointment_min_datetime,
             appointment_max_datetime=appointment_max_datetime,
             prefilled_date=prefilled_date,
@@ -478,6 +522,28 @@ def add_appointment(patient_id):
                     status="Scheduled",
                 )
 
+                custom_reason_val = request.form.get("custom_reason", "").strip()
+                if custom_reason_val:
+                    custom_cat = request.form.get("custom_reason_category", "إجراءات عامة وأخرى").strip()
+                    try:
+                        custom_dur = int(request.form.get("custom_reason_duration", 30))
+                    except (ValueError, TypeError):
+                        custom_dur = 30
+                    try:
+                        custom_price = float(request.form.get("custom_reason_price", 0))
+                    except (ValueError, TypeError):
+                        custom_price = 0.0
+
+                    from utils.settings_helper import get_treatment_details, set_setting
+                    import json
+                    cur_details = get_treatment_details()
+                    cur_details[appointment_data["reason"]] = {
+                        "price": custom_price,
+                        "duration": custom_dur,
+                        "active": True,
+                        "category": custom_cat
+                    }
+                    set_setting("treatment_prices", json.dumps(cur_details, ensure_ascii=False))
 
                 db.session.add(new_appointment)
                 db.session.commit()
@@ -596,6 +662,29 @@ def edit_appointment(appointment_id):
                 appointment.doctor_id = appointment_data.get("doctor_id")
                 appointment.status = new_status
 
+                custom_reason_val = request.form.get("custom_reason", "").strip()
+                if custom_reason_val:
+                    custom_cat = request.form.get("custom_reason_category", "إجراءات عامة وأخرى").strip()
+                    try:
+                        custom_dur = int(request.form.get("custom_reason_duration", 30))
+                    except (ValueError, TypeError):
+                        custom_dur = 30
+                    try:
+                        custom_price = float(request.form.get("custom_reason_price", 0))
+                    except (ValueError, TypeError):
+                        custom_price = 0.0
+
+                    from utils.settings_helper import get_treatment_details, set_setting
+                    import json
+                    cur_details = get_treatment_details()
+                    cur_details[appointment_data["reason"]] = {
+                        "price": custom_price,
+                        "duration": custom_dur,
+                        "active": True,
+                        "category": custom_cat
+                    }
+                    set_setting("treatment_prices", json.dumps(cur_details, ensure_ascii=False))
+
 
                 db.session.commit()
 
@@ -620,6 +709,7 @@ def edit_appointment(appointment_id):
             appointment=appointment,
             doctors=doctors,
             treatment_prices=dict(TREATMENT_PRICES),
+            treatment_details=dict(TREATMENT_DETAILS),
             mode="edit",
             appointment_min_datetime=appointment_min_datetime,
             appointment_max_datetime=appointment_max_datetime,
@@ -726,9 +816,11 @@ def delete_appointment(appointment_id):
 def quick_cancel(appointment_id):
     current_app.logger.info(f"Quick cancel appointment | id={appointment_id}")
     try:
+        is_ar = request.cookies.get("lang") != "en" and session.get("lang") != "en"
         appointment = Appointment.query.get_or_404(appointment_id)
         if appointment.status != "Scheduled":
-            return jsonify({"success": False, "message": "Only scheduled appointments can be cancelled."}), 400
+            msg = "المواعيد المجدولة فقط هي التي يمكن إلغاؤها." if is_ar else "Only scheduled appointments can be cancelled."
+            return jsonify({"success": False, "message": msg}), 400
 
         appointment.status = "Cancelled"
         db.session.commit()
@@ -736,11 +828,13 @@ def quick_cancel(appointment_id):
         from services.notification_service import notify_appointment_cancellation
         notify_appointment_cancellation(appointment)
 
-        return jsonify({"success": True, "message": "Appointment cancelled successfully."})
+        msg = "تم إلغاء الموعد بنجاح." if is_ar else "Appointment cancelled successfully."
+        return jsonify({"success": True, "message": msg})
     except Exception:
         db.session.rollback()
         current_app.logger.exception("Failed to quick cancel appointment")
-        return jsonify({"success": False, "message": "Internal server error."}), 500
+        err_msg = "حدث خطأ في الخادم." if is_ar else "Internal server error."
+        return jsonify({"success": False, "message": err_msg}), 500
 
 
 @appointments_bp.route("/appointments/<int:appointment_id>/quick-done", methods=["POST"])
@@ -748,9 +842,11 @@ def quick_cancel(appointment_id):
 def quick_done(appointment_id):
     current_app.logger.info(f"Quick done appointment | id={appointment_id}")
     try:
+        is_ar = request.cookies.get("lang") != "en" and session.get("lang") != "en"
         appointment = Appointment.query.get_or_404(appointment_id)
         if appointment.status != "Scheduled":
-            return jsonify({"success": False, "message": "Only scheduled appointments can be marked as Done."}), 400
+            msg = "المواعيد المجدولة فقط هي التي يمكن إتمامها." if is_ar else "Only scheduled appointments can be marked as Done."
+            return jsonify({"success": False, "message": msg}), 400
 
         appointment.status = "Done"
         now = datetime.now()
@@ -760,11 +856,14 @@ def quick_done(appointment_id):
         from services.invoice_service import sync_invoice_for_appointment
         sync_invoice_for_appointment(appointment)
         db.session.commit()
-        return jsonify({"success": True, "message": "Appointment completed successfully."})
+
+        msg = "تم إتمام الموعد بنجاح." if is_ar else "Appointment completed successfully."
+        return jsonify({"success": True, "message": msg})
     except Exception:
         db.session.rollback()
         current_app.logger.exception("Failed to quick complete appointment")
-        return jsonify({"success": False, "message": "Internal server error."}), 500
+        err_msg = "حدث خطأ في الخادم." if is_ar else "Internal server error."
+        return jsonify({"success": False, "message": err_msg}), 500
 
 
 @appointments_bp.route("/appointments/booked-slots")
@@ -1072,13 +1171,15 @@ def reschedule_appointment(appointment_id):
 def update_appointment_status(appointment_id):
     current_app.logger.info(f"Updating appointment status | id={appointment_id}")
     try:
+        is_ar = request.cookies.get("lang") != "en" and session.get("lang") != "en"
         appt = Appointment.query.get_or_404(appointment_id)
         data = request.get_json() or {}
         new_status = data.get("status")
-        
+
         valid_statuses = ["Scheduled", "Done", "Cancelled"]
         if new_status not in valid_statuses:
-            return jsonify({"success": False, "message": "Invalid status."}), 400
+            msg = "حالة غير صالحة." if is_ar else "Invalid status."
+            return jsonify({"success": False, "message": msg}), 400
 
         appt.status = new_status
         db.session.commit()
@@ -1086,12 +1187,14 @@ def update_appointment_status(appointment_id):
         if new_status == "Cancelled":
             from services.notification_service import notify_appointment_cancellation
             notify_appointment_cancellation(appt)
-        
-        return jsonify({"success": True, "message": "Status updated successfully.", "new_status": new_status})
+
+        msg = "تم تحديث حالة الموعد بنجاح." if is_ar else "Status updated successfully."
+        return jsonify({"success": True, "message": msg, "new_status": new_status})
     except Exception:
         db.session.rollback()
         current_app.logger.exception("Failed to update appointment status")
-        return jsonify({"success": False, "message": "Failed to update status."}), 500
+        err_msg = "حدث خطأ أثناء تحديث حالة الموعد." if is_ar else "Failed to update status."
+        return jsonify({"success": False, "message": err_msg}), 500
 
 
 @appointments_bp.route("/appointments/today-statuses", methods=["GET"])
@@ -1370,6 +1473,68 @@ def permanent_delete_all_archived_appointments():
         flash(msg, "danger")
 
     return redirect(url_for("appointments.appointments_archive"))
+
+
+@appointments_bp.route("/appointments/quick-session-start", methods=["POST"])
+@role_required("admin", "doctor", "receptionist")
+def quick_session_start():
+    current_app.logger.info("Quick session start requested")
+    try:
+        patient_id = request.form.get("patient_id") or (request.get_json() or {}).get("patient_id")
+        if not patient_id:
+            msg = "يرجى اختيار المريض أولاً." if request.cookies.get("lang") == "ar" else "Patient selection is required."
+            return jsonify({"success": False, "message": msg}), 400
+
+        patient = Patient.query.get(patient_id)
+        if not patient:
+            msg = "المريض غير موجود." if request.cookies.get("lang") == "ar" else "Patient not found."
+            return jsonify({"success": False, "message": msg}), 404
+
+        now = datetime.now()
+        from flask import session as flask_session
+        user_id = flask_session.get("user_id")
+        user_role = flask_session.get("role")
+
+        new_appointment = Appointment(
+            patient_id=patient.id,
+            appointment_date=now,
+            duration=30,
+            reason="جلسة جديدة سريعة" if request.cookies.get("lang") == "ar" else "Quick Session",
+            status="Scheduled",
+            session_opened_at=now,
+            doctor_id=user_id if user_role in ("doctor", "admin") else None
+        )
+        db.session.add(new_appointment)
+        db.session.commit()
+
+        redirect_url = url_for("treatments.appointment_session", appointment_id=new_appointment.id)
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.is_json:
+            return jsonify({"success": True, "redirect_url": redirect_url})
+        return redirect(redirect_url)
+
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Failed quick session start")
+        msg = "حدث خطأ أثناء فتح الجلسة السريعة." if request.cookies.get("lang") == "ar" else "Failed to start quick session."
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.is_json:
+            return jsonify({"success": False, "message": msg}), 500
+        flash(msg, "danger")
+        return redirect(url_for("appointments.appointments"))
+
+
+@appointments_bp.route("/appointments/patients-list")
+@role_required("admin", "doctor", "receptionist")
+def get_patients_list_api():
+    try:
+        patients = Patient.query.order_by(Patient.first_name.asc(), Patient.last_name.asc()).all()
+        data = [{
+            "id": p.id,
+            "name": f"{p.first_name} {p.last_name}",
+            "phone": p.phone or "بدون هاتف"
+        } for p in patients]
+        return jsonify(data)
+    except Exception:
+        return jsonify([]), 500
 
 
 

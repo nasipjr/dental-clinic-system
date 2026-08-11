@@ -23,6 +23,12 @@ def is_port_open(host, port, timeout=1.0):
 
 
 def build_database_uri():
+    if os.getenv("TESTING") == "true":
+        instance_dir = BASE_DIR / "instance"
+        instance_dir.mkdir(parents=True, exist_ok=True)
+        test_db_path = instance_dir / "test_suite_dental_clinic.db"
+        return f"sqlite:///{test_db_path.as_posix()}"
+
     database_url = os.getenv("DATABASE_URL")
 
     if database_url:

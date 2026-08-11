@@ -15,6 +15,7 @@ def ensure_database_schema(app, db):
             ("invoice", "notes", "ALTER TABLE invoice ADD COLUMN notes TEXT NULL"),
             ("invoice", "issue_date", "ALTER TABLE invoice ADD COLUMN issue_date DATETIME NULL"),
             ("user", "patient_id", "ALTER TABLE user ADD COLUMN patient_id INT NULL"),
+            ("appointment", "duration", "ALTER TABLE appointment ADD COLUMN duration INT NOT NULL DEFAULT 30"),
             ("appointment", "session_opened_at", "ALTER TABLE appointment ADD COLUMN session_opened_at DATETIME NULL"),
             ("patient", "telegram_chat_id", "ALTER TABLE patient ADD COLUMN telegram_chat_id VARCHAR(50) NULL"),
             ("patient", "reminders_enabled", "ALTER TABLE patient ADD COLUMN reminders_enabled BOOLEAN NOT NULL DEFAULT 1"),
@@ -28,12 +29,14 @@ def ensure_database_schema(app, db):
             ("treatment", "use_anesthesia", "ALTER TABLE treatment ADD COLUMN use_anesthesia BOOLEAN NOT NULL DEFAULT 0"),
             ("treatment", "anesthesia_needles", "ALTER TABLE treatment ADD COLUMN anesthesia_needles INT NOT NULL DEFAULT 0"),
             ("treatment", "anesthesia_cost", "ALTER TABLE treatment ADD COLUMN anesthesia_cost DECIMAL(10, 2) NOT NULL DEFAULT 0.00"),
+            ("treatment", "anesthesia_type", "ALTER TABLE treatment ADD COLUMN anesthesia_type VARCHAR(150) NULL"),
             ("treatment", "teeth_range", "ALTER TABLE treatment ADD COLUMN teeth_range VARCHAR(100) NULL"),
             ("treatment", "quadrant", "ALTER TABLE treatment ADD COLUMN quadrant VARCHAR(50) NULL"),
             ("treatment", "jaw", "ALTER TABLE treatment ADD COLUMN jaw VARCHAR(50) NULL"),
             ("treatment", "salary_expense_id", "ALTER TABLE treatment ADD COLUMN salary_expense_id INT NULL"),
             ("tooth_history", "appointment_id", "ALTER TABLE tooth_history ADD COLUMN appointment_id INT NULL"),
             ("tooth_history", "history_date", "ALTER TABLE tooth_history ADD COLUMN history_date DATE NULL"),
+            ("tooth_history", "created_at", "ALTER TABLE tooth_history ADD COLUMN created_at DATETIME NULL"),
         ]
 
 

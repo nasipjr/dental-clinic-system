@@ -10,6 +10,63 @@
 </div>
 <!-- End Section Title -->
 
+<style>
+    /* Comfortable spacing between invoice items and invoice summary footer rows */
+    .appointments-table tbody tr td {
+        padding-top: 14px !important;
+        padding-bottom: 14px !important;
+    }
+
+    .appointments-table tfoot {
+        border-top: none !important;
+    }
+
+    .appointments-table tfoot tr:first-child th,
+    .appointments-table tfoot tr:first-child td {
+        padding-top: 36px !important;
+        padding-bottom: 20px !important;
+    }
+
+    .appointments-table tfoot tr th,
+    .appointments-table tfoot tr td {
+        padding-top: 20px !important;
+        padding-bottom: 20px !important;
+    }
+
+    /* Red discount pill */
+    #discount-amount-badge,
+    .discount-pill-badge {
+        background: rgba(239, 68, 68, 0.15) !important;
+        border: 1.5px solid rgba(239, 68, 68, 0.45) !important;
+        color: #f87171 !important;
+    }
+
+    /* Yellow additional charges pill */
+    #charges-amount-badge,
+    .charges-pill-badge {
+        background: rgba(245, 158, 11, 0.15) !important;
+        border: 1.5px solid rgba(245, 158, 11, 0.45) !important;
+        color: #fbbf24 !important;
+    }
+
+    /* Green Invoice Total Pill & Larger Font */
+    #bottom-invoice-total,
+    .total-pill-badge {
+        background: rgba(16, 185, 129, 0.18) !important;
+        border: 1.5px solid rgba(16, 185, 129, 0.5) !important;
+        color: #34d399 !important;
+        font-size: 1.15rem !important;
+        font-weight: 700 !important;
+        padding: 6px 16px !important;
+    }
+
+    .total-row-label {
+        font-size: 1.15rem !important;
+        font-weight: 800 !important;
+        color: #f8fafc !important;
+    }
+</style>
+
 
 <section id="invoice-detail-section" class="section">
     <div class="container" data-aos="fade-up" data-aos-delay="100">
@@ -94,13 +151,13 @@
                     <span class="info-label">{% if current_lang == 'ar' %}حالة الفاتورة{% else %}Invoice Status{% endif %}</span>
                     <p id="top-status-container">
                         {% if invoice.status == 'Credit' %}
-                            <span class="credit-badge">{% if current_lang == 'ar' %}رصيد مالي{% else %}Credit{% endif %}</span>
+                            <span class="badge rounded-pill px-3 py-1.5 fw-semibold" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 0.88rem;">{% if current_lang == 'ar' %}رصيد مالي{% else %}Credit{% endif %}</span>
                         {% elif invoice.status == 'Paid' %}
-                            <span class="paid-badge">{% if current_lang == 'ar' %}مدفوعة بالكامل{% else %}Paid{% endif %}</span>
+                            <span class="badge rounded-pill px-3 py-1.5 fw-semibold" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 0.88rem;">{% if current_lang == 'ar' %}مدفوعة بالكامل{% else %}Paid{% endif %}</span>
                         {% elif invoice.status == 'Partially Paid' %}
-                            <span class="due-badge">{% if current_lang == 'ar' %}دفعة جزئية{% else %}Partial{% endif %}</span>
+                            <span class="badge rounded-pill px-3 py-1.5 fw-semibold" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 0.88rem;">{% if current_lang == 'ar' %}دفعة جزئية{% else %}Partial{% endif %}</span>
                         {% else %}
-                            <span class="due-badge">{% if current_lang == 'ar' %}غير مدفوعة{% else %}Unpaid{% endif %}</span>
+                            <span class="badge rounded-pill px-3 py-1.5 fw-semibold" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; font-size: 0.88rem;">{% if current_lang == 'ar' %}غير مدفوعة{% else %}Unpaid{% endif %}</span>
                         {% endif %}
                     </p>
                 </div>
@@ -113,11 +170,6 @@
                 <div class="patient-info-box d-flex flex-column justify-content-between position-relative">
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <span class="info-label mb-0">{% if current_lang == 'ar' %}ملاحظات الفاتورة{% else %}Invoice Notes{% endif %}</span>
-                        {% if current_user.role in ('admin', 'receptionist') %}
-                        <button type="button" class="btn btn-xs btn-outline-secondary p-1 py-0 rounded-2" data-bs-toggle="collapse" data-bs-target="#edit-notes-form" title="{% if current_lang == 'ar' %}تعديل الملاحظات{% else %}Edit Notes{% endif %}">
-                            <i class="bi bi-pencil" style="font-size: 0.8rem;"></i>
-                        </button>
-                        {% endif %}
                     </div>
                     <p class="mb-0 text-wrap text-break small mt-1" id="top-invoice-notes">
                         {% if invoice.notes %}
@@ -237,7 +289,7 @@
                         <tr>
                             <th colspan="5" class="text-end" id="discount-row-label">{% if current_lang == 'ar' %}الخصم{% else %}Discount{% endif %} {% if invoice.discount_type == 'percentage' %}({{ "{:,.0f}".format(invoice.discount) }}%){% endif %}</th>
                             <th>
-                                <span class="price-badge text-danger" id="discount-amount-badge">
+                                <span class="price-badge discount-pill-badge text-danger" id="discount-amount-badge" style="background: rgba(239, 68, 68, 0.15) !important; border: 1.5px solid rgba(239, 68, 68, 0.45) !important; color: #f87171 !important;">
                                     - {{ invoice.discount_amount | format_price }} {{ currency_symbol }}
                                 </span>
                                 {% if current_user.role in ('admin', 'receptionist') %}
@@ -273,7 +325,7 @@
                         <tr>
                             <th colspan="5" class="text-end">{% if current_lang == 'ar' %}التكاليف الإضافية{% else %}Additional Charges{% endif %}</th>
                             <th>
-                                <span class="price-badge text-warning" id="charges-amount-badge">
+                                <span class="price-badge charges-pill-badge text-warning" id="charges-amount-badge" style="background: rgba(245, 158, 11, 0.15) !important; border: 1.5px solid rgba(245, 158, 11, 0.45) !important; color: #fbbf24 !important;">
                                     + {{ invoice.additional_charges_amount | format_price }} {{ currency_symbol }}
                                 </span>
                                 {% if current_user.role in ('admin', 'receptionist') %}
@@ -334,10 +386,10 @@
                             </td>
                         </tr>
 
-                        <tr>
-                            <th colspan="5" class="text-end">{% if current_lang == 'ar' %}إجمالي الفاتورة{% else %}Invoice Total{% endif %}</th>
+                        <tr class="total-summary-row">
+                            <th colspan="5" class="text-end total-row-label" style="font-size: 1.15rem !important; font-weight: 800 !important;">{% if current_lang == 'ar' %}إجمالي الفاتورة{% else %}Invoice Total{% endif %}</th>
                             <th>
-                                <span class="price-badge" id="bottom-invoice-total">
+                                <span class="price-badge total-pill-badge" id="bottom-invoice-total" style="background: rgba(16, 185, 129, 0.18) !important; border: 1.5px solid rgba(16, 185, 129, 0.5) !important; color: #34d399 !important; font-size: 1.15rem !important; font-weight: 700 !important; padding: 6px 16px !important;">
                                     {{ invoice.total_amount | format_price }} {{ currency_symbol }}
                                 </span>
                             </th>
@@ -375,7 +427,14 @@
                             </td>
 
                             <td>
-                                {{ allocation.payment.payment_date.strftime('%Y-%m-%d %I:%M %p') if allocation.payment.payment_date else 'No date' }}
+                                {% if allocation.payment.payment_date %}
+                                    <div class="fw-semibold text-nowrap" style="font-size: 0.93rem;">{{ allocation.payment.payment_date.strftime('%Y-%m-%d') }}</div>
+                                    <div class="text-muted text-nowrap" style="font-size: 0.82rem; margin-top: 2px;">
+                                        <i class="bi bi-clock me-1" style="font-size: 0.78rem;"></i>{{ allocation.payment.payment_date.strftime('%I:%M %p') }}
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted">{% if request.cookies.get('lang', 'en') == 'ar' or current_lang == 'ar' %}لا يوجد تاريخ{% else %}No date{% endif %}</span>
+                                {% endif %}
                             </td>
 
                             <td>

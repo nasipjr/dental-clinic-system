@@ -137,6 +137,17 @@
                         </a>
                         {% endif %}
 
+                        <!-- Quick Cancel Button -->
+                        {% if current_user.role in ('admin', 'receptionist') or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id) %}
+                        <button type="button"
+                            class="table-action-btn cancel-btn quick-action-btn border-0"
+                            data-action-url="{{ url_for('appointments.quick_cancel', appointment_id=appointment.id) }}"
+                            data-confirm-msg="{% if current_lang == 'ar' %}هل أنت متأكد من رغبتك في إلغاء هذا الموعد ونقله إلى الأرشيف؟{% else %}Are you sure you want to cancel this appointment and move it to Archive?{% endif %}"
+                            title="{% if current_lang == 'ar' %}إلغاء الموعد ونقله للأرشيف{% else %}Cancel Appointment{% endif %}">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                        {% endif %}
+
                         <!-- View Button -->
                         <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}"
                             class="table-action-btn view-btn"
@@ -162,17 +173,6 @@
                             <i class="bi bi-whatsapp"></i>
                         </button>
                         <span class="reminded-status-placeholder" data-appointment-id="{{ appointment.id }}"></span>
-                        {% endif %}
-
-                        <!-- Quick Cancel Button -->
-                        {% if current_user.role in ('admin', 'receptionist') or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id) %}
-                        <button type="button"
-                            class="table-action-btn cancel-btn quick-action-btn border-0"
-                            data-action-url="{{ url_for('appointments.quick_cancel', appointment_id=appointment.id) }}"
-                            data-confirm-msg="{% if current_lang == 'ar' %}هل أنت متأكد من رغبتك في إلغاء هذا الموعد ونقله إلى الأرشيف؟{% else %}Are you sure you want to cancel this appointment and move it to Archive?{% endif %}"
-                            title="{% if current_lang == 'ar' %}إلغاء الموعد ونقله للأرشيف{% else %}Cancel Appointment{% endif %}">
-                            <i class="bi bi-x-circle"></i>
-                        </button>
                         {% endif %}
 
                         <!-- Permanent Delete -->
@@ -237,21 +237,216 @@
     </nav>
     {% endif %}
 </div>
-
 {% else %}
-<div id="patient-search-empty" data-aos="fade-up" data-aos-delay="300">
+<div id="patient-search-empty" data-aos="fade-up" data-aos-delay="300" class="mb-4">
     <div class="empty-box">
         <div class="empty-icon">
             <i class="bi bi-calendar-check"></i>
         </div>
 
-        <h4>No appointments found</h4>
+        <h4>{% if current_lang == 'ar' %}لا توجد مواعيد مجدولة قادمة{% else %}No scheduled appointments found{% endif %}</h4>
 
         {% if search_query or status_filter %}
-        <p>No appointments match your current filters.</p>
+        <p>{% if current_lang == 'ar' %}لا توجد مواعيد تطابق تصفيتك الحالية.{% else %}No appointments match your current filters.{% endif %}</p>
         {% else %}
-        <p>There are no appointments yet.</p>
+        <p>{% if current_lang == 'ar' %}لا توجد مواعيد مجدولة قادمة حالياً.{% else %}There are no scheduled appointments right now.{% endif %}</p>
         {% endif %}
     </div>
+</div>
+{% endif %}
+
+{% if date_filter == 'today' %}
+<div class="mt-5 pt-4 border-top" style="border-color: rgba(255, 255, 255, 0.1) !important;">
+    <!-- Done Today Title matching Dashboard section-title exactly -->
+    <div class="section-title pb-3 text-center" data-aos="fade-up">
+        <h2>
+            {% if current_lang == 'ar' %}منجز اليوم{% else %}Done Today{% endif %}
+            <span class="badge rounded-pill bg-success ms-2" style="font-size: 1.05rem; vertical-align: middle; padding: 6px 14px; font-weight: 700;">{{ today_completed_appointments|length }}</span>
+        </h2>
+        <p>{% if current_lang == 'ar' %}المواعيد المنجزة اليوم مع ملخص المعالجة والدفع.{% else %}Appointments completed today with treatment and payment summary.{% endif %}</p>
+    </div>
+
+    {% if today_completed_appointments %}
+    <div class="appointments-table-wrapper table-responsive">
+        <table class="table appointments-table align-middle">
+            <thead>
+                <tr>
+                    <th>
+                        <a class="appointments-ajax-link"
+                            href="{{ url_for('appointments.appointments_table', date_filter=date_filter, search=search_query, status=status_filter, sort='patient', order='asc' if sort_by != 'patient' or order == 'desc' else 'desc') }}">
+                            {% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}
+                            {% if sort_by == 'patient' %}
+                            <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+
+                    <th>
+                        <a class="appointments-ajax-link"
+                            href="{{ url_for('appointments.appointments_table', date_filter=date_filter, search=search_query, status=status_filter, sort='date', order='asc' if sort_by != 'date' or order == 'desc' else 'desc') }}">
+                            {% if current_lang == 'ar' %}التاريخ والوقت{% else %}Date & Time{% endif %}
+                            {% if sort_by == 'date' %}
+                            <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+
+                    <th>
+                        <a class="appointments-ajax-link"
+                            href="{{ url_for('appointments.appointments_table', date_filter=date_filter, search=search_query, status=status_filter, sort='reason', order='asc' if sort_by != 'reason' or order == 'desc' else 'desc') }}">
+                            {% if current_lang == 'ar' %}السبب{% else %}Reason{% endif %}
+                            {% if sort_by == 'reason' %}
+                            <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+
+                    <th>
+                        <a class="appointments-ajax-link"
+                            href="{{ url_for('appointments.appointments_table', date_filter=date_filter, search=search_query, status=status_filter, sort='status', order='asc' if sort_by != 'status' or order == 'desc' else 'desc') }}">
+                            {% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}
+                            {% if sort_by == 'status' %}
+                            <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+
+                    <th>
+                        <a class="appointments-ajax-link"
+                            href="{{ url_for('appointments.appointments_table', date_filter=date_filter, search=search_query, status=status_filter, sort='doctor', order='asc' if sort_by != 'doctor' or order == 'desc' else 'desc') }}">
+                            {% if current_lang == 'ar' %}الطبيب المعالج{% else %}Doctor{% endif %}
+                            {% if sort_by == 'doctor' %}
+                            <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
+                            {% endif %}
+                        </a>
+                    </th>
+
+                    <th class="text-center">{% if current_lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in today_completed_appointments %}
+                <tr>
+                    <td>
+                        <a href="{{ url_for('patients.patient_detail', patient_id=appointment.patient.id) }}" class="fw-bold text-decoration-none text-primary">
+                            {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                        </a>
+                        <br>
+                        <small class="text-muted">{{ appointment.patient.phone or 'No phone' }}</small>
+                    </td>
+
+                    <td>
+                        {% if appointment.appointment_date %}
+                            <div class="fw-semibold text-nowrap" style="font-size: 0.93rem;">{{ appointment.appointment_date.strftime('%Y-%m-%d') }}</div>
+                            <div class="text-muted text-nowrap" style="font-size: 0.82rem; margin-top: 2px;">
+                                <i class="bi bi-clock me-1" style="font-size: 0.78rem;"></i>{{ appointment.appointment_date.strftime('%I:%M %p') }}
+                            </div>
+                        {% else %}
+                            <span class="text-muted">No date</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {{ appointment.reason or 'No reason provided' }}
+                    </td>
+
+                    <td>
+                        <span class="appointment-status status-done">
+                            {% if current_lang == 'ar' %}منجز{% else %}Done{% endif %}
+                        </span>
+                    </td>
+
+                    <td>
+                        {% set doc = appointment.attending_doctor or appointment.doctor %}
+                        {% if doc %}
+                            <span class="doctor-badge">
+                                <i class="bi bi-person-badge me-1"></i>{{ doc.display_name }}
+                            </span>
+                        {% else %}
+                            {% set docs = all_doctors or doctors_list %}
+                            {% if docs and docs|length > 1 %}
+                                <span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle rounded-pill px-2.5 py-1">
+                                    <i class="bi bi-people-fill me-1"></i>
+                                    {% if current_lang == 'ar' %}أي طبيب متاح{% else %}Any Available{% endif %}
+                                </span>
+                            {% else %}
+                                <span class="doctor-badge">
+                                    <i class="bi bi-person-badge me-1"></i>{{ docs[0].display_name if docs else 'د. مازن الشب' }}
+                                </span>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+
+                    <td class="text-center">
+                        <div class="appointments-actions">
+                            <!-- Open Session Button -->
+                            {% if current_user.role in ('admin', 'receptionist') or (current_user.role == 'doctor' and (not appointment.doctor_id or appointment.doctor_id == current_user.id)) %}
+                            <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
+                                class="table-action-btn session-btn"
+                                title="{% if current_lang == 'ar' %}فتح الجلسة{% else %}Open Session{% endif %}"
+                                data-tooltip="{% if current_lang == 'ar' %}فتح الجلسة{% else %}Open Session{% endif %}">
+                                <i class="bi bi-clipboard2-pulse"></i>
+                            </a>
+                            {% endif %}
+
+                            <!-- Quick Cancel Button -->
+                            {% if current_user.role in ('admin', 'receptionist') or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id) %}
+                            <button type="button"
+                                class="table-action-btn cancel-btn quick-action-btn border-0"
+                                data-action-url="{{ url_for('appointments.quick_cancel', appointment_id=appointment.id) }}"
+                                data-confirm-msg="{% if current_lang == 'ar' %}هل أنت متأكد من رغبتك في إلغاء هذا الموعد ونقله إلى الأرشيف؟{% else %}Are you sure you want to cancel this appointment and move it to Archive?{% endif %}"
+                                title="{% if current_lang == 'ar' %}إلغاء الموعد ونقله للأرشيف{% else %}Cancel Appointment{% endif %}">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                            {% endif %}
+
+                            <!-- View Button -->
+                            <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}"
+                                class="table-action-btn view-btn"
+                                title="{% if current_lang == 'ar' %}عرض الموعد{% else %}View Appointment{% endif %}">
+                                <i class="bi bi-eye"></i>
+                            </a>
+
+                            <!-- Edit Button -->
+                            {% if current_user.role == 'admin' or current_user.role == 'receptionist' or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id) %}
+                            <a href="{{ url_for('appointments.edit_appointment', appointment_id=appointment.id) }}"
+                                class="table-action-btn edit-btn"
+                                title="{% if current_lang == 'ar' %}تعديل الموعد{% else %}Edit Appointment{% endif %}">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                            {% endif %}
+
+                            <!-- WhatsApp Reminder (Receptionist Only) -->
+                            {% if current_user.role == 'receptionist' %}
+                            <button type="button"
+                                class="table-action-btn whatsapp-btn border-0"
+                                onclick="sendWhatsAppReminder('{{ appointment.patient.phone or '' }}', '{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}', '{{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else '' }}', '{{ clinic_name }}', {{ appointment.id }})"
+                                title="{% if current_lang == 'ar' %}تذكير واتساب{% else %}WhatsApp Reminder{% endif %}">
+                                <i class="bi bi-whatsapp"></i>
+                            </button>
+                            <span class="reminded-status-placeholder" data-appointment-id="{{ appointment.id }}"></span>
+                            {% endif %}
+
+                            <!-- Permanent Delete -->
+                            {% if current_user.role in ('admin', 'receptionist') and not appointment.treatments %}
+                            <a href="{{ url_for('appointments.delete_appointment', appointment_id=appointment.id) }}"
+                                class="table-action-btn delete-table-btn"
+                                title="{% if current_lang == 'ar' %}حذف نهائي من قاعدة البيانات{% else %}Delete Permanently{% endif %}">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="p-4 text-center rounded-4 border" style="background: var(--surface-color);">
+        <i class="bi bi-check-circle text-muted fs-2 mb-2 d-block"></i>
+        <h6 class="text-muted mb-0">{% if current_lang == 'ar' %}لا توجد مواعيد منجزة اليوم حتى الآن.{% else %}No completed appointments today yet.{% endif %}</h6>
+    </div>
+    {% endif %}
 </div>
 {% endif %}

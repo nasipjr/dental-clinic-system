@@ -130,6 +130,7 @@ class Appointment(db.Model):
     )
 
     appointment_date = db.Column(db.DateTime, nullable=False, index=True)
+    duration = db.Column(db.Integer, nullable=False, default=30)
     reason = db.Column(db.String(255))
     status = db.Column(db.String(50), default="Scheduled", index=True)
     session_opened_at = db.Column(db.DateTime, nullable=True)
@@ -248,6 +249,7 @@ class Treatment(db.Model):
     use_anesthesia = db.Column(db.Boolean, default=False, nullable=False)
     anesthesia_needles = db.Column(db.Integer, default=0, nullable=False)
     anesthesia_cost = db.Column(db.Numeric(10, 2), default=0.00, nullable=False)
+    anesthesia_type = db.Column(db.String(150), nullable=True)
     doctor_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     doctor = db.relationship("User", foreign_keys=[doctor_id], backref="doctor_treatments")
 
@@ -620,4 +622,4 @@ class StaffSalary(db.Model):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-
+

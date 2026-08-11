@@ -1,7 +1,21 @@
+import os
+os.environ["TESTING"] = "true"
+
 import unittest
 from models import User
 
 class PortalSecurityTestCase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        from app import app, db
+        from models import User
+        with app.app_context():
+            db.create_all()
+            if not User.query.filter_by(role='admin').first():
+                admin = User(id=1, username='admin', role='admin', first_name='Admin', last_name='User')
+                admin.set_password('admin123')
+                db.session.add(admin)
+                db.session.commit()
     def test_user_password_hashing(self):
         user = User(username="patient_test", role="patient")
         user.set_password("secret123")

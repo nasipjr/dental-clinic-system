@@ -130,8 +130,11 @@ def restore_database_backup(backup_filename):
             try:
                 db.session.remove()
                 db.engine.dispose()
-            except Exception:
-                pass
+                from utils.db_migration_helper import ensure_database_schema
+                db.create_all()
+                ensure_database_schema(current_app, db)
+            except Exception as me:
+                current_app.logger.warning(f"Auto migration after restore warning: {me}")
 
             return True
         else:
@@ -153,8 +156,11 @@ def restore_database_backup(backup_filename):
             try:
                 db.session.remove()
                 db.engine.dispose()
-            except Exception:
-                pass
+                from utils.db_migration_helper import ensure_database_schema
+                db.create_all()
+                ensure_database_schema(current_app, db)
+            except Exception as me:
+                current_app.logger.warning(f"Auto migration after restore warning: {me}")
 
             return True
         else:

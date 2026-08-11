@@ -144,11 +144,6 @@
                         {% endif %}
 
                         {% if appointment.status not in ('Cancelled', 'ملغي', 'Done', 'منجز') and appointment.status == 'Scheduled' %}
-                        <a href="{{ url_for('appointments.edit_appointment', appointment_id=appointment.id) }}"
-                            class="table-action-btn edit-btn" title="Edit Appointment">
-                            <i class="bi bi-pencil-square"></i>
-                        </a>
-
                         <button type="button"
                             class="table-action-btn quick-action-btn border-0 bg-transparent p-0"
                             data-action-url="{{ url_for('appointments.quick_cancel', appointment_id=appointment.id) }}"
@@ -156,6 +151,11 @@
                             title="Quick Cancel">
                             <i class="bi bi-x-circle text-danger"></i>
                         </button>
+
+                        <a href="{{ url_for('appointments.edit_appointment', appointment_id=appointment.id) }}"
+                            class="table-action-btn edit-btn" title="Edit Appointment">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
                         {% endif %}
 
                         {% if current_user.role in ('admin', 'receptionist') and appointment.status != 'Done' and appointment.status != 'منجز' and not appointment.treatments %}

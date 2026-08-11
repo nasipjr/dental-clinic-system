@@ -26,13 +26,15 @@ def settings_page():
                         flash("Booking window days must be a positive integer.", "danger")
                         return redirect(url_for("settings.settings_page") + "#tab-calendar")
                 if key == "anesthesia_needle_price":
+                    if not val:
+                        val = get_setting("anesthesia_needle_price", "50000")
                     try:
                         fval = float(val)
                         if fval < 0:
                             raise ValueError
                     except ValueError:
-                        flash("Anesthesia needle price must be a non-negative number.", "danger")
-                        return redirect(url_for("settings.settings_page") + "#tab-treatments")
+                        fval = 50000.0
+                        val = "50000"
                 set_setting(key, val)
 
             # 1b. Update notification provider credentials and templates
@@ -88,35 +90,74 @@ def settings_page():
             working_days_list = request.form.getlist("working_days")
             set_setting("working_days", ",".join(working_days_list))
             
-            # 2. Update treatment prices (only if present in request to prevent clearing on partial form submissions)
+            # 2. Update treatment prices and details
             if "procedure_names[]" in request.form:
                 names = request.form.getlist("procedure_names[]")
                 prices = request.form.getlist("procedure_prices[]")
+                durations = request.form.getlist("procedure_durations[]")
+                actives = request.form.getlist("procedure_actives[]")
+                categories = request.form.getlist("procedure_categories[]")
                 
                 treatment_dict = {}
-                for name, price in zip(names, prices):
+                for idx, name in enumerate(names):
                     name = name.strip()
                     if name:
                         if len(name) > 200:
                             flash("Procedure name cannot exceed 200 characters.", "danger")
                             return redirect(url_for("settings.settings_page") + "#tab-treatments")
                         try:
-                            # Convert price to number
-                            price_clean = price.strip().replace(",", "")
+                            price_raw = prices[idx] if idx < len(prices) else "0"
+                            price_clean = price_raw.strip().replace(",", "")
                             price_val = float(price_clean) if '.' in price_clean else int(price_clean)
                             if price_val < 0:
                                 price_val = 0
-                        except ValueError:
+                        except (ValueError, IndexError):
                             price_val = 0
-                        treatment_dict[name] = price_val
-                
-                # Guarantee essential system procedures (like 'قلع سن' and 'معالجة ما بعد القلع') are always preserved
-                if "قلع سن" not in treatment_dict:
-                    treatment_dict["قلع سن"] = 80000
-                if "معالجة ما بعد القلع" not in treatment_dict:
-                    treatment_dict["معالجة ما بعد القلع"] = 30000
 
-                set_setting("treatment_prices", json.dumps(treatment_dict))
+                        try:
+                            dur_raw = durations[idx] if idx < len(durations) else "30"
+                            dur_val = int(dur_raw.strip())
+                            if dur_val <= 0:
+                                dur_val = 30
+                        except (ValueError, IndexError):
+                            dur_val = 30
+
+                        act_val = True
+                        if idx < len(actives):
+                            act_val = actives[idx].lower() in ("true", "1", "on", "yes")
+
+                        cat_val = categories[idx].strip() if idx < len(categories) and categories[idx].strip() else "عام"
+
+                        treatment_dict[name] = {
+                            "price": price_val,
+                            "duration": dur_val,
+                            "active": act_val,
+                            "category": cat_val
+                        }
+                
+                # Guarantee essential system procedures (like 'قلع سن عادي' and 'معالجة ما بعد القلع') are preserved
+                if "قلع سن" not in treatment_dict and "قلع سن عادي" not in treatment_dict:
+                    treatment_dict["قلع سن عادي"] = {"price": 80000, "duration": 30, "active": True, "category": "جراحة وقلع"}
+                if "معالجة ما بعد القلع" not in treatment_dict:
+                    treatment_dict["معالجة ما بعد القلع"] = {"price": 30000, "duration": 20, "active": True, "category": "جراحة وقلع"}
+
+                # Process Anesthesia Types
+                anesthesia_names = request.form.getlist("anesthesia_names[]")
+                anesthesia_prices = request.form.getlist("anesthesia_prices[]")
+                anesthesia_list = []
+                for idx, a_name in enumerate(anesthesia_names):
+                    clean_a_name = a_name.strip()
+                    if clean_a_name:
+                        try:
+                            a_price = float(anesthesia_prices[idx])
+                        except (ValueError, IndexError):
+                            a_price = 50000.0
+                        anesthesia_list.append({"name": clean_a_name, "price": a_price})
+                if anesthesia_list:
+                    set_setting("anesthesia_types", json.dumps(anesthesia_list))
+                    set_setting("anesthesia_needle_price", str(anesthesia_list[0]["price"]))
+
+                set_setting("treatment_prices", json.dumps(treatment_dict, ensure_ascii=False))
             
             is_ar = request.cookies.get("lang") == "ar" or request.cookies.get("lang") != "en"
             flash("تم تحديث الإعدادات بنجاح!" if is_ar else "Settings updated successfully!", "success")
@@ -136,7 +177,10 @@ def settings_page():
     for key in DEFAULT_SETTINGS.keys():
         settings_data[key] = get_setting(key)
         
+    from utils.settings_helper import get_treatment_details, get_anesthesia_types
     treatment_prices = get_treatment_prices()
+    treatment_details = get_treatment_details()
+    anesthesia_types = get_anesthesia_types()
     
     from models import User, NotificationLog, StaffSalary
     users = User.query.all()
@@ -210,6 +254,8 @@ def settings_page():
         "settings/settings.html",
         settings=settings_data,
         treatment_prices=treatment_prices,
+        treatment_details=treatment_details,
+        anesthesia_types=anesthesia_types,
         users=users,
         backups=backups_list,
         notifications=notifications,
@@ -640,7 +686,7 @@ def reset_clinic():
         return redirect(url_for("settings.settings_page"))
 
     try:
-        current_app.logger.warning(f"Admin '{admin_username}' initiated full clinic database reset.")
+        current_app.logger.warning(f"Admin '{admin_username}' initiated operational clinic database reset.")
 
         # Disable foreign key checks for reset transaction
         try:
@@ -709,6 +755,135 @@ def reset_clinic():
     return redirect(url_for("settings.settings_page"))
 
 
+@settings_bp.route("/settings/factory-reset", methods=["POST"])
+@role_required("admin")
+def factory_reset_clinic():
+    """Performs a full factory reset of the clinic system:
+    - Wipes all patients, appointments, treatments, tooth histories, invoices, payments, allocations, files, expenses, notification logs.
+    - Wipes ALL user accounts.
+    - Wipes SystemSetting table and re-populates default settings.
+    - Deletes uploaded files.
+    - Creates single default admin account (username: 'admin', password: 'admin123', role: 'admin').
+    - Clears session and redirects to login page.
+    """
+    from models import (
+        db, User, Patient, Appointment, Treatment, ToothHistory,
+        Invoice, Payment, PaymentAllocation, PatientFile, NotificationLog, Expense, SystemSetting
+    )
+    from utils.settings_helper import populate_default_settings
+    from flask import session, g
+
+    is_ar = request.cookies.get('lang', 'ar') != 'en'
+
+    admin_username = request.form.get("admin_username", "").strip()
+    admin_password = request.form.get("admin_password", "").strip()
+
+    if not admin_username or not admin_password:
+        msg = "يرجى إدخال اسم المستخدم وكلمة المرور الخاصة بالمدير." if is_ar else "Admin username and password are required."
+        flash(msg, "danger")
+        return redirect(url_for("settings.settings_page"))
+
+    # Verify admin user credentials
+    admin_user = User.query.filter_by(username=admin_username).first()
+    if not admin_user or admin_user.role != "admin" or not admin_user.check_password(admin_password):
+        current_app.logger.warning(f"Failed clinic factory reset attempt: invalid admin credentials for username '{admin_username}'.")
+        msg = "اسم المستخدم أو كلمة المرور الخاصة بالمدير غير صحيحة، أو أنك لا تملك صلاحيات مدير." if is_ar else "Invalid admin username or password, or insufficient permissions."
+        flash(msg, "danger")
+        return redirect(url_for("settings.settings_page"))
+
+    try:
+        current_app.logger.warning(f"Admin '{admin_username}' initiated full clinic factory reset.")
+
+        # Disable foreign key checks for reset transaction
+        try:
+            db.session.execute(db.text("SET FOREIGN_KEY_CHECKS = 0;"))
+        except Exception:
+            pass
+        try:
+            db.session.execute(db.text("PRAGMA foreign_keys = OFF;"))
+        except Exception:
+            pass
+
+        # 1. Unlink patient user accounts from Patient table
+        User.query.update({User.patient_id: None}, synchronize_session=False)
+
+        # 2. Delete clinical and operational data in FK-safe order
+        db.session.query(PaymentAllocation).delete(synchronize_session=False)
+        db.session.query(Payment).delete(synchronize_session=False)
+        db.session.query(Invoice).delete(synchronize_session=False)
+        db.session.query(Treatment).delete(synchronize_session=False)
+        db.session.query(Appointment).delete(synchronize_session=False)
+        db.session.query(ToothHistory).delete(synchronize_session=False)
+        db.session.query(PatientFile).delete(synchronize_session=False)
+        db.session.query(NotificationLog).delete(synchronize_session=False)
+        db.session.query(Expense).delete(synchronize_session=False)
+        db.session.query(Patient).delete(synchronize_session=False)
+
+        # 3. Delete ALL Users
+        db.session.query(User).delete(synchronize_session=False)
+
+        # 4. Delete SystemSetting rows
+        db.session.query(SystemSetting).delete(synchronize_session=False)
+
+        # Re-enable foreign key checks
+        try:
+            db.session.execute(db.text("SET FOREIGN_KEY_CHECKS = 1;"))
+        except Exception:
+            pass
+        try:
+            db.session.execute(db.text("PRAGMA foreign_keys = ON;"))
+        except Exception:
+            pass
+
+        db.session.commit()
+
+        # 5. Re-populate default system settings
+        populate_default_settings()
+
+        # 6. Create single default admin account (admin / admin123)
+        default_admin = User(
+            username="admin",
+            role="admin",
+            first_name="المدير",
+            last_name="العام"
+        )
+        default_admin.set_password("admin123")
+        db.session.add(default_admin)
+        db.session.commit()
+
+        if hasattr(g, "system_settings_cache"):
+            g.system_settings_cache = {}
+
+        # 7. Remove physical patient upload files if present
+        import os
+        import shutil
+        uploads_dir = os.path.join(current_app.root_path, "static", "uploads")
+        if os.path.exists(uploads_dir):
+            for item in os.listdir(uploads_dir):
+                item_path = os.path.join(uploads_dir, item)
+                try:
+                    if os.path.isfile(item_path) or os.path.islink(item_path):
+                        os.unlink(item_path)
+                    elif os.path.isdir(item_path):
+                        shutil.rmtree(item_path)
+                except Exception as fe:
+                    current_app.logger.warning(f"Could not delete file {item_path}: {fe}")
+
+        # 8. Logout current user session
+        session.clear()
+
+        msg = "تمت إعادة ضبط العيادة بالكامل للمصنع وتصفير جميع السجلات والمستخدمين وحذفها، وإرجاع كافة الإعدادات للقيم الافتراضية. يمكنك تسجيل الدخول باستخدام الحساب الافتراضي: admin / admin123" if is_ar else "Clinic factory reset completed successfully. All data and user accounts wiped. Default admin credentials: admin / admin123"
+        flash(msg, "success")
+        return redirect(url_for("auth.login"))
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.exception(f"Error resetting clinic database: {e}")
+        msg = f"حدث خطأ أثناء إعادة الضبط المصنعي للعيادة: {str(e)}" if is_ar else f"Error resetting clinic database: {str(e)}"
+        flash(msg, "danger")
+        return redirect(url_for("settings.settings_page"))
+
+
 @settings_bp.route("/settings/restore-backup", methods=["POST"])
 @settings_bp.route("/settings/restore-latest-backup", methods=["POST"])
 @role_required("admin")
@@ -739,21 +914,76 @@ def restore_backup():
         return redirect(url_for("settings.settings_page"))
 
     backups = list_backups()
-    if not backups:
-        msg = "لم يتم العثور على أي ملف نسخة احتياطية لاستعادته." if is_ar else "No backup file found to restore from."
-        flash(msg, "warning")
-        return redirect(url_for("settings.settings_page"))
 
-    if not backup_filename:
-        backup_filename = backups[0]["filename"]
-    else:
-        # Sanitize filename
-        backup_filename = os.path.basename(backup_filename)
-        valid_files = [b["filename"] for b in backups]
-        if backup_filename not in valid_files:
-            msg = "ملف النسخة الاحتياطية المحددة غير موجود." if is_ar else "Specified backup file not found."
+    if backup_filename == "__upload__" or "manual_backup_file" in request.files:
+        uploaded_file = request.files.get("manual_backup_file")
+        if not uploaded_file or not uploaded_file.filename:
+            msg = "يرجى اختيار ملف نسخة احتياطية من جهازك أولاً." if is_ar else "Please select a backup file from your computer."
+            flash(msg, "warning")
+            return redirect(url_for("settings.settings_page") + "#tab-backups")
+
+        filename_orig = os.path.basename(uploaded_file.filename)
+        ext = os.path.splitext(filename_orig)[1].lower()
+
+        if ext not in (".db", ".sql"):
+            msg = "صيغة الملف غير مدعومة. يرجى اختيار ملف بصلة (.db) أو (.sql)." if is_ar else "Unsupported file format. Please upload a (.db) or (.sql) backup file."
             flash(msg, "danger")
-            return redirect(url_for("settings.settings_page"))
+            return redirect(url_for("settings.settings_page") + "#tab-backups")
+
+        db_uri = current_app.config.get('SQLALCHEMY_DATABASE_URI', '')
+        if db_uri.startswith('mysql') and ext != '.sql':
+            msg = "النظام يعمل حالياً بقواعد بيانات ماي اس كيو ال (MySQL)، يرجى اختيار ملف نسخة احتياطية بصيغة (.sql)." if is_ar else "Active DB is MySQL. Please upload a (.sql) backup file."
+            flash(msg, "danger")
+            return redirect(url_for("settings.settings_page") + "#tab-backups")
+        elif db_uri.startswith('sqlite') and ext != '.db':
+            msg = "النظام يعمل حالياً بقواعد بيانات سكيولايت (SQLite)، يرجى اختيار ملف نسخة احتياطية بصيغة (.db)." if is_ar else "Active DB is SQLite. Please upload a (.db) backup file."
+            flash(msg, "danger")
+            return redirect(url_for("settings.settings_page") + "#tab-backups")
+
+        from utils.backup_helper import BACKUP_DIR
+        if not os.path.exists(BACKUP_DIR):
+            os.makedirs(BACKUP_DIR)
+
+        from datetime import datetime
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        saved_filename = f"backup_uploaded_{timestamp}{ext}"
+        saved_filepath = os.path.join(BACKUP_DIR, saved_filename)
+
+        try:
+            uploaded_file.save(saved_filepath)
+
+            # SQLite validation check
+            if ext == ".db":
+                with open(saved_filepath, "rb") as f:
+                    header = f.read(16)
+                    if not header.startswith(b"SQLite format 3"):
+                        os.remove(saved_filepath)
+                        msg = "الملف المرفوع ليس ملف قاعدة بيانات سكيولايت صحيح (Corrupted SQLite DB)." if is_ar else "The uploaded file is not a valid SQLite database."
+                        flash(msg, "danger")
+                        return redirect(url_for("settings.settings_page") + "#tab-backups")
+
+            backup_filename = saved_filename
+        except Exception as fe:
+            current_app.logger.exception(f"Failed to save uploaded backup file: {fe}")
+            msg = "فشل في حفظ ملف النسخة الاحتياطية المرفوع." if is_ar else "Failed to save uploaded backup file."
+            flash(msg, "danger")
+            return redirect(url_for("settings.settings_page") + "#tab-backups")
+    else:
+        if not backups:
+            msg = "لم يتم العثور على أي ملف نسخة احتياطية لاستعادته." if is_ar else "No backup file found to restore from."
+            flash(msg, "warning")
+            return redirect(url_for("settings.settings_page") + "#tab-backups")
+
+        if not backup_filename:
+            backup_filename = backups[0]["filename"]
+        else:
+            # Sanitize filename
+            backup_filename = os.path.basename(backup_filename)
+            valid_files = [b["filename"] for b in backups]
+            if backup_filename not in valid_files:
+                msg = "ملف النسخة الاحتياطية المحددة غير موجود." if is_ar else "Specified backup file not found."
+                flash(msg, "danger")
+                return redirect(url_for("settings.settings_page") + "#tab-backups")
 
     try:
         current_app.logger.warning(f"Admin '{admin_username}' requested database restore from backup file '{backup_filename}'.")
@@ -765,7 +995,7 @@ def restore_backup():
         msg = f"حدث خطأ أثناء استعادة النسخة الاحتياطية: {str(e)}" if is_ar else f"Error restoring database: {str(e)}"
         flash(msg, "danger")
 
-    return redirect(url_for("settings.settings_page"))
+    return redirect(url_for("settings.settings_page") + "#tab-backups")
 
 
 # ──────────────────────────────────────────────────────────────────────────────

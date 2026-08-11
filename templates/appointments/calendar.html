@@ -35,6 +35,10 @@
                     </a>
                 </div>
 
+                <button type="button" class="btn btn-success rounded-pill px-4 py-2 fw-bold d-inline-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#quickSessionModal" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
+                    <i class="bi bi-lightning-charge-fill"></i>
+                    <span>{% if current_lang == 'ar' %}جلسة جديدة سريعة{% else %}Quick New Session{% endif %}</span>
+                </button>
                 <a href="{{ url_for('appointments.add_appointment_direct') }}" class="btn btn-primary"
                     style="border-radius: 30px; font-weight: 600; padding: 10px 24px;">
                     <i class="bi bi-plus-circle me-1"></i>
@@ -1372,4 +1376,68 @@
         }
     });
 </script>
+
+<!-- Quick Session Modal -->
+<div class="modal fade" id="quickSessionModal" tabindex="-1" aria-labelledby="quickSessionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg" style="background: var(--surface-color); color: var(--default-color);">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold text-success d-flex align-items-center gap-2" id="quickSessionModalLabel">
+                    <i class="bi bi-lightning-charge-fill text-success fs-4"></i>
+                    {% if current_lang == 'ar' %}بدء جلسة جديدة سريعة الآن{% else %}Start Quick New Session{% endif %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('appointments.quick_session_start') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body py-3">
+                    <p class="text-muted small mb-3">
+                        {% if current_lang == 'ar' %}اختر المريض لبدء جلسة علاجية فورية بتاريخ وساعة اللحظة الحالية:{% else %}Select a patient to start an immediate clinical session now:{% endif %}
+                    </p>
+                    <div class="mb-3">
+                        <label for="calendar-quick-session-patient-select" class="form-label fw-bold small">{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</label>
+                        <select name="patient_id" id="calendar-quick-session-patient-select" class="form-select rounded-3 py-2 fw-semibold" required>
+                            <option value="">{% if current_lang == 'ar' %}جاري تحميل قائمة المرضى...{% else %}Loading patients list...{% endif %}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                        {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                    </button>
+                    <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
+                        <i class="bi bi-play-fill me-1"></i>
+                        {% if current_lang == 'ar' %}بدء الجلسة فوراً{% else %}Start Session Now{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const quickModal = document.getElementById("quickSessionModal");
+    if (quickModal) {
+        quickModal.addEventListener("show.bs.modal", function() {
+            const select = document.getElementById("calendar-quick-session-patient-select");
+            if (!select || select.dataset.loaded) return;
+            fetch("{{ url_for('appointments.get_patients_list_api') }}")
+                .then(r => r.json())
+                .then(data => {
+                    select.innerHTML = '<option value="">{% if current_lang == "ar" %}-- اختر المريض --{% else %}-- Select Patient --{% endif %}</option>';
+                    data.forEach(p => {
+                        const opt = document.createElement("option");
+                        opt.value = p.id;
+                        opt.textContent = `${p.name} (${p.phone})`;
+                        select.appendChild(opt);
+                    });
+                    select.dataset.loaded = "true";
+                })
+                .catch(err => console.error("Failed to load patients", err));
+        });
+    }
+});
+</script>
+
 {% endblock %}

@@ -18,7 +18,7 @@ PATIENT_GENDERS = {
 }
 
 
-from utils.settings_helper import get_treatment_prices
+from utils.settings_helper import get_treatment_prices, get_treatment_details
 
 class TreatmentPricesProxy(dict):
     def __getitem__(self, key):
@@ -49,6 +49,35 @@ class TreatmentPricesProxy(dict):
         return repr(get_treatment_prices())
 
 
+class TreatmentDetailsProxy(dict):
+    def __getitem__(self, key):
+        return get_treatment_details()[key]
+
+    def get(self, key, default=None):
+        return get_treatment_details().get(key, default)
+
+    def keys(self):
+        return get_treatment_details().keys()
+
+    def items(self):
+        return get_treatment_details().items()
+
+    def values(self):
+        return get_treatment_details().values()
+
+    def __contains__(self, key):
+        return key in get_treatment_details()
+
+    def __iter__(self):
+        return iter(get_treatment_details())
+
+    def __len__(self):
+        return len(get_treatment_details())
+
+    def __repr__(self):
+        return repr(get_treatment_details())
+
+
 class TreatmentProcedureTypesProxy(set):
     def __contains__(self, item):
         return item in get_treatment_prices()
@@ -64,4 +93,5 @@ class TreatmentProcedureTypesProxy(set):
 
 
 TREATMENT_PRICES = TreatmentPricesProxy()
+TREATMENT_DETAILS = TreatmentDetailsProxy()
 TREATMENT_PROCEDURE_TYPES = TreatmentProcedureTypesProxy()

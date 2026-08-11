@@ -1,3 +1,6 @@
+import os
+os.environ["TESTING"] = "true"
+
 import unittest
 from datetime import datetime
 from decimal import Decimal
@@ -13,9 +16,26 @@ from utils.license_helper import generate_license_key, verify_license_key
 class DentalClinicTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from app import app
+        from app import app, db
+        from models import User
+        from utils.settings_helper import populate_default_settings
         app.config['TESTING'] = True
         app.config['WTF_CSRF_ENABLED'] = False
+        with app.app_context():
+            db.drop_all()
+            db.create_all()
+            populate_default_settings()
+            admin = User(id=1, username='mazen', role='admin', first_name='Mazen', last_name='Admin')
+            admin.set_password('mazen123')
+            db.session.add(admin)
+            db.session.commit()
+
+    @classmethod
+    def tearDownClass(cls):
+        from app import app, db
+        with app.app_context():
+            db.session.remove()
+            db.drop_all()
 
     def test_parse_treatment_money(self):
         total, paid, err = parse_treatment_money(100, 50)
@@ -199,6 +219,151 @@ class DentalClinicTestCase(unittest.TestCase):
                 })
                 self.assertEqual(resp_del.status_code, 302)
                 self.assertIn(f'/appointments/{appointment_id}/session', resp_del.location)
+
+    def test_manual_backup_restore_upload(self):
+        import io
+        import tempfile
+        import os
+        import sqlite3
+        from app import app, db
+        from models import User
+
+        # Ensure admin user exists with mazen / mazen123
+        with app.app_context():
+            admin = User.query.filter_by(username='mazen').first()
+            if not admin:
+                admin = User(username='mazen', role='admin', first_name='Mazen', last_name='Admin')
+                admin.set_password('mazen123')
+                db.session.add(admin)
+                db.session.commit()
+
+            db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+            is_mysql = db_uri.startswith('mysql')
+
+        if is_mysql:
+            upload_filename = "valid_backup.sql"
+            upload_content = b"-- MySQL dump\nSELECT 1;\n"
+        else:
+            upload_filename = "valid_backup.db"
+            tmp_db = tempfile.NamedTemporaryFile(suffix='.db', delete=False)
+            tmp_db_path = tmp_db.name
+            tmp_db.close()
+            try:
+                with sqlite3.connect(tmp_db_path) as conn:
+                    conn.execute("CREATE TABLE dummy_restore_test (id INT PRIMARY KEY);")
+                    conn.execute("INSERT INTO dummy_restore_test VALUES (100);")
+                    conn.commit()
+                with open(tmp_db_path, "rb") as f:
+                    upload_content = f.read()
+            finally:
+                if os.path.exists(tmp_db_path):
+                    try: os.remove(tmp_db_path)
+                    except Exception: pass
+
+        with app.test_client() as client:
+            with client.session_transaction() as sess:
+                sess['user_id'] = 1
+                sess['role'] = 'admin'
+
+            # Test upload invalid format extension (.txt)
+            resp_invalid = client.post('/settings/restore-backup', data={
+                'backup_filename': '__upload__',
+                'admin_username': 'mazen',
+                'admin_password': 'mazen123',
+                'manual_backup_file': (io.BytesIO(b"dummy text"), "bad_file.txt")
+            })
+            self.assertEqual(resp_invalid.status_code, 302)
+
+            # Test valid upload for current DB engine
+            resp_valid = client.post('/settings/restore-backup', data={
+                'backup_filename': '__upload__',
+                'admin_username': 'mazen',
+                'admin_password': 'mazen123',
+                'manual_backup_file': (io.BytesIO(upload_content), upload_filename)
+            }, content_type='multipart/form-data')
+            self.assertEqual(resp_valid.status_code, 302)
+            self.assertIn('/settings#tab-backups', resp_valid.location)
+
+            # Cleanup test backup files created during unit test execution
+            backup_dir = os.path.join(app.root_path, 'backups')
+            if os.path.exists(backup_dir):
+                for fname in os.listdir(backup_dir):
+                    if fname.startswith('backup_uploaded_'):
+                        try:
+                            os.remove(os.path.join(backup_dir, fname))
+                        except Exception:
+                            pass
+
+    def test_reset_clinic_operational(self):
+        from app import app, db
+        from models import User
+
+        with app.app_context():
+            admin = User.query.filter_by(username='mazen').first()
+            if not admin:
+                admin = User(username='mazen', role='admin', first_name='Mazen', last_name='Admin')
+                admin.set_password('mazen123')
+                db.session.add(admin)
+                db.session.commit()
+            admin_id = admin.id
+
+        with app.test_client() as client:
+            with client.session_transaction() as sess:
+                sess['user_id'] = admin_id
+                sess['role'] = 'admin'
+
+            resp = client.post('/settings/reset-clinic', data={
+                'admin_username': 'mazen',
+                'admin_password': 'mazen123'
+            })
+            self.assertEqual(resp.status_code, 302)
+            self.assertIn('/settings', resp.location)
+
+    def test_factory_reset_clinic(self):
+        from app import app, db
+        from models import User
+
+        with app.app_context():
+            admin = User.query.filter_by(username='mazen').first()
+            if not admin:
+                admin = User(username='mazen', role='admin', first_name='Mazen', last_name='Admin')
+                admin.set_password('mazen123')
+                db.session.add(admin)
+                db.session.commit()
+            admin_id = admin.id
+
+        with app.test_client() as client:
+            with client.session_transaction() as sess:
+                sess['user_id'] = admin_id
+                sess['role'] = 'admin'
+
+            resp = client.post('/settings/factory-reset', data={
+                'admin_username': 'mazen',
+                'admin_password': 'mazen123'
+            })
+            # Factory reset clears session and redirects to login
+            self.assertEqual(resp.status_code, 302)
+            self.assertIn('/login', resp.location)
+
+        with app.app_context():
+            # Verify admin user exists with admin / admin123
+            default_admin = User.query.filter_by(username='admin').first()
+            self.assertIsNotNone(default_admin)
+            self.assertTrue(default_admin.check_password('admin123'))
+            self.assertEqual(default_admin.role, 'admin')
+
+            # Re-seed mazen for user_id=1 for subsequent unit tests
+            mazen = User.query.filter_by(username='mazen').first()
+            if not mazen:
+                u1 = User.query.get(1)
+                if u1:
+                    u1.username = 'mazen'
+                    u1.set_password('mazen123')
+                else:
+                    u1 = User(id=1, username='mazen', role='admin', first_name='Mazen', last_name='Admin')
+                    u1.set_password('mazen123')
+                    db.session.add(u1)
+                db.session.commit()
 
 
 if __name__ == "__main__":

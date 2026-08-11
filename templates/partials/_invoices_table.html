@@ -72,7 +72,7 @@
                         sort='total',
                         order='asc' if sort_by != 'total' or order == 'desc' else 'desc'
                     ) }}">
-                        Invoice Total
+                        {% if request.cookies.get('lang', 'en') == 'ar' or current_lang == 'ar' %}إجمالي الفاتورة{% else %}Invoice Total{% endif %}
                         {% if sort_by == 'total' %}
                         <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
@@ -87,23 +87,8 @@
                         sort='payments',
                         order='asc' if sort_by != 'payments' or order == 'desc' else 'desc'
                     ) }}">
-                        Total Payments
+                        {% if request.cookies.get('lang', 'en') == 'ar' or current_lang == 'ar' %}إجمالي المدفوعات{% else %}Total Payments{% endif %}
                         {% if sort_by == 'payments' %}
-                        <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
-                        {% endif %}
-                    </a>
-                </th>
-
-                <th>
-                    <a class="invoices-ajax-link" href="{{ url_for(
-                        'invoices.invoices',
-                        search=search_query,
-                        status=status_filter,
-                        sort='outstanding',
-                        order='asc' if sort_by != 'outstanding' or order == 'desc' else 'desc'
-                    ) }}">
-                        Outstanding / Credit
-                        {% if sort_by == 'outstanding' %}
                         <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
                     </a>
@@ -117,14 +102,14 @@
                         sort='status',
                         order='asc' if sort_by != 'status' or order == 'desc' else 'desc'
                     ) }}">
-                        Status
+                        {% if request.cookies.get('lang', 'en') == 'ar' or current_lang == 'ar' %}الحالة{% else %}Status{% endif %}
                         {% if sort_by == 'status' %}
                         <i class="bi {% if order == 'asc' %}bi-arrow-up{% else %}bi-arrow-down{% endif %}"></i>
                         {% endif %}
                     </a>
                 </th>
 
-                <th class="text-center">Actions</th>
+                <th class="text-center">{% if request.cookies.get('lang', 'en') == 'ar' or current_lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
             </tr>
         </thead>
 
@@ -162,41 +147,44 @@
                 </td>
 
                 <td>
-                    {{ invoice.total_amount | format_price }} {{ currency_symbol }}
-                </td>
-
-                <td>
-                    {{ invoice.total_paid | format_price }} {{ currency_symbol }}
-                </td>
-
-                <td>
-                    {% if invoice.credit > 0 %}
-                    <span class="credit-amount">
-                        {{ invoice.credit | format_price }} {{ currency_symbol }}
-                        <span class="credit-badge">Credit</span>
+                    <span class="price-badge">
+                        {{ invoice.total_amount | format_price }} {{ currency_symbol }}
                     </span>
-                    {% elif invoice.outstanding_amount > 0 %}
-                    <span class="remaining-due">
-                        {{ invoice.outstanding_amount | format_price }} {{ currency_symbol }}
-                        <span class="due-badge">Due</span>
+                </td>
+
+                <td>
+                    {% if invoice.total_paid == 0 %}
+                    <span class="badge rounded-pill px-3 py-1.5 fw-semibold" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; font-size: 0.88rem;">
+                        {{ invoice.total_paid | format_price }} {{ currency_symbol }}
+                    </span>
+                    {% elif invoice.total_paid < invoice.total_amount %}
+                    <span class="badge rounded-pill px-3 py-1.5 fw-semibold" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 0.88rem;">
+                        {{ invoice.total_paid | format_price }} {{ currency_symbol }}
                     </span>
                     {% else %}
-                    <span class="remaining-clear">
-                        0 {{ currency_symbol }}
-                        <span class="paid-badge">Paid</span>
+                    <span class="badge rounded-pill px-3 py-1.5 fw-semibold" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 0.88rem;">
+                        {{ invoice.total_paid | format_price }} {{ currency_symbol }}
                     </span>
                     {% endif %}
                 </td>
 
                 <td>
                     {% if invoice.status == 'Credit' %}
-                    <span class="credit-badge">Credit</span>
+                    <span class="badge rounded-pill px-3 py-1.5 fw-semibold" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 0.88rem;">
+                        {% if request.cookies.get('lang', 'en') == 'ar' or current_lang == 'ar' %}رصيد مالي{% else %}Credit{% endif %}
+                    </span>
                     {% elif invoice.status == 'Paid' %}
-                    <span class="paid-badge">Paid</span>
+                    <span class="badge rounded-pill px-3 py-1.5 fw-semibold" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 0.88rem;">
+                        {% if request.cookies.get('lang', 'en') == 'ar' or current_lang == 'ar' %}مدفوع{% else %}Paid{% endif %}
+                    </span>
                     {% elif invoice.status == 'Partially Paid' %}
-                    <span class="due-badge">Partial</span>
+                    <span class="badge rounded-pill px-3 py-1.5 fw-semibold" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 0.88rem;">
+                        {% if request.cookies.get('lang', 'en') == 'ar' or current_lang == 'ar' %}جزئي{% else %}Partial{% endif %}
+                    </span>
                     {% else %}
-                    <span class="due-badge">Unpaid</span>
+                    <span class="badge rounded-pill px-3 py-1.5 fw-semibold" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; font-size: 0.88rem;">
+                        {% if request.cookies.get('lang', 'en') == 'ar' or current_lang == 'ar' %}غير مدفوع{% else %}Unpaid{% endif %}
+                    </span>
                     {% endif %}
                 </td>
 
