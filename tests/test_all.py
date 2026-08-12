@@ -25,8 +25,8 @@ class DentalClinicTestCase(unittest.TestCase):
             db.drop_all()
             db.create_all()
             populate_default_settings()
-            admin = User(id=1, username='mazen', role='admin', first_name='Mazen', last_name='Admin')
-            admin.set_password('mazen123')
+            admin = User(id=1, username='admin', role='admin', first_name='Admin', last_name='User')
+            admin.set_password('admin123')
             db.session.add(admin)
             db.session.commit()
 
@@ -228,12 +228,12 @@ class DentalClinicTestCase(unittest.TestCase):
         from app import app, db
         from models import User
 
-        # Ensure admin user exists with mazen / mazen123
+        # Ensure admin user exists with admin / admin123
         with app.app_context():
-            admin = User.query.filter_by(username='mazen').first()
+            admin = User.query.filter_by(username='admin').first()
             if not admin:
-                admin = User(username='mazen', role='admin', first_name='Mazen', last_name='Admin')
-                admin.set_password('mazen123')
+                admin = User(username='admin', role='admin', first_name='Admin', last_name='User')
+                admin.set_password('admin123')
                 db.session.add(admin)
                 db.session.commit()
 
@@ -268,8 +268,8 @@ class DentalClinicTestCase(unittest.TestCase):
             # Test upload invalid format extension (.txt)
             resp_invalid = client.post('/settings/restore-backup', data={
                 'backup_filename': '__upload__',
-                'admin_username': 'mazen',
-                'admin_password': 'mazen123',
+                'admin_username': 'admin',
+                'admin_password': 'admin123',
                 'manual_backup_file': (io.BytesIO(b"dummy text"), "bad_file.txt")
             })
             self.assertEqual(resp_invalid.status_code, 302)
@@ -277,8 +277,8 @@ class DentalClinicTestCase(unittest.TestCase):
             # Test valid upload for current DB engine
             resp_valid = client.post('/settings/restore-backup', data={
                 'backup_filename': '__upload__',
-                'admin_username': 'mazen',
-                'admin_password': 'mazen123',
+                'admin_username': 'admin',
+                'admin_password': 'admin123',
                 'manual_backup_file': (io.BytesIO(upload_content), upload_filename)
             }, content_type='multipart/form-data')
             self.assertEqual(resp_valid.status_code, 302)
@@ -299,10 +299,10 @@ class DentalClinicTestCase(unittest.TestCase):
         from models import User
 
         with app.app_context():
-            admin = User.query.filter_by(username='mazen').first()
+            admin = User.query.filter_by(username='admin').first()
             if not admin:
-                admin = User(username='mazen', role='admin', first_name='Mazen', last_name='Admin')
-                admin.set_password('mazen123')
+                admin = User(username='admin', role='admin', first_name='Admin', last_name='User')
+                admin.set_password('admin123')
                 db.session.add(admin)
                 db.session.commit()
             admin_id = admin.id
@@ -313,8 +313,8 @@ class DentalClinicTestCase(unittest.TestCase):
                 sess['role'] = 'admin'
 
             resp = client.post('/settings/reset-clinic', data={
-                'admin_username': 'mazen',
-                'admin_password': 'mazen123'
+                'admin_username': 'admin',
+                'admin_password': 'admin123'
             })
             self.assertEqual(resp.status_code, 302)
             self.assertIn('/settings', resp.location)
@@ -324,10 +324,10 @@ class DentalClinicTestCase(unittest.TestCase):
         from models import User
 
         with app.app_context():
-            admin = User.query.filter_by(username='mazen').first()
+            admin = User.query.filter_by(username='admin').first()
             if not admin:
-                admin = User(username='mazen', role='admin', first_name='Mazen', last_name='Admin')
-                admin.set_password('mazen123')
+                admin = User(username='admin', role='admin', first_name='Admin', last_name='User')
+                admin.set_password('admin123')
                 db.session.add(admin)
                 db.session.commit()
             admin_id = admin.id
@@ -338,8 +338,8 @@ class DentalClinicTestCase(unittest.TestCase):
                 sess['role'] = 'admin'
 
             resp = client.post('/settings/factory-reset', data={
-                'admin_username': 'mazen',
-                'admin_password': 'mazen123'
+                'admin_username': 'admin',
+                'admin_password': 'admin123'
             })
             # Factory reset clears session and redirects to login
             self.assertEqual(resp.status_code, 302)
@@ -351,19 +351,6 @@ class DentalClinicTestCase(unittest.TestCase):
             self.assertIsNotNone(default_admin)
             self.assertTrue(default_admin.check_password('admin123'))
             self.assertEqual(default_admin.role, 'admin')
-
-            # Re-seed mazen for user_id=1 for subsequent unit tests
-            mazen = User.query.filter_by(username='mazen').first()
-            if not mazen:
-                u1 = User.query.get(1)
-                if u1:
-                    u1.username = 'mazen'
-                    u1.set_password('mazen123')
-                else:
-                    u1 = User(id=1, username='mazen', role='admin', first_name='Mazen', last_name='Admin')
-                    u1.set_password('mazen123')
-                    db.session.add(u1)
-                db.session.commit()
 
 
 if __name__ == "__main__":

@@ -59,7 +59,7 @@ def patient_login_required(f):
         
         # Verify the patient still exists in the database (e.g. in case database was cleared/reseeded)
         patient_id = session.get("patient_id")
-        patient = Patient.query.get(patient_id)
+        patient = db.session.get(Patient, patient_id)
         if not patient:
             session.clear()
             flash_message("login_required", "danger")

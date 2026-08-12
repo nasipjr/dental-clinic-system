@@ -174,7 +174,7 @@ def add_patient_payment():
         selected_patient = None
 
         if selected_patient_id:
-            selected_patient = Patient.query.get(selected_patient_id)
+            selected_patient = db.session.get(Patient, selected_patient_id)
 
         if request.method == "POST":
             patient_id = request.form.get("patient_id", type=int)
@@ -182,7 +182,7 @@ def add_patient_payment():
             notes = request.form.get("notes", "").strip()
             invoice_id = request.form.get("invoice_id", type=int) or invoice_id
 
-            patient = Patient.query.get(patient_id)
+            patient = db.session.get(Patient, patient_id)
 
             if not patient:
                 return render_template(
@@ -285,7 +285,7 @@ def edit_patient_payment(payment_id):
         ).all()
 
         selected_patient_id = request.args.get("patient_id", type=int) or payment.patient_id
-        selected_patient = Patient.query.get(selected_patient_id) if selected_patient_id else payment.patient
+        selected_patient = db.session.get(Patient, selected_patient_id) if selected_patient_id else payment.patient
 
         next_url = request.args.get("next") or request.referrer or ""
         if any(k in next_url for k in ["/edit", "/delete"]):
@@ -297,7 +297,7 @@ def edit_patient_payment(payment_id):
             notes = request.form.get("notes", "").strip()
             payment_date_str = request.form.get("payment_date", "").strip()
 
-            new_patient = Patient.query.get(new_patient_id)
+            new_patient = db.session.get(Patient, new_patient_id)
 
             if not new_patient:
                 return render_template(

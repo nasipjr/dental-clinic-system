@@ -233,7 +233,7 @@ def load_logged_in_user():
     if user_id is None:
         g.current_user = None
     else:
-        g.current_user = User.query.get(user_id)
+        g.current_user = db.session.get(User, user_id)
 
 
 @app.before_request

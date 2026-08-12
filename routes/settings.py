@@ -355,7 +355,7 @@ def delete_user(user_id):
         flash(msg, "danger")
         return redirect(url_for("settings.settings_page") + "#tab-users")
 
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if not user:
         msg = "المستخدم غير موجود." if is_ar else "User not found."
         flash(msg, "danger")
@@ -382,7 +382,7 @@ def edit_user(user_id):
     from flask import session
     is_ar = request.cookies.get('lang', 'ar') != 'en'
 
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if not user:
         msg = "المستخدم غير موجود." if is_ar else "User not found."
         flash(msg, "danger")
@@ -1073,7 +1073,7 @@ def process_monthly_salary_deductions(user_id, target_month=None):
     from sqlalchemy import extract
 
     salary_cfg = StaffSalary.query.filter_by(user_id=user_id).first()
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
 
     if not salary_cfg or not user:
         return 0, 0.0

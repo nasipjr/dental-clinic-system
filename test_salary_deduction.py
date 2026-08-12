@@ -160,7 +160,7 @@ def run_test():
         # ── Actual deduction ─────────────────────────────────────────────────
         print(f"\n  ⚡ تنفيذ الخصم...")
         for e in eligible:
-            sal = StaffSalary.query.get(e["id"])
+            sal = db.session.get(StaffSalary, e["id"])
             expense = Expense(
                 category="Salaries",
                 amount=e["amount"],

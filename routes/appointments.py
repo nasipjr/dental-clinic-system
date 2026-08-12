@@ -1485,7 +1485,7 @@ def quick_session_start():
             msg = "يرجى اختيار المريض أولاً." if request.cookies.get("lang") == "ar" else "Patient selection is required."
             return jsonify({"success": False, "message": msg}), 400
 
-        patient = Patient.query.get(patient_id)
+        patient = db.session.get(Patient, patient_id)
         if not patient:
             msg = "المريض غير موجود." if request.cookies.get("lang") == "ar" else "Patient not found."
             return jsonify({"success": False, "message": msg}), 404

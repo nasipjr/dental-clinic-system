@@ -17,8 +17,8 @@ def send_patient_notifications_async(app, appointment_id, patient_id, action_typ
     """
     with app.app_context():
         try:
-            appointment = Appointment.query.get(appointment_id)
-            patient = Patient.query.get(patient_id)
+            appointment = db.session.get(Appointment, appointment_id)
+            patient = db.session.get(Patient, patient_id)
             if not appointment or not patient:
                 app.logger.error(f"Async notifications failed: appointment_id={appointment_id} or patient_id={patient_id} not found")
                 return

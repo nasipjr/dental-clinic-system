@@ -268,7 +268,7 @@ def add_invoice():
             payment_option = request.form.get("payment_option", "no_payment").strip()
             custom_payment_amount_raw = request.form.get("custom_payment_amount", "").strip()
 
-            patient = Patient.query.get(patient_id)
+            patient = db.session.get(Patient, patient_id)
 
             if not patient:
                 return render_template(

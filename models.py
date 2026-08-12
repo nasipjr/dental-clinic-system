@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timezone
 
 db = SQLAlchemy()
 
@@ -286,7 +286,7 @@ class ToothHistory(db.Model):
     procedure_type = db.Column(db.String(200), nullable=False)
     notes = db.Column(db.Text, nullable=True)
     history_date = db.Column(db.Date, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     patient = db.relationship("Patient", backref=db.backref("tooth_histories", cascade="all, delete-orphan"))
 

@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>دليل الطبيب الشامل - نظام إدارة العيادة السنية</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 10mm 12mm;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #ffffff;
+      color: #1e293b;
+      margin: 0;
+      padding: 0;
+      font-size: 9.5pt;
+      line-height: 1.6;
+    }
+
+    /* Cover Page */
+    .cover-page {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 45%, #0284c7 100%);
+      color: #ffffff;
+      padding: 50px 30px;
+      height: 96vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+      page-break-after: always;
+      border-radius: 16px;
+      margin-bottom: 20px;
+    }
+
+    .cover-badge {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 6px 22px;
+      border-radius: 30px;
+      font-size: 10pt;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .cover-title {
+      font-size: 26pt;
+      font-weight: 900;
+      margin: 15px 0 10px 0;
+      line-height: 1.3;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .cover-subtitle {
+      font-size: 13pt;
+      font-weight: 500;
+      opacity: 0.95;
+      max-width: 650px;
+      margin: 0 auto 25px auto;
+    }
+
+    .cover-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: 100%;
+      max-width: 680px;
+      margin: 20px 0;
+    }
+
+    .cover-card {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      padding: 12px 10px;
+      border-radius: 12px;
+      font-size: 9pt;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .cover-card div {
+      font-size: 16pt;
+      margin-bottom: 4px;
+    }
+
+    .cover-footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.25);
+      padding-top: 15px;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      font-size: 9pt;
+      opacity: 0.9;
+    }
+
+    /* Page Container */
+    .page {
+      padding: 20px 25px;
+      page-break-after: always;
+    }
+
+    .page:last-child {
+      page-break-after: avoid;
+    }
+
+    /* Section Header */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #0284c7;
+    }
+
+    .section-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #0284c7, #1e3a8a);
+      color: #ffffff;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18pt;
+      font-weight: 800;
+      flex-shrink: 0;
+      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+    }
+
+    .section-title-box h2 {
+      margin: 0;
+      font-size: 15pt;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .section-title-box p {
+      margin: 2px 0 0 0;
+      font-size: 9pt;
+      color: #64748b;
+    }
+
+    .section-tag {
+      font-size: 8.5pt;
+      font-weight: 700;
+      color: #0284c7;
+      letter-spacing: 1px;
+    }
+
+    /* Feature Grid */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .card.highlight {
+      background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+      border-color: #38bdf8;
+    }
+
+    .card-title {
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-desc {
+      font-size: 8.8pt;
+      color: #475569;
+      margin: 0;
+    }
+
+    /* Step Workflow */
+    .steps-container {
+      margin: 15px 0;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 14px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #1e3a8a, #0284c7);
+      color: #ffffff;
+      border-radius: 50%;
+      font-weight: 800;
+      font-size: 10pt;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+    }
+
+    .step-content {
+      flex: 1;
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 10px 14px;
+      border-right: 3px solid #0284c7;
+    }
+
+    .step-content h4 {
+      margin: 0 0 4px 0;
+      font-size: 10pt;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .step-content p {
+      margin: 0;
+      font-size: 8.8pt;
+      color: #475569;
+    }
+
+    /* Alert Boxes */
+    .alert {
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      border-right: 4px solid;
+      font-size: 9pt;
+    }
+
+    .alert-info {
+      background-color: #eff6ff;
+      border-color: #3b82f6;
+      color: #1e40af;
+    }
+
+    .alert-success {
+      background-color: #f0fdf4;
+      border-color: #22c55e;
+      color: #166534;
+    }
+
+    .alert-warning {
+      background-color: #fffbeb;
+      border-color: #f59e0b;
+      color: #92400e;
+    }
+
+    .alert h5 {
+      margin: 0 0 4px 0;
+      font-size: 9.5pt;
+      font-weight: 700;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 8.8pt;
+    }
+
+    th {
+      background: linear-gradient(135deg, #0f172a, #1e3a8a);
+      color: #ffffff;
+      padding: 8px 12px;
+      text-align: right;
+      font-weight: 700;
+    }
+
+    td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #334155;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #f8fafc;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 8pt;
+      font-weight: 700;
+    }
+
+    .badge-blue { background: #dbeafe; color: #1e40af; }
+    .badge-green { background: #dcfce7; color: #166534; }
+    .badge-orange { background: #ffedd5; color: #9a3412; }
+    .badge-red { background: #fee2e2; color: #991b1b; }
+    .badge-purple { background: #f3e8ff; color: #6b21a8; }
+
+    /* Tooth FDI Box */
+    .fdi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .fdi-quadrant {
+      background: #f1f5f9;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .fdi-quadrant h6 {
+      margin: 0 0 4px 0;
+      font-size: 8pt;
+      color: #0284c7;
+      font-weight: 700;
+    }
+
+    .fdi-quadrant span {
+      display: inline-block;
+      margin: 2px;
+      padding: 2px 6px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      font-size: 7.5pt;
+      font-weight: 700;
+    }
+
+    /* Table of Contents */
+    .toc-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      border-bottom: 1px dashed #e2e8f0;
+      font-size: 9.2pt;
+    }
+
+    .toc-title {
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .toc-page {
+      font-weight: 800;
+      color: #0284c7;
+    }
+
+    .footer-note {
+      text-align: center;
+      font-size: 8pt;
+      color: #94a3b8;
+      margin-top: 15px;
+      padding-top: 10px;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    code {
+      font-family: 'Courier New', Courier, monospace;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #0f172a;
+      font-size: 8.5pt;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- COVER PAGE -->
+  <div class="cover-page">
+    <div>
+      <div class="cover-badge">الدليل السريري والإداري الشامل للطبيب</div>
+      <div class="cover-title">نظام إدارة العيادة السنية المتكامل</div>
+      <div class="cover-subtitle">دليل إرشادي خطوة بخطوة للاستفادة الكاملة من ميزات النظام السريرية والمالية والإدارية من الألف إلى الياء</div>
+    </div>
+
+    <div class="cover-grid">
+      <div class="cover-card">
+        <div>🦷</div>
+        مخطط الأسنان FDI
+      </div>
+      <div class="cover-card">
+        <div>📅</div>
+        التقويم وحجز المواعيد
+      </div>
+      <div class="cover-card">
+        <div>💰</div>
+        الفوترة وحساب النسب
+      </div>
+      <div class="cover-card">
+        <div>📱</div>
+        تذكيرات التليغرام والـ SMS
+      </div>
+      <div class="cover-card">
+        <div>🌐</div>
+        بوابة المريض التفاعلية
+      </div>
+      <div class="cover-card">
+        <div>📊</div>
+        التقارير والنسخ الاحتياطي
+      </div>
+    </div>
+
+    <div class="cover-footer">
+      <div>إصدار النظام: 2026 V3.5</div>
+      <div>مصمم للأطباء والكادر الطبي</div>
+      <div>دعم فني متواصل 24/7</div>
+    </div>
+  </div>
+
+  <!-- PAGE 1: TABLE OF CONTENTS & QUICK START -->
+  <div class="page">
+    <div class="section-header">
+      <div class="section-icon">📚</div>
+      <div class="section-title-box">
+        <div class="section-tag">فهرس المحتويات</div>
+        <h2>خريطة الدليل والدليل السريع</h2>
+        <p>نظرة عامة على محتويات الدليل وكيفية البدء الفوري</p>
+      </div>
+    </div>
+
+    <div class="toc-item"><span class="toc-title">1. تسجيل الدخول ولوحة التحكم الرئيسية (Dashboard)</span><span class="toc-page">صفحة 2</span></div>
+    <div class="toc-item"><span class="toc-title">2. إدارة ملفات المرضى والسيرة المرضية (Patients Management)</span><span class="toc-page">صفحة 2</span></div>
+    <div class="toc-item"><span class="toc-title">3. إدارة المواعيد والتقويم التفاعلي (Appointments & Calendar)</span><span class="toc-page">صفحة 3</span></div>
+    <div class="toc-item"><span class="toc-title">4. الجلسة السريرية ومخطط الأسنان الدولي FDI (Clinical Session)</span><span class="toc-page">صفحة 4</span></div>
+    <div class="toc-item"><span class="toc-title">5. إدارة المعالجات والتخدير وتاريخ السن (Treatments & Anesthesia)</span><span class="toc-page">صفحة 5</span></div>
+    <div class="toc-item"><span class="toc-title">6. الفوترة، السندات، والتحصيل المالي (Invoices & Payments)</span><span class="toc-page">صفحة 6</span></div>
+    <div class="toc-item"><span class="toc-title">7. حسابات الطبيب والنسب المالية والرواتب (Doctor Revenues)</span><span class="toc-page">صفحة 7</span></div>
+    <div class="toc-item"><span class="toc-title">8. بوابة المريض والنظام الذكي للتذكيرات (Portal & Notifications)</span><span class="toc-page">صفحة 8</span></div>
+    <div class="toc-item"><span class="toc-title">9. التقارير والنسخ الاحتياطي والإعدادات (Reports & System Settings)</span><span class="toc-page">صفحة 9</span></div>
+
+    <br>
+
+    <div class="alert alert-info">
+      <h5>💡 حساب الدخول الافتراضي للنظام (المدير الرئيسي):</h5>
+      اسم المستخدم الافتراضي: <code>admin</code> | كلمة المرور: <code>admin123</code>
+    </div>
+
+    <div class="section-header" style="margin-top:20px;">
+      <div class="section-icon">🔑</div>
+      <div class="section-title-box">
+        <div class="section-tag">الفصل الأول</div>
+        <h2>تسجيل الدخول ولوحة التحكم الرئيسية</h2>
+        <p>الانطلاقة اليومية للطبيب ومتابعة حركة العيادة</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card highlight">
+        <div class="card-title">🔐 1. تسجيل الدخول الموثوق</div>
+        <div class="card-desc">أدخل اسم المستخدم وكلمة المرور الخاصة بك. يحدد النظام صلاحياتك تلقائياً كطبيب أو مدير عيادة ليعرض لك البيانات المخصصة لدورك.</div>
+      </div>
+      <div class="card highlight">
+        <div class="card-title">📊 2. بطاقات الإحصائيات الفورية</div>
+        <div class="card-desc">تعرض لك لوحة التحكم ملخصاً فورياً لحالات اليوم: عدد المواعيد المجدولة، الجلسات المكتملة، عدد المرضى الجدد، وإجمالي الإيرادات اليومية.</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">📅 3. جدول مواعيد اليوم والغد</div>
+        <div class="card-desc">جدول منظم يعرض مرضى اليوم مرتبين بالوقت مع زر سريع لفتح الجلسة السريرية مباشرة بمجرد وصول المريض لكرسي العيادة.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔔 4. المواعيد قيد الانتظار (Pending)</div>
+        <div class="card-desc">تنبيه فوري لأي حجز جديد قام به المريض من بوابة المرضى الإلكترونية، مع خيار التأكيد أو التعديل بنقرة واحدة.</div>
+      </div>
+    </div>
+
+    <div class="footer-note">نظام إدارة العيادة السنية - دليل الطبيب V3.5</div>
+  </div>
+
+  <!-- PAGE 2: PATIENTS & APPOINTMENTS -->
+  <div class="page">
+    <div class="section-header">
+      <div class="section-icon">👤</div>
+      <div class="section-title-box">
+        <div class="section-tag">الفصل الثاني</div>
+        <h2>إدارة ملفات المرضى والسيرة المرضية</h2>
+        <p>بناء ملف شامل ودقيق لكل مريض في العيادة</p>
+      </div>
+    </div>
+
+    <div class="steps-container">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>إضافة مريض جديد (Add Patient)</h4>
+          <p>من القائمة الجانبية اختر "المرضى" ثم "إضافة مريض جديد". قم بتعبئة الاسم الأول والأخير، رقم الهاتف بصيغة دولية <code>+963</code>، التاريخ، والجنس. يمكنك إضافة البريد الإلكتروني للتذكير عبر البريد.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>تنسيق السيرة المرضية (Medical History)</h4>
+          <p>سجل الحساسيات للأدوية، أمراض الضغط والسكر، والنزافيات في خانة "المعلومات الطبية". تظهر هذه التنبيهات دائماً بأعلى ملف المريض لتنبيهك أثناء العمل.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>مرفقات الصور والأشعّة (Patient Files)</h4>
+          <p>يمكنك رفع صور الأشعة السينية (X-Ray)، الصور الفوتوغرافية، أو التقارير الطبية بصيغة PDF أو صور مباشرة في ملف المريض مع توثيق تاريخ الرفع والملاحظات.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>كشف الحساب المالي للمريض (Financial Ledger)</h4>
+          <p>عرض تفصيلي لجميع الفواتير والمقبوضات السابقة للمريض، يوضح الرصيد المتبقي (دين على المريض) أو الرصيد الدائن (مبالغ مدفوعة مقدماً).</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-header" style="margin-top:20px;">
+      <div class="section-icon">📆</div>
+      <div class="section-title-box">
+        <div class="section-tag">الفصل الثالث</div>
+        <h2>إدارة المواعيد والتقويم التفاعلي</h2>
+        <p>تنظيم أوقات العيادة ومنع تضارب الحجوزات</p>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-title">⏰ الجدولة الدقيقة</div>
+        <div class="card-desc">اختر المريض، سبب الزيارة (فحص، سحب عصب، قلع)، الطبيب المعالج، والتاريخ والوقت لتسجيل الموعد.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🚫 منع التضارب الآلي</div>
+        <div class="card-desc">يفحص النظام تلقائياً توفر كرسي العيادة، ويمنع تسجيل موعدين بنفس الوقت لتفادي إحراج الأطباء والمرضى.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">📅 التقويم التفاعلي</div>
+        <div class="card-desc">عرض تقويم شهري وأسبوعي كامل، يمكنك من رؤية جميع المواعيد بالألوان حسب الحالة (مجدول، تم، ملغى).</div>
+      </div>
+    </div>
+
+    <div class="alert alert-warning">
+      <h5>⚡ حالات المواعيد وتأثيرها المالي:</h5>
+      • <b>Scheduled (مجدول):</b> الموعد قادم ومحجوز.<br>
+      • <b>Done (تم):</b> انتهت الجلسة وتحولت المعالجات إلى فاتورة وحساب مالي.<br>
+      • <b>Cancelled (ملغى):</b> تم إلغاء الموعد وتفريغ الوقت لمرضى آخرين.
+    </div>
+
+    <div class="footer-note">نظام إدارة العيادة السنية - دليل الطبيب V3.5</div>
+  </div>
+
+  <!-- PAGE 3: CLINICAL SESSION & FDI CHART -->
+  <div class="page">
+    <div class="section-header">
+      <div class="section-icon">🦷</div>
+      <div class="section-title-box">
+        <div class="section-tag">الفصل الرابع</div>
+        <h2>الجلسة السريرية ومخطط الأسنان FDI</h2>
+        <p>القلب النابض للنظام السريري في العيادة السنية</p>
+      </div>
+    </div>
+
+    <div class="alert alert-success">
+      <h5>🌟 البدء السريع للجلسة السريرية:</h5>
+      من لوحة التحكم أو قائمة المواعيد، اضغط على زر <b>"بدء الجلسة السريرية" (Start Session)</b> بجانب اسم المريض لتفتح لك واجهة المعالجة الشاملة.
+    </div>
+
+    <div class="card-title" style="margin-top:15px; font-size:11pt; color:#0f172a;">مخطط الأسنان الدولي FDI Odontogram:</div>
+    <p style="font-size:8.8pt; color:#475569;">يتضمن النظام مخططاً تفاعلياً شاملاً للأسنان الدائمة (11 إلى 48) والأسنان اللبنية للأطفال (51 إلى 85)، مصنف حسب الأرباع الأربعة:</p>
+
+    <div class="fdi-grid">
+      <div class="fdi-quadrant">
+        <h6>الربع الأول (العلوي الأيمن)</h6>
+        <span>18</span><span>17</span><span>16</span><span>15</span><br>
+        <span>14</span><span>13</span><span>12</span><span>11</span>
+      </div>
+      <div class="fdi-quadrant">
+        <h6>الربع الثاني (العلوي الأيسر)</h6>
+        <span>21</span><span>22</span><span>23</span><span>24</span><br>
+        <span>25</span><span>26</span><span>27</span><span>28</span>
+      </div>
+      <div class="fdi-quadrant">
+        <h6>الربع الثالث (السفلي الأيسر)</h6>
+        <span>31</span><span>32</span><span>33</span><span>34</span><br>
+        <span>35</span><span>36</span><span>37</span><span>38</span>
+      </div>
+      <div class="fdi-quadrant">
+        <h6>الربع الرابع (السفلي الأيمن)</h6>
+        <span>41</span><span>42</span><span>43</span><span>44</span><br>
+        <span>45</span><span>46</span><span>47</span><span>48</span>
+      </div>
+    </div>
+
+    <div class="steps-container">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>اختيار السن وتحديد المعالجة</h4>
+          <p>اضغط على رقم السن المطلوب من المخطط المرئي، ثم اختر نوع الإجراء الطبي من القائمة المنسدلة (حشوة ضوئية كومبوزيت، علاج عصب، قلع جراحي، تاج زيركون، إلخ).</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>خيارات التخدير الطبي (Anesthesia Management)</h4>
+          <p>إذا استخدمت التخدير، حدد خيار "استخدام تخدير"، واختر عدد الأمبولات/الإبر ونوع التخدير، ليتم حساب تكلفة التخدير تلقائياً وتوثيقها في سجل المعالجة.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>سجل التاريخ السابق للسن (Tooth History)</h4>
+          <p>يمكنك توثيق المعالجات القديمة التي أجراها المريض سابقاً خارج العيادة (مثل قلع سابق أو حشوة قديمة) حتى يظهر للسن لون وحالة مميزة في المخطط دون احتساب تكلفة جديدة.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>إنهاء الجلسة والفوترة الفورية (End Session)</h4>
+          <p>عند الانتهاء، اضغط "إنهاء الجلسة". يقوم النظام بتحويل الموعد إلى حالة <code>Done</code> وإصدار فاتورة تلقائية تضم جميع المعالجات والتخدير وتحديث كشف حساب المريض.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-note">نظام إدارة العيادة السنية - دليل الطبيب V3.5</div>
+  </div>
+
+  <!-- PAGE 4: FINANCIALS, INVOICES & PAYMENTS -->
+  <div class="page">
+    <div class="section-header">
+      <div class="section-icon">💳</div>
+      <div class="section-title-box">
+        <div class="section-tag">الفصل الخامس</div>
+        <h2>الفوترة، السندات، والتحصيل المالي</h2>
+        <p>إدارة الحسابات بدقة متناهية ودون أي خطأ محاسبي</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card highlight">
+        <div class="card-title">🧾 1. الفواتير التلقائية (Invoices)</div>
+        <div class="card-desc">تنشأ الفاتورة فور إنهاء الجلسة السريرية بجمع تكاليف المعالجات والتخدير. يمكنك تعديل الفاتورة لإضافة خصم (مبلغ ثابت أو نسبة مئوية) أو إضافة رسوم إضافية.</div>
+      </div>
+      <div class="card highlight">
+        <div class="card-title">💵 2. سندات القبض والتحصيل (Payments)</div>
+        <div class="card-desc">تسجيل أي دفعة نقدية يسددها المريض مع اختيار الفاتورة المراد تغطيتها، ليتم فوراً تحديث المبالغ المدفوعة، المتبقية، وتوليد وصل إيصال رسمي.</div>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>حالة الفاتورة</th>
+          <th>المعنى المحاسبي</th>
+          <th>الإجراء المطلوب</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-red">Unpaid (غير مدفوعة)</span></td>
+          <td>الفاتورة صادرة ولم يدفع المريض أي مبلغ منها.</td>
+          <td>تسجيل دفعة جديدة من خيار "تسديد".</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-orange">Partially Paid (مدفوعة جزئياً)</span></td>
+          <td>قام المريض بدفع جزء من المبلغ وبقي جزء مستحق.</td>
+          <td>متابعة باقي المستحقات وتسجيل دفعة إضافية.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-green">Paid (مدفوعة بالكامل)</span></td>
+          <td>تم تسديد الفاتورة بالكامل ولا يوجد أي ديون.</td>
+          <td>لا تطلب أي إجراء - الحساب مكتمل.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-purple">Credit (رصيد دائن)</span></td>
+          <td>دفع المريض مبالغ أكبر من الفاتورة (دفعة مقدمة).</td>
+          <td>تُحفظ كيد رصيد للمريض للمعالجات القادمة.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="section-header" style="margin-top:20px;">
+      <div class="section-icon">💼</div>
+      <div class="section-title-box">
+        <div class="section-tag">الفصل السادس</div>
+        <h2>حسابات الطبيب والنسب المالية والرواتب</h2>
+        <p>تتبع المستحقات المالية لكل طبيب ودقة الأرباح</p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">📊 1. نظام النسب المئوية (Percentage Share)</div>
+        <div class="card-desc">يمكن ضبط إعدادات العيادة لتحديد نسبة مئوية للطبيب (مثلاً 40% أو 50%) من إجمالي المعالجات التي يقوم بإنجازها، ويحسب النظام حصة الطبيب صافية تلقائياً.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">💰 2. نظام الرواتب الثابتة والاقتطاعات</div>
+        <div class="card-desc">في حال كان الموظف أو الطبيب يتقاضى راتباً شهرياً ثابتاً، يتيح النظام خيار الاقتطاع التلقائي للرواتب في يوم محدد من الشهر وتسجيله كـ "مصاريف رواتب".</div>
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <h5>📈 تقرير الأداء المالي للطبيب:</h5>
+      من قسم "التقارير" 👈 "تقرير الطبيب الشخصي"، يستطيع كل طبيب الاطلاع على عدد الجلسات التي أجراها، مجموع الإيرادات المحققة، وحصته المالية المستحقة بدقة شفافة.
+    </div>
+
+    <div class="footer-note">نظام إدارة العيادة السنية - دليل الطبيب V3.5</div>
+  </div>
+
+  <!-- PAGE 5: PORTAL, NOTIFICATIONS & REPORTS -->
+  <div class="page">
+    <div class="section-header">
+      <div class="section-icon">🌐</div>
+      <div class="section-title-box">
+        <div class="section-tag">الفصل السابع</div>
+        <h2>بوابة المريض والتذكيرات الذكية</h2>
+        <p>التواصل التلقائي مع المرضى وتسهيل الحجوزات</p>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="card highlight">
+        <div class="card-title">📲 1. بوابة المرضى (Patient Portal)</div>
+        <div class="card-desc">يستطيع المريض الدخول برقم هاتفه وكلمة المرور المستلمة، ليستعرض مواعيده القادمة، السجل الطبي، وفواتيره وحجز مواعيد جديدة أونلاين.</div>
+      </div>
+      <div class="card highlight">
+        <div class="card-title">🤖 2. تذكيرات التليغرام (Telegram Bot)</div>
+        <div class="card-desc">إرسال رسائل تذكير تلقائية للمريض قبل 24 ساعة وقبل ساعتين من الموعد عبر بوت التليغرام مع تفاصيل الوقت واسم الطبيب.</div>
+      </div>
+      <div class="card highlight">
+        <div class="card-title">✉️ 3. الرسائل القصيرة والبريد (SMS & Email)</div>
+        <div class="card-desc">ربط اختياري مع بوابات SMS (مثل CommPeak) وسيرفرات البريد SMTP لإرسال تنبيهات التعديل والإلغاء وتذكيرات المواعيد.</div>
+      </div>
+    </div>
+
+    <div class="section-header" style="margin-top:20px;">
+      <div class="section-icon">📊</div>
+      <div class="section-title-box">
+        <div class="section-tag">الفصل الثامن</div>
+        <h2>التقارير، النسخ الاحتياطي وإعدادات النظام</h2>
+        <p>الحفاظ على سلامة البيانات والتحليل المالي المستمر</p>
+      </div>
+    </div>
+
+    <div class="steps-container">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>التقارير المالية والسريرية الشاملة</h4>
+          <p>توليد تقارير الأرباح والمصاريف، كشف الديون المستحقة، حركة الصندوق، وتصدير التقارير بصيغة ملفات <code>Excel</code> أو <code>PDF</code> أو طباعتها مباشرة.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>النسخ الاحتياطي التلقائي (Automatic Backups)</h4>
+          <p>يقوم النظام بأخذ نسخة احتياطية آمنة لقاعدة البيانات تلقائياً يومياً، وتخزينها في مجلد <code>backups</code> لحماية كافة سجلات المرضى والمالية من أي تلف.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>استعادة النسخ الاحتياطية عند الحاجة</h4>
+          <p>من قسم "الإعدادات" 👈 "النسخ الاحتياطي"، يمكنك رفع وتنزيل أو استعادة أي نسخة احتياطية سابقة بضغطة زر وتأكيد كلمة مرور المدير.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-success">
+      <h5>🏆 خلاصة وإرشادات الاستخدام الذهبية للطبيب:</h5>
+      1. ابدأ يومك دائماً بفتح <b>لوحة التحكم</b> واستعراض مواعيد اليوم.<br>
+      2. عند جلوس المريض اضغط <b>"بدء الجلسة السريرية"</b> لفتح مخطط الأسنان FDI.<br>
+      3. حدد المعالجات والتخدير بدقة ثم اضغط <b>"إنهاء الجلسة"</b> لتصدر الفاتورة آلياً.<br>
+      4. وجه المريض للاستقبال لتسديد الدفعة واستلام وصل الإيصال السريع.
+    </div>
+
+    <div class="footer-note">نظام إدارة العيادة السنية - تم بحمد الله إنشاء الدليل الشامل للطبيب - 2026</div>
+  </div>
+
+</body>
+</html>
