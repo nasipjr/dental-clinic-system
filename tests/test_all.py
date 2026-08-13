@@ -285,6 +285,12 @@ class DentalClinicTestCase(unittest.TestCase):
             self.assertIn('/settings#tab-backups', resp_valid.location)
 
             # Cleanup test backup files created during unit test execution
+            with app.app_context():
+                try:
+                    db.session.remove()
+                    db.engine.dispose()
+                except Exception:
+                    pass
             backup_dir = os.path.join(app.root_path, 'backups')
             if os.path.exists(backup_dir):
                 for fname in os.listdir(backup_dir):
@@ -351,6 +357,58 @@ class DentalClinicTestCase(unittest.TestCase):
             self.assertIsNotNone(default_admin)
             self.assertTrue(default_admin.check_password('admin123'))
             self.assertEqual(default_admin.role, 'admin')
+
+    def test_direct_invoice_payment_allocation(self):
+        from app import app, db
+        from models import Patient, Appointment, Treatment, Invoice, Payment
+        from services.payment_service import allocate_patient_payments_to_invoices
+
+        with app.app_context():
+            patient = Patient(
+                first_name="Sami",
+                last_name="Ahmad",
+                gender="Male"
+            )
+            db.session.add(patient)
+            db.session.commit()
+
+            # Old Appointment & Invoice #1 ($50 total)
+            appt1 = Appointment(patient_id=patient.id, appointment_date=datetime(2025, 1, 1), status="Completed")
+            db.session.add(appt1)
+            db.session.commit()
+            t1 = Treatment(appointment_id=appt1.id, treatment_date=datetime.now(), procedure_type="Procedure 1", total_cost=Decimal("50.00"))
+            db.session.add(t1)
+            db.session.commit()
+            inv1 = Invoice(appointment_id=appt1.id, patient_id=patient.id)
+            db.session.add(inv1)
+            db.session.commit()
+
+            # New Appointment & Invoice #2 ($100 total)
+            appt2 = Appointment(patient_id=patient.id, appointment_date=datetime(2025, 2, 1), status="Completed")
+            db.session.add(appt2)
+            db.session.commit()
+            t2 = Treatment(appointment_id=appt2.id, treatment_date=datetime.now(), procedure_type="Procedure 2", total_cost=Decimal("100.00"))
+            db.session.add(t2)
+            db.session.commit()
+            inv2 = Invoice(appointment_id=appt2.id, patient_id=patient.id)
+            db.session.add(inv2)
+            db.session.commit()
+
+            # Pay $100 specifically targeted for Invoice #2
+            payment = Payment(patient_id=patient.id, invoice_id=inv2.id, amount=Decimal("100.00"))
+            db.session.add(payment)
+            db.session.commit()
+
+            allocate_patient_payments_to_invoices(patient.id)
+            db.session.commit()
+
+            # Invoice #2 must be Paid ($100 total, $100 paid)
+            self.assertEqual(inv2.status, "Paid")
+            self.assertEqual(inv2.total_paid, Decimal("100.00"))
+
+            # Invoice #1 must remain Unpaid ($50 total, $0 paid)
+            self.assertEqual(inv1.status, "Unpaid")
+            self.assertEqual(inv1.total_paid, Decimal("0.00"))
 
 
 if __name__ == "__main__":

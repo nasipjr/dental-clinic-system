@@ -108,7 +108,7 @@
         <tbody>
             {% for entry in entries %}
             <tr>
-                <td>{{ entry.date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ entry.date.strftime('%Y-%m-%d') if entry.date else '-' }}</td>
                 <td><strong class="text-secondary">{{ entry.ref }}</strong></td>
                 <td>
                     {% if entry.type == 'invoice' %}

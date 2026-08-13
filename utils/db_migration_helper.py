@@ -37,6 +37,7 @@ def ensure_database_schema(app, db):
             ("tooth_history", "appointment_id", "ALTER TABLE tooth_history ADD COLUMN appointment_id INT NULL"),
             ("tooth_history", "history_date", "ALTER TABLE tooth_history ADD COLUMN history_date DATE NULL"),
             ("tooth_history", "created_at", "ALTER TABLE tooth_history ADD COLUMN created_at DATETIME NULL"),
+            ("payment", "invoice_id", "ALTER TABLE payment ADD COLUMN invoice_id INT NULL"),
         ]
 
 

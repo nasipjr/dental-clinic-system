@@ -172,6 +172,13 @@ def add_patient_payment():
         selected_patient_id = request.args.get("patient_id", type=int)
         invoice_id = request.args.get("invoice_id", type=int)
         selected_patient = None
+        target_invoice = None
+
+        if invoice_id:
+            from models import Invoice
+            target_invoice = db.session.get(Invoice, invoice_id)
+            if target_invoice and not selected_patient_id:
+                selected_patient_id = target_invoice.patient_id
 
         if selected_patient_id:
             selected_patient = db.session.get(Patient, selected_patient_id)
@@ -190,6 +197,7 @@ def add_patient_payment():
                     patients=patients,
                     selected_patient_id=selected_patient_id,
                     selected_patient=selected_patient,
+                    target_invoice=target_invoice,
                     error_message="Please select a valid patient.",
                     invoice_id=invoice_id,
                 ), 400
@@ -202,12 +210,14 @@ def add_patient_payment():
                     patients=patients,
                     selected_patient_id=patient_id,
                     selected_patient=patient,
+                    target_invoice=target_invoice,
                     error_message=payment_error,
                     invoice_id=invoice_id,
                 ), 400
 
             new_payment = Payment(
                 patient_id=patient.id,
+                invoice_id=invoice_id,
                 amount=payment_amount,
                 notes=notes,
             )
@@ -233,6 +243,7 @@ def add_patient_payment():
             patients=patients,
             selected_patient_id=selected_patient_id,
             selected_patient=selected_patient,
+            target_invoice=target_invoice,
             invoice_id=invoice_id,
         )
 

@@ -466,25 +466,63 @@ def create_backup():
     return redirect(url_for("settings.settings_page") + "#tab-backups")
 
 
+@settings_bp.route("/settings/backups/open-folder")
+@role_required("admin")
+def open_backups_folder():
+    import os
+    import subprocess
+    from utils.backup_helper import BACKUP_DIR
+    is_ar = request.cookies.get('lang', 'ar') != 'en'
+    if not os.path.exists(BACKUP_DIR):
+        os.makedirs(BACKUP_DIR)
+    try:
+        if os.name == 'nt':
+            os.startfile(BACKUP_DIR)
+        else:
+            subprocess.Popen(['xdg-open', BACKUP_DIR])
+        msg = "تم فتح مجلد النسخ الاحتياطية على جهازك بنجاح." if is_ar else "Backups folder opened successfully."
+        flash(msg, "success")
+    except Exception as e:
+        msg = f"فشل فتح المجلد: {e}" if is_ar else f"Failed to open folder: {e}"
+        flash(msg, "danger")
+    return redirect(url_for("settings.settings_page") + "#tab-backups")
+
+
 @settings_bp.route("/settings/backups/<filename>/download")
 @role_required("admin")
 def download_backup(filename):
     import os
-    from flask import send_from_directory, abort
+    import shutil
+    from flask import send_file, redirect, url_for, flash, current_app
     from utils.backup_helper import BACKUP_DIR
     is_ar = request.cookies.get('lang', 'ar') != 'en'
     
     # Secure filename check to prevent directory traversal
-    if '..' in filename or filename.startswith('/') or filename.startswith('\\'):
-        abort(400, "Invalid backup filename.")
-        
+    filename = os.path.basename(filename)
     backup_path = os.path.join(BACKUP_DIR, filename)
-    if os.path.exists(backup_path) and os.path.isfile(backup_path):
-        return send_from_directory(BACKUP_DIR, filename, as_attachment=True)
-    else:
+    
+    if not os.path.exists(backup_path) or not os.path.isfile(backup_path):
         msg = "ملف النسخة الاحتياطية غير موجود." if is_ar else "Backup file not found."
         flash(msg, "danger")
         return redirect(url_for("settings.settings_page") + "#tab-backups")
+        
+    try:
+        user_downloads = os.path.join(os.path.expanduser("~"), "Downloads")
+        if os.path.exists(user_downloads):
+            dest_path = os.path.join(user_downloads, filename)
+            shutil.copy2(backup_path, dest_path)
+            if os.name == 'nt':
+                try:
+                    os.startfile(user_downloads)
+                except Exception:
+                    pass
+            msg = f"تم تصدير النسخة الاحتياطية بنجاح إلى مجلد التنزيلات (Downloads): {filename}" if is_ar else f"Backup saved to Downloads: {filename}"
+            flash(msg, "success")
+            return redirect(url_for("settings.settings_page") + "#tab-backups")
+    except Exception as fe:
+        current_app.logger.warning(f"Could not auto-copy to Downloads folder: {fe}")
+        
+    return send_file(backup_path, as_attachment=True, download_name=filename)
 
 
 @settings_bp.route("/settings/backups/<filename>/delete", methods=["POST"])
@@ -994,6 +1032,14 @@ def restore_backup():
         current_app.logger.exception(f"Error restoring database from {backup_filename}: {e}")
         msg = f"حدث خطأ أثناء استعادة النسخة الاحتياطية: {str(e)}" if is_ar else f"Error restoring database: {str(e)}"
         flash(msg, "danger")
+    finally:
+        if backup_filename and backup_filename.startswith("backup_uploaded_"):
+            try:
+                uploaded_path = os.path.join(BACKUP_DIR, backup_filename)
+                if os.path.exists(uploaded_path):
+                    os.remove(uploaded_path)
+            except Exception:
+                pass
 
     return redirect(url_for("settings.settings_page") + "#tab-backups")
 

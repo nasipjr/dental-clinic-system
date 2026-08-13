@@ -21,17 +21,17 @@
         <!-- Legend and Toolbar -->
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
             <div>
-                <h3 class="mb-1">Appointment Calendar</h3>
-                <p class="mb-0">Click any appointment to view details and manage the session.</p>
+                <h3 class="mb-1">{% if current_lang == 'ar' %}تقويم المواعيد{% else %}Appointment Calendar{% endif %}</h3>
+                <p class="mb-0">{% if current_lang == 'ar' %}انقر فوق أي موعد لعرض التفاصيل وإدارة الجلسة الطبية.{% else %}Click any appointment to view details and manage the session.{% endif %}</p>
             </div>
 
             <div class="d-flex gap-3 align-items-center flex-wrap">
                 <div class="btn-group" role="group" aria-label="View Toggle" style="border-radius: 30px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--accent-color), transparent 80%);">
                     <a href="{{ url_for('appointments.appointments') }}" class="btn btn-outline-primary px-4 py-2" style="font-weight: 600; border-radius: 0; border: none;">
-                        <i class="bi bi-list-task me-1"></i> List View
+                        <i class="bi bi-list-task me-1"></i> {% if current_lang == 'ar' %}عرض كقائمة{% else %}List View{% endif %}
                     </a>
                     <a href="{{ url_for('appointments.calendar') }}" class="btn btn-primary active px-4 py-2" style="font-weight: 600; border-radius: 0; border: none;">
-                        <i class="bi bi-calendar3 me-1"></i> Calendar View
+                        <i class="bi bi-calendar3 me-1"></i> {% if current_lang == 'ar' %}عرض كتقويم{% else %}Calendar View{% endif %}
                     </a>
                 </div>
 
@@ -42,7 +42,7 @@
                 <a href="{{ url_for('appointments.add_appointment_direct') }}" class="btn btn-primary"
                     style="border-radius: 30px; font-weight: 600; padding: 10px 24px;">
                     <i class="bi bi-plus-circle me-1"></i>
-                    New Appointment
+                    {% if current_lang == 'ar' %}إضافة موعد جديد{% else %}New Appointment{% endif %}
                 </a>
             </div>
         </div>
@@ -50,25 +50,25 @@
         <!-- Legend & Filters -->
         <div class="calendar-legend mb-4 d-flex align-items-center gap-4 flex-wrap" style="user-select: none;">
             <div class="legend-item me-2">
-                <span id="filter-title-span" class="fw-bold" style="color: var(--heading-color);">Filter Status:</span>
+                <span id="filter-title-span" class="fw-bold" style="color: var(--heading-color);">{% if current_lang == 'ar' %}فلترة الحالة:{% else %}Filter Status:{% endif %}</span>
             </div>
             <label class="legend-item d-flex align-items-center gap-2 cursor-pointer" style="cursor: pointer;">
                 <input type="checkbox" id="filter-scheduled" checked class="form-check-input" style="width: 18px; height: 18px; cursor: pointer; border-color: #0284c7;">
                 <div class="legend-color"
                     style="background-color: rgba(23, 92, 221, 0.08); border: 1px solid rgba(23, 92, 221, 0.22);"></div>
-                <span style="color: #175cdd; font-weight: 600;">Scheduled</span>
+                <span style="color: #175cdd; font-weight: 600;">{% if current_lang == 'ar' %}مؤكد / مجدول{% else %}Scheduled{% endif %}</span>
             </label>
             <label class="legend-item d-flex align-items-center gap-2 cursor-pointer" style="cursor: pointer;">
                 <input type="checkbox" id="filter-done" checked class="form-check-input" style="width: 18px; height: 18px; cursor: pointer; border-color: #16a34a;">
                 <div class="legend-color"
                     style="background-color: rgba(22, 163, 74, 0.08); border: 1px solid rgba(22, 163, 74, 0.22);"></div>
-                <span style="color: #16a34a; font-weight: 600;">Completed</span>
+                <span style="color: #16a34a; font-weight: 600;">{% if current_lang == 'ar' %}منجز{% else %}Completed{% endif %}</span>
             </label>
             <label class="legend-item d-flex align-items-center gap-2 cursor-pointer" style="cursor: pointer;">
                 <input type="checkbox" id="filter-cancelled" checked class="form-check-input" style="width: 18px; height: 18px; cursor: pointer; border-color: #e11d48;">
                 <div class="legend-color"
                     style="background-color: rgba(225, 29, 72, 0.08); border: 1px solid rgba(225, 29, 72, 0.22);"></div>
-                <span style="color: #e11d48; font-weight: 600;">Cancelled</span>
+                <span style="color: #e11d48; font-weight: 600;">{% if current_lang == 'ar' %}ملغى{% else %}Cancelled{% endif %}</span>
             </label>
 
             <!-- Quick Month & Year Jumper -->
@@ -117,7 +117,7 @@
                         data-bs-dismiss="modal" aria-label="Close"
                         style="top: 1rem; left: 1rem; right: auto;"></button>
                 <h5 class="modal-title" id="eventModalLabel"
-                    style="font-weight: 700; color: var(--heading-color); font-family: var(--heading-font);">Appointment Details</h5>
+                    style="font-weight: 700; color: var(--heading-color); font-family: var(--heading-font);">{% if current_lang == 'ar' %}تفاصيل الموعد{% else %}Appointment Details{% endif %}</h5>
             </div>
             <div class="modal-body py-4">
                 <div class="text-center mb-4">

@@ -79,7 +79,7 @@ def list_backups():
     items = []
     for f in os.listdir(BACKUP_DIR):
         p = os.path.join(BACKUP_DIR, f)
-        if os.path.isfile(p) and f.startswith('backup_') and (f.endswith('.sql') or f.endswith('.db')):
+        if os.path.isfile(p) and f.startswith('backup_') and not f.startswith('backup_uploaded_') and (f.endswith('.sql') or f.endswith('.db')):
             mtime = os.path.getmtime(p)
             size = os.path.getsize(p)
             items.append({
@@ -149,9 +149,13 @@ def restore_database_backup(backup_filename):
                 db_path = os.path.abspath(db_path)
                 
             # Atomic online restore API
-            with sqlite3.connect(backup_path) as src_conn:
-                with sqlite3.connect(db_path) as dst_conn:
-                    src_conn.backup(dst_conn)
+            src_conn = sqlite3.connect(backup_path)
+            dst_conn = sqlite3.connect(db_path)
+            try:
+                src_conn.backup(dst_conn)
+            finally:
+                dst_conn.close()
+                src_conn.close()
 
             try:
                 db.session.remove()
@@ -176,7 +180,7 @@ def rotate_backups():
     backups = []
     for f in os.listdir(BACKUP_DIR):
         p = os.path.join(BACKUP_DIR, f)
-        if os.path.isfile(p) and f.startswith('backup_') and (f.endswith('.sql') or f.endswith('.db')):
+        if os.path.isfile(p) and f.startswith('backup_') and not f.startswith('backup_uploaded_') and (f.endswith('.sql') or f.endswith('.db')):
             backups.append((p, os.path.getmtime(p)))
             
     backups.sort(key=lambda x: x[1])

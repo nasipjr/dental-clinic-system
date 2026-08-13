@@ -454,6 +454,13 @@ def end_appointment_session(appointment_id):
                 back_url=url_for("treatments.appointment_session", appointment_id=appointment.id),
             ), 400
 
+        if not appointment.treatments and not appointment.invoice and appointment.reason in ("جلسة جديدة سريعة", "Quick Session"):
+            patient_id = appointment.patient_id
+            db.session.delete(appointment)
+            db.session.commit()
+            flash("تم التراجع عن الجلسة السريعة الفارغة وحذفها بنجاح." if request.cookies.get("lang") == "ar" else "Empty quick session discarded.", "info")
+            return redirect(url_for("patients.patient_detail", patient_id=patient_id))
+
         appointment.status = "Done"
         from datetime import datetime
         now = datetime.now()
@@ -484,6 +491,22 @@ def end_appointment_session(appointment_id):
             message="Failed to end appointment session.",
             back_url=url_for("treatments.appointment_session", appointment_id=appointment_id),
         ), 500
+
+
+@treatments_bp.route("/appointments/<int:appointment_id>/discard-quick-session", methods=["POST", "GET"])
+@role_required("admin", "doctor", "receptionist")
+def discard_quick_session(appointment_id):
+    try:
+        appointment = Appointment.query.get_or_404(appointment_id)
+        patient_id = appointment.patient_id
+        if not appointment.treatments and not appointment.invoice:
+            db.session.delete(appointment)
+            db.session.commit()
+            flash("تم التراجع عن الجلسة السريعة بنجاح." if request.cookies.get("lang") == "ar" else "Quick session discarded.", "info")
+        return redirect(url_for("patients.patient_detail", patient_id=patient_id))
+    except Exception:
+        db.session.rollback()
+        return redirect(url_for("appointments.appointments"))
 
 
 @treatments_bp.route("/appointments/<int:appointment_id>/reopen-session", methods=["POST"])
@@ -846,6 +869,16 @@ def revert_session(appointment_id):
             flash(msg, "warning")
             return redirect(url_for("treatments.appointment_session", appointment_id=appointment.id))
 
+        patient_id = appointment.patient_id
+
+        # If this was a Quick Session and has no treatments/invoice, DELETE it completely so no ghost appointment is left!
+        if appointment.reason in ("جلسة جديدة سريعة", "Quick Session") and not appointment.invoice:
+            db.session.delete(appointment)
+            db.session.commit()
+            msg = "تم التراجع عن الجلسة السريعة وإلغاؤها بالكامل بنجاح." if is_ar else "Quick session undone and completely removed."
+            flash(msg, "info")
+            return redirect(url_for("patients.patient_detail", patient_id=patient_id))
+
         # Reset session_opened_at and ensure status stays Scheduled
         appointment.session_opened_at = None
         appointment.status = "Scheduled"
@@ -854,7 +887,7 @@ def revert_session(appointment_id):
 
         msg = "تم التراجع عن فتح الجلسة وإعادة الموعد لحالة 'مجدول' بنجاح." if is_ar else "Session start undone. Appointment status returned to Scheduled."
         flash(msg, "success")
-        target_url = request.referrer if (request.referrer and "/session" not in request.referrer) else url_for("appointments.appointments")
+        target_url = request.referrer if (request.referrer and "/session" not in request.referrer) else url_for("patients.patient_detail", patient_id=patient_id)
         return redirect(target_url)
 
     except Exception:

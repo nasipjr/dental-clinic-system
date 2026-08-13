@@ -427,9 +427,17 @@ class Payment(db.Model):
         nullable=False
     )
 
+    invoice_id = db.Column(
+        db.Integer,
+        db.ForeignKey("invoice.id", ondelete="SET NULL"),
+        nullable=True
+    )
+
     amount = db.Column(db.Numeric(10, 2), nullable=False)
     payment_date = db.Column(db.DateTime, default=datetime.now, nullable=False)
     notes = db.Column(db.Text)
+
+    invoice = db.relationship("Invoice", foreign_keys=[invoice_id], backref="direct_payments")
 
     allocations = db.relationship(
         "PaymentAllocation",

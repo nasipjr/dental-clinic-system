@@ -465,12 +465,13 @@ def add_expense():
             notes=notes
         )
         db.session.add(new_expense)
-        db.session.commit()
-        flash("Expense recorded successfully.", "success")
+        is_ar = request.cookies.get("lang", "ar") != "en"
+        flash("تم تسجيل المصروف بنجاح." if is_ar else "Expense recorded successfully.", "success")
     except Exception:
         db.session.rollback()
         current_app.logger.exception("Failed to add expense")
-        flash("Failed to record expense.", "danger")
+        is_ar = request.cookies.get("lang", "ar") != "en"
+        flash("فشل في تسجيل المصروف." if is_ar else "Failed to record expense.", "danger")
     return redirect(url_for("reports.reports_dashboard") + "#tab-expenses")
 
 

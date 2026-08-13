@@ -145,7 +145,7 @@ def parse_patient_data(form):
     return patient_data, None
 
 
-def parse_appointment_data(form):
+def parse_appointment_data(form, is_edit=False):
     from flask import request
     lang = request.cookies.get("lang", "en") if request else "ar"
     is_ar = (lang == "ar") or (request and not request.cookies.get("lang"))
@@ -207,7 +207,7 @@ def parse_appointment_data(form):
     except Exception:
         clinic_end_time = time(18, 0)
 
-    if appointment_date < now:
+    if not is_edit and appointment_date < now:
         return None, "لا يمكن تحديد موعد في الماضي." if is_ar else "Appointment date and time cannot be in the past."
 
     if appointment_date > max_appointment_date:
@@ -333,3 +333,27 @@ def check_appointment_conflict(appointment_date, current_appointment_id=None, do
 
 import threading
 booking_lock = threading.Lock()
+
+
+def cleanup_empty_quick_sessions(patient_id=None):
+    try:
+        from models import db, Appointment
+        query = Appointment.query.filter(
+            Appointment.reason.in_(["جلسة جديدة سريعة", "Quick Session"]),
+            Appointment.status == "Scheduled"
+        )
+        if patient_id:
+            query = query.filter_by(patient_id=patient_id)
+
+        empty_apps = query.all()
+        deleted_any = False
+        for appt in empty_apps:
+            if not appt.treatments and not appt.invoice:
+                db.session.delete(appt)
+                deleted_any = True
+        if deleted_any:
+            db.session.commit()
+    except Exception:
+        from models import db
+        db.session.rollback()
+

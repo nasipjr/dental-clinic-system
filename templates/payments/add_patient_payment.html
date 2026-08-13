@@ -48,14 +48,7 @@
                         </div>
 
                         <div class="patient-info-box">
-                            <span class="info-label">
-                                {% if selected_patient.credit_amount > 0 %}
-                                Patient Credit
-                                {% else %}
-                                Outstanding Amount
-                                {% endif %}
-                            </span>
-
+                            <span class="info-label">{% if current_lang == 'ar' %}إجمالي المستحقات المتراكمة{% else %}Total Accumulated Debt{% endif %}</span>
                             <p>
                                 {% if selected_patient.credit_amount > 0 %}
                                 <span class="credit-amount">
@@ -76,6 +69,27 @@
                             </p>
                         </div>
 
+                        {% if target_invoice %}
+                        <div class="patient-info-box">
+                            <span class="info-label">
+                                {% if current_lang == 'ar' %}مستحق الفاتورة الحالية ({{ target_invoice.invoice_number }}){% else %}Current Invoice Due ({{ target_invoice.invoice_number }}){% endif %}
+                            </span>
+                            <p>
+                                {% if target_invoice.outstanding_amount > 0 %}
+                                <span class="remaining-due">
+                                    {{ target_invoice.outstanding_amount | format_price }} {{ currency_symbol }}
+                                    <span class="due-badge">Due</span>
+                                </span>
+                                {% else %}
+                                <span class="remaining-clear">
+                                    0 {{ currency_symbol }}
+                                    <span class="paid-badge">Paid</span>
+                                </span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        {% endif %}
+
                     </div>
                     {% endif %}
 
@@ -85,9 +99,9 @@
                         <div class="row gy-4">
 
                             <div class="col-md-12">
-                                <label for="patient_id" class="form-label">Patient</label>
+                                <label for="patient_id" class="form-label">{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</label>
                                 <select id="patient_id" name="patient_id" class="form-select" required>
-                                    <option value="">Select Patient</option>
+                                    <option value="">{% if current_lang == 'ar' %}اختر المريض{% else %}Select Patient{% endif %}</option>
 
                                     {% for patient in patients %}
                                     <option value="{{ patient.id }}" {% if selected_patient_id and
@@ -100,38 +114,49 @@
                             </div>
 
                             <div class="col-md-12">
-                                <label for="payment_amount" class="form-label">Payment Amount</label>
-                                <div class="d-flex align-items-stretch gap-2">
-                                    <input type="number" step="any" min="0" id="payment_amount" name="payment_amount"
-                                        class="form-control" placeholder="Enter payment amount" required>
-                                    {% if selected_patient and selected_patient.outstanding_amount > 0 %}
-                                    <button class="btn-outline-main px-3" type="button" id="btn-full-payment" data-amount="{{ selected_patient.outstanding_amount }}" style="white-space: nowrap;">
-                                        Full Payment
+                                <label for="payment_amount" class="form-label">{% if current_lang == 'ar' %}مبلغ الدفعة{% else %}Payment Amount{% endif %}</label>
+                                <input type="number" step="any" min="0" id="payment_amount" name="payment_amount"
+                                    class="form-control" placeholder="{% if current_lang == 'ar' %}أدخل مبلغ الدفعة{% else %}Enter payment amount{% endif %}"
+                                    value="{% if target_invoice and target_invoice.outstanding_amount > 0 %}{{ target_invoice.outstanding_amount }}{% endif %}" required>
+
+                                {% if selected_patient %}
+                                <div class="quick-payment-buttons-container d-flex flex-wrap gap-2.5 mt-3">
+                                    {% if target_invoice and target_invoice.outstanding_amount > 0 %}
+                                    <button type="button" class="btn btn-quick-pay invoice-pay-btn" id="btn-invoice-payment" data-amount="{{ target_invoice.outstanding_amount }}">
+                                        <i class="bi bi-receipt me-1"></i>
+                                        <span>{% if current_lang == 'ar' %}دفع كامل قيمة الفاتورة ({{ target_invoice.outstanding_amount | format_price }} {{ currency_symbol }}){% else %}Pay Full Invoice ({{ target_invoice.outstanding_amount | format_price }} {{ currency_symbol }}){% endif %}</span>
+                                    </button>
+                                    {% endif %}
+
+                                    {% if selected_patient.outstanding_amount > 0 %}
+                                    <button type="button" class="btn btn-quick-pay debt-pay-btn" id="btn-total-debt-payment" data-amount="{{ selected_patient.outstanding_amount }}">
+                                        <i class="bi bi-layers me-1"></i>
+                                        <span>{% if current_lang == 'ar' %}دفع كامل المستحقات المتراكمة ({{ selected_patient.outstanding_amount | format_price }} {{ currency_symbol }}){% else %}Pay Full Accumulated Debt ({{ selected_patient.outstanding_amount | format_price }} {{ currency_symbol }}){% endif %}</span>
                                     </button>
                                     {% endif %}
                                 </div>
+                                {% endif %}
                             </div>
 
-
                             <div class="col-md-12">
-                                <label for="notes" class="form-label">Payment Notes</label>
+                                <label for="notes" class="form-label">{% if current_lang == 'ar' %}ملاحظات الدفعة{% else %}Payment Notes{% endif %}</label>
                                 <textarea id="notes" name="notes" class="form-control" rows="3"
-                                    placeholder="Optional notes about this payment"></textarea>
+                                    placeholder="{% if current_lang == 'ar' %}ملاحظات اختياري على هذه الدفعة{% else %}Optional notes about this payment{% endif %}"></textarea>
                             </div>
 
                             <div class="col-12">
                                 <div class="action-buttons justify-content-center gap-3">
                                     <button type="submit" class="btn btn-primary px-4">
-                                        Save Payment
+                                        {% if current_lang == 'ar' %}حفظ الدفعة{% else %}Save Payment{% endif %}
                                     </button>
 
                                     {% if invoice_id %}
                                     <a href="{{ url_for('invoices.view_invoice', invoice_id=invoice_id) }}" class="btn-outline-main px-4">
-                                        Cancel
+                                        {% if current_lang == 'ar' %}عودة{% else %}Back{% endif %}
                                     </a>
                                     {% else %}
                                     <a href="{{ url_for('payments.payments') }}" class="btn-outline-main px-4">
-                                        Cancel
+                                        {% if current_lang == 'ar' %}عودة{% else %}Back{% endif %}
                                     </a>
                                     {% endif %}
                                 </div>
@@ -148,7 +173,8 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const patientSelect = document.getElementById('patient_id');
-    const fullPaymentBtn = document.getElementById('btn-full-payment');
+    const invoiceBtn = document.getElementById('btn-invoice-payment');
+    const totalDebtBtn = document.getElementById('btn-total-debt-payment');
     const paymentAmountInput = document.getElementById('payment_amount');
 
     if (patientSelect) {
@@ -174,12 +200,66 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    if (fullPaymentBtn && paymentAmountInput) {
-        fullPaymentBtn.addEventListener('click', function () {
-            const amount = fullPaymentBtn.getAttribute('data-amount');
-            paymentAmountInput.value = amount;
+    if (invoiceBtn && paymentAmountInput) {
+        invoiceBtn.addEventListener('click', function () {
+            const amount = invoiceBtn.getAttribute('data-amount');
+            if (amount) {
+                paymentAmountInput.value = amount;
+                paymentAmountInput.focus();
+            }
+        });
+    }
+
+    if (totalDebtBtn && paymentAmountInput) {
+        totalDebtBtn.addEventListener('click', function () {
+            const amount = totalDebtBtn.getAttribute('data-amount');
+            if (amount) {
+                paymentAmountInput.value = amount;
+                paymentAmountInput.focus();
+            }
         });
     }
 });
 </script>
+<style>
+.btn-quick-pay {
+    padding: 7px 18px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.84rem;
+    letter-spacing: 0.01em;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.invoice-pay-btn {
+    background: rgba(16, 185, 129, 0.12) !important;
+    color: #10b981 !important;
+    border: 1px solid rgba(16, 185, 129, 0.45) !important;
+}
+.invoice-pay-btn:hover, .invoice-pay-btn:focus {
+    background: rgba(16, 185, 129, 0.24) !important;
+    color: #34d399 !important;
+    border-color: rgba(16, 185, 129, 0.75) !important;
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3) !important;
+}
+
+.debt-pay-btn {
+    background: rgba(245, 158, 11, 0.12) !important;
+    color: #f59e0b !important;
+    border: 1px solid rgba(245, 158, 11, 0.45) !important;
+}
+.debt-pay-btn:hover, .debt-pay-btn:focus {
+    background: rgba(245, 158, 11, 0.24) !important;
+    color: #fbbf24 !important;
+    border-color: rgba(245, 158, 11, 0.75) !important;
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3) !important;
+}
+</style>
 {% endblock %}

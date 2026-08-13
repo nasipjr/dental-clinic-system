@@ -875,35 +875,6 @@
                                 </tr>
                                 {% endfor %}
                             </tbody>
-                            <tfoot class="border-top border-secondary border-opacity-25" style="background: rgba(255,255,255,0.03);">
-                                <tr class="fw-bold fs-6">
-                                    <td class="py-3">
-                                        <i class="bi bi-calculator me-1 text-primary"></i>
-                                        {% if current_lang == 'ar' %}المحصلة الإجمالية{% else %}Grand Total{% endif %}
-                                    </td>
-                                    <td class="text-end py-3 text-body">
-                                        {{ (monthly_summary | map(attribute='billed') | sum) | format_price }} {{ currency_symbol }}
-                                    </td>
-                                    <td class="text-end py-3 text-success">
-                                        {{ (monthly_summary | map(attribute='paid') | sum) | format_price }} {{ currency_symbol }}
-                                    </td>
-                                    <td class="text-end py-3 text-danger">
-                                        {{ (monthly_summary | map(attribute='expenses') | sum) | format_price }} {{ currency_symbol }}
-                                    </td>
-                                    <td class="text-end py-3">
-                                        {% set total_cash = (monthly_summary | map(attribute='net_profit') | sum) %}
-                                        <span class="{% if total_cash >= 0 %}text-success{% else %}text-danger{% endif %}">
-                                            {{ total_cash | format_price }} {{ currency_symbol }}
-                                        </span>
-                                    </td>
-                                    <td class="text-end py-3">
-                                        {% set total_accrual = (monthly_summary | map(attribute='accrual_profit') | sum) %}
-                                        <span class="{% if total_accrual >= 0 %}text-primary{% else %}text-danger{% endif %}">
-                                            {{ total_accrual | format_price }} {{ currency_symbol }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            </tfoot>
                         </table>
                     </div>
 

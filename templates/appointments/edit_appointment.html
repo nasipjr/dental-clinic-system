@@ -1,12 +1,16 @@
 {% extends "base.html" %}
 
 {% block title %}
+{% if current_lang == 'ar' %}
+{{ 'عرض الموعد' if mode|default('edit') == 'view' else 'تعديل الموعد' }}
+{% else %}
 {{ 'View Appointment' if mode|default('edit') == 'view' else 'Edit Appointment' }}
+{% endif %}
 {% endblock %}
 
 {% block content %}
 {% set current_mode = mode|default('edit') %}
-{% set is_locked = current_mode == 'view' or appointment.status != 'Scheduled' %}
+{% set is_locked = current_mode == 'view' or (appointment.status != 'Scheduled' and current_user and current_user.role != 'admin') %}
 
 <section id="add-patient-page" class="section">
     <div class="container" data-aos="fade-up">
@@ -16,22 +20,34 @@
 
                     <div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
                         <h2>
-                            {% if is_locked %}
-                            View Appointment
+                            {% if current_lang == 'ar' %}
+                                {{ 'عرض تفاصيل الموعد' if is_locked else 'تعديل بيانات الموعد' }}
                             {% else %}
-                            Edit Appointment
+                                {{ 'View Appointment' if is_locked else 'Edit Appointment' }}
                             {% endif %}
                         </h2>
 
                         <p>
-                            {% if appointment.status == 'Done' %}
-                            This appointment session is done. Appointment is read-only.
-                            {% elif appointment.status == 'Cancelled' %}
-                            This appointment is cancelled. Appointment is read-only.
-                            {% elif current_mode == 'view' %}
-                            View appointment information without editing.
+                            {% if current_lang == 'ar' %}
+                                {% if appointment.status == 'Done' %}
+                                هذه الجلسة مكتملة ومغلقة، الموعد للعرض فقط.
+                                {% elif appointment.status == 'Cancelled' %}
+                                هذا الموعد ملغى والعرض فقط.
+                                {% elif current_mode == 'view' %}
+                                عرض معلومات الموعد بدون إمكانية التعديل.
+                                {% else %}
+                                تحديث وتعديل تفاصيل الموعد.
+                                {% endif %}
                             {% else %}
-                            Update the appointment information.
+                                {% if appointment.status == 'Done' %}
+                                This appointment session is done. Appointment is read-only.
+                                {% elif appointment.status == 'Cancelled' %}
+                                This appointment is cancelled. Appointment is read-only.
+                                {% elif current_mode == 'view' %}
+                                View appointment information without editing.
+                                {% else %}
+                                Update the appointment information.
+                                {% endif %}
                             {% endif %}
                         </p>
                     </div>
@@ -109,7 +125,7 @@
                                     {% endfor %}
                                 </div>
 
-                                <select id="reason" name="reason" class="form-select custom-reason-select d-none" onchange="handleReasonChange(this)" required {% if is_locked %}disabled{% endif %}>
+                                <select id="reason" name="reason" class="form-select custom-reason-select d-none" onchange="handleReasonChange(this)" {% if is_locked %}disabled{% endif %}>
                                     <option value="">{% if request.cookies.get('lang', 'en') == 'ar' %}-- اختر سبب المعالجة --{% else %}-- Select Reason --{% endif %}</option>
                                     {% set details_map = treatment_details if treatment_details else {} %}
                                     {% set defined_cats = ['فحص وتشخيص', 'حشوات ومعالجات تجميلية', 'علاج عصب وجذور', 'جراحة وقلع', 'تعويضات وتيجان', 'تقويم أسنان', 'أسنان أطفال', 'إجراءات عامة وأخرى'] %}
@@ -214,10 +230,10 @@
                         </div>
 
                             <div class="col-12">
-                                <label for="doctor_id" class="form-label">Doctor</label>
+                                <label for="doctor_id" class="form-label">{% if current_lang == 'ar' %}الطبيب المعالج{% else %}Doctor{% endif %}</label>
                                 <select id="doctor_id" name="doctor_id" class="form-select" {% if is_locked %}disabled{%
                                     endif %}>
-                                    <option value="">Any Available Doctor</option>
+                                    <option value="">{% if current_lang == 'ar' %}أي طبيب متاح{% else %}Any Available Doctor{% endif %}</option>
                                     {% for doc in (doctors or all_doctors) %}
                                     <option value="{{ doc.id }}" {% if appointment.doctor_id==doc.id %}selected{% endif
                                         %}>
@@ -228,25 +244,25 @@
                             </div>
 
                             <div class="col-md-12">
-                                <label for="status" class="form-label">Status</label>
+                                <label for="status" class="form-label">{% if current_lang == 'ar' %}حالة الموعد{% else %}Status{% endif %}</label>
 
                                 <select id="status" name="status" class="form-select" required {% if is_locked
                                     %}disabled{% endif %}>
-                                    <option value="">Select a Status</option>
+                                    <option value="">{% if current_lang == 'ar' %}اختر حالة الموعد...{% else %}Select a Status{% endif %}</option>
 
                                     <option value="Scheduled" {% if appointment.status=='Scheduled' %}selected{% endif
                                         %}>
-                                        Scheduled
+                                        {% if current_lang == 'ar' %}مؤكد / مجدول{% else %}Scheduled{% endif %}
                                     </option>
 
                                     <option value="Cancelled" {% if appointment.status=='Cancelled' %}selected{% endif
                                         %}>
-                                        Cancelled
+                                        {% if current_lang == 'ar' %}ملغى{% else %}Cancelled{% endif %}
                                     </option>
 
                                     {% if appointment.status == 'Done' %}
                                     <option value="Done" selected>
-                                        Done
+                                        {% if current_lang == 'ar' %}منجز / مكتمل{% else %}Done{% endif %}
                                     </option>
                                     {% endif %}
                                 </select>
@@ -255,7 +271,7 @@
                             <div class="col-12 text-center pt-2">
                                 {% if not is_locked %}
                                 <button type="submit" class="save-patient-btn">
-                                    Save Changes
+                                    {% if current_lang == 'ar' %}حفظ التعديلات{% else %}Save Changes{% endif %}
                                 </button>
                                 {% endif %}
 
@@ -263,21 +279,20 @@
                                 <a href="{{ url_for('appointments.edit_appointment', appointment_id=appointment.id) }}"
                                     class="btn btn-primary px-4">
                                     <i class="bi bi-pencil-square me-1"></i>
-                                    Edit Appointment
+                                    {% if current_lang == 'ar' %}تعديل الموعد{% else %}Edit Appointment{% endif %}
                                 </a>
                                 {% endif %}
 
                                 {% if current_user and current_user.role != 'receptionist' %}
                                 <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
                                     class="btn-outline-main px-4">
-                                    Back to Session
+                                    {% if current_lang == 'ar' %}العودة للجلسة الطبية{% else %}Back to Session{% endif %}
                                 </a>
                                 {% endif %}
 
                                 <a href="{{ next_url or request.referrer or url_for('appointments.appointments') }}"
                                     class="btn-outline-main px-4">
-                                    {% if request.cookies.get('lang', 'en') == 'ar' %}إلغاء / عودة{% else %}Cancel /
-                                    Back{% endif %}
+                                    {% if current_lang == 'ar' %}عودة{% else %}Back{% endif %}
                                 </a>
                             </div>
 
@@ -293,7 +308,7 @@
 <script>
     const appointmentIdForEdit = "{{ appointment.id }}";
 </script>
-<script src="{{ url_for('static', filename='assets/js/appointments_flatpickr.js') }}"></script>
+<script src="{{ url_for('static', filename='assets/js/appointments_flatpickr.js') }}?v=2.0"></script>
 {% endif %}
 <script>
 function filterAppointmentCategory(category, pillBtn) {
@@ -688,6 +703,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 toggleCustomReasonInput(true);
             }
         }
+        }
+    }
+
+    const form = document.getElementById('add-patient-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const reasonSelect = document.getElementById('reason');
+            const customReasonInput = document.getElementById('custom_reason');
+            const customContainer = document.getElementById('custom_reason_container');
+            const isCustomActive = customContainer && customContainer.style.display !== 'none';
+
+            let reasonVal = reasonSelect ? reasonSelect.value : '';
+            let customVal = customReasonInput ? customReasonInput.value.trim() : '';
+
+            if ((!reasonVal || reasonVal === '') && (!isCustomActive || !customVal)) {
+                e.preventDefault();
+                const isAr = document.cookie.includes("lang=ar") || !document.cookie.includes("lang=en");
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: isAr ? 'يرجى اختيار سبب المعالجة الطبية' : 'Please Select Procedure Reason',
+                        text: isAr ? 'يرجى النقر على أحد الإجراءات الطبية المتاحة أو كتابة إجراء نصي مخصص أولاً.' : 'Please click on a procedure card or enter a custom procedure first.',
+                        confirmButtonColor: '#0ea5e9',
+                        background: '#1e293b',
+                        color: '#f8fafc'
+                    });
+                } else {
+                    alert(isAr ? 'يرجى اختيار سبب المعالجة الطبية' : 'Please Select Procedure Reason');
+                }
+                const subProcContainer = document.getElementById('sub-procedure-cards-container');
+                if (subProcContainer) subProcContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
     }
 });
 </script>

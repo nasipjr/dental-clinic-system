@@ -1082,7 +1082,7 @@
                                             id="lang-en-btn" onclick="setAppLang('en')"
                                             style="border-radius: 16px; transition: all 0.3s ease;">
                                             <span class="fs-2 mb-2">🇺🇸</span>
-                                            <strong style="font-size: 1.05rem;">English (الإنجليزيّة)</strong>
+                                            <strong style="font-size: 1.05rem;">English</strong>
                                         </button>
                                         <button type="button"
                                             class="btn lang-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2 {% if current_lang == 'ar' %}active{% endif %}"
@@ -1187,12 +1187,17 @@
                             <div class="settings-tab-header">
                                 <div class="settings-tab-icon"><i class="bi bi-database"></i></div>
                                 <div>
-                                    <h4>System Backups</h4>
-                                    <p>Create database backups and manage historical restore points</p>
+                                    <h4>{% if current_lang == 'ar' %}النسخ الاحتياطية للنظام{% else %}System Backups{% endif %}</h4>
+                                    <p>{% if current_lang == 'ar' %}إنشاء لقطات وحفظ نسخ قاعدة البيانات وإدارة نقاط الاستعادة التاريخية{% else %}Create database backups and manage historical restore points{% endif %}</p>
                                 </div>
-                                <div class="ms-auto">
-                                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="createBackup()">
-                                        <i class="bi bi-plus-circle me-1"></i> Create Backup Now
+                                <div class="ms-auto d-flex gap-2 align-items-center flex-wrap">
+                                    <a href="{{ url_for('settings.open_backups_folder') }}" class="btn btn-outline-info btn-sm rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1.5 shadow-xs">
+                                        <i class="bi bi-folder2-open fs-6"></i>
+                                        <span>{% if current_lang == 'ar' %}فتح مجلد النسخ بالكمبيوتر{% else %}Open Backups Folder{% endif %}</span>
+                                    </a>
+                                    <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1.5 shadow-xs" onclick="createBackup()">
+                                        <i class="bi bi-plus-circle fs-6"></i>
+                                        <span>{% if current_lang == 'ar' %}إنشاء نسخة احتياطية الآن{% else %}Create Backup Now{% endif %}</span>
                                     </button>
                                 </div>
                             </div>

@@ -18,29 +18,46 @@
             </a>
         </div>
 
+        {% if patient_filter_obj %}
+        <div class="alert alert-info d-flex align-items-center justify-content-between mb-4 rounded-3 shadow-xs border-info border-opacity-25 bg-info bg-opacity-10">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-person-bounding-box fs-4 text-info"></i>
+                <div>
+                    <strong class="text-body">{% if current_lang == 'ar' %}عرض فواتير المريض:{% else %}Showing Invoices For Patient:{% endif %}</strong>
+                    <span class="fs-5 ms-1 fw-bold text-info">{{ patient_filter_obj.first_name }} {{ patient_filter_obj.last_name }}</span>
+                    <span class="text-muted small ms-2">(<bdi dir="ltr">{{ patient_filter_obj.phone or '' }}</bdi>)</span>
+                </div>
+            </div>
+            <a href="{{ url_for('invoices.invoices') }}" class="btn btn-sm btn-outline-info rounded-pill px-3 fw-bold">
+                <i class="bi bi-x-circle me-1"></i>
+                {% if current_lang == 'ar' %}عرض جميع فواتير الموكلين{% else %}View All Patients Invoices{% endif %}
+            </a>
+        </div>
+        {% endif %}
+
         <!-- Status Tabs Bar -->
         <div class="d-flex align-items-center gap-2 mb-3 overflow-x-auto pb-2 user-select-none">
-            <a href="{{ url_for('invoices.invoices', status='', search=search_query) }}"
+            <a href="{{ url_for('invoices.invoices', status='', search=search_query, patient_id=patient_id) }}"
                class="sub-tab-item btn btn-sm rounded-pill px-3.5 py-2 fw-semibold text-nowrap transition-all {% if not status_filter %}btn-primary text-white shadow-sm{% else %}btn-outline-secondary border-0 text-body opacity-75{% endif %}">
                 {% if current_lang == 'ar' %}الكل{% else %}All Invoices{% endif %}
                 <span class="badge rounded-pill {% if not status_filter %}bg-white text-primary fw-bold{% else %}bg-primary-subtle text-primary-emphasis{% endif %} ms-1" style="font-size: 0.78rem;">{{ status_counts.all if status_counts else 0 }}</span>
             </a>
 
-            <a href="{{ url_for('invoices.invoices', status='Paid', search=search_query) }}"
+            <a href="{{ url_for('invoices.invoices', status='Paid', search=search_query, patient_id=patient_id) }}"
                class="sub-tab-item btn btn-sm rounded-pill px-3.5 py-2 fw-semibold text-nowrap transition-all {% if status_filter == 'Paid' %}btn-success text-white shadow-sm{% else %}btn-outline-secondary border-0 text-body opacity-75{% endif %}">
                 <i class="bi bi-check-circle-fill me-1"></i>
                 {% if current_lang == 'ar' %}مدفوع{% else %}Paid{% endif %}
                 <span class="badge rounded-pill {% if status_filter == 'Paid' %}bg-white text-success fw-bold{% else %}bg-success-subtle text-success-emphasis{% endif %} ms-1" style="font-size: 0.78rem;">{{ status_counts.paid if status_counts else 0 }}</span>
             </a>
 
-            <a href="{{ url_for('invoices.invoices', status='Partially Paid', search=search_query) }}"
+            <a href="{{ url_for('invoices.invoices', status='Partially Paid', search=search_query, patient_id=patient_id) }}"
                class="sub-tab-item btn btn-sm rounded-pill px-3.5 py-2 fw-semibold text-nowrap transition-all {% if status_filter == 'Partially Paid' or status_filter == 'Partial' %}btn-warning text-dark shadow-sm{% else %}btn-outline-secondary border-0 text-body opacity-75{% endif %}">
                 <i class="bi bi-pie-chart-fill me-1"></i>
                 {% if current_lang == 'ar' %}جزئي{% else %}Partially Paid{% endif %}
                 <span class="badge rounded-pill {% if status_filter == 'Partially Paid' or status_filter == 'Partial' %}bg-dark text-warning fw-bold{% else %}bg-warning-subtle text-warning-emphasis{% endif %} ms-1" style="font-size: 0.78rem;">{{ status_counts.partial if status_counts else 0 }}</span>
             </a>
 
-            <a href="{{ url_for('invoices.invoices', status='Unpaid', search=search_query) }}"
+            <a href="{{ url_for('invoices.invoices', status='Unpaid', search=search_query, patient_id=patient_id) }}"
                class="sub-tab-item btn btn-sm rounded-pill px-3.5 py-2 fw-semibold text-nowrap transition-all {% if status_filter == 'Unpaid' %}btn-danger text-white shadow-sm{% else %}btn-outline-secondary border-0 text-body opacity-75{% endif %}">
                 <i class="bi bi-exclamation-circle-fill me-1"></i>
                 {% if current_lang == 'ar' %}غير مدفوع{% else %}Unpaid{% endif %}
@@ -69,6 +86,7 @@
                     </select>
                 </div>
 
+                <input type="hidden" name="patient_id" value="{{ patient_id or '' }}">
                 <input type="hidden" name="sort" value="{{ sort_by }}">
                 <input type="hidden" name="order" value="{{ order }}">
                 <input type="hidden" name="per_page" id="invoices-per-page-input" value="{{ per_page or 10 }}">
@@ -293,10 +311,10 @@
                                 <td style="padding: 10px 12px;" class="text-center text-nowrap">
                                     <div class="d-flex justify-content-center gap-2">
                                          <a href="{{ url_for('invoices.view_invoice', invoice_id=inv.id) }}"
-                                            class="table-action-btn view-btn"
+                                            class="table-action-btn edit-btn"
                                             title="{% if current_lang == 'ar' %}عرض الفاتورة{% else %}View Invoice{% endif %}"
                                             data-tooltip="{% if current_lang == 'ar' %}عرض الفاتورة{% else %}View Invoice{% endif %}">
-                                             <i class="bi bi-eye"></i>
+                                             <i class="bi bi-receipt"></i>
                                          </a>
                                          {% if current_user.role in ('admin', 'receptionist') %}
                                          <a href="{{ url_for('payments.add_patient_payment', patient_id=inv.patient_id) }}"

@@ -1,9 +1,10 @@
+from decimal import Decimal
 from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash, jsonify
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload, selectinload
 
 from models import db, Patient, Appointment, Treatment, Payment, Invoice, PatientFile, ToothHistory, User
-from utils.validators import parse_patient_data
+from utils.validators import parse_patient_data, cleanup_empty_quick_sessions
 from utils.auth_helper import role_required, get_safe_redirect_url
 from utils.constants import TREATMENT_PROCEDURE_TYPES
 from utils.settings_helper import get_treatment_details, get_treatment_prices
@@ -13,6 +14,7 @@ patients_bp = Blueprint("patients", __name__)
 
 
 def get_patients_context():
+    cleanup_empty_quick_sessions()
     search_query = request.args.get("search", "")
     sort_by = request.args.get("sort", "id")
     order = request.args.get("order", "desc")
@@ -379,21 +381,25 @@ def patient_detail(patient_id):
             return d
 
         ledger_entries = []
-        invoices = Invoice.query.join(Invoice.appointment).filter(
-            Appointment.patient_id == patient.id,
-            Appointment.status != "Cancelled"
-        ).options(joinedload(Invoice.appointment).selectinload(Appointment.treatments)).all()
+        invoices = Invoice.query.filter_by(patient_id=patient.id).options(joinedload(Invoice.appointment).selectinload(Appointment.treatments)).all()
         for inv in invoices:
-            desc_items = [t.procedure_type for t in inv.appointment.treatments if t.procedure_type]
-            desc_str = ", ".join(desc_items) if desc_items else (inv.appointment.reason or "Dental Session")
-            inv_date = to_date_only(inv.issue_date)
+            if inv.appointment and inv.appointment.status == "Cancelled":
+                continue
+            if inv.appointment and inv.appointment.treatments:
+                desc_items = [t.procedure_type for t in inv.appointment.treatments if t.procedure_type]
+                desc_str = ", ".join(desc_items) if desc_items else (inv.appointment.reason or "Dental Session")
+            elif inv.appointment:
+                desc_str = inv.appointment.reason or "Dental Session"
+            else:
+                desc_str = "Dental Session"
+            inv_date = to_date_only(inv.issue_date or (inv.appointment.appointment_date if inv.appointment else None))
             ledger_entries.append({
                 "id": inv.id,
                 "date": inv_date,
                 "type": "invoice",
-                "ref": inv.invoice_number,
+                "ref": inv.invoice_number or f"INV-{inv.id:04d}",
                 "description": desc_str,
-                "debit": float(inv.total_amount),
+                "debit": float(inv.total_amount or 0),
                 "credit": 0.0,
             })
 
@@ -407,11 +413,13 @@ def patient_detail(patient_id):
                 "ref": f"PAY-{pay.id:04d}",
                 "description": pay.notes or ("Payment received" if request.cookies.get('lang') != 'ar' else "دفعة نقدية مستلمة"),
                 "debit": 0.0,
-                "credit": float(pay.amount),
+                "credit": float(pay.amount or 0),
             })
 
         # Sort chronologically
-        ledger_entries.sort(key=lambda x: (x["date"], 0 if x["type"] == "invoice" else 1))
+        import datetime as dt
+        min_date = dt.date(1970, 1, 1)
+        ledger_entries.sort(key=lambda x: (x["date"] or min_date, 0 if x["type"] == "invoice" else 1))
 
         # Calculate running balance
         running_bal = 0.0
@@ -601,20 +609,24 @@ def patient_ledger_print(patient_id):
             return d
 
         ledger_entries = []
-        invoices = Invoice.query.join(Invoice.appointment).filter(
-            Appointment.patient_id == patient_id,
-            Appointment.status != "Cancelled"
-        ).all()
+        invoices = Invoice.query.filter_by(patient_id=patient_id).all()
         
         for inv in invoices:
-            desc_items = [t.procedure_type for t in inv.appointment.treatments if t.procedure_type]
-            desc_str = ", ".join(desc_items) if desc_items else (inv.appointment.reason or "Dental Session")
-            inv_date = to_date_only(inv.issue_date)
+            if inv.appointment and inv.appointment.status == "Cancelled":
+                continue
+            if inv.appointment and inv.appointment.treatments:
+                desc_items = [t.procedure_type for t in inv.appointment.treatments if t.procedure_type]
+                desc_str = ", ".join(desc_items) if desc_items else (inv.appointment.reason or "Dental Session")
+            elif inv.appointment:
+                desc_str = inv.appointment.reason or "Dental Session"
+            else:
+                desc_str = "Dental Session"
+            inv_date = to_date_only(inv.issue_date or (inv.appointment.appointment_date if inv.appointment else None))
             ledger_entries.append({
                 "id": inv.id,
                 "date": inv_date,
                 "type": "invoice",
-                "ref": inv.invoice_number,
+                "ref": inv.invoice_number or f"INV-{inv.id:04d}",
                 "description": desc_str,
                 "debit": Decimal(str(inv.total_amount or 0)),
                 "credit": Decimal('0.00'),
@@ -633,9 +645,10 @@ def patient_ledger_print(patient_id):
                 "credit": Decimal(str(pay.amount or 0)),
             })
             
-        ledger_entries.sort(key=lambda x: (x["date"], 0 if x["type"] == "invoice" else 1))
+        import datetime as dt
+        min_date = dt.date(1970, 1, 1)
+        ledger_entries.sort(key=lambda x: (x["date"] or min_date, 0 if x["type"] == "invoice" else 1))
         
-        from decimal import Decimal
         running_bal = Decimal('0.00')
         for entry in ledger_entries:
             running_bal += entry["debit"] - entry["credit"]
@@ -1248,6 +1261,8 @@ def start_quick_session(patient_id):
 
         from flask import session as flask_session
         user_id = flask_session.get("user_id")
+
+        cleanup_empty_quick_sessions(patient.id)
 
         # Check if patient already has an open/scheduled appointment today
         today_start = datetime(now.year, now.month, now.day, 0, 0, 0)

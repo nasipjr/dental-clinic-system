@@ -8,6 +8,7 @@ from utils.validators import (
     parse_appointment_data,
     check_appointment_conflict,
     booking_lock,
+    cleanup_empty_quick_sessions,
 )
 from utils.auth_helper import role_required, get_safe_redirect_url
 from utils.constants import TREATMENT_PRICES, TREATMENT_DETAILS
@@ -113,6 +114,7 @@ def schedule_expired_appointments_cleanup(app, interval_seconds=900):
 
 
 def get_appointments_context():
+    cleanup_empty_quick_sessions()
     cancel_expired_appointments()
     search_query = request.args.get("search", "")
     status_filter = request.args.get("status", "")
@@ -487,7 +489,8 @@ def add_appointment(patient_id):
                     "appointments/add_appointment.html",
                     patient=patient,
                     doctors=doctors,
-                    treatment_prices=dict(TREATMENT_PRICES),
+                    treatment_prices=get_treatment_prices(),
+                    treatment_details=get_treatment_details(),
                     error_message=appointment_error,
                     appointment_min_datetime=appointment_min_datetime,
                     appointment_max_datetime=appointment_max_datetime,
@@ -508,7 +511,8 @@ def add_appointment(patient_id):
                         "appointments/add_appointment.html",
                         patient=patient,
                         doctors=doctors,
-                        treatment_prices=dict(TREATMENT_PRICES),
+                        treatment_prices=get_treatment_prices(),
+                        treatment_details=get_treatment_details(),
                         error_message=err_msg,
                         appointment_min_datetime=appointment_min_datetime,
                         appointment_max_datetime=appointment_max_datetime,
@@ -534,7 +538,7 @@ def add_appointment(patient_id):
                     except (ValueError, TypeError):
                         custom_price = 0.0
 
-                    from utils.settings_helper import get_treatment_details, set_setting
+                    from utils.settings_helper import set_setting
                     import json
                     cur_details = get_treatment_details()
                     cur_details[appointment_data["reason"]] = {
@@ -562,7 +566,8 @@ def add_appointment(patient_id):
             "appointments/add_appointment.html",
             patient=patient,
             doctors=doctors,
-            treatment_prices=dict(TREATMENT_PRICES),
+            treatment_prices=get_treatment_prices(),
+            treatment_details=get_treatment_details(),
             appointment_min_datetime=appointment_min_datetime,
             appointment_max_datetime=appointment_max_datetime,
             next_url=next_url,
@@ -601,14 +606,15 @@ def edit_appointment(appointment_id):
             if user_role != "admin" and appointment.status != "Scheduled":
                 return "Cannot edit a closed or cancelled appointment.", 403
 
-            appointment_data, appointment_error = parse_appointment_data(request.form)
+            appointment_data, appointment_error = parse_appointment_data(request.form, is_edit=True)
 
             if appointment_error:
                 return render_template(
                     "appointments/edit_appointment.html",
                     appointment=appointment,
                     doctors=doctors,
-                    treatment_prices=dict(TREATMENT_PRICES),
+                    treatment_prices=get_treatment_prices(),
+                    treatment_details=get_treatment_details(),
                     mode="edit",
                     error_message=appointment_error,
                     appointment_min_datetime=appointment_min_datetime,
@@ -622,7 +628,8 @@ def edit_appointment(appointment_id):
                     "appointments/edit_appointment.html",
                     appointment=appointment,
                     doctors=doctors,
-                    treatment_prices=dict(TREATMENT_PRICES),
+                    treatment_prices=get_treatment_prices(),
+                    treatment_details=get_treatment_details(),
                     mode="edit",
                     error_message="Invalid appointment status.",
                     appointment_min_datetime=appointment_min_datetime,
@@ -646,7 +653,8 @@ def edit_appointment(appointment_id):
                             "appointments/edit_appointment.html",
                             appointment=appointment,
                             doctors=doctors,
-                            treatment_prices=dict(TREATMENT_PRICES),
+                            treatment_prices=get_treatment_prices(),
+                            treatment_details=get_treatment_details(),
                             mode="edit",
                             error_message=err_msg,
                             appointment_min_datetime=appointment_min_datetime,
@@ -674,7 +682,6 @@ def edit_appointment(appointment_id):
                     except (ValueError, TypeError):
                         custom_price = 0.0
 
-                    from utils.settings_helper import get_treatment_details, set_setting
                     import json
                     cur_details = get_treatment_details()
                     cur_details[appointment_data["reason"]] = {
@@ -708,8 +715,8 @@ def edit_appointment(appointment_id):
             "appointments/edit_appointment.html",
             appointment=appointment,
             doctors=doctors,
-            treatment_prices=dict(TREATMENT_PRICES),
-            treatment_details=dict(TREATMENT_DETAILS),
+            treatment_prices=get_treatment_prices(),
+            treatment_details=get_treatment_details(),
             mode="edit",
             appointment_min_datetime=appointment_min_datetime,
             appointment_max_datetime=appointment_max_datetime,
@@ -732,13 +739,13 @@ def view_appointment(appointment_id):
         appointment_min_datetime, appointment_max_datetime = get_appointment_datetime_limits()
 
         from models import User
-        from utils.constants import TREATMENT_PRICES
         doctors = User.query.filter_by(role="doctor").all()
         return render_template(
             "appointments/edit_appointment.html",
             appointment=appointment,
             doctors=doctors,
-            treatment_prices=dict(TREATMENT_PRICES),
+            treatment_prices=get_treatment_prices(),
+            treatment_details=get_treatment_details(),
             mode="view",
             appointment_min_datetime=appointment_min_datetime,
             appointment_max_datetime=appointment_max_datetime,
@@ -1490,6 +1497,8 @@ def quick_session_start():
             msg = "المريض غير موجود." if request.cookies.get("lang") == "ar" else "Patient not found."
             return jsonify({"success": False, "message": msg}), 404
 
+        cleanup_empty_quick_sessions(patient.id)
+
         now = datetime.now()
         from flask import session as flask_session
         user_id = flask_session.get("user_id")
@@ -1535,6 +1544,69 @@ def get_patients_list_api():
         return jsonify(data)
     except Exception:
         return jsonify([]), 500
+
+
+@appointments_bp.route("/api/check-appointment-conflict", methods=["GET"])
+@role_required("admin", "doctor", "receptionist")
+def check_appointment_conflict_api():
+    date_str = request.args.get("date", "").strip()
+    doctor_id = request.args.get("doctor_id")
+    current_appt_id = request.args.get("appointment_id")
+
+    if not date_str:
+        return jsonify({"available": True})
+
+    try:
+        norm_date_str = (
+            date_str.replace("ص", "AM")
+            .replace("م", "PM")
+            .replace("Z", "")
+            .strip()
+        )
+
+        parsed_date = None
+        for fmt in (
+            "%Y-%m-%d %I:%M %p",
+            "%Y-%m-%d %H:%M:%S",
+            "%Y-%m-%d %H:%M",
+            "%Y-%m-%dT%H:%M:%S",
+            "%Y-%m-%dT%H:%M",
+        ):
+            try:
+                parsed_date = datetime.strptime(norm_date_str, fmt)
+                break
+            except ValueError:
+                continue
+
+        if not parsed_date:
+            try:
+                parsed_date = datetime.fromisoformat(norm_date_str)
+            except Exception:
+                pass
+
+        if not parsed_date:
+            current_app.logger.warning(f"Could not parse date for conflict check: {date_str}")
+            return jsonify({"available": True})
+
+        c_id = int(current_appt_id) if current_appt_id and current_appt_id.isdigit() else None
+        doc_id = int(doctor_id) if doctor_id and doctor_id.isdigit() else None
+
+        conflict = check_appointment_conflict(parsed_date, current_appointment_id=c_id, doctor_id=doc_id)
+        if conflict:
+            lang = request.cookies.get("lang", "en")
+            patient_name = f"{conflict.patient.first_name} {conflict.patient.last_name}" if conflict.patient else ""
+            time_formatted = conflict.appointment_date.strftime('%I:%M %p').replace("AM", "ص").replace("PM", "م")
+            if lang == "ar":
+                msg = f"تعارض في الموعد: هذا الوقت محجوز مسبقاً ({time_formatted}) للمريض {patient_name}."
+            else:
+                msg = f"Conflict: Time slot is already booked ({conflict.appointment_date.strftime('%I:%M %p')}) for patient {patient_name}."
+            return jsonify({"available": False, "message": msg})
+
+        return jsonify({"available": True})
+
+    except Exception:
+        current_app.logger.exception("Error checking appointment conflict API")
+        return jsonify({"available": True})
 
 
 

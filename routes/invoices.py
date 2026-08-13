@@ -20,11 +20,17 @@ def get_invoices_context():
     order = request.args.get("order", "desc")
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 10, type=int)
+    patient_id = request.args.get("patient_id", type=int)
 
     query = Invoice.query.options(
         db.joinedload(Invoice.patient),
         db.joinedload(Invoice.appointment)
     ).join(Invoice.patient).join(Invoice.appointment)
+
+    patient_filter_obj = None
+    if patient_id:
+        query = query.filter(Invoice.patient_id == patient_id)
+        patient_filter_obj = Patient.query.get(patient_id)
 
     if search_query:
         clean_search = search_query
@@ -126,12 +132,15 @@ def get_invoices_context():
     # ── Executive Manager Report & Stats ──
     from decimal import Decimal
 
-    inv_summary_tuples = db.session.query(
+    inv_summary_q = db.session.query(
         Invoice.id,
         net_total_sub.label("net_total"),
         total_paid_sub.label("total_paid"),
         outstanding_sub.label("outstanding")
-    ).all()
+    )
+    if patient_id:
+        inv_summary_q = inv_summary_q.filter(Invoice.patient_id == patient_id)
+    inv_summary_tuples = inv_summary_q.all()
 
     total_invoices_count = len(inv_summary_tuples)
     total_billed = Decimal('0.00')
@@ -166,14 +175,14 @@ def get_invoices_context():
     avg_invoice = (total_billed / Decimal(str(total_invoices_count))).quantize(Decimal('0.01')) if total_invoices_count > 0 else Decimal('0.00')
 
     # Top 5 largest unpaid / partially paid invoices
-    top_unpaid_invoices = (
+    top_unpaid_q = (
         Invoice.query
         .options(db.joinedload(Invoice.patient), db.joinedload(Invoice.appointment))
         .filter(outstanding_sub > 0)
-        .order_by(outstanding_sub.desc())
-        .limit(5)
-        .all()
     )
+    if patient_id:
+        top_unpaid_q = top_unpaid_q.filter(Invoice.patient_id == patient_id)
+    top_unpaid_invoices = top_unpaid_q.order_by(outstanding_sub.desc()).limit(5).all()
 
     invoice_stats = {
         "total_invoices_count": total_invoices_count,
@@ -197,6 +206,8 @@ def get_invoices_context():
         "pagination": pagination,
         "search_query": search_query,
         "status_filter": status_filter,
+        "patient_id": patient_id,
+        "patient_filter_obj": patient_filter_obj,
         "status_counts": status_counts,
         "sort_by": sort_by,
         "order": order,
@@ -452,6 +463,7 @@ def add_invoice():
             if payment_amount > 0:
                 payment = Payment(
                     patient_id=patient.id,
+                    invoice_id=invoice.id,
                     amount=payment_amount,
                     notes=f"Manual invoice payment for {invoice.invoice_number}",
                 )

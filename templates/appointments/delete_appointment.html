@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Delete Appointment{% endblock %}
+{% block title %}{% if current_lang == 'ar' %}حذف الموعد{% else %}Delete Appointment{% endif %}{% endblock %}
 
 {% block content %}
 <section id="delete-patient-page" class="section">
@@ -15,56 +15,60 @@
                     </div>
 
                     <div class="section-title small-section-title mb-4">
-                        <h2>Delete Appointment</h2>
-                        <p>This action cannot be undone.</p>
+                        <h2>{% if current_lang == 'ar' %}حذف الموعد{% else %}Delete Appointment{% endif %}</h2>
+                        <p>{% if current_lang == 'ar' %}هذا الإجراء نهائي ولا يمكن التراجع عنه.{% else %}This action cannot be undone.{% endif %}</p>
                     </div>
 
                     <div class="delete-patient-box">
-                        <p>Are you sure you want to permanently delete this appointment?</p>
+                        <p>{% if current_lang == 'ar' %}هل أنت تأكد من رغبتك في حذف هذا الموعد نهائياً؟{% else %}Are you sure you want to permanently delete this appointment?{% endif %}</p>
 
                         <h4>
-                            {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else 'No date' }}
+                            {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else ('بدون تاريخ' if current_lang == 'ar' else 'No date') }}
                         </h4>
 
                         <p class="mt-2">
-                            Patient:
+                            {% if current_lang == 'ar' %}المريض:{% else %}Patient:{% endif %}
                             {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
                         </p>
 
                         <p>
-                            Reason:
-                            {{ appointment.reason or 'No reason provided' }}
+                            {% if current_lang == 'ar' %}السبب:{% else %}Reason:{% endif %}
+                            {{ appointment.reason or ('غير مخصص' if current_lang == 'ar' else 'No reason provided') }}
                         </p>
 
                         <p>
-                            Status:
+                            {% if current_lang == 'ar' %}الحالة:{% else %}Status:{% endif %}
                             <span class="appointment-status
                                 {% if appointment.status == 'Done' %}status-done
                                 {% elif appointment.status == 'Cancelled' %}status-cancelled
                                 {% elif appointment.status == 'Pending' %}status-pending
                                 {% else %}status-scheduled{% endif %}">
-                                {{ appointment.status }}
+                                {% if current_lang == 'ar' %}
+                                    {% if appointment.status == 'Done' %}منجز{% elif appointment.status == 'Cancelled' %}ملغى{% elif appointment.status == 'Pending' %}قيد التثبيت{% else %}مؤكد / مجدول{% endif %}
+                                {% else %}
+                                    {{ appointment.status }}
+                                {% endif %}
                             </span>
                         </p>
                     </div>
 
                     <form method="POST" class="mt-4">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="next" value="{{ next_url or request.args.get('next', '') or request.referrer or '' }}">
                         <div class="action-buttons justify-content-center gap-3">
                             <button type="submit" class="btn-delete-soft px-4">
-                                Yes, Delete Appointment
+                                {% if current_lang == 'ar' %}نعم، حذف الموعد{% else %}Yes, Delete Appointment{% endif %}
                             </button>
 
                             <a href="{{ next_url or request.referrer or url_for('appointments.appointments') }}"
                                class="btn-outline-main px-4">
-                                {% if request.cookies.get('lang', 'en') == 'ar' %}إلغاء / عودة{% else %}Cancel / Back{% endif %}
+                                {% if current_lang == 'ar' %}إلغاء وعودة{% else %}Back{% endif %}
                             </a>
 
                             {% if current_user and current_user.role != 'receptionist' %}
                             <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
                                class="btn-outline-main px-4">
-                                Back to Session
+                                {% if current_lang == 'ar' %}العودة للجلسة{% else %}Back to Session{% endif %}
                             </a>
                             {% endif %}
                         </div>
