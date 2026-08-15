@@ -1,133 +1,19 @@
 {% extends "base.html" %}
 
-{% block title %}{% if current_lang == 'ar' %}تعديل الدفعة{% else %}Edit Payment{% endif %}{% endblock %}
+{% block title %}{% if current_lang == 'ar' %}تعديل الدفعة المالية{% else %}Edit Payment{% endif %}{% endblock %}
 
 {% block content %}
-<section id="add-patient-page" class="section">
+<section id="add-patient-page" class="section" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
     <div class="container" data-aos="fade-up">
         <div class="row justify-content-center">
             <div class="col-lg-8">
                 <div class="add-patient-wrapper">
 
-                    <div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
-                        <h2>{% if current_lang == 'ar' %}تعديل بيانات الدفعة{% else %}Edit Payment Details{% endif %} <bdi dir="ltr">PAY-{{ "%04d"|format(payment.id) }}</bdi></h2>
-                        <p>{% if current_lang == 'ar' %}تعديل مبلغ الدفعة أو ملاحظاتها أو تاريخها. سيتم إعادة احتساب التوزيع المالي تلقائياً.{% else %}Update payment amount, notes, or date. The financial allocation will automatically be updated.{% endif %}</p>
-                    </div>
+                    <!-- Header & Patient Financial Summary -->
+                    {% include "payments/sections/_section_edit_payment_header.html" %}
 
-                    <div class="add-patient-icon" data-aos="zoom-in" data-aos-delay="200">
-                        <i class="bi bi-pencil-square"></i>
-                    </div>
-
-                    {% if error_message %}
-                    <div class="alert alert-danger text-center" role="alert">
-                        {{ error_message }}
-                    </div>
-                    {% endif %}
-
-                    {% if selected_patient %}
-                    <div class="patient-info-grid mb-4">
-
-                        <div class="patient-info-box">
-                            <span class="info-label">{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</span>
-                            <p>
-                                {{ selected_patient.first_name }} {{ selected_patient.last_name }}
-                                <br>
-                                <small>{{ selected_patient.phone or ('No phone number' if current_lang != 'ar' else 'لا يوجد رقم هاتف') }}</small>
-                            </p>
-                        </div>
-
-                        <div class="patient-info-box">
-                            <span class="info-label">{% if current_lang == 'ar' %}إجمالي الفواتير{% else %}Total Invoices{% endif %}</span>
-                            <p>{{ selected_patient.total_invoice_amount | format_price }} {{ currency_symbol }}</p>
-                        </div>
-
-                        <div class="patient-info-box">
-                            <span class="info-label">{% if current_lang == 'ar' %}إجمالي الدفعات{% else %}Total Payments{% endif %}</span>
-                            <p>{{ selected_patient.total_payments_amount | format_price }} {{ currency_symbol }}</p>
-                        </div>
-
-                        <div class="patient-info-box">
-                            <span class="info-label">
-                                {% if selected_patient.credit_amount > 0 %}
-                                {% if current_lang == 'ar' %}رصيد مالي للمريض{% else %}Patient Credit{% endif %}
-                                {% else %}
-                                {% if current_lang == 'ar' %}المبلغ المتبقي للعيادة{% else %}Outstanding Amount{% endif %}
-                                {% endif %}
-                            </span>
-
-                            <p>
-                                {% if selected_patient.credit_amount > 0 %}
-                                <span class="credit-amount">
-                                    {{ selected_patient.credit_amount | format_price }} {{ currency_symbol }}
-                                    <span class="credit-badge">{% if current_lang == 'ar' %}رصيد{% else %}Credit{% endif %}</span>
-                                </span>
-                                {% elif selected_patient.outstanding_amount > 0 %}
-                                <span class="remaining-due">
-                                    {{ selected_patient.outstanding_amount | format_price }} {{ currency_symbol }}
-                                    <span class="due-badge">{% if current_lang == 'ar' %}مستحق{% else %}Due{% endif %}</span>
-                                </span>
-                                {% else %}
-                                <span class="remaining-clear">
-                                    0 {{ currency_symbol }}
-                                    <span class="paid-badge">{% if current_lang == 'ar' %}خالص{% else %}Paid{% endif %}</span>
-                                </span>
-                                {% endif %}
-                            </p>
-                        </div>
-
-                    </div>
-                    {% endif %}
-
-                    <form id="edit-payment-form" method="POST" data-aos="fade-up" data-aos-delay="300">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <div class="row gy-4">
-
-                            <div class="col-md-12">
-                                <label for="patient_id" class="form-label">{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</label>
-                                <select id="patient_id" name="patient_id" class="form-select" required>
-                                    <option value="">{% if current_lang == 'ar' %}اختر المريض{% else %}Select Patient{% endif %}</option>
-                                    {% for p in patients %}
-                                    <option value="{{ p.id }}" {% if selected_patient and selected_patient.id == p.id %}selected{% endif %}>
-                                        {{ p.first_name }} {{ p.last_name }}
-                                        {% if p.phone %} - {{ p.phone }}{% endif %}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="payment_amount" class="form-label">{% if current_lang == 'ar' %}مبلغ الدفعة{% else %}Payment Amount{% endif %}</label>
-                                <input type="number" step="any" min="0" id="payment_amount" name="payment_amount"
-                                    class="form-control" placeholder="{% if current_lang == 'ar' %}أدخل مبلغ الدفعة{% else %}Enter payment amount{% endif %}"
-                                    value="{{ payment.amount }}" required>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="payment_date" class="form-label">{% if current_lang == 'ar' %}تاريخ وساعة الدفع{% else %}Payment Date & Time{% endif %}</label>
-                                <input type="datetime-local" id="payment_date" name="payment_date" class="form-control"
-                                    value="{{ payment.payment_date.strftime('%Y-%m-%d\TH:%M') if payment.payment_date else '' }}" required>
-                            </div>
-
-                            <div class="col-md-12">
-                                <label for="notes" class="form-label">{% if current_lang == 'ar' %}ملاحظات الدفعة{% else %}Payment Notes{% endif %}</label>
-                                <textarea id="notes" name="notes" class="form-control" rows="3"
-                                    placeholder="{% if current_lang == 'ar' %}ملاحظات أو بيانات إضافية حول الدفعة{% else %}Optional notes about this payment{% endif %}">{{ payment.notes or '' }}</textarea>
-                            </div>
-
-                            <div class="col-12">
-                                <div class="action-buttons justify-content-center gap-3">
-                                    <button type="submit" class="btn btn-primary px-4">
-                                        <i class="bi bi-floppy me-1"></i>{% if current_lang == 'ar' %}حفظ التغيرات{% else %}Save Changes{% endif %}
-                                    </button>
-
-                                    <a href="{{ next_url or url_for('payments.view_payment', payment_id=payment.id) }}" class="btn-outline-main px-4">
-                                        {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
-                                    </a>
-                                </div>
-                            </div>
-
-                        </div>
-                    </form>
+                    <!-- Edit Payment Form -->
+                    {% include "payments/sections/_section_edit_payment_form.html" %}
 
                 </div>
             </div>
@@ -135,19 +21,12 @@
     </div>
 </section>
 
+<!-- Edit Payment Core Controller -->
+<script src="{{ url_for('static', filename='js/edit_payment_core.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const patientSelect = document.getElementById('patient_id');
-
-    if (patientSelect) {
-        patientSelect.addEventListener('change', function () {
-            const selectedPatientId = patientSelect.value;
-            if (selectedPatientId) {
-                const currentUrl = new URL(window.location.href);
-                currentUrl.searchParams.set('patient_id', selectedPatientId);
-                window.location.href = currentUrl.toString();
-            }
-        });
+    if (window.initEditPayment) {
+        window.initEditPayment();
     }
 });
 </script>

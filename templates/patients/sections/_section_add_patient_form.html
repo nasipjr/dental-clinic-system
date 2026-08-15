@@ -1,0 +1,209 @@
+<!-- ═══════════ Add Patient Main Form ═══════════ -->
+<form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="force_save" id="force-save-flag" value="0">
+
+    <div class="row gy-4">
+
+        <!-- Title -->
+        <div class="col-md-4">
+            <label for="title" class="form-label">{% if current_lang == 'ar' %}اللقب{% else %}Title{% endif %}</label>
+            <select name="title" class="form-select">
+                <option value="">{% if current_lang == 'ar' %}اختر اللقب{% else %}Select a Title{% endif %}</option>
+                <option value="mr">{% if current_lang == 'ar' %}السيد{% else %}Mr{% endif %}</option>
+                <option value="ms">{% if current_lang == 'ar' %}الآنسة{% else %}Ms{% endif %}</option>
+                <option value="dr">{% if current_lang == 'ar' %}الدكتور{% else %}Doctor{% endif %}</option>
+                <option value="dr_f">{% if current_lang == 'ar' %}الدكتورة{% else %}Doctor (Female){% endif %}</option>
+                <option value="mrs">{% if current_lang == 'ar' %}السيدة{% else %}Mrs{% endif %}</option>
+                <option value="miss">{% if current_lang == 'ar' %}آنسة{% else %}Miss{% endif %}</option>
+            </select>
+        </div>
+
+        <!-- First Name -->
+        <div class="col-md-4">
+            <label for="first_name" class="form-label">{% if current_lang == 'ar' %}الاسم الأول{% else %}First Name{% endif %}</label>
+            <input type="text" id="first_name" name="first_name" class="form-control {% if duplicate_warning %}border-warning border-2{% endif %}"
+                placeholder="{% if current_lang == 'ar' %}أدخل الاسم الأول{% else %}Enter first name{% endif %}" required
+                value="{{ form_data.first_name if form_data else '' }}"
+                autocomplete="off">
+        </div>
+
+        <!-- Last Name -->
+        <div class="col-md-4">
+            <label for="last_name" class="form-label">{% if current_lang == 'ar' %}الكنية / النسبة{% else %}Last Name{% endif %}</label>
+            <input type="text" id="last_name" name="last_name" class="form-control {% if duplicate_warning %}border-warning border-2{% endif %}"
+                placeholder="{% if current_lang == 'ar' %}أدخل الكنية أو النسبة{% else %}Enter last name{% endif %}" required
+                value="{{ form_data.last_name if form_data else '' }}"
+                autocomplete="off">
+        </div>
+
+        <!-- Date of Birth -->
+        <div class="col-md-12">
+            <label for="date_of_birth" class="form-label">{% if current_lang == 'ar' %}تاريخ الميلاد{% else %}Date Of Birth{% endif %}</label>
+            <input type="date" id="date_of_birth" name="date_of_birth" class="form-control">
+        </div>
+
+        <!-- Gender -->
+        <div class="col-md-12">
+            <label for="gender" class="form-label">{% if current_lang == 'ar' %}الجنس{% else %}Gender{% endif %}</label>
+            <select id="gender" name="gender" class="form-select" required>
+                <option value="">{% if current_lang == 'ar' %}اختر الجنس{% else %}Select Gender{% endif %}</option>
+                <option value="Male">{% if current_lang == 'ar' %}ذكر{% else %}Male{% endif %}</option>
+                <option value="Female">{% if current_lang == 'ar' %}أنثى{% else %}Female{% endif %}</option>
+            </select>
+        </div>
+
+        <!-- Syrian Phone Input (+963) -->
+        <div class="col-md-12">
+            <label for="phone_input" class="form-label">{% if current_lang == 'ar' %}رقم الهاتف{% else %}Phone{% endif %}</label>
+            <div class="input-group" dir="ltr">
+                <span class="input-group-text border px-3 d-flex align-items-center gap-1.5 rounded-start-3 shadow-xs"
+                      style="background: color-mix(in srgb, var(--surface-color), var(--accent-color) 6%); border-color: color-mix(in srgb, var(--heading-color), transparent 85%) !important;">
+                    <span class="fw-bold px-2 py-0.5 rounded me-1" style="background: rgba(13, 110, 253, 0.15); color: #0d6efd !important; font-size: 0.78rem; font-family: sans-serif; letter-spacing: 0.5px; display: inline-block;">SY</span>
+                    <span class="fw-bold text-primary" style="font-family: monospace; font-size: 1.05rem; letter-spacing: 0.5px;">+963</span>
+                </span>
+                <input type="text" id="phone_input" class="form-control text-start fs-6 py-2.5 rounded-end-3" placeholder="9XXXXXXXX" maxlength="13" required
+                    value="{{ (form_data.phone.replace('+963', '') if form_data and form_data.phone else '') }}" autocomplete="off"
+                    style="border-color: color-mix(in srgb, var(--heading-color), transparent 85%) !important; background: var(--surface-color); color: var(--heading-color); font-family: monospace; font-size: 1.05rem !important;">
+            </div>
+            <input type="hidden" id="phone" name="phone" value="{{ form_data.phone if form_data else '' }}">
+        </div>
+
+        <!-- Email -->
+        <div class="col-md-12">
+            <label for="email" class="form-label">{% if current_lang == 'ar' %}البريد الإلكتروني{% else %}Email{% endif %}</label>
+            <input type="email" id="email" name="email" class="form-control"
+                placeholder="{% if current_lang == 'ar' %}أدخل البريد الإلكتروني{% else %}Enter email address{% endif %}">
+        </div>
+
+        <!-- Address -->
+        <div class="col-md-12">
+            <label for="address" class="form-label">{% if current_lang == 'ar' %}العنوان السكني{% else %}Address{% endif %}</label>
+            <input type="text" id="address" name="address" class="form-control"
+                placeholder="{% if current_lang == 'ar' %}أدخل العنوان السكني{% else %}Enter address{% endif %}">
+        </div>
+
+        <!-- City -->
+        <div class="col-md-6">
+            <label for="city" class="form-label">{% if current_lang == 'ar' %}المدينة{% else %}City{% endif %}</label>
+            <input type="text" id="city" name="city" class="form-control" placeholder="{% if current_lang == 'ar' %}أدخل المدينة{% else %}Enter city{% endif %}">
+        </div>
+
+        <!-- Country -->
+        <div class="col-md-6">
+            <label for="country" class="form-label">{% if current_lang == 'ar' %}البلد{% else %}Country{% endif %}</label>
+            <input type="text" id="country" name="country" class="form-control"
+                placeholder="{% if current_lang == 'ar' %}أدخل البلد{% else %}Enter country{% endif %}">
+        </div>
+
+        <!-- Notes -->
+        <div class="col-12">
+            <label for="notes" class="form-label">{% if current_lang == 'ar' %}ملاحظات عامة{% else %}Notes{% endif %}</label>
+            <textarea id="notes" name="notes" class="form-control" rows="5"
+                placeholder="{% if current_lang == 'ar' %}أضف أي ملاحظات عامة حول المريض{% else %}Add any notes about the patient{% endif %}"></textarea>
+        </div>
+
+        <!-- Medical Information -->
+        <div class="col-12">
+            <label for="medical_information" class="form-label">{% if current_lang == 'ar' %}السيرة المرضية والمعلومات الطبية{% else %}Medical Information{% endif %}</label>
+            <textarea id="medical_information" name="medical_information" class="form-control"
+                rows="5" placeholder="{% if current_lang == 'ar' %}أضف أي معلومات طبية، أمراض مزمنة، أو تحسس دوائي{% else %}Add any medical information about the patient{% endif %}"></textarea>
+        </div>
+
+        <!-- Occupation -->
+        <div class="col-md-6">
+            <label for="occupation" class="form-label">{% if current_lang == 'ar' %}المهنة{% else %}Occupation{% endif %}</label>
+            <input type="text" id="occupation" name="occupation" class="form-control"
+                placeholder="{% if current_lang == 'ar' %}أدخل المهنة أو الوظيفة{% else %}Enter occupation{% endif %}">
+        </div>
+
+        <!-- Emergency Contact Dual Mode -->
+        <div class="col-md-6">
+            <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-1">
+                <label for="emergency_contact" class="form-label mb-0">{% if current_lang == 'ar' %}جهة اتصال الطوارئ{% else %}Emergency Contact{% endif %}</label>
+                <div class="d-inline-flex align-items-center p-0.5 rounded-pill shadow-xs border"
+                     style="background: color-mix(in srgb, var(--surface-color), var(--heading-color) 4%); border-color: color-mix(in srgb, var(--heading-color), transparent 85%) !important;" id="emergency-mode-toggle">
+                    <button type="button" class="btn btn-xs rounded-pill px-2.5 py-0.5 emergency-mode-btn" id="emergency-mode-select"
+                            style="font-size: 0.72rem; font-weight: 600; transition: all 0.2s ease; background: var(--accent-color, #0d6efd) !important; color: #ffffff !important; box-shadow: 0 2px 6px rgba(13, 110, 253, 0.25) !important;">
+                        <i class="bi bi-people me-1"></i>{% if current_lang == 'ar' %}من القائمة{% else %}From List{% endif %}
+                    </button>
+                    <button type="button" class="btn btn-xs rounded-pill px-2.5 py-0.5 emergency-mode-btn" id="emergency-mode-manual"
+                            style="font-size: 0.72rem; font-weight: 600; transition: all 0.2s ease; background: transparent !important; color: var(--heading-color) !important; box-shadow: none !important;">
+                        <i class="bi bi-telephone me-1"></i>{% if current_lang == 'ar' %}يدوي +963{% else %}Manual{% endif %}
+                    </button>
+                </div>
+            </div>
+
+            <input type="hidden" id="emergency_contact" name="emergency_contact" value="{{ form_data.emergency_contact if form_data else '' }}">
+
+            <!-- Mode 1: Select Registered Patient -->
+            <div id="emergency-select-container" class="input-group">
+                <span class="input-group-text border text-muted px-3 rounded-start-3 shadow-xs"
+                      style="background: color-mix(in srgb, var(--surface-color), var(--accent-color) 6%); border-color: color-mix(in srgb, var(--heading-color), transparent 85%) !important;">
+                    <i class="bi bi-person-lines-fill"></i>
+                </span>
+                <select id="emergency_patient_select" class="form-select py-2.5 rounded-end-3"
+                        style="border-color: color-mix(in srgb, var(--heading-color), transparent 85%) !important; background: var(--surface-color); color: var(--heading-color);">
+                    <option value="" data-phone="">{% if current_lang == 'ar' %}-- اختر مريضاً كجهة اتصال طوارئ (اختياري) --{% else %}-- Select Emergency Contact --{% endif %}</option>
+                    {% for p in all_patients %}
+                    {% set p_opt = p.first_name ~ ' ' ~ p.last_name ~ (' (' ~ p.phone ~ ')' if p.phone else '') %}
+                    <option value="{{ p_opt }}" data-phone="{{ (p.phone.replace('+963', '').replace('+', '').strip() if p.phone else '') }}" {% if form_data and form_data.emergency_contact == p_opt %}selected{% endif %}>
+                        {{ p.first_name }} {{ p.last_name }} {% if p.phone %}- {{ p.phone }}{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+                <button type="button" class="btn border-0 text-muted px-2.5 d-none rounded-end-3" id="emergency_clear_btn" title="{% if current_lang == 'ar' %}إلغاء الاختيار{% else %}Clear selection{% endif %}"
+                        style="background: color-mix(in srgb, var(--surface-color), var(--heading-color) 4%); border: 1px solid color-mix(in srgb, var(--heading-color), transparent 85%) !important; border-start-0 !important;">
+                    <i class="bi bi-x-lg text-danger fw-bold"></i>
+                </button>
+            </div>
+
+            <!-- Mode 2: Manual Phone Input (+963) -->
+            <div id="emergency-manual-container" class="input-group d-none" dir="ltr">
+                <span class="input-group-text border px-3 d-flex align-items-center gap-1.5 rounded-start-3 shadow-xs"
+                      style="background: color-mix(in srgb, var(--surface-color), var(--accent-color) 6%); border-color: color-mix(in srgb, var(--heading-color), transparent 85%) !important;">
+                    <span class="fw-bold px-2 py-0.5 rounded me-1" style="background: rgba(13, 110, 253, 0.15); color: #0d6efd !important; font-size: 0.78rem; font-family: sans-serif; letter-spacing: 0.5px; display: inline-block;">SY</span>
+                    <span class="fw-bold text-primary" style="font-family: monospace; font-size: 1.05rem; letter-spacing: 0.5px;">+963</span>
+                </span>
+                <input type="text" id="emergency_phone_input" class="form-control text-start fs-6 py-2.5 rounded-end-3" placeholder="9XXXXXXXX" maxlength="13" autocomplete="off"
+                       style="border-color: color-mix(in srgb, var(--heading-color), transparent 85%) !important; background: var(--surface-color); color: var(--heading-color); font-family: monospace; font-size: 1.05rem !important;">
+            </div>
+
+            <!-- Match notification containers -->
+            <div id="emergency-match-badge" class="mt-1.5 small text-success fw-semibold d-none align-items-center gap-2 flex-wrap">
+                <span><i class="bi bi-check-circle-fill"></i> <span id="emergency-match-text"></span></span>
+                <button type="button" class="btn btn-xs btn-outline-danger rounded-pill px-2 py-0.5" id="emergency_badge_clear_btn" style="font-size: 0.72rem;">
+                    <i class="bi bi-x-lg me-1"></i>{% if current_lang == 'ar' %}إلغاء الاختيار{% else %}Clear{% endif %}
+                </button>
+            </div>
+            <div id="emergency-multi-match-box" class="mt-2 p-2 rounded-3 border bg-body-tertiary d-none">
+                <div class="small fw-semibold mb-1 text-primary"><i class="bi bi-people-fill me-1"></i>{% if current_lang == 'ar' %}يتطابق هذا الرقم مع أكثر من مريض، اختر أحدهم:{% else %}Multiple patients match this number, select one:{% endif %}</div>
+                <div id="emergency-multi-match-list" class="d-flex flex-wrap gap-1.5"></div>
+            </div>
+        </div>
+
+        <!-- Telegram Chat ID -->
+        <div class="col-md-6">
+            <label for="telegram_chat_id" class="form-label">{% if current_lang == 'ar' %}معرّف تيليغرام (Chat ID){% else %}Telegram Chat ID{% endif %}</label>
+            <input type="text" id="telegram_chat_id" name="telegram_chat_id" class="form-control"
+                placeholder="{% if current_lang == 'ar' %}مثال: 123456789{% else %}e.g. 123456789{% endif %}">
+        </div>
+
+        <!-- Automated Reminders Switch -->
+        <div class="col-md-6 d-flex align-items-center pt-2">
+            <div class="form-check form-switch mt-4">
+                <input class="form-check-input" type="checkbox" id="reminders_enabled" name="reminders_enabled" value="true" checked>
+                <label class="form-check-label fw-semibold" for="reminders_enabled">{% if current_lang == 'ar' %}تفعيل التذكيرات التلقائية{% else %}Enable Automated Reminders{% endif %}</label>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="col-12 text-center pt-2">
+            <button type="submit" class="save-patient-btn">{% if current_lang == 'ar' %}حفظ المريض{% else %}Save Patient{% endif %}</button>
+            <a href="{{ url_for('patients.patients') }}" class="btn-outline-main px-4 ms-2">
+                {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+            </a>
+        </div>
+
+    </div>
+</form>

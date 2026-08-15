@@ -1,0 +1,38 @@
+<!-- ═══════════ Doctor Charts Section ═══════════ -->
+<div class="row g-4 mb-4">
+    <!-- Monthly Revenue & Earnings Bar Chart -->
+    <div class="col-lg-8">
+        <div class="card border-0 rounded-4 shadow-sm p-4 h-100" style="background: var(--surface-color);">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-bar-chart-fill text-primary me-2"></i>
+                        {% if current_lang == 'ar' %}الإيرادات ومستحقات الطبيب الشهرية ({{ chart_year }}){% else %}Monthly Revenue & Doctor Earnings ({{ chart_year }}){% endif %}
+                    </h5>
+                    <p class="text-secondary small mb-0">{% if current_lang == 'ar' %}مقارنة بين إجمالي تكاليف العلاج وحصة الطبيب لكل شهر{% else %}Comparison of treatment total costs vs doctor's share{% endif %}</p>
+                </div>
+            </div>
+            <div style="height: 310px;">
+                <canvas id="doctorMonthlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointment Status Breakdown Doughnut Chart -->
+    <div class="col-lg-4">
+        <div class="card border-0 rounded-4 shadow-sm p-4 h-100" style="background: var(--surface-color);">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-pie-chart-fill text-info me-2"></i>
+                        {% if current_lang == 'ar' %}حالات المواعيد والجلسات{% else %}Appointments Breakdown{% endif %}
+                    </h5>
+                    <p class="text-secondary small mb-0">{% if current_lang == 'ar' %}نسب المواعيد المنجزة والمجدولة والملغاة{% else %}Distribution of appointment statuses{% endif %}</p>
+                </div>
+            </div>
+            <div style="height: 310px;" class="d-flex align-items-center justify-content-center">
+                <canvas id="doctorStatusChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>

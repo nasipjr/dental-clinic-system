@@ -1,0 +1,44 @@
+<!-- ═══════════ Edit Appointment Header Banner ═══════════ -->
+<div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
+    <h2>
+        {% if current_lang == 'ar' %}
+            {{ 'عرض تفاصيل الموعد' if is_locked else 'تعديل بيانات الموعد' }}
+        {% else %}
+            {{ 'View Appointment' if is_locked else 'Edit Appointment' }}
+        {% endif %}
+    </h2>
+
+    <p>
+        {% if current_lang == 'ar' %}
+            {% if appointment.status == 'Done' %}
+            هذه الجلسة مكتملة ومغلقة، الموعد للعرض فقط.
+            {% elif appointment.status == 'Cancelled' %}
+            هذا الموعد ملغى وللعرض فقط.
+            {% elif current_mode == 'view' %}
+            عرض معلومات الموعد بدون إمكانية التعديل.
+            {% else %}
+            تحديث وتعديل تفاصيل الموعد.
+            {% endif %}
+        {% else %}
+            {% if appointment.status == 'Done' %}
+            This appointment session is done. Appointment is read-only.
+            {% elif appointment.status == 'Cancelled' %}
+            This appointment is cancelled. Appointment is read-only.
+            {% elif current_mode == 'view' %}
+            View appointment information without editing.
+            {% else %}
+            Update the appointment information.
+            {% endif %}
+        {% endif %}
+    </p>
+</div>
+
+<div class="add-patient-icon" data-aos="zoom-in" data-aos-delay="200">
+    <i class="bi {{ 'bi-eye' if is_locked else 'bi-calendar-check' }}"></i>
+</div>
+
+{% if error_message %}
+<div class="alert alert-danger text-center" role="alert">
+    {{ error_message }}
+</div>
+{% endif %}

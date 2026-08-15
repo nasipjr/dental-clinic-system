@@ -1,0 +1,40 @@
+/**
+ * Dental Clinic Management System - Payment Detail Stylesheet
+ * Custom styles for payment receipt card layout and print-media sheet rendering.
+ */
+
+@media print {
+    /* Hide screen elements */
+    #header, #footer, .topbar, #scroll-top, .section-title, .action-buttons, .btn, .collapse, .alert, .mobile-nav-toggle, #payment-detail-section, br {
+        display: none !important;
+    }
+    
+    html, body, #main, #payment-print-area, #payment-print-area * {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+    
+    body {
+        font-size: 11pt !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    #payment-print-area {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 10px !important;
+    }
+    
+    .table {
+        border-color: #333 !important;
+    }
+    .table th {
+        background-color: #f8f9fa !important;
+        color: #000 !important;
+    }
+}

@@ -1,0 +1,134 @@
+<!-- ═══════════ Tomorrow's Scheduled Appointments Section ═══════════ -->
+<div class="container section-title" data-aos="fade-up">
+    <h2>{% if current_lang == 'ar' %}مواعيد الغد المجدولة{% else %}Tomorrow’s Scheduled Appointments{% endif %}</h2>
+    <p>{% if current_lang == 'ar' %}استعراض وإرسال رسائل تذكيرية للمرضى الذين لديهم مواعيد يوم غد.{% else %}View and send WhatsApp reminders to patients scheduled for tomorrow.{% endif %}</p>
+</div>
+
+<section id="tomorrow-scheduled-appointments-section" class="find-a-doctor section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+      {% if tomorrow_appointments %}
+      <div class="appointments-table-wrapper table-responsive">
+        <table class="table appointments-table align-middle" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+          <thead>
+            <tr>
+              <th>{% if current_lang == 'ar' %}الوقت{% else %}Time{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}رقم الهاتف{% else %}Phone{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}السبب{% else %}Reason{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}الطبيب المعالج{% else %}Doctor{% endif %}</th>
+              <th class="text-center" style="min-width: 150px;">{% if current_lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for appointment in tomorrow_appointments %}
+            <tr>
+              <td>
+                {{ appointment.appointment_date.strftime('%I:%M %p') if appointment.appointment_date else ('بدون وقت' if current_lang == 'ar' else 'No time') }}
+              </td>
+
+              <td>
+                <a href="{{ url_for('patients.patient_detail', patient_id=appointment.patient.id) }}" class="fw-bold text-decoration-none text-primary">
+                  {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                </a>
+              </td>
+
+              <td>
+                {{ appointment.patient.phone or ('لا يوجد هاتف' if current_lang == 'ar' else 'No phone number') }}
+              </td>
+
+              <td>
+                {{ appointment.reason or ('لم يحدد' if current_lang == 'ar' else 'No reason provided') }}
+              </td>
+
+              <td>
+                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2.5 py-1.5 fw-semibold">
+                  {% if current_lang == 'ar' %}مجدول{% else %}Scheduled{% endif %}
+                </span>
+              </td>
+
+              <td>
+                {% set doc = appointment.attending_doctor or appointment.doctor %}
+                {% if doc %}
+                  <span class="doctor-badge">
+                    <i class="bi bi-person-badge"></i>{{ doc.display_name }}
+                  </span>
+                {% else %}
+                  <span class="text-muted" style="font-size: 0.82rem;">-</span>
+                {% endif %}
+              </td>
+
+              <td class="text-center">
+                <div class="appointments-actions">
+                  {% if appointment.status not in ('Done', 'Cancelled', 'منجز', 'ملغي') %}
+                    {% if current_user.role == 'admin' or (current_user.role == 'doctor' and (not appointment.doctor_id or appointment.doctor_id == current_user.id) and appointment.status != 'Cancelled') %}
+                    <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
+                       class="table-action-btn session-btn"
+                       title="{% if current_lang == 'ar' %}بدء الجلسة{% else %}Start Session{% endif %}"
+                       data-tooltip="{% if current_lang == 'ar' %}بدء الجلسة{% else %}Start Session{% endif %}">
+                      <i class="bi bi-clipboard2-pulse"></i>
+                    </a>
+                    {% endif %}
+
+                    <button type="button"
+                            onclick="confirmCancelAppointment({{ appointment.id }})"
+                            class="table-action-btn cancel-btn quick-action-btn border-0"
+                            title="{% if current_lang == 'ar' %}إلغاء الموعد{% else %}Cancel Appointment{% endif %}">
+                      <i class="bi bi-x-circle"></i>
+                    </button>
+                  {% endif %}
+
+                  <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}"
+                     class="table-action-btn view-btn"
+                     title="{% if current_lang == 'ar' %}عرض الموعد{% else %}View Appointment{% endif %}">
+                    <i class="bi bi-eye"></i>
+                  </a>
+
+                  {% if appointment.status not in ('Cancelled', 'ملغي', 'Done', 'منجز') and (current_user.role == 'admin' or (appointment.status == 'Scheduled' and (current_user.role == 'receptionist' or (current_user.role == 'doctor' and appointment.doctor_id == current_user.id)))) %}
+                  <a href="{{ url_for('appointments.edit_appointment', appointment_id=appointment.id) }}"
+                      class="table-action-btn edit-btn"
+                      title="{% if current_lang == 'ar' %}تعديل الموعد{% else %}Edit Appointment{% endif %}">
+                      <i class="bi bi-pencil-square"></i>
+                  </a>
+                  {% endif %}
+
+                  {% if current_user.role == 'receptionist' %}
+                  <button type="button"
+                    class="table-action-btn whatsapp-btn border-0"
+                    onclick="sendWhatsAppReminder('{{ appointment.patient.phone or '' }}', '{{ appointment.patient.first_name }} {{ appointment.patient.last_name }}', '{{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else '' }}', '{{ clinic_name }}', {{ appointment.id }})"
+                    title="{% if current_lang == 'ar' %}تذكير عبر واتساب{% else %}Send WhatsApp Reminder{% endif %}">
+                    <i class="bi bi-whatsapp"></i>
+                  </button>
+                  <span class="reminded-status-placeholder" data-appointment-id="{{ appointment.id }}"></span>
+                  {% endif %}
+
+                  {% if current_user.role in ('admin', 'receptionist') and appointment.status not in ('Done', 'منجز') and not appointment.treatments %}
+                  <a href="{{ url_for('appointments.delete_appointment', appointment_id=appointment.id) }}"
+                     class="table-action-btn delete-table-btn"
+                     title="{% if current_lang == 'ar' %}حذف الموعد{% else %}Delete Appointment{% endif %}">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% else %}
+      <div class="empty-state-card text-center">
+        <i class="bi bi-calendar-check"></i>
+        <h4>{% if current_lang == 'ar' %}لا توجد مواعيد غداً{% else %}No scheduled appointments tomorrow{% endif %}</h4>
+        <p class="text-muted">{% if current_lang == 'ar' %}لا توجد أي مواعيد مسجلة ليوم غد حتى الآن.{% else %}There are no scheduled appointments waiting for tomorrow.{% endif %}</p>
+        <a href="{{ url_for('appointments.add_appointment_direct') }}" class="btn btn-primary mt-3">
+          {% if current_lang == 'ar' %}إضافة موعد{% else %}Add Appointment{% endif %}
+        </a>
+      </div>
+      {% endif %}
+
+    </div>
+</section>

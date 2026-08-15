@@ -1,0 +1,39 @@
+<!-- ═══════════ Section 3: Doctor Performance & Productivity ═══════════ -->
+<div class="report-section">
+    <div class="section-header">
+        <h2>3. {% if current_lang == 'ar' %}أداء الأطباء وإحصائيات الإنتاجية{% else %}Doctor Performance & Productivity{% endif %}</h2>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>{% if current_lang == 'ar' %}اسم الطبيب{% else %}Doctor Name{% endif %}</th>
+                <th>{% if current_lang == 'ar' %}الدور{% else %}Role{% endif %}</th>
+                <th class="text-end">{% if current_lang == 'ar' %}عدد المواعيد{% else %}Appointments{% endif %}</th>
+                <th class="text-end">{% if current_lang == 'ar' %}عدد الإجراءات العلاجية{% else %}Treatments{% endif %}</th>
+                <th class="text-end">{% if current_lang == 'ar' %}إجمالي الإيرادات المحققة{% else %}Total Revenue{% endif %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in doctors_report %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td class="fw-bold">
+                    {% if item.doctor %}
+                        {{ item.doctor.first_name }} {{ item.doctor.last_name }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                <td><span class="badge-pill badge-primary">{{ item.doctor.role if item.doctor else '' }}</span></td>
+                <td class="text-end fw-bold">{{ item.appointment_count }}</td>
+                <td class="text-end fw-bold">{{ item.treatment_count }}</td>
+                <td class="text-end fw-bold text-success">{{ item.total_revenue | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" style="text-align: center;">{% if current_lang == 'ar' %}لا توجد بيانات أطباء{% else %}No doctor data{% endif %}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

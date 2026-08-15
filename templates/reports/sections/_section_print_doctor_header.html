@@ -1,0 +1,37 @@
+<!-- ═══════════ Print Doctor Report Header & Actions ═══════════ -->
+<!-- Screen Top Bar -->
+<div class="screen-action-bar">
+    <div>
+        <strong>{% if current_lang == 'ar' %}تقرير المستحقات والأداء الطبي - نسق PDF للطباعة{% else %}Doctor Performance & Commission Report - Print View{% endif %}</strong>
+    </div>
+    <div style="display: flex; gap: 8px;">
+        <button onclick="window.print()">
+            <i class="bi bi-printer"></i> {% if current_lang == 'ar' %}طباعة التقرير (PDF){% else %}Print Report{% endif %}
+        </button>
+        <button class="btn-secondary" onclick="window.close(); if(!window.closed) window.location.href='{{ url_for('reports.my_reports', doctor_id=doctor.id) }}';">
+            {% if current_lang == 'ar' %}إغلاق{% else %}Close{% endif %}
+        </button>
+    </div>
+</div>
+
+<!-- Report Header -->
+<div class="report-header">
+    <div class="report-header-title">
+        <h1>{% if current_lang == 'ar' %}تقرير المستحقات والأداء الطبي{% else %}Doctor Performance & Commission Report{% endif %}</h1>
+        <p>
+            <strong>د. {{ doctor.first_name }} {{ doctor.last_name }}</strong> — 
+            {% if salary_type == 'percentage' %}
+            {% if current_lang == 'ar' %}نظام النسبة المئوية ({{ salary_amount }}%){% else %}Percentage Rate ({{ salary_amount }}%){% endif %}
+            {% else %}
+            {% if current_lang == 'ar' %}راتب شهري ثابت ({{ salary_amount | format_price }} {{ currency_symbol }}){% else %}Fixed Monthly Salary ({{ salary_amount | format_price }} {{ currency_symbol }}){% endif %}
+            {% endif %}
+        </p>
+    </div>
+    <div class="report-header-meta">
+        <div><strong>{% if current_lang == 'ar' %}تاريخ الإصدار:{% else %}Generated Date:{% endif %}</strong> {{ print_date }}</div>
+        <div><strong>{% if current_lang == 'ar' %}الفترة المحددة:{% else %}Period:{% endif %}</strong> 
+            {% if selected_year != 'all' %}{{ selected_year }}{% else %}{% if current_lang == 'ar' %}جميع السنين{% else %}All Time{% endif %}{% endif %}
+            {% if selected_month != 'all' %} - {% if current_lang == 'ar' %}شهر{% else %}Month{% endif %} {{ selected_month }}{% endif %}
+        </div>
+    </div>
+</div>

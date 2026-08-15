@@ -1,0 +1,180 @@
+<!-- Appointment Session Overview Header -->
+<div class="doctor-profile patient-detail-card" data-aos="zoom-in" data-aos-delay="150">
+
+    <div class="profile-header">
+        <div class="doctor-avatar">
+            {% if patient.gender and patient.gender.lower() in ('female', 'f', 'أنثى') %}
+            <img src="{{ url_for('static', filename='assets/img/person/person-f-5.webp') }}" alt="Patient" class="img-fluid">
+            {% elif patient.gender and patient.gender.lower() in ('male', 'm', 'ذكر') %}
+            <img src="{{ url_for('static', filename='assets/img/person/person-m-3.webp') }}" alt="Patient" class="img-fluid">
+            {% else %}
+            <img src="{{ url_for('static', filename='assets/my imgs/person.png') }}" alt="Patient" class="img-fluid">
+            {% endif %}
+
+            <div class="status-indicator
+                {% if appointment.status == 'Done' %}available
+                {% elif appointment.status == 'Cancelled' %}busy
+                {% else %}pending{% endif %}">
+            </div>
+        </div>
+
+        <div class="doctor-details">
+            <h4 class="d-flex align-items-center flex-wrap gap-2 mb-1" style="font-size: 1.45rem;">
+                {% if patient.title %}
+                    {% set title_map_ar = {'mr': 'السيد', 'ms': 'الآنسة', 'mrs': 'السيدة', 'dr': 'الدكتور', 'dr_f': 'الدكتورة', 'miss': 'آنسة'} %}
+                    {% set title_map_en = {'mr': 'Mr.', 'ms': 'Ms.', 'mrs': 'Mrs.', 'dr': 'Dr.', 'dr_f': 'Dr.', 'miss': 'Miss'} %}
+                    {% set p_title_key = patient.title|lower %}
+                    {% set display_title = title_map_ar.get(p_title_key, patient.title) if current_lang == 'ar' else title_map_en.get(p_title_key, patient.title) %}
+                    <span class="patient-title-text me-2" style="color: var(--accent-color); font-weight: 800; font-size: 1.35rem;">
+                        {{ display_title }}
+                    </span>
+                {% endif %}
+                <span class="fw-bold">{{ patient.first_name }} {{ patient.last_name }}</span>
+            </h4>
+            <span class="specialty-tag">
+                {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else 'No date' }}
+            </span>
+        </div>
+    </div>
+
+    <div class="patient-info-grid mt-4">
+        <div class="patient-info-box" {% if patient.medical_information %}style="background: rgba(220, 53, 69, 0.06) !important; border: 1px solid rgba(220, 53, 69, 0.28) !important;"{% endif %}>
+            <span class="info-label {% if patient.medical_information %}fw-bold{% endif %}" {% if patient.medical_information %}style="color: color-mix(in srgb, #dc3545, var(--default-color) 10%) !important;"{% endif %}>
+                <i class="bi bi-heart-pulse-fill me-1 text-danger"></i>
+                {% if current_lang == 'ar' %}المعلومات الطبية والتحسس{% else %}Medical Info & Allergies{% endif %}
+            </span>
+            <p class="{% if patient.medical_information %}fw-semibold{% else %}text-muted{% endif %}" {% if patient.medical_information %}style="color: color-mix(in srgb, #dc3545, var(--default-color) 20%) !important;"{% endif %}>
+                {{ patient.medical_information or ('No medical information recorded' if current_lang != 'ar' else 'لا توجد معلومات طبية مسجلة') }}
+            </p>
+        </div>
+
+        <div class="patient-info-box">
+            <span class="info-label">{% if current_lang == 'ar' %}ملاحظات المريض{% else %}Patient Notes{% endif %}</span>
+            <p>{{ patient.notes or ('No notes available' if current_lang != 'ar' else 'لا توجد ملاحظات') }}</p>
+        </div>
+
+        <div class="patient-info-box">
+            <span class="info-label">{% if current_lang == 'ar' %}سبب الموعد{% else %}Appointment Reason{% endif %}</span>
+            <p>{{ appointment.reason or ('No reason provided' if current_lang != 'ar' else 'لم يحدد سبب') }}</p>
+        </div>
+
+        <div class="patient-info-box">
+            <span class="info-label">{% if current_lang == 'ar' %}هاتف المريض{% else %}Patient Phone{% endif %}</span>
+            <p>{{ patient.phone or ('No phone number' if current_lang != 'ar' else 'لا يوجد رقم هاتف') }}</p>
+        </div>
+
+        <div class="patient-info-box">
+            <span class="info-label">{% if current_lang == 'ar' %}وضع الجلسة{% else %}Session Mode{% endif %}</span>
+            {% if appointment.status == 'Scheduled' %}
+            <p>{% if current_lang == 'ar' %}جلسة مفتوحة — يمكن إضافة المعالجات أو تعديلها.{% else %}Open session — treatments can be added or modified.{% endif %}</p>
+            {% elif appointment.status == 'Done' %}
+            <p>{% if current_lang == 'ar' %}جلسة مغلقة — وضع القراءة فقط.{% else %}Closed session — read-only mode.{% endif %}</p>
+            {% elif appointment.status == 'Cancelled' %}
+            <p>{% if current_lang == 'ar' %}موعد ملغي — لا يمكن إضافة معالجات.{% else %}Cancelled appointment — treatments cannot be added.{% endif %}</p>
+            {% else %}
+            <p>{% if current_lang == 'ar' %}حالة الموعد غير معروفة.{% else %}Unknown appointment status.{% endif %}</p>
+            {% endif %}
+        </div>
+
+        <div class="patient-info-box">
+            <span class="info-label">{% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}</span>
+            <p>
+                <span class="appointment-status
+                    {% if appointment.status in ('Done', 'منجز') %}status-done
+                    {% elif appointment.status in ('Cancelled', 'ملغي') %}status-cancelled
+                    {% elif appointment.status in ('Pending', 'قيد التثبيت') %}status-pending
+                    {% else %}status-scheduled{% endif %}">
+                    {% if appointment.status in ('Done', 'منجز') %}
+                    {% if current_lang == 'ar' %}منجز{% else %}Done{% endif %}
+                    {% elif appointment.status in ('Cancelled', 'ملغي') %}
+                    {% if current_lang == 'ar' %}ملغي{% else %}Cancelled{% endif %}
+                    {% elif appointment.status in ('Pending', 'قيد التثبيت') %}
+                    {% if current_lang == 'ar' %}قيد التثبيت{% else %}Pending{% endif %}
+                    {% else %}
+                    {% if current_lang == 'ar' %}مجدول{% else %}Scheduled{% endif %}
+                    {% endif %}
+                </span>
+            </p>
+        </div>
+    </div>
+
+    {% if current_user.role in ('admin', 'receptionist') %}
+    <div class="financial-summary-grid mt-4">
+        <div class="financial-card">
+            <div class="financial-icon">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+            <h4>{% if current_lang == 'ar' %}إجمالي المفوتر{% else %}Total Invoices{% endif %}</h4>
+            <p>{{ total_cost_sum | format_price }} {{ currency_symbol }}</p>
+        </div>
+
+        <div class="financial-card">
+            <div class="financial-icon">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <h4>{% if current_lang == 'ar' %}إجمالي المسدد{% else %}Total Payments{% endif %}</h4>
+            <p>{{ total_paid_sum | format_price }} {{ currency_symbol }}</p>
+        </div>
+
+        <div class="financial-card {% if total_remaining_sum > 0 %}remaining-warning{% else %}remaining-clear-card{% endif %}">
+            <div class="financial-icon">
+                <i class="bi {% if total_remaining_sum > 0 %}bi-exclamation-circle{% else %}bi-check-circle{% endif %}"></i>
+            </div>
+
+            {% if credit_amount > 0 %}
+            <h4>{% if current_lang == 'ar' %}رصيد زائد للمريض{% else %}Credit{% endif %}</h4>
+            <p>
+                <span class="credit-amount">
+                    {{ credit_amount | format_price }} {{ currency_symbol }}
+                    <span class="credit-badge">Credit</span>
+                </span>
+            </p>
+            <span class="financial-card-note">{% if current_lang == 'ar' %}هذا المريض لديه دفعات زائدة متوفرة كفائض رصيد.{% else %}This invoice has an overpayment credit.{% endif %}</span>
+            {% elif total_remaining_sum > 0 %}
+            <h4>{% if current_lang == 'ar' %}المستحقات غير المدفوعة{% else %}Total Remaining{% endif %}</h4>
+            <p>{{ total_remaining_sum | format_price }} {{ currency_symbol }}</p>
+            <span class="financial-card-note">{% if current_lang == 'ar' %}هذا المريض يترتب عليه رصيد مستحق للدفع للعيادة.{% else %}This invoice has an outstanding balance.{% endif %}</span>
+            {% else %}
+            <h4>{% if current_lang == 'ar' %}المستحقات غير المدفوعة{% else %}Total Remaining{% endif %}</h4>
+            <p>0 {{ currency_symbol }}</p>
+            <span class="financial-card-note">{% if current_lang == 'ar' %}جميع الفواتير والخدمات مسواة ومدفوعة بالكامل.{% else %}This invoice is fully paid.{% endif %}</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="session-actions-grid mt-4">
+        <a href="{{ url_for('patients.patient_detail', patient_id=patient.id) }}" class="btn-outline-main session-action-btn">
+            {% if current_lang == 'ar' %}ملف المريض{% else %}Patient Profile{% endif %}
+        </a>
+
+        <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}" class="btn-outline-main session-action-btn">
+            {% if current_lang == 'ar' %}عرض الموعد{% else %}View Appointment{% endif %}
+        </a>
+        
+        {% if appointment.has_invoice and current_user.role in ('admin', 'receptionist') %}
+        <a href="{{ url_for('payments.add_patient_payment', patient_id=patient.id) }}" class="btn-session-primary session-action-btn">
+            {% if current_lang == 'ar' %}إضافة دفعة مالية{% else %}Add Payment{% endif %}
+        </a>
+        {% endif %}
+
+        {% if appointment.status == 'Scheduled' %}
+        <button type="button" class="btn-end-session session-action-btn" data-bs-toggle="modal" data-bs-target="#endSessionModal">
+            {% if current_lang == 'ar' %}إنهاء الجلسة{% else %}End Session{% endif %}
+        </button>
+        <form method="POST" action="{{ url_for('treatments.revert_session', appointment_id=appointment.id) }}" class="d-inline" id="revertSessionForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="button" class="btn btn-warning text-dark rounded-pill px-4 py-2 fw-bold session-action-btn ms-2 shadow-sm" onclick="confirmRevertSession()">
+                <i class="bi bi-arrow-u-turn-left me-1.5"></i>
+                {% if current_lang == 'ar' %}التراجع عن فتح الجلسة{% else %}Undo Session Start{% endif %}
+            </button>
+        </form>
+        {% elif appointment.status in ('Done', 'منجز') and current_user.role == 'admin' %}
+        <button type="button" class="btn btn-warning rounded-pill px-4 py-2 fw-bold text-dark session-action-btn" data-bs-toggle="modal" data-bs-target="#reopenSessionModal">
+            <i class="bi bi-arrow-counterclockwise me-1.5"></i>
+            {% if current_lang == 'ar' %}إعادة فتح الجلسة{% else %}Reopen Session{% endif %}
+        </button>
+        {% endif %}
+    </div>
+
+</div>

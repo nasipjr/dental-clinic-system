@@ -1,0 +1,51 @@
+<!-- ═══════════ Appointments Main Panel ═══════════ -->
+<div class="col-lg-8">
+    <div class="card shadow-sm border-0 rounded-4" style="background: var(--surface-color);">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div>
+                    <h4 class="fw-bold mb-1">{% if current_lang == 'ar' %}المواعيد{% else %}Appointments{% endif %}</h4>
+                    <p class="text-secondary small mb-0">{% if current_lang == 'ar' %}إليك ملخص سجل مواعيدك{% else %}Here is a summary of your appointment history{% endif %}</p>
+                </div>
+                
+                <div class="d-flex align-items-center gap-2">
+                    {% if pagination and pagination.pages > 1 %}
+                    <div id="portalPaginationPill" class="d-flex align-items-center me-2 px-3 py-1 bg-primary bg-opacity-20 border border-primary border-opacity-50 rounded-pill shadow-sm">
+                        <button type="button" id="portalPrevBtn" onclick="loadPortalPage({{ [pagination.page - 1, 1]|max }})" class="btn btn-sm btn-primary rounded-circle p-1 me-1 d-flex align-items-center justify-content-center {% if pagination.page == 1 %}disabled opacity-50{% endif %}" style="width: 28px; height: 28px;" title="{% if current_lang == 'ar' %}السابق{% else %}Previous{% endif %}" {% if pagination.page == 1 %}disabled{% endif %}>
+                            <i class="bi bi-chevron-right fs-6 text-white"></i>
+                        </button>
+
+                        <span class="px-2 small fw-bold text-white" id="portalPageIndicator">
+                            {% if current_lang == 'ar' %}{{ pagination.page }} من {{ pagination.pages }}{% else %}{{ pagination.page }} / {{ pagination.pages }}{% endif %}
+                        </span>
+
+                        <button type="button" id="portalNextBtn" onclick="loadPortalPage({{ [pagination.page + 1, pagination.pages]|min }})" class="btn btn-sm btn-primary rounded-circle p-1 ms-1 d-flex align-items-center justify-content-center {% if pagination.page == pagination.pages %}disabled opacity-50{% endif %}" style="width: 28px; height: 28px;" title="{% if current_lang == 'ar' %}التالي{% else %}Next{% endif %}" {% if pagination.page == pagination.pages %}disabled{% endif %}>
+                            <i class="bi bi-chevron-left fs-6 text-white"></i>
+                        </button>
+                    </div>
+                    {% endif %}
+
+                    <a href="{{ url_for('portal.book_appointment') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+                        <i class="bi bi-calendar-plus me-1"></i> {% if current_lang == 'ar' %}حجز موعد جديد{% else %}Request a New Appointment{% endif %}
+                    </a>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table align-middle" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+                    <thead>
+                        <tr>
+                            <th>{% if current_lang == 'ar' %}التاريخ{% else %}Date{% endif %}</th>
+                            <th>{% if current_lang == 'ar' %}السبب{% else %}Reason{% endif %}</th>
+                            <th>{% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+                            <th>{% if current_lang == 'ar' %}الإجراء{% else %}Action{% endif %}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="portalAppointmentsTbody">
+                        {% include "portal/_appointments_table_body.html" %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

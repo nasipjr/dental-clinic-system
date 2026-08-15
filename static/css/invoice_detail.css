@@ -1,0 +1,117 @@
+/**
+ * Dental Clinic Management System - Invoice Details Stylesheet
+ * Contains screen styling, custom pills, and print layout overrides for invoice documents.
+ */
+
+/* Spacing between invoice items and summary footer */
+.appointments-table tbody tr td {
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+}
+
+.appointments-table tfoot {
+    border-top: none !important;
+}
+
+.appointments-table tfoot tr:first-child th,
+.appointments-table tfoot tr:first-child td {
+    padding-top: 36px !important;
+    padding-bottom: 20px !important;
+}
+
+.appointments-table tfoot tr th,
+.appointments-table tfoot tr td {
+    padding-top: 20px !important;
+    padding-bottom: 20px !important;
+}
+
+/* Red discount pill */
+#discount-amount-badge,
+.discount-pill-badge {
+    background: rgba(239, 68, 68, 0.15) !important;
+    border: 1.5px solid rgba(239, 68, 68, 0.45) !important;
+    color: #f87171 !important;
+}
+
+/* Yellow additional charges pill */
+#charges-amount-badge,
+.charges-pill-badge {
+    background: rgba(245, 158, 11, 0.15) !important;
+    border: 1.5px solid rgba(245, 158, 11, 0.45) !important;
+    color: #fbbf24 !important;
+}
+
+/* Green Invoice Total Pill & Larger Font */
+#bottom-invoice-total,
+.total-pill-badge {
+    background: rgba(16, 185, 129, 0.18) !important;
+    border: 1.5px solid rgba(16, 185, 129, 0.5) !important;
+    color: #34d399 !important;
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    padding: 6px 16px !important;
+}
+
+.total-row-label {
+    font-size: 1.15rem !important;
+    font-weight: 800 !important;
+    color: #f8fafc !important;
+}
+
+/* ═══════════ Print Media Stylesheet ═══════════ */
+@media print {
+    /* Hide screen elements */
+    #header, #footer, .topbar, #scroll-top, .section-title, .action-buttons, .btn, .collapse, .alert, .mobile-nav-toggle, #invoice-detail-section, br {
+        display: none !important;
+    }
+    
+    html, body, #main, #invoice-print-area, #invoice-print-area * {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+    
+    body {
+        font-size: 11pt !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    #invoice-print-area {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 10px !important;
+    }
+    
+    .table {
+        border-color: #333 !important;
+    }
+    .table th {
+        background-color: #f8f9fa !important;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .table-light {
+        background-color: #f8f9fa !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .text-primary {
+        color: #0d6efd !important;
+    }
+    .text-danger {
+        color: #dc3545 !important;
+    }
+    .text-success {
+        color: #198754 !important;
+    }
+    .table-danger-light {
+        background-color: #fdf2f2 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}

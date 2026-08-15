@@ -1,0 +1,163 @@
+<!-- Financial Summary Grid -->
+<div class="financial-summary-grid" data-aos="fade-up" data-aos-delay="250">
+    <div class="financial-card">
+        <div class="financial-icon">
+            <i class="bi bi-cash-stack"></i>
+        </div>
+        <h4>{% if current_lang == 'ar' %}إجمالي المفوتر{% else %}Total Invoiced{% endif %}</h4>
+        <p>{{ total_cost_sum | format_price }} {{ currency_symbol }}</p>
+    </div>
+
+    <div class="financial-card">
+        <div class="financial-icon">
+            <i class="bi bi-wallet2"></i>
+        </div>
+        <h4>{% if current_lang == 'ar' %}إجمالي المسدد{% else %}Total Paid{% endif %}</h4>
+        <p>{{ total_paid_sum | format_price }} {{ currency_symbol }}</p>
+    </div>
+
+    <div class="financial-card {% if credit_amount > 0 %}remaining-clear-card{% elif total_remaining_sum > 0 %}remaining-warning{% else %}remaining-clear-card{% endif %}">
+        <div class="financial-icon">
+            <i class="bi {% if credit_amount > 0 %}bi-wallet2{% elif total_remaining_sum > 0 %}bi-exclamation-circle{% else %}bi-check-circle{% endif %}"></i>
+        </div>
+
+        {% if credit_amount > 0 %}
+        <h4>{% if current_lang == 'ar' %}رصيد زائد للمريض{% else %}Patient Credit{% endif %}</h4>
+        <p>
+            <span class="credit-amount">
+                {{ credit_amount | format_price }} {{ currency_symbol }}
+                <span class="credit-badge">{% if current_lang == 'ar' %}رصيد{% else %}Credit{% endif %}</span>
+            </span>
+        </p>
+        <span class="financial-card-note">{% if current_lang == 'ar' %}هذا المريض لديه دفعات زائدة متوفرة كفائض رصيد.{% else %}This patient has an overpayment credit.{% endif %}</span>
+        {% elif total_remaining_sum > 0 %}
+        <h4>{% if current_lang == 'ar' %}المستحقات غير المدفوعة{% else %}Outstanding Amount{% endif %}</h4>
+        <p>{{ total_remaining_sum | format_price }} {{ currency_symbol }}</p>
+        <span class="financial-card-note">{% if current_lang == 'ar' %}هذا المريض يترتب عليه رصيد مستحق للدفع للعيادة.{% else %}This patient has an outstanding balance.{% endif %}</span>
+        {% else %}
+        <h4>{% if current_lang == 'ar' %}المستحقات غير المدفوعة{% else %}Outstanding Amount{% endif %}</h4>
+        <p>0 {{ currency_symbol }}</p>
+        <span class="financial-card-note">{% if current_lang == 'ar' %}جميع الفواتير والخدمات مسواة ومدفوعة بالكامل.{% else %}All invoices are fully paid.{% endif %}</span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="financial-details-stack mt-5" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 d-print-none">
+        <h4 class="fw-bold mb-0 text-main" style="color: var(--nav-hover-color, #3fbbc0); font-family: var(--heading-font);">
+            {% if current_lang == 'ar' %}تفاصيل الحسابات والمعاملات{% else %}Financial Transactions & Ledger{% endif %}
+        </h4>
+        <a href="{{ url_for('patients.patient_ledger_print', patient_id=patient.id) }}" target="_blank" class="btn btn-outline-primary rounded-pill px-4 fw-bold">
+            <i class="bi bi-printer me-1"></i>
+            {% if current_lang == 'ar' %}طباعة كشف الحساب (Ledger){% else %}Print Statement (Ledger){% endif %}
+        </a>
+    </div>
+
+    <!-- Inner sub-navigation for financial detail views -->
+    <ul class="nav nav-tabs border-bottom mb-4 d-print-none" id="financialSubTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold" id="sub-ledger-tab-btn" data-bs-toggle="tab" data-bs-target="#sub-ledger-tab" type="button" role="tab">
+                <i class="bi bi-journal-text me-1.5 text-info"></i>
+                {% if current_lang == 'ar' %}دفتر الأستاذ (الحساب التراكمي){% else %}Chronological Ledger{% endif %}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="sub-invoices-tab-btn" data-bs-toggle="tab" data-bs-target="#sub-invoices-tab" type="button" role="tab">
+                <i class="bi bi-receipt me-1.5 text-info"></i>
+                {% if current_lang == 'ar' %}الفواتير الصادرة{% else %}Invoices{% endif %}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="sub-payments-tab-btn" data-bs-toggle="tab" data-bs-target="#sub-payments-tab" type="button" role="tab">
+                <i class="bi bi-cash me-1.5 text-info"></i>
+                {% if current_lang == 'ar' %}المدفوعات المستلمة{% else %}Payments{% endif %}
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="financialSubTabsContent">
+        <!-- Sub Tab 1: Reconciled Ledger -->
+        <div class="tab-pane fade show active" id="sub-ledger-tab" role="tabpanel">
+            {% if ledger_entries %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 120px;">{% if current_lang == 'ar' %}التاريخ{% else %}Date{% endif %}</th>
+                            <th style="width: 120px;">{% if current_lang == 'ar' %}الرقم المرجعي{% else %}Ref Number{% endif %}</th>
+                            <th>{% if current_lang == 'ar' %}التفاصيل والبيان{% else %}Description{% endif %}</th>
+                            <th class="text-end" style="width: 140px;">{% if current_lang == 'ar' %}مترتب (مدين / Charges){% else %}Charges (Debit){% endif %}</th>
+                            <th class="text-end" style="width: 140px;">{% if current_lang == 'ar' %}مسدد (دائن / Payments){% else %}Payments (Credit){% endif %}</th>
+                            <th class="text-end" style="width: 160px;">{% if current_lang == 'ar' %}الرصيد التراكمي{% else %}Running Balance{% endif %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in ledger_entries %}
+                        <tr>
+                            <td>{{ entry.date.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                {% if entry.type == 'invoice' %}
+                                    <a href="{{ url_for('invoices.view_invoice', invoice_id=entry.id) }}" class="fw-bold text-primary">{{ entry.ref }}</a>
+                                {% else %}
+                                    <a href="{{ url_for('payments.view_payment', payment_id=entry.id) }}" class="fw-bold text-success">{{ entry.ref }}</a>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if entry.type == 'invoice' %}
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary-emphasis px-2.5 py-1.5 rounded-pill fw-semibold text-sm">
+                                        {% if current_lang == 'ar' %}فاتورة{% else %}Invoice{% endif %}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-success bg-opacity-10 text-success-emphasis px-2.5 py-1.5 rounded-pill fw-semibold text-sm">
+                                        {% if current_lang == 'ar' %}دفعة{% else %}Payment{% endif %}
+                                    </span>
+                                {% endif %}
+                                {{ entry.description }}
+                            </td>
+                            <td class="text-end text-danger fw-semibold">
+                                {% if entry.debit > 0 %}
+                                    <span dir="ltr">{{ entry.debit | format_price }} {{ currency_symbol }}</span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td class="text-end text-success fw-semibold">
+                                {% if entry.credit > 0 %}
+                                    <span dir="ltr">{{ entry.credit | format_price }} {{ currency_symbol }}</span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td class="text-end fw-bold">
+                                <span dir="ltr" class="{% if entry.balance > 0 %}text-danger{% elif entry.balance < 0 %}text-success{% endif %}">
+                                    {{ entry.balance | format_price }} {{ currency_symbol }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-wallet2 text-muted fs-1 opacity-50 mb-3 d-block"></i>
+                <h5>{% if current_lang == 'ar' %}لا يوجد أي معاملات مالية مسجلة بعد.{% else %}No financial transactions recorded yet.{% endif %}</h5>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Sub Tab 2: Invoices -->
+        <div class="tab-pane fade" id="sub-invoices-tab" role="tabpanel">
+            <div id="patient-invoices-container">
+                {% include "partials/_patient_invoices_table.html" %}
+            </div>
+        </div>
+        
+        <!-- Sub Tab 3: Payments -->
+        <div class="tab-pane fade" id="sub-payments-tab" role="tabpanel">
+            <div id="patient-payments-container">
+                {% include "partials/_patient_payments_table.html" %}
+            </div>
+        </div>
+    </div>
+</div>

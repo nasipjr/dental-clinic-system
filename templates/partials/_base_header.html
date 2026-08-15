@@ -1,0 +1,159 @@
+<!-- ═══════════ Base Main Layout Header & Navigation ═══════════ -->
+<header id="header" class="header fixed-top">
+
+  <!-- Top Bar -->
+  <div class="topbar d-flex align-items-center dark-background">
+    <div class="container d-flex justify-content-between">
+      <div class="contact-info d-none d-md-flex align-items-center flex-shrink-0 text-nowrap gap-4">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-envelope text-white"></i>
+          <a href="mailto:{{ clinic_email }}" class="text-white text-decoration-none">{{ clinic_email }}</a>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-phone text-white"></i>
+          <span class="text-white" dir="ltr">{{ clinic_phone }}</span>
+        </div>
+      </div>
+      <div class="social-links d-flex align-items-center gap-2 flex-grow-1 flex-md-grow-0 flex-shrink-0 justify-content-end">
+        {% if current_user %}
+        <!-- 1-Click Theme Switcher Button -->
+        <button onclick="toggleAppTheme()" id="quickThemeToggleBtn"
+          class="topbar-btn topbar-btn-icon"
+          title="{% if current_lang == 'ar' %}تبديل المظهر (داكن/فاتح){% else %}Toggle Theme (Dark/Light){% endif %}">
+          <i class="bi bi-moon-stars-fill" id="quickThemeIcon"></i>
+        </button>
+
+        <!-- 1-Click Language Switcher Button -->
+        <button onclick="toggleAppLanguage()" id="quickLangToggleBtn"
+          class="topbar-btn"
+          title="{% if current_lang == 'ar' %}تغيير اللغة إلى الإنجليزية{% else %}Switch Language to Arabic{% endif %}">
+          <i class="bi bi-translate"></i>
+          <span>{% if current_lang == 'ar' %}EN{% else %}عربي{% endif %}</span>
+        </button>
+
+        <!-- User Profile Badge -->
+        <div class="topbar-btn topbar-user-badge">
+          <i class="bi bi-person-circle text-info"></i>
+          <span class="d-none d-sm-inline">{{ current_user.first_name or current_user.username }} ({{ current_user.role|capitalize }})</span>
+          <span class="d-inline d-sm-none">{{ current_user.first_name or current_user.username }}</span>
+        </div>
+
+        <!-- Logout Button -->
+        <a href="{{ url_for('auth.logout') }}" class="topbar-btn topbar-btn-logout">
+          <i class="bi bi-box-arrow-right"></i>
+          <span class="d-none d-sm-inline">{% if current_lang == 'ar' %}تسجيل الخروج{% else %}Logout{% endif %}</span>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div><!-- End Top Bar -->
+
+  <div class="branding d-flex align-items-center">
+
+    <div class="container position-relative d-flex align-items-center justify-content-between">
+      <div class="logo d-flex flex-column align-items-start justify-content-center">
+        <a href="/" class="text-decoration-none">
+          <h1 class="sitename mb-0" style="line-height: 1.2;"><bdi dir="auto">{{ clinic_name }}</bdi></h1>
+        </a>
+        <span class="badge rounded-pill px-2.5 py-1 shadow-sm text-white border border-white-50 mt-1"
+          style="background: linear-gradient(135deg, #0d6efd 0%, #00d2ff 100%); font-family: 'Montserrat', 'Inter', sans-serif; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.5px; pointer-events: none; user-select: none;">
+          <i class="bi bi-shield-plus me-1"></i>Novus Med
+        </span>
+      </div>
+
+      <nav id="navmenu" class="navmenu">
+        <ul>
+          {% if current_user %}
+          <li>
+            <a href="/" class="{% if request.path == '/' %}active{% endif %}">
+              Dashboard
+            </a>
+          </li>
+
+          <li>
+            <a href="/patients" class="{% if request.path.startswith('/patients') %}active{% endif %}">
+              Patients
+            </a>
+          </li>
+
+          <li>
+            <a href="/appointments" class="{% if request.path.startswith('/appointments') %}active{% endif %}">
+              Appointments
+              {% if pending_count > 0 %}
+              <span class="badge bg-danger ms-1"
+                style="border-radius: 50%; padding: 4px 7px; font-size: 10px; font-weight: bold; vertical-align: middle;">{{
+                pending_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+
+          <li>
+            <a href="/calendar" class="{% if request.path.startswith('/calendar') %}active{% endif %}">
+              Calendar
+            </a>
+          </li>
+
+          {% if current_user.role in ('admin', 'receptionist') %}
+          <li>
+            <a href="{{ url_for('invoices.invoices') }}"
+              class="{% if request.path.startswith('/invoices') %}active{% endif %}">
+              Invoices
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ url_for('payments.payments') }}"
+              class="{% if request.path.startswith('/payments') %}active{% endif %}">
+              Payments
+            </a>
+          </li>
+          {% endif %}
+
+          {% if current_user.role in ('admin', 'doctor') %}
+          <li>
+            <a href="{% if current_user.role == 'admin' %}{{ url_for('reports.reports_dashboard') }}{% else %}{{ url_for('reports.my_reports') }}{% endif %}"
+              class="{% if request.path.startswith('/reports') or request.path.startswith('/my-reports') %}active{% endif %}">
+              Reports
+            </a>
+          </li>
+          {% endif %}
+
+          {% if current_user.role == 'admin' %}
+          <li>
+            <a href="{{ url_for('settings.settings_page') }}"
+              class="{% if request.path.startswith('/settings') %}active{% endif %}">
+              Settings
+            </a>
+          </li>
+          {% endif %}
+
+          {% if current_user.role == 'receptionist' %}
+          <li>
+            <a href="{{ url_for('settings.appearance_settings_page') }}"
+              class="{% if request.path.startswith('/appearance-settings') %}active{% endif %}">
+              Settings
+            </a>
+          </li>
+          {% endif %}
+
+          <li class="d-xl-none border-top pt-2 mt-2">
+            <span class="nav-link text-muted" style="cursor: default; padding: 10px 14px;">
+              Logged in: <strong>{{ current_user.first_name or current_user.username }}</strong>
+            </span>
+          </li>
+          <li class="d-xl-none">
+            <a href="{{ url_for('auth.logout') }}" class="text-danger">
+              Logout
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+
+    </div>
+
+  </div>
+
+</header>

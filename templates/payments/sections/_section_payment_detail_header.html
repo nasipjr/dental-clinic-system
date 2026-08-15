@@ -1,0 +1,52 @@
+<!-- ═══════════ Payment Detail Header & Info Grid ═══════════ -->
+<div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
+    <h2>{% if current_lang == 'ar' %}وصل وسند قبض الدفعة{% else %}Payment{% endif %} <bdi dir="ltr">PAY-{{ "%04d"|format(payment.id) }}</bdi></h2>
+    <p>{% if current_lang == 'ar' %}تاريخ التسجيل:{% else %}Recorded on{% endif %} {{ payment.payment_date.strftime('%Y-%m-%d %I:%M %p') if payment.payment_date else 'No date' }}</p>
+</div>
+
+<!-- Payment Main Info Grid -->
+<div class="patient-info-grid mb-4">
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}الرقم المرجعي{% else %}Payment Number{% endif %}</span>
+        <p class="mb-0 fw-bold"><bdi dir="ltr">PAY-{{ "%04d"|format(payment.id) }}</bdi></p>
+    </div>
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</span>
+        <p class="mb-0">
+            <a href="{{ url_for('patients.patient_detail', patient_id=patient.id) }}" class="fw-bold text-primary">
+                {{ patient.first_name }} {{ patient.last_name }}
+            </a>
+            <br>
+            <small class="text-secondary"><bdi dir="ltr">{{ patient.phone or ('لا يوجد رقم هاتف' if current_lang == 'ar' else 'No phone number') }}</bdi></small>
+        </p>
+    </div>
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}تاريخ ووقت السداد{% else %}Date Recorded{% endif %}</span>
+        <p class="mb-0">
+            {{ payment.payment_date.strftime('%Y-%m-%d %I:%M %p') if payment.payment_date else 'No date' }}
+        </p>
+    </div>
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}قيمة الدفعة المستلمة{% else %}Payment Amount{% endif %}</span>
+        <p class="text-success fw-bold mb-0">{{ payment.amount | format_price }} {{ currency_symbol }}</p>
+    </div>
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}المبلغ المخصص للفواتير{% else %}Allocated Amount{% endif %}</span>
+        <p class="text-info fw-bold mb-0">{{ payment.allocated_amount | format_price }} {{ currency_symbol }}</p>
+    </div>
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}الرصيد الدائن المتبقي{% else %}Unallocated Credit{% endif %}</span>
+        <p class="text-warning fw-bold mb-0">{{ payment.unallocated_amount | format_price }} {{ currency_symbol }}</p>
+    </div>
+</div>
+
+<!-- Notes Box -->
+<div class="patient-info-box w-100 mb-4 p-3 border rounded-3" style="background-color: var(--surface-color, #fff);">
+    <span class="info-label text-muted d-block mb-1">{% if current_lang == 'ar' %}ملاحظات / بيان الدفعة{% else %}Notes / Description{% endif %}</span>
+    <p class="mb-0">{{ payment.notes or ('لا توجد ملاحظات مسجلة على هذه الدفعة' if current_lang == 'ar' else 'No notes available') }}</p>
+</div>

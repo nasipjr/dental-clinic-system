@@ -1,0 +1,33 @@
+<!-- ═══════════ Section 2: Monthly Financial Summary ═══════════ -->
+<div class="report-section">
+    <div class="section-header">
+        <h2>2. {% if current_lang == 'ar' %}الخلاصة المالية الشهرية (لسنة {{ selected_year }}){% else %}Monthly Financial Summary ({{ selected_year }}){% endif %}</h2>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>{% if current_lang == 'ar' %}الشهر{% else %}Month{% endif %}</th>
+                <th class="text-end">{% if current_lang == 'ar' %}المفوتر{% else %}Invoiced{% endif %}</th>
+                <th class="text-end">{% if current_lang == 'ar' %}المقبوضات (النقدي){% else %}Payments{% endif %}</th>
+                <th class="text-end">{% if current_lang == 'ar' %}المصاريف{% else %}Expenses{% endif %}</th>
+                <th class="text-end">{% if current_lang == 'ar' %}صافي الربح النقدي{% else %}Cash Net Profit{% endif %}</th>
+                <th class="text-end">{% if current_lang == 'ar' %}صافي الربح التراكمي{% else %}Accrual Profit{% endif %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in monthly_summary %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td class="fw-bold">{{ row.month_label }}</td>
+                <td class="text-end">{{ row.billed | format_price }} {{ currency_symbol }}</td>
+                <td class="text-end text-success fw-bold">{{ row.paid | format_price }} {{ currency_symbol }}</td>
+                <td class="text-end text-danger">{{ row.expenses | format_price }} {{ currency_symbol }}</td>
+                <td class="text-end fw-bold {% if row.net_profit >= 0 %}text-success{% else %}text-danger{% endif %}">{{ row.net_profit | format_price }} {{ currency_symbol }}</td>
+                <td class="text-end fw-bold {% if row.accrual_profit >= 0 %}text-primary{% else %}text-danger{% endif %}">{{ row.accrual_profit | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,88 @@
+<!-- ═══════════ Add Patient Payment Header & Summary ═══════════ -->
+<div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
+    <h2>{% if current_lang == 'ar' %}تسجيل دفعة مالية جديدة للمريض{% else %}Add New Payment{% endif %}</h2>
+    <p>{% if current_lang == 'ar' %}تسجيل دفعة في حساب المريض، وسيقوم النظام تلقائياً بتخصيصها للفواتير الأقدم غير المدفوعة.{% else %}Record a payment on the patient profile. The system will apply it to the oldest unpaid invoices automatically.{% endif %}</p>
+</div>
+
+<div class="add-patient-icon" data-aos="zoom-in" data-aos-delay="200">
+    <i class="bi bi-cash-coin"></i>
+</div>
+
+{% if error_message %}
+<div class="alert alert-danger text-center" role="alert">
+    {{ error_message }}
+</div>
+{% endif %}
+
+{% if selected_patient %}
+<div class="patient-info-grid mb-4">
+
+    <!-- Patient Details -->
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</span>
+        <p class="mb-0">
+            <strong>{{ selected_patient.first_name }} {{ selected_patient.last_name }}</strong>
+            <br>
+            <small class="text-secondary"><bdi dir="ltr">{{ selected_patient.phone or ('لا يوجد رقم هاتف' if current_lang == 'ar' else 'No phone number') }}</bdi></small>
+        </p>
+    </div>
+
+    <!-- Total Invoices -->
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}إجمالي الفواتير{% else %}Total Invoices{% endif %}</span>
+        <p class="mb-0 fw-semibold">{{ selected_patient.total_invoice_amount | format_price }} {{ currency_symbol }}</p>
+    </div>
+
+    <!-- Total Payments -->
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}إجمالي المسدد{% else %}Total Payments{% endif %}</span>
+        <p class="mb-0 fw-semibold text-success">{{ selected_patient.total_payments_amount | format_price }} {{ currency_symbol }}</p>
+    </div>
+
+    <!-- Accumulated Debt / Credit -->
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}إجمالي المستحقات المتراكمة{% else %}Total Accumulated Debt{% endif %}</span>
+        <p class="mb-0">
+            {% if selected_patient.credit_amount > 0 %}
+            <span class="credit-amount fw-bold text-info">
+                {{ selected_patient.credit_amount | format_price }} {{ currency_symbol }}
+                <span class="credit-badge ms-1">{% if current_lang == 'ar' %}رصيد دائن{% else %}Credit{% endif %}</span>
+            </span>
+            {% elif selected_patient.outstanding_amount > 0 %}
+            <span class="remaining-due fw-bold text-danger">
+                {{ selected_patient.outstanding_amount | format_price }} {{ currency_symbol }}
+                <span class="due-badge ms-1">{% if current_lang == 'ar' %}مستحق (دين){% else %}Due{% endif %}</span>
+            </span>
+            {% else %}
+            <span class="remaining-clear fw-bold text-success">
+                0 {{ currency_symbol }}
+                <span class="paid-badge ms-1">{% if current_lang == 'ar' %}خالص{% else %}Paid{% endif %}</span>
+            </span>
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Target Invoice Due -->
+    {% if target_invoice %}
+    <div class="patient-info-box">
+        <span class="info-label">
+            {% if current_lang == 'ar' %}مستحق الفاتورة الحالية ({{ target_invoice.invoice_number }}){% else %}Current Invoice Due ({{ target_invoice.invoice_number }}){% endif %}
+        </span>
+        <p class="mb-0">
+            {% if target_invoice.outstanding_amount > 0 %}
+            <span class="remaining-due fw-bold text-danger">
+                {{ target_invoice.outstanding_amount | format_price }} {{ currency_symbol }}
+                <span class="due-badge ms-1">{% if current_lang == 'ar' %}مستحق{% else %}Due{% endif %}</span>
+            </span>
+            {% else %}
+            <span class="remaining-clear fw-bold text-success">
+                0 {{ currency_symbol }}
+                <span class="paid-badge ms-1">{% if current_lang == 'ar' %}مدفوعة بالكامل{% else %}Paid{% endif %}</span>
+            </span>
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+
+</div>
+{% endif %}

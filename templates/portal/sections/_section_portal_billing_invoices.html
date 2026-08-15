@@ -1,0 +1,48 @@
+<!-- ═══════════ Portal Invoices Tab Pane ═══════════ -->
+<div class="tab-pane fade show active" id="invoices-pane" role="tabpanel">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>{% if current_lang == 'ar' %}رقم الفاتورة{% else %}Invoice #{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}التاريخ{% else %}Date{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+                    <th class="text-end">{% if current_lang == 'ar' %}الإجمالي{% else %}Total{% endif %}</th>
+                    <th class="text-end">{% if current_lang == 'ar' %}الإجراء{% else %}Action{% endif %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inv in invoices %}
+                <tr>
+                    <td class="fw-bold"><bdi dir="ltr">{{ inv.invoice_number }}</bdi></td>
+                    <td>{{ inv.issue_date.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        {% if inv.status == 'Paid' %}
+                        <span class="badge bg-success rounded-pill px-3 py-1.5 border border-success-subtle">{% if current_lang == 'ar' %}مدفوع{% else %}Paid{% endif %}</span>
+                        {% elif inv.status == 'Partially Paid' %}
+                        <span class="badge bg-warning text-dark rounded-pill px-3 py-1.5 border border-warning-subtle">{% if current_lang == 'ar' %}مدفوع جزئياً{% else %}Partial{% endif %}</span>
+                        {% elif inv.status == 'Credit' %}
+                        <span class="badge bg-info rounded-pill px-3 py-1.5 border border-info-subtle">{% if current_lang == 'ar' %}رصيد دائن{% else %}Credit{% endif %}</span>
+                        {% else %}
+                        <span class="badge bg-danger rounded-pill px-3 py-1.5 border border-danger-subtle">{% if current_lang == 'ar' %}غير مدفوع{% else %}Unpaid{% endif %}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end fw-semibold">{{ inv.total_amount | format_price }} {{ currency_symbol }}</td>
+                    <td class="text-end">
+                        <a href="{{ url_for('portal.view_invoice', invoice_id=inv.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                            <i class="bi bi-eye me-1"></i> {% if current_lang == 'ar' %}عرض التفاصيل{% else %}View Detail{% endif %}
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <i class="bi bi-file-earmark-x text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-2 mb-0">{% if current_lang == 'ar' %}لا توجد فواتير مسجلة حتى الآن{% else %}No invoices found{% endif %}</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

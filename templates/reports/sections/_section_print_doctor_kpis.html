@@ -1,0 +1,30 @@
+<!-- ═══════════ Print Doctor Report KPIs ═══════════ -->
+<div class="grid-4">
+    <!-- Earnings -->
+    <div class="stat-card">
+        <div class="label">{% if current_lang == 'ar' %}أرباح ومستحقات الطبيب{% else %}Doctor Earnings{% endif %}</div>
+        <div class="value success">{{ total_earned | format_price }} {{ currency_symbol }}</div>
+        <div class="sub">{% if salary_type == 'percentage' %}{{ salary_amount }}% {% if current_lang == 'ar' %}من المعالجات{% else %}of treatments{% endif %}{% else %}{% if current_lang == 'ar' %}راتب شهري ثابت{% else %}Fixed salary{% endif %}{% endif %}</div>
+    </div>
+
+    <!-- Revenue -->
+    <div class="stat-card">
+        <div class="label">{% if current_lang == 'ar' %}إجمالي الإيرادات المولدة{% else %}Total Revenue{% endif %}</div>
+        <div class="value primary">{{ total_revenue | format_price }} {{ currency_symbol }}</div>
+        <div class="sub">{% if current_lang == 'ar' %}حصة العيادة:{% else %}Clinic Net:{% endif %} {{ clinic_net | format_price }} {{ currency_symbol }}</div>
+    </div>
+
+    <!-- Treatments -->
+    <div class="stat-card">
+        <div class="label">{% if current_lang == 'ar' %}عدد المعالجات{% else %}Treatments{% endif %}</div>
+        <div class="value info">{{ total_treatments_count }}</div>
+        <div class="sub">{% if current_lang == 'ar' %}إجراءات علاجية مستكملة{% else %}Completed treatments{% endif %}</div>
+    </div>
+
+    <!-- Appointments -->
+    <div class="stat-card">
+        <div class="label">{% if current_lang == 'ar' %}عدد المواعيد والجلسات{% else %}Appointments{% endif %}</div>
+        <div class="value warning">{{ total_appointments_count }}</div>
+        <div class="sub">{% if current_lang == 'ar' %}منجزة:{% else %}Done:{% endif %} {{ done_count }} | {% if current_lang == 'ar' %}قادمة:{% else %}Upcoming:{% endif %} {{ scheduled_count }}</div>
+    </div>
+</div>

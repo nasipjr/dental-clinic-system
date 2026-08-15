@@ -27,6 +27,7 @@ def role_required(*roles):
                 flash(msg, "danger")
                 if g.current_user.role == 'patient':
                     return redirect(url_for('portal.dashboard'))
+                return redirect(url_for('dashboard.home'))
             return f(*args, **kwargs)
         return decorated_function
     return decorator

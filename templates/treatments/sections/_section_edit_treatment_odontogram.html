@@ -1,0 +1,118 @@
+<!-- ═══════════ FDI Anatomical Odontogram Tooth Picker ═══════════ -->
+{% set fdi_map = {
+    1: 18, 2: 17, 3: 16, 4: 15, 5: 14, 6: 13, 7: 12, 8: 11,
+    9: 21, 10: 22, 11: 23, 12: 24, 13: 25, 14: 26, 15: 27, 16: 28,
+    17: 38, 18: 37, 19: 36, 20: 35, 21: 34, 22: 33, 23: 32, 24: 31,
+    25: 41, 26: 42, 27: 43, 28: 44, 29: 45, 30: 46, 31: 47, 32: 48
+} %}
+
+{% macro render_tooth_svg(i, is_lower) %}
+    {% set i = i | int %}
+    {% if i in [1, 2, 3, 14, 15, 16, 17, 18, 19, 30, 31, 32] %}
+        <!-- Molar -->
+        <svg viewBox="0 0 20 30" width="18" height="26" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
+            <path d="M 2 7 C 2 3, 18 3, 18 7 C 18 13, 16 17, 15 23 C 14 26, 11 28, 10 28 C 9 28, 6 26, 5 23 C 4 13, 2 7, 2 7 Z" fill="none" stroke="currentColor" stroke-width="1.5" />
+            <path d="M 5 7 Q 10 10 15 7" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4" />
+            <path d="M 10 8 L 10 18" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3" />
+        </svg>
+    {% elif i in [4, 5, 12, 13, 20, 21, 28, 29] %}
+        <!-- Premolar -->
+        <svg viewBox="0 0 20 30" width="16" height="24" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
+            <path d="M 3 8 C 3 4, 17 4, 17 8 C 17 13, 15 17, 14 23 C 13 26, 11 28, 10 28 C 9 28, 7 26, 6 23 C 5 13, 3 8, 3 8 Z" fill="none" stroke="currentColor" stroke-width="1.5" />
+            <path d="M 6 8 Q 10 11 14 8" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4" />
+        </svg>
+    {% elif i in [6, 11, 22, 27] %}
+        <!-- Canine -->
+        <svg viewBox="0 0 20 30" width="14" height="22" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
+            <path d="M 10 2 C 11 2, 16 5, 16 8 C 16 13, 14 17, 13 23 C 12 26, 11 28, 10 28 C 9 28, 8 26, 7 23 C 6 13, 4 8, 4 8 C 4 5, 9 2, 10 2 Z" fill="none" stroke="currentColor" stroke-width="1.5" />
+            <path d="M 6 8 Q 10 11 14 8" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4" />
+        </svg>
+    {% else %}
+        <!-- Incisor -->
+        <svg viewBox="0 0 20 30" width="13" height="20" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
+            <path d="M 4 6 C 4 4, 16 4, 16 6 L 14 22 C 14 25, 12 28, 10 28 C 8 28, 6 25, 6 22 Z" fill="none" stroke="currentColor" stroke-width="1.5" />
+        </svg>
+    {% endif %}
+{% endmacro %}
+
+<div class="edit-tooth-chart-box mb-4">
+    
+    <!-- Legend Bar -->
+    <div class="d-flex align-items-center justify-content-center gap-2 mb-3 flex-wrap border-bottom border-secondary border-opacity-15 pb-2">
+        <span class="chart-legend-badge legend-current">
+            <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>{{ 'معالج بالجلسة' if is_ar else 'Current Session' }}
+        </span>
+        <span class="chart-legend-badge legend-history">
+            <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>{{ 'معالج سابقاً' if is_ar else 'Clinic History' }}
+        </span>
+        <span class="chart-legend-badge legend-extracted">
+            <i class="bi bi-x-circle-fill me-1" style="font-size: 0.65rem;"></i>{{ 'سن مقلوع ❌' if is_ar else 'Extracted ❌' }}
+        </span>
+    </div>
+
+    <div class="anatomical-chart-wrapper overflow-x-auto" dir="ltr">
+        <div class="edit-teeth-row-container">
+            
+            <!-- Upper Jaw Badge -->
+            <div class="d-flex justify-content-center mb-2">
+                <span class="edit-jaw-badge">
+                    <i class="bi bi-symmetry-horizontal me-1.5"></i>
+                    {{ 'الفك العلوي' if is_ar else 'Upper Jaw (Maxillary)' }}
+                </span>
+            </div>
+
+            <!-- Upper Teeth Row (1..16 / FDI 18..28) -->
+            <div class="d-flex align-items-center justify-content-between position-relative py-1 mb-3">
+                <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #38bdf8; z-index: 5; transform: translateX(-50%); opacity: 0.6;"></div>
+                {% for i in range(1, 17) %}
+                {% set fdi = fdi_map[i] %}
+                <button type="button" 
+                        class="edit-tooth-btn {% if treatment.tooth_number == i|string or treatment.tooth_number == fdi|string %}selected-tooth{% endif %}"
+                        data-tooth="{{ i }}"
+                        data-fdi="{{ fdi }}"
+                        title="FDI {{ fdi }}"
+                        {% if is_locked %}disabled{% endif %}>
+                    <div class="tooth-svg-container mb-1">
+                        {{ render_tooth_svg(i, false) }}
+                    </div>
+                    <span class="tooth-fdi-badge">{{ fdi }}</span>
+                </button>
+                {% endfor %}
+            </div>
+
+            <!-- Lower Jaw Badge -->
+            <div class="d-flex justify-content-center mb-2 pt-2 border-top border-secondary border-opacity-25">
+                <span class="edit-jaw-badge">
+                    <i class="bi bi-symmetry-horizontal me-1.5"></i>
+                    {{ 'الفك السفلي' if is_ar else 'Lower Jaw (Mandibular)' }}
+                </span>
+            </div>
+
+            <!-- Lower Teeth Row (32..17 / FDI 48..38) -->
+            <div class="d-flex align-items-center justify-content-between position-relative py-1">
+                <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #38bdf8; z-index: 5; transform: translateX(-50%); opacity: 0.6;"></div>
+                {% for i in range(32, 16, -1) %}
+                {% set fdi = fdi_map[i] %}
+                <button type="button" 
+                        class="edit-tooth-btn {% if treatment.tooth_number == i|string or treatment.tooth_number == fdi|string %}selected-tooth{% endif %}"
+                        data-tooth="{{ i }}"
+                        data-fdi="{{ fdi }}"
+                        title="FDI {{ fdi }}"
+                        {% if is_locked %}disabled{% endif %}>
+                    <span class="tooth-fdi-badge mb-1">{{ fdi }}</span>
+                    <div class="tooth-svg-container">
+                        {{ render_tooth_svg(i, true) }}
+                    </div>
+                </button>
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+
+    <div class="text-center mt-3 pt-2 border-top border-secondary border-opacity-10">
+        <button type="button" id="btn-clear-tooth" class="btn btn-link text-decoration-none text-muted p-0 small" style="font-size: 0.78rem;">
+            <i class="bi bi-x-circle me-1"></i>{{ 'إلغاء تحديد السن (إجراء عام على الفم)' if is_ar else 'Clear Tooth (General Treatment)' }}
+        </button>
+    </div>
+</div>

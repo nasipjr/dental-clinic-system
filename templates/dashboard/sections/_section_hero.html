@@ -1,0 +1,363 @@
+<!-- ═══════════ Hero Section & Stats Visualizer ═══════════ -->
+<section id="hero" class="hero section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+      <div class="row align-items-center">
+
+        <!-- Left Content: Clinic Overview & Stat Cards -->
+        <div class="col-lg-6">
+          <div class="hero-content">
+
+            <div class="trust-badges mb-4" data-aos="fade-right" data-aos-delay="200">
+              <div class="badge-item">
+                <i class="bi bi-clock"></i>
+                <span>{{ operating_hours }} {% if current_lang == 'ar' %}ساعات العمل{% else %}Working Hours{% endif %}</span>
+              </div>
+
+              <div class="badge-item">
+                <i class="bi bi-calendar-check"></i>
+                {% if current_lang == 'ar' %}
+                <span>نافذة حجز {{ booking_window_days }} يوماً</span>
+                {% else %}
+                <span>{{ booking_window_days }}-Day Booking Window</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <h1 data-aos="fade-right" data-aos-delay="300">
+              {% if current_lang == 'ar' or request.cookies.get('lang') == 'ar' %}
+              <span class="highlight">نظرة عامة على</span> <span>العيادة</span>
+              {% else %}
+              Today’s <span class="highlight">Clinic</span> <span>Overview</span>
+              {% endif %}
+            </h1>
+
+            <p class="hero-description" data-aos="fade-right" data-aos-delay="400">
+              {% if current_lang == 'ar' %}
+              تتبع المرضى، المواعيد، المعالجات، المقبوضات والديون المعلقة من لوحة تحكم واحدة وشاملة.
+              {% else %}
+              Track patients, appointments, treatments, payments, and outstanding balances from one practical dashboard.
+              {% endif %}
+            </p>
+
+            <div class="dashboard-stat-grid mb-4" data-aos="fade-right" data-aos-delay="500">
+
+              <div class="dashboard-stat-card">
+                <h3>
+                  <span data-purecounter-start="0" data-purecounter-end="{{ total_patients }}"
+                    data-purecounter-duration="2" class="purecounter"></span>
+                </h3>
+                <p>{% if current_lang == 'ar' %}إجمالي المرضى{% else %}Total Patients{% endif %}</p>
+              </div>
+
+              <div class="dashboard-stat-card">
+                <h3>
+                  <span data-purecounter-start="0" data-purecounter-end="{{ scheduled_appointments }}"
+                    data-purecounter-duration="2" class="purecounter"></span>
+                </h3>
+                <p>{% if current_lang == 'ar' %}مواعيد مجدولة{% else %}Scheduled Appointments{% endif %}</p>
+              </div>
+
+              <div class="dashboard-stat-card">
+                <h3>
+                  <span data-purecounter-start="0" data-purecounter-end="{{ done_appointments }}"
+                    data-purecounter-duration="2" class="purecounter"></span>
+                </h3>
+                <p>{% if current_lang == 'ar' %}مواعيد منجزة{% else %}Done Appointments{% endif %}</p>
+              </div>
+
+              <div class="dashboard-stat-card">
+                <h3>
+                  <span data-purecounter-start="0" data-purecounter-end="{{ total_treatments }}"
+                    data-purecounter-duration="2" class="purecounter"></span>
+                </h3>
+                <p>{% if current_lang == 'ar' %}إجمالي المعالجات{% else %}Total Treatments{% endif %}</p>
+              </div>
+
+              {% if current_user.role in ('admin', 'receptionist') %}
+              <div class="dashboard-stat-card">
+                <h3>
+                  <span data-purecounter-start="0" data-purecounter-end="{{ total_revenue }}"
+                    data-purecounter-duration="2" data-purecounter-separator="true" data-purecounter-formater="de-DE"
+                    class="purecounter"></span><span class="stat-unit">{{ currency_symbol }}</span>
+                </h3>
+                <p>{% if current_lang == 'ar' %}إجمالي الفواتير{% else %}Total Invoices{% endif %}</p>
+              </div>
+
+              <div class="dashboard-stat-card">
+                <h3>
+                  <span data-purecounter-start="0" data-purecounter-end="{{ total_paid }}" data-purecounter-duration="2"
+                    data-purecounter-separator="true" data-purecounter-formater="de-DE" class="purecounter"></span><span class="stat-unit">{{ currency_symbol }}</span>
+                </h3>
+                <p>{% if current_lang == 'ar' %}إجمالي المقبوضات{% else %}Total Payments{% endif %}</p>
+              </div>
+
+              <div class="dashboard-stat-card">
+                <h3>
+                  <span data-purecounter-start="0" data-purecounter-end="{{ total_outstanding }}"
+                    data-purecounter-duration="2" data-purecounter-separator="true" data-purecounter-formater="de-DE"
+                    class="purecounter"></span><span class="stat-unit">{{ currency_symbol }}</span>
+                </h3>
+                <p>{% if current_lang == 'ar' %}الديون المعلقة{% else %}Outstanding Debt{% endif %}</p>
+              </div>
+
+              <div class="dashboard-stat-card">
+                <h3>
+                  <span data-purecounter-start="0" data-purecounter-end="{{ total_credit }}"
+                    data-purecounter-duration="2" data-purecounter-separator="true" data-purecounter-formater="de-DE"
+                    class="purecounter"></span><span class="stat-unit">{{ currency_symbol }}</span>
+                </h3>
+                <p>{% if current_lang == 'ar' %}أرصدة المرضى{% else %}Patient Credit{% endif %}</p>
+              </div>
+
+              <div class="dashboard-stat-card">
+                <h3>
+                  <span data-purecounter-start="0" data-purecounter-end="{{ collection_rate|round|int }}"
+                    data-purecounter-duration="2" class="purecounter"></span><span class="stat-unit">%</span>
+                </h3>
+                <p>{% if current_lang == 'ar' %}نسبة التحصيل{% else %}Collection Rate{% endif %}</p>
+              </div>
+              {% endif %}
+
+            </div>
+
+            <div class="hero-actions d-flex gap-3 flex-wrap" data-aos="fade-right" data-aos-delay="600">
+              <a href="{{ url_for('patients.patients') }}" class="btn btn-primary">
+                {% if current_lang == 'ar' %}إدارة المرضى{% else %}Manage Patients{% endif %}
+              </a>
+
+              <a href="{{ url_for('appointments.appointments') }}" class="btn btn-outline-primary">
+                {% if current_lang == 'ar' %}عرض المواعيد{% else %}View Appointments{% endif %}
+              </a>
+            </div>
+
+            <div class="emergency-contact mt-4" data-aos="fade-right" data-aos-delay="700">
+              <div class="emergency-icon">
+                <i class="bi {% if today_scheduled > 0 %}bi-clock-history text-primary{% elif today_done > 0 %}bi-check2-circle text-success{% else %}bi-calendar-check{% endif %}"></i>
+              </div>
+
+              <div class="emergency-info">
+                {% if today_scheduled > 0 %}
+                  <small>{% if current_lang == 'ar' %}مواعيد اليوم المتبقية{% else %}Remaining Appointments Today{% endif %}</small>
+                  <strong>
+                    {{ today_scheduled }} {% if current_lang == 'ar' %}موعد قيد الانتظار{% else %}Appointments Pending{% endif %}
+                    {% if today_scheduled_appointments %}
+                      <span class="badge bg-primary ms-1" style="font-size: 0.75rem; font-weight: normal;">
+                        {% if current_lang == 'ar' %}أقرب موعد:{% else %}Next:{% endif %} {{ today_scheduled_appointments[0].appointment_date.strftime('%I:%M %p') }}
+                      </span>
+                    {% endif %}
+                  </strong>
+                {% elif today_done > 0 %}
+                  <small>{% if current_lang == 'ar' %}مواعيد اليوم المنجزة{% else %}Completed Today{% endif %}</small>
+                  <strong>{{ today_done }} {% if current_lang == 'ar' %}مواعيد مكتملة بنجاح اليوم{% else %}Appointments Completed Today{% endif %} <i class="bi bi-check-all text-success ms-1"></i></strong>
+                {% else %}
+                  <small>{% if current_lang == 'ar' %}مواعيد اليوم{% else %}Today's Schedule{% endif %}</small>
+                  <strong>{% if current_lang == 'ar' %}لا توجد مواعيد متبقية لليوم{% else %}No remaining appointments for today{% endif %}</strong>
+                {% endif %}
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Right Content: Dynamic Glassmorphic Analytics Visualizer -->
+        <div class="col-lg-6">
+          <div class="hero-visual" data-aos="fade-left" data-aos-delay="400">
+            <div class="main-image p-4 d-flex flex-column justify-content-between"
+              style="border-radius: 24px; min-height: 500px; box-shadow: 0 15px 35px rgba(13,110,253,0.06) !important; background: color-mix(in srgb, var(--surface-color), transparent 20%) !important; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%) !important;">
+              <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+                <div class="text-start">
+                  <h5 class="fw-bold mb-0 text-primary" style="font-size: 1.1rem; letter-spacing: -0.3px;">
+                    <i class="bi bi-bar-chart-steps me-2"></i>{% if current_lang == 'ar' %}نشاط العيادة{% else %}Clinic Activity{% endif %}
+                  </h5>
+                  <small class="text-muted" style="font-size: 0.75rem;">{% if current_lang == 'ar' %}المؤشرات التشغيلية الفورية{% else %}Realtime operational metrics{% endif %}</small>
+                </div>
+                <div class="btn-group btn-group-sm rounded-pill p-1 border-0" role="group"
+                  style="padding: 3px !important; background: color-mix(in srgb, var(--default-color), transparent 90%); border: none !important;">
+                  <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold border-0"
+                    id="btn-show-status"
+                    style="font-size: 0.72rem; transition: all 0.25s; background: var(--accent-color, #0d6efd); color: #ffffff; box-shadow: 0 2px 6px rgba(13, 110, 253, 0.15);">
+                    {% if current_lang == 'ar' %}المواعيد{% else %}Appointments{% endif %}
+                  </button>
+                  {% if current_user.role in ('admin', 'receptionist') %}
+                  <button type="button"
+                    class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1 fw-bold border-0 text-secondary"
+                    id="btn-show-financials"
+                    style="font-size: 0.72rem; transition: all 0.25s; background: transparent; border: none;">
+                    {% if current_lang == 'ar' %}العبء المالي{% else %}Finance Load{% endif %}
+                  </button>
+                  {% endif %}
+                  <button type="button"
+                    class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1 fw-bold border-0 text-secondary"
+                    id="btn-show-today"
+                    style="font-size: 0.72rem; transition: all 0.25s; background: transparent; border: none;">
+                    {% if current_lang == 'ar' %}حالة اليوم{% else %}Today's Status{% endif %}
+                  </button>
+                </div>
+              </div>
+
+              <!-- Chart & Container -->
+              <div class="flex-grow-1 position-relative d-flex align-items-center" style="height: 340px; width: 100%;">
+                <canvas id="dashboardOverviewChart" style="max-height: 340px; width: 100%;"></canvas>
+
+                <!-- Today's Status Tab Content (hidden by default) -->
+                <div id="todayStatusContainer"
+                  style="display: none; width: 100%; height: 100%; overflow-x: hidden; overflow-y: auto; padding: 2px 0;"
+                  data-working-days="{{ working_days }}" data-min-time="{{ working_hours_start }}"
+                  data-max-time="{{ working_hours_end }}">
+
+                  <!-- Operational Status Badge -->
+                  <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded-3"
+                    style="background: color-mix(in srgb, var(--default-color), transparent 97%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 92%);">
+                    <div class="d-flex align-items-center gap-2">
+                      <span id="clinicStatusDot" class="spinner-grow spinner-grow-sm text-success" role="status"
+                        style="width: 8px; height: 8px; animation-duration: 1.5s;"></span>
+                      <span id="clinicStatusText" class="fw-bold"
+                        style="font-size: 0.75rem; color: var(--heading-color);">{% if current_lang == 'ar' %}جاري فحص الحالة...{% else %}Checking status...{% endif %}</span>
+                    </div>
+                    <span class="text-muted" style="font-size: 0.72rem; font-weight: 600;">
+                      <i class="bi bi-clock me-1 text-primary"></i>{{ operating_hours }}
+                    </span>
+                  </div>
+
+                  <!-- Four Metrics Grid -->
+                  <div class="row g-2 mb-2 mx-0">
+                    <div class="col-6">
+                      <div class="stat-grid-item scheduled">
+                        <span class="text-muted d-block"
+                          style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">
+                          {% if current_lang == 'ar' %}المجدولة اليوم{% else %}Scheduled Today{% endif %}
+                        </span>
+                        <strong style="font-size: 1.3rem; font-weight: 800;">{{ today_scheduled_appointments|length }}</strong>
+                        <span class="text-muted d-block" style="font-size: 0.65rem;">{% if current_lang == 'ar' %}جلسات قيد الانتظار{% else %}waiting sessions{% endif %}</span>
+                      </div>
+                    </div>
+
+                    <div class="col-6">
+                      <div class="stat-grid-item completed">
+                        <span class="text-muted d-block"
+                          style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">
+                          {% if current_lang == 'ar' %}المنجزة اليوم{% else %}Completed Today{% endif %}
+                        </span>
+                        <strong style="font-size: 1.3rem; font-weight: 800;">{{ today_done_appointments|length }}</strong>
+                        <span class="text-muted d-block" style="font-size: 0.65rem;">{% if current_lang == 'ar' %}جلسات مكتملة{% else %}done sessions{% endif %}</span>
+                      </div>
+                    </div>
+
+                    {% if current_user.role in ('admin', 'receptionist') %}
+                    <div class="col-6">
+                      <div class="stat-grid-item revenue">
+                        <span class="text-muted d-block"
+                          style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">
+                          {% if current_lang == 'ar' %}دخل اليوم{% else %}Today's Revenue{% endif %}
+                        </span>
+                        <strong style="font-size: 1.15rem; font-weight: 800;">{{ today_revenue_sum | format_price }} {{ currency_symbol }}</strong>
+                        <span class="text-muted d-block" style="font-size: 0.65rem;">{% if current_lang == 'ar' %}معالجات مفوترة{% else %}invoiced treatments{% endif %}</span>
+                      </div>
+                    </div>
+
+                    <div class="col-6">
+                      <div class="stat-grid-item collected">
+                        <span class="text-muted d-block"
+                          style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;">
+                          {% if current_lang == 'ar' %}مقبوضات اليوم{% else %}Today's Paid{% endif %}
+                        </span>
+                        <strong style="font-size: 1.15rem; font-weight: 800;">{{ today_payments_sum | format_price }} {{ currency_symbol }}</strong>
+                        <span class="text-muted d-block" style="font-size: 0.65rem;">{% if current_lang == 'ar' %}مدفوعات محصلة{% else %}payments collected{% endif %}</span>
+                      </div>
+                    </div>
+                    {% endif %}
+                  </div>
+
+                  <!-- Daily Progress Bar -->
+                  {% set total_today = (today_scheduled_appointments|length + today_done_appointments|length) %}
+                  {% set pct = ((today_done_appointments|length / total_today) * 100)|round|int if total_today > 0 else 0 %}
+                  <div class="mb-2 p-2 rounded-3 border"
+                    style="background-color: color-mix(in srgb, var(--default-color), transparent 97%); border-color: color-mix(in srgb, var(--default-color), transparent 92%) !important; padding: 8px 10px !important;">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                      <span style="font-size: 0.72rem; font-weight: 600; color: var(--default-color);">
+                        <i class="bi bi-activity text-primary me-1"></i>{% if current_lang == 'ar' %}إنجاز اليوم{% else %}Today's Progress{% endif %}
+                      </span>
+                      <span class="badge bg-primary text-white fw-bold"
+                        style="font-size: 0.68rem; padding: 2px 6px; border-radius: 4px;">{{ pct }}% {% if current_lang == 'ar' %}مكتمل{% else %}Completed{% endif %}</span>
+                    </div>
+                    <div class="progress"
+                      style="height: 6px; border-radius: 99px; background: color-mix(in srgb, var(--default-color), transparent 90%); margin-top: 4px;">
+                      <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar"
+                        style="width: {{ pct }}%; border-radius: 99px;"></div>
+                    </div>
+                  </div>
+
+                  <!-- Next Upcoming Appointment -->
+                  <div class="p-2.5 rounded-3 border text-start position-relative overflow-hidden"
+                    style="border-color: color-mix(in srgb, var(--default-color), transparent 90%) !important; box-shadow: 0 2px 8px rgba(0,0,0,0.02); background: linear-gradient(135deg, var(--surface-color), color-mix(in srgb, var(--accent-color), transparent 98%));">
+                    <div class="position-absolute"
+                      style="right: -8px; bottom: -8px; font-size: 2.2rem; opacity: 0.04; color: #0d6efd;">
+                      <i class="bi bi-calendar2-check"></i>
+                    </div>
+                    <h6 class="fw-bold mb-2"
+                      style="font-size: 0.78rem; display: flex; align-items: center; gap: 5px; color: var(--heading-color);">
+                      <i class="bi bi-clock-history text-primary"></i> {% if current_lang == 'ar' %}الموعد القادم التالي{% else %}Next Upcoming Appointment{% endif %}
+                    </h6>
+                    {% if today_scheduled_appointments %}
+                    {% set next_appt = today_scheduled_appointments[0] %}
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <strong style="font-size: 0.85rem; color: var(--heading-color);">
+                          {{ next_appt.patient.first_name }} {{ next_appt.patient.last_name }}
+                        </strong>
+                        <small class="text-muted d-block" style="font-size: 0.72rem;">{{ next_appt.reason or ('فحص عام' if current_lang == 'ar' else 'General checkup') }}</small>
+                      </div>
+                      <div class="d-flex flex-column align-items-end gap-1">
+                        <span class="badge bg-primary rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.7rem;">
+                          {{ next_appt.appointment_date.strftime('%I:%M %p') }}
+                        </span>
+                        {% if current_user.role == 'admin' or (current_user.role == 'doctor' and (not next_appt.doctor_id or next_appt.doctor_id == current_user.id) and next_appt.status != 'Cancelled') %}
+                        <a href="{{ url_for('treatments.appointment_session', appointment_id=next_appt.id) }}"
+                          class="btn btn-xs btn-outline-success py-0 px-2 fw-bold"
+                          style="font-size: 0.65rem; border-radius: 4px; border-width: 1px;">
+                          <i class="bi bi-clipboard2-pulse"></i> {% if current_lang == 'ar' %}بدء الجلسة{% else %}Start Session{% endif %}
+                        </a>
+                        {% endif %}
+                      </div>
+                    </div>
+                    {% else %}
+                    <small class="text-muted d-block" style="font-size: 0.72rem;">{% if current_lang == 'ar' %}لا توجد مواعيد قادمة مجدولة لليوم.{% else %}No more upcoming appointments scheduled for today.{% endif %}</small>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mini Stats Info Footer inside the visual -->
+              <div class="d-flex justify-content-around align-items-center mt-3 pt-3 border-top text-center"
+                style="border-top-color: color-mix(in srgb, var(--default-color), transparent 90%) !important;">
+                <div>
+                  <small class="text-muted d-block mb-1"
+                    style="font-size: 0.88rem; font-weight:700; text-transform: uppercase; letter-spacing: 0.5px;">{% if current_lang == 'ar' %}المرضى{% else %}Patients{% endif %}</small>
+                  <strong style="font-size: 1.45rem; font-weight:800; color: var(--heading-color);">{{ total_patients }}</strong>
+                </div>
+                <div style="width: 1px; height: 32px; background-color: color-mix(in srgb, var(--default-color), transparent 88%);"></div>
+                <div>
+                  <small class="text-muted d-block mb-1"
+                    style="font-size: 0.88rem; font-weight:700; text-transform: uppercase; letter-spacing: 0.5px;">{% if current_lang == 'ar' %}المعالجات{% else %}Treatments{% endif %}</small>
+                  <strong style="font-size: 1.45rem; font-weight:800; color: var(--heading-color);">{{ total_treatments }}</strong>
+                </div>
+                <div style="width: 1px; height: 32px; background-color: color-mix(in srgb, var(--default-color), transparent 88%);"></div>
+                <div>
+                  <small class="text-muted d-block mb-1"
+                    style="font-size: 0.88rem; font-weight:700; text-transform: uppercase; letter-spacing: 0.5px;">{% if current_lang == 'ar' %}نسبة التحصيل{% else %}Collection Rate{% endif %}</small>
+                  <strong class="text-success" style="font-size: 1.45rem; font-weight:800;">
+                    {% if total_revenue > 0 %}
+                    {{ ((total_paid / total_revenue) * 100)|round(0)|int }}%
+                    {% else %}
+                    100%
+                    {% endif %}
+                  </strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+</section>

@@ -1,0 +1,196 @@
+<!-- Patient Overview Header & Profile Section (Exact Original Design) -->
+<div class="doctor-profile patient-detail-card" data-aos="zoom-in" data-aos-delay="150">
+    <div class="profile-header">
+        <div class="doctor-avatar">
+            {% if patient.gender and patient.gender.lower() in ('female', 'f', 'أنثى') %}
+                <img src="{{ url_for('static', filename='assets/img/person/person-f-5.webp') }}" alt="Patient" class="img-fluid">
+            {% elif patient.gender and patient.gender.lower() in ('male', 'm', 'ذكر') %}
+                <img src="{{ url_for('static', filename='assets/img/person/person-m-3.webp') }}" alt="Patient" class="img-fluid">
+            {% else %}
+                <img src="{{ url_for('static', filename='assets/my imgs/person.png') }}" alt="Patient" class="img-fluid">
+            {% endif %}
+            <div class="status-indicator available"></div>
+        </div>
+
+        <div class="doctor-details">
+            <h4 class="d-flex align-items-center flex-wrap gap-2 mb-1" style="font-size: 1.45rem;">
+                {% if patient.title %}
+                    {% set title_map_ar = {'mr': 'السيد', 'ms': 'الآنسة', 'mrs': 'السيدة', 'dr': 'الدكتور', 'dr_f': 'الدكتورة', 'miss': 'آنسة'} %}
+                    {% set title_map_en = {'mr': 'Mr.', 'ms': 'Ms.', 'mrs': 'Mrs.', 'dr': 'Dr.', 'dr_f': 'Dr.', 'miss': 'Miss'} %}
+                    {% set p_title_key = patient.title|lower %}
+                    {% set display_title = title_map_ar.get(p_title_key, patient.title) if current_lang == 'ar' else title_map_en.get(p_title_key, patient.title) %}
+                    <span class="patient-title-text me-2" style="color: var(--accent-color); font-weight: 800; font-size: 1.35rem;">
+                        {{ display_title }}
+                    </span>
+                {% endif %}
+                <span class="fw-bold">{{ patient.first_name }} {{ patient.last_name }}</span>
+            </h4>
+            <span class="specialty-tag">{{ patient.phone or ('No phone number' if current_lang != 'ar' else 'لا يوجد رقم هاتف') }}</span>
+        </div>
+    </div>
+
+    <div class="patient-info-grid mt-4">
+        <div class="patient-info-box" {% if patient.medical_information %}style="background: rgba(220, 53, 69, 0.06) !important; border: 1px solid rgba(220, 53, 69, 0.28) !important;"{% endif %}>
+            <span class="info-label {% if patient.medical_information %}fw-bold{% endif %}" {% if patient.medical_information %}style="color: color-mix(in srgb, #dc3545, var(--default-color) 10%) !important;"{% endif %}>
+                <i class="bi bi-heart-pulse-fill me-1 text-danger"></i>
+                {% if current_lang == 'ar' %}المعلومات الطبية والتحسس{% else %}Medical Info & Allergies{% endif %}
+            </span>
+            <p class="{% if patient.medical_information %}fw-semibold{% else %}text-muted{% endif %}" {% if patient.medical_information %}style="color: color-mix(in srgb, #dc3545, var(--default-color) 20%) !important;"{% endif %}>
+                {{ patient.medical_information or ('No medical information recorded' if current_lang != 'ar' else 'لا توجد معلومات طبية مسجلة') }}
+            </p>
+        </div>
+
+        <div class="patient-info-box">
+            <span class="info-label">{% if current_lang == 'ar' %}العنوان{% else %}Address{% endif %}</span>
+            <p>{{ patient.address or ('No address provided' if current_lang != 'ar' else 'لا يوجد عنوان مسجل') }}</p>
+        </div>
+
+        <div class="patient-info-box">
+            <span class="info-label">{% if current_lang == 'ar' %}ملاحظات{% else %}Notes{% endif %}</span>
+            <p>{{ patient.notes or ('No notes available' if current_lang != 'ar' else 'لا توجد ملاحظات') }}</p>
+        </div>
+
+        <div class="patient-info-box">
+            <span class="info-label">{% if current_lang == 'ar' %}بوابة المريض الرقمية{% else %}Patient Portal Access{% endif %}</span>
+            {% if patient.user %}
+                <p class="text-success mb-1" style="font-weight: 600;">
+                    <i class="bi bi-shield-check"></i> {% if current_lang == 'ar' %}نشط{% else %}Enabled{% endif %}
+                </p>
+                <small class="text-muted d-block mb-2">{% if current_lang == 'ar' %}اسم المستخدم{% else %}Username{% endif %}: <strong>{{ patient.user.username }}</strong></small>
+                <form method="POST" action="{{ url_for('patients.delete_portal_account', patient_id=patient.id) }}" onsubmit="return confirmDelete(event, '{% if current_lang == 'ar' %}هل أنت متأكد من إلغاء تفعيل البوابة لهذا المريض؟ سيتم حذف حساب الدخول الخاص به.{% else %}Are you sure you want to revoke portal access for this patient? This will delete their portal login.{% endif %}');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2 fw-semibold" style="font-size: 0.72rem; border-radius: 4px; border-width: 1px;">
+                        <i class="bi bi-shield-x"></i> {% if current_lang == 'ar' %}إلغاء الصلاحية{% else %}Revoke Access{% endif %}
+                    </button>
+                </form>
+            {% else %}
+                <p class="text-muted mb-2">
+                    <i class="bi bi-shield-slash"></i> {% if current_lang == 'ar' %}معطل{% else %}Disabled{% endif %}
+                </p>
+                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 fw-semibold" style="font-size: 0.72rem; border-radius: 4px; border-width: 1px;" data-bs-toggle="modal" data-bs-target="#createPortalModal">
+                    <i class="bi bi-shield-plus"></i> {% if current_lang == 'ar' %}تفعيل البوابة{% else %}Enable Access{% endif %}
+                </button>
+            {% endif %}
+        </div>
+
+        <div class="patient-info-box">
+            <span class="info-label">{% if current_lang == 'ar' %}إشعارات التذكير التلقائية{% else %}Automated Reminder Settings{% endif %}</span>
+            <div class="d-flex flex-column gap-1">
+                <div>
+                    {% if patient.reminders_enabled %}
+                        <span class="badge bg-success"><i class="bi bi-bell-fill me-1"></i> {% if current_lang == 'ar' %}مفعلة{% else %}Enabled{% endif %}</span>
+                    {% else %}
+                        <span class="badge bg-secondary"><i class="bi bi-bell-slash-fill me-1"></i> {% if current_lang == 'ar' %}معطلة{% else %}Disabled{% endif %}</span>
+                    {% endif %}
+                </div>
+                <div class="small text-muted mt-1">
+                    <i class="bi bi-telegram me-1" style="color: #2CA5E0;"></i>
+                    <strong>{% if current_lang == 'ar' %}معرف تيليغرام{% else %}Telegram Chat ID{% endif %}:</strong>
+                    {% if patient.telegram_chat_id %}
+                        <code class="text-dark bg-light px-1 py-0.5 rounded">{{ patient.telegram_chat_id }}</code>
+                    {% else %}
+                        <em class="text-danger small mb-1 d-block">{% if current_lang == 'ar' %}غير مرتبط{% else %}Not Linked{% endif %}</em>
+                        {% if bot_username %}
+                            <div class="mt-2 p-3 rounded-3 border d-flex align-items-center justify-content-between gap-3 shadow-sm" style="background: rgba(42, 171, 238, 0.08); border-color: rgba(42, 171, 238, 0.25) !important; width: fit-content; max-width: 100%;">
+                                <!-- Text info & link -->
+                                <div class="d-flex flex-column justify-content-center">
+                                    <span class="small opacity-75 fw-semibold mb-1" style="font-size: 0.75rem;">
+                                        {% if current_lang == 'ar' %}اسم معرف البوت للكتابة:{% else %}Bot username to type:{% endif %}
+                                    </span>
+                                    <span class="fs-6 fw-bold mb-2 py-1 px-2 rounded-2" dir="ltr" style="user-select: all; background: rgba(42, 171, 238, 0.15); color: #2AA5E0; width: fit-content; letter-spacing: 0.5px;">
+                                        @{{ bot_username }}
+                                    </span>
+                                    <a href="https://t.me/{{ bot_username }}" target="_blank" class="btn btn-sm text-white py-1 px-3 fw-bold d-inline-flex align-items-center justify-content-center gap-1 shadow-sm" style="background: linear-gradient(135deg, #2AA5E0 0%, #1d8bc0 100%); border: none; font-size: 0.78rem; border-radius: 6px;">
+                                        <i class="bi bi-telegram"></i>
+                                        <span>{% if current_lang == 'ar' %}رابط البوت المباشر{% else %}Direct Bot Link{% endif %}</span>
+                                    </a>
+                                </div>
+                                <!-- QR code -->
+                                <div class="p-1.5 rounded-3 shadow-sm border border-light flex-shrink-0" style="background: #ffffff !important;">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://t.me/{{ bot_username }}" alt="Telegram QR" style="border-radius: 6px; width: 95px; height: 95px; display: block;">
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="patient-info-box">
+            <span class="info-label">
+                <i class="bi bi-person-lines-fill me-1"></i>
+                {% if current_lang == 'ar' %}جهة اتصال الطوارئ والبيانات الشخصية{% else %}Emergency Contact & Personal Details{% endif %}
+            </span>
+            <div class="d-flex flex-column gap-2 mt-1">
+                <div>
+                    <span class="small opacity-75 d-block mb-0.5">{% if current_lang == 'ar' %}جهة اتصال الطوارئ:{% else %}Emergency Contact:{% endif %}</span>
+                    <p class="mb-0 fw-semibold">
+                        {% if patient.emergency_contact %}
+                            <i class="bi bi-telephone-fill me-1 text-warning"></i><span dir="ltr">{{ patient.emergency_contact }}</span>
+                        {% else %}
+                            <span class="opacity-50 fst-italic">{% if current_lang == 'ar' %}غير مسجلة{% else %}Not specified{% endif %}</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary border-opacity-25 gap-2 flex-wrap">
+                    <div>
+                        <span class="small opacity-75 d-block">{% if current_lang == 'ar' %}تاريخ الميلاد:{% else %}Date of Birth:{% endif %}</span>
+                        <strong class="small fw-semibold">
+                            {% if patient.date_of_birth %}
+                                <i class="bi bi-calendar-event me-1 text-info"></i><span dir="ltr">{{ patient.date_of_birth.strftime('%Y-%m-%d') }}</span>
+                            {% else %}
+                                <span class="opacity-50 fst-italic">{% if current_lang == 'ar' %}غير مسجل{% else %}N/A{% endif %}</span>
+                            {% endif %}
+                        </strong>
+                    </div>
+                    <div>
+                        <span class="small opacity-75 d-block">{% if current_lang == 'ar' %}المهنة:{% else %}Occupation:{% endif %}</span>
+                        <strong class="small fw-semibold">
+                            {% if patient.occupation %}
+                                <i class="bi bi-briefcase me-1 opacity-75"></i>{{ patient.occupation }}
+                            {% else %}
+                                <span class="opacity-50 fst-italic">{% if current_lang == 'ar' %}غير مسجلة{% else %}N/A{% endif %}</span>
+                            {% endif %}
+                        </strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-buttons mt-4 patient-main-actions">
+        {% if current_user.role in ('admin', 'receptionist') %}
+        <a href="{{ url_for('patients.edit_patient', patient_id=patient.id) }}" class="btn-primary">
+            {% if current_lang == 'ar' %}تعديل البيانات{% else %}Edit Patient{% endif %}
+        </a>
+        {% endif %}
+
+        {% if current_user.role in ('admin', 'receptionist', 'doctor') %}
+        {% if patient.user %}
+        <button type="button" class="btn-outline-main" data-bs-toggle="modal" data-bs-target="#resetPortalPasswordModal">
+            <i class="bi bi-key-fill me-1"></i> {% if current_lang == 'ar' %}تغيير كلمة سر البوابة{% else %}Change Portal Password{% endif %}
+        </button>
+        {% else %}
+        <button type="button" class="btn-outline-main" data-bs-toggle="modal" data-bs-target="#createPortalModal">
+            <i class="bi bi-person-plus-fill me-1"></i> {% if current_lang == 'ar' %}إنشاء حساب بوابة{% else %}Create Portal Account{% endif %}
+        </button>
+        {% endif %}
+
+        <a href="{{ url_for('patients.view_patient', patient_id=patient.id) }}" class="btn-outline-main">
+            <i class="bi bi-eye me-1"></i> {% if current_lang == 'ar' %}بيانات المريض{% else %}Patient Data{% endif %}
+        </a>
+
+        <a href="{{ url_for('appointments.add_appointment', patient_id=patient.id) }}" class="btn-outline-main">
+            {% if current_lang == 'ar' %}حجز موعد جديد{% else %}Add Appointment{% endif %}
+        </a>
+        {% endif %}
+
+        {% if current_user.role == 'admin' and not patient_appointments %}
+        <div class="patient-delete-action">
+            <a href="{{ url_for('patients.delete_patient', patient_id=patient.id) }}" class="btn-delete-soft">
+                {% if current_lang == 'ar' %}حذف المريض{% else %}Delete Patient{% endif %}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>

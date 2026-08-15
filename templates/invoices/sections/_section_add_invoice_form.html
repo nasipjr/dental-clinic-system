@@ -1,0 +1,44 @@
+<!-- ═══════════ Add Invoice Patient & Visit Info ═══════════ -->
+<div class="patient-info-grid mb-4">
+    <!-- Patient Selector -->
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</span>
+        <select name="patient_id" class="form-select" required>
+            <option value="">{% if current_lang == 'ar' %}-- اختر المريض --{% else %}Select patient{% endif %}</option>
+            {% for patient in patients %}
+            <option value="{{ patient.id }}">
+                {{ patient.first_name }} {{ patient.last_name }}
+                {% if patient.phone %}
+                - {{ patient.phone }}
+                {% endif %}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Visit Date & Time -->
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}تاريخ ووقت الزيارة{% else %}Visit Date{% endif %}</span>
+        <input type="datetime-local"
+            name="appointment_date"
+            class="form-control"
+            value="{{ default_visit_datetime }}"
+            required>
+    </div>
+
+    <!-- Reason -->
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}نوع الزيارة{% else %}Appointment Reason{% endif %}</span>
+        <p class="mb-0 fw-semibold">{% if current_lang == 'ar' %}زيارة مباشرة (Manual){% else %}Manual{% endif %}</p>
+    </div>
+
+    <!-- Status -->
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}حالة الموعد{% else %}Appointment Status{% endif %}</span>
+        <p class="mb-0">
+            <span class="appointment-status status-done">
+                {% if current_lang == 'ar' %}منجز{% else %}Done{% endif %}
+            </span>
+        </p>
+    </div>
+</div>

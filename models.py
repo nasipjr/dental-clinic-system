@@ -92,11 +92,27 @@ class Patient(db.Model):
     @property
     def total_payments_amount(self):
         from decimal import Decimal
+        from sqlalchemy import func
+        if hasattr(self, 'id') and self.id is not None:
+            try:
+                val = db.session.query(func.coalesce(func.sum(Payment.amount), 0)).filter(Payment.patient_id == self.id).scalar()
+                return Decimal(str(val or '0.00'))
+            except Exception:
+                pass
         return sum((Decimal(str(payment.amount or 0)) for payment in self.payments), Decimal('0.00'))
 
     @property
     def total_allocated_amount(self):
         from decimal import Decimal
+        from sqlalchemy import func
+        if hasattr(self, 'id') and self.id is not None:
+            try:
+                val = db.session.query(func.coalesce(func.sum(PaymentAllocation.amount), 0))\
+                    .join(Payment, PaymentAllocation.payment_id == Payment.id)\
+                    .filter(Payment.patient_id == self.id).scalar()
+                return Decimal(str(val or '0.00'))
+            except Exception:
+                pass
         return sum((Decimal(str(payment.allocated_amount or 0)) for payment in self.payments), Decimal('0.00'))
 
     @property
@@ -168,7 +184,15 @@ class Appointment(db.Model):
     def invoice_total(self):
         if self.invoice:
             return self.invoice.total_amount
-
+        from decimal import Decimal
+        from sqlalchemy import func
+        if hasattr(self, 'id') and self.id is not None:
+            try:
+                val = db.session.query(func.coalesce(func.sum(Treatment.total_cost), 0))\
+                    .filter(Treatment.appointment_id == self.id).scalar()
+                return Decimal(str(val or '0.00'))
+            except Exception:
+                pass
         return sum(treatment.total_cost for treatment in self.treatments)
 
     @property
@@ -291,6 +315,35 @@ class ToothHistory(db.Model):
     patient = db.relationship("Patient", backref=db.backref("tooth_histories", cascade="all, delete-orphan"))
 
 
+class TreatmentPlanItem(db.Model):
+    __tablename__ = "treatment_plan_item"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(
+        db.Integer,
+        db.ForeignKey("patient.id", ondelete="CASCADE"),
+        nullable=False
+    )
+    tooth_number = db.Column(db.String(50), nullable=False)
+    procedure_type = db.Column(db.String(200), nullable=False)
+    estimated_cost = db.Column(db.Numeric(10, 2), default=0.00, nullable=False)
+    notes = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(50), default="Planned", nullable=False)  # "Planned", "Completed", "Cancelled"
+    created_at = db.Column(db.DateTime, default=datetime.now, nullable=False)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    completed_treatment_id = db.Column(
+        db.Integer,
+        db.ForeignKey("treatment.id", ondelete="SET NULL"),
+        nullable=True
+    )
+
+    patient = db.relationship("Patient", backref=db.backref("planned_treatments", cascade="all, delete-orphan"))
+    completed_treatment = db.relationship("Treatment", foreign_keys=[completed_treatment_id], backref=db.backref("source_plan_item", uselist=False))
+
+
 class Invoice(db.Model):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -345,6 +398,14 @@ class Invoice(db.Model):
     @property
     def subtotal(self):
         from decimal import Decimal
+        from sqlalchemy import func
+        if hasattr(self, 'appointment_id') and self.appointment_id is not None:
+            try:
+                val = db.session.query(func.coalesce(func.sum(Treatment.total_cost), 0))\
+                    .filter(Treatment.appointment_id == self.appointment_id).scalar()
+                return Decimal(str(val or '0.00'))
+            except Exception:
+                pass
         return sum((Decimal(str(treatment.total_cost or 0)) for treatment in self.treatments), Decimal('0.00'))
 
     @property
@@ -378,6 +439,14 @@ class Invoice(db.Model):
     @property
     def total_paid(self):
         from decimal import Decimal
+        from sqlalchemy import func
+        if hasattr(self, 'id') and self.id is not None:
+            try:
+                val = db.session.query(func.coalesce(func.sum(PaymentAllocation.amount), 0))\
+                    .filter(PaymentAllocation.invoice_id == self.id).scalar()
+                return Decimal(str(val or '0.00'))
+            except Exception:
+                pass
         return sum((Decimal(str(allocation.amount or 0)) for allocation in self.payment_allocations), Decimal('0.00'))
 
     @property
@@ -449,6 +518,14 @@ class Payment(db.Model):
     @property
     def allocated_amount(self):
         from decimal import Decimal
+        from sqlalchemy import func
+        if hasattr(self, 'id') and self.id is not None:
+            try:
+                val = db.session.query(func.coalesce(func.sum(PaymentAllocation.amount), 0))\
+                    .filter(PaymentAllocation.payment_id == self.id).scalar()
+                return Decimal(str(val or '0.00'))
+            except Exception:
+                pass
         return sum((Decimal(str(allocation.amount or 0)) for allocation in self.allocations), Decimal('0.00'))
 
     @property

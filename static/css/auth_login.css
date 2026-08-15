@@ -1,0 +1,133 @@
+/**
+ * Dental Clinic Management System - Auth Login Stylesheet
+ * Dark glassmorphism card, glowing focus states, responsive typography, and navigation tabs.
+ */
+
+body.login-layout {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--default-font), sans-serif;
+    color: #fff;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 450px;
+    padding: 15px;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 24px;
+    padding: 40px 30px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.login-card:hover {
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.login-header h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    font-family: var(--heading-font);
+    margin-bottom: 8px;
+}
+
+.login-header p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+}
+
+.login-form .form-label {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.login-form .form-control {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.login-form .form-control:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #66e0ff;
+    box-shadow: 0 0 0 3px rgba(102, 224, 255, 0.25);
+    outline: none;
+    color: #fff;
+}
+
+.login-form .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.btn-login {
+    background-color: var(--accent-color, #175cdd) !important;
+    border: 1px solid var(--accent-color, #175cdd) !important;
+    color: var(--contrast-color, #ffffff) !important;
+    padding: 12px 20px !important;
+    border-radius: 12px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    width: 100%;
+    margin-top: 15px;
+    box-shadow: 0 6px 20px rgba(23, 92, 221, 0.3) !important;
+    transition: all 0.25s ease-in-out;
+}
+
+.btn-login:hover {
+    background-color: color-mix(in srgb, var(--accent-color, #175cdd), transparent 10%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(23, 92, 221, 0.4) !important;
+}
+
+.login-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: rgba(102, 224, 255, 0.15);
+    border: 1px solid rgba(102, 224, 255, 0.3);
+    color: #66e0ff;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.nav-pills .nav-link {
+    background: transparent;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.nav-pills .nav-link.active {
+    background-color: var(--accent-color, #175cdd) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(23, 92, 221, 0.2);
+}
+
+.nav-pills .nav-link:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.05);
+}

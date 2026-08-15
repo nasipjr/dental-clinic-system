@@ -1,0 +1,8 @@
+/**
+ * Dental Clinic Management System - Payments Master List Stylesheet
+ * Custom styles for payments table, cash flow manager report cards, and payment transaction badges.
+ */
+
+.reset-filter-btn {
+    border-color: rgba(255, 255, 255, 0.2);
+}

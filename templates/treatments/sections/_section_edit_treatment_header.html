@@ -1,0 +1,103 @@
+<!-- ═══════════ Header Title Banner & Session Context Card ═══════════ -->
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+        <h2 class="h3 fw-bold mb-1 text-primary d-flex align-items-center gap-2">
+            <i class="bi {{ 'bi-eye-fill' if is_locked else 'bi-pencil-square' }}"></i>
+            <span>{{ 'عرض تفاصيل المعالجة' if is_locked else 'تعديل بيانات المعالجة' }}</span>
+        </h2>
+        <p class="text-muted small mb-0">
+            {% if treatment.appointment.status == 'Done' %}
+            {{ 'الجلسة مغلقة ومكتملة. المعالجة للعرض فقط.' if is_ar else 'Appointment session is done. Treatment is read-only.' }}
+            {% elif treatment.appointment.status == 'Cancelled' %}
+            {{ 'الموعد ملغى. المعالجة للعرض فقط.' if is_ar else 'Appointment is cancelled. Treatment is read-only.' }}
+            {% else %}
+            {{ 'يمكنك تغيير نوع الإجراء، السن، الطبيب المعالج، التخدير، والتكلفة.' if is_ar else 'Update procedure type, tooth, attending doctor, anesthesia, or cost.' }}
+            {% endif %}
+        </p>
+    </div>
+    
+    <div class="d-flex align-items-center gap-2">
+        <a href="{{ url_for('treatments.appointment_session', appointment_id=treatment.appointment_id) }}" 
+           class="btn btn-outline-secondary rounded-pill px-3.5 py-2 fw-semibold small shadow-xs">
+            <i class="bi bi-arrow-right me-1.5"></i>
+            {{ 'العودة للجلسة' if is_ar else 'Back to Session' }}
+        </a>
+    </div>
+</div>
+
+{% if error_message %}
+<div class="alert alert-danger text-center rounded-3 mb-4 shadow-sm" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error_message }}
+</div>
+{% endif %}
+
+<!-- Patient & Session Context Card -->
+<div class="card edit-page-card mb-4">
+    <div class="card-body p-4">
+        <div class="row align-items-center gy-3">
+            
+            <!-- Patient Name & Link -->
+            <div class="col-lg-4 col-md-6 d-flex align-items-center gap-3">
+                <div class="patient-avatar-circle rounded-circle d-flex align-items-center justify-content-center shadow-xs" 
+                     style="width: 50px; height: 50px; min-width: 50px; background: rgba(14, 165, 233, 0.15) !important; border: 1.5px solid #0ea5e9 !important; color: #38bdf8 !important;">
+                    <i class="bi bi-person-fill fs-4"></i>
+                </div>
+                <div>
+                    <span class="text-muted text-uppercase fw-bold small d-block" style="font-size: 0.72rem; letter-spacing: 0.03em;">{{ 'المريض' if is_ar else 'Patient' }}</span>
+                    <h5 class="mb-0 fw-bold">
+                        <a href="{{ url_for('patients.patient_detail', patient_id=treatment.appointment.patient_id) }}" 
+                           class="text-decoration-none text-primary hover-underline d-inline-flex align-items-center gap-1.5"
+                           title="{{ 'عرض ملف المريض الكامل' if is_ar else 'View Patient Profile' }}">
+                            <span>{{ treatment.appointment.patient.first_name }} {{ treatment.appointment.patient.last_name }}</span>
+                            <i class="bi bi-box-arrow-up-right text-muted" style="font-size: 0.75rem;"></i>
+                        </a>
+                    </h5>
+                    <small class="text-muted" style="font-size: 0.82rem;">{{ treatment.appointment.patient.phone or '' }}</small>
+                </div>
+            </div>
+
+            <!-- Session ID Hyperlink & Date -->
+            <div class="col-lg-3 col-md-6">
+                <span class="text-muted text-uppercase fw-bold small d-block" style="font-size: 0.72rem; letter-spacing: 0.03em;">{{ 'الجلسة والموعد' if is_ar else 'Session & Date' }}</span>
+                <div class="mt-1 d-flex align-items-center gap-2">
+                    <a href="{{ url_for('treatments.appointment_session', appointment_id=treatment.appointment_id) }}" 
+                       class="btn btn-sm rounded-pill px-3 py-1.5 fw-bold text-decoration-none d-inline-flex align-items-center gap-1.5 transition-all shadow-xs"
+                       style="background: rgba(14, 165, 233, 0.15) !important; border: 1px solid #0ea5e9 !important; color: #38bdf8 !important; font-size: 0.85rem;"
+                       title="{{ 'فتح الجلسة الحالية' if is_ar else 'Open Current Session' }}">
+                        <i class="bi bi-clipboard2-pulse text-info"></i>
+                        <span>{{ 'فتح الجلسة الحالية' if is_ar else 'Open Session' }} (#{{ treatment.appointment_id }})</span>
+                        <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.75rem;"></i>
+                    </a>
+                </div>
+                <div class="fw-semibold text-muted mt-1" style="font-size: 0.85rem;">
+                    <i class="bi bi-calendar-event me-1 text-info"></i>
+                    {{ treatment.appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if treatment.appointment.appointment_date else '-' }}
+                </div>
+            </div>
+
+            <!-- Attending Doctor Badge -->
+            <div class="col-lg-3 col-md-6">
+                <span class="text-muted text-uppercase fw-bold small d-block" style="font-size: 0.72rem; letter-spacing: 0.03em;">{{ 'الطبيب المعالج الحالي' if is_ar else 'Attending Doctor' }}</span>
+                <div class="mt-1">
+                    {% set current_doc = treatment.doctor or treatment.appointment.attending_doctor or treatment.appointment.doctor %}
+                    <span id="attending-doctor-badge" class="doctor-badge px-3 py-1.5 fs-6" style="background: rgba(14, 165, 233, 0.12); border: 1px solid rgba(14, 165, 233, 0.3); color: #38bdf8; border-radius: 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="bi bi-person-badge"></i>
+                        <span id="attending-doctor-name">{{ current_doc.display_name if current_doc else '-' }}</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="col-lg-2 col-md-6 text-lg-end">
+                <span class="text-muted text-uppercase fw-bold small d-block mb-1" style="font-size: 0.72rem; letter-spacing: 0.03em;">{{ 'حالة الجلسة' if is_ar else 'Status' }}</span>
+                <span class="appointment-status 
+                    {% if treatment.appointment.status in ('Done', 'منجز') %}status-done
+                    {% elif treatment.appointment.status in ('Cancelled', 'ملغي') %}status-cancelled
+                    {% else %}status-scheduled{% endif %}">
+                    {{ treatment.appointment.status }}
+                </span>
+            </div>
+
+        </div>
+    </div>
+</div>

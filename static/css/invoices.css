@@ -1,0 +1,12 @@
+/**
+ * Dental Clinic Management System - Invoices Master List Stylesheet
+ * Custom styles for invoice status filter pills, executive summary KPI cards, and collection progress bars.
+ */
+
+.sub-tab-item {
+    transition: all 0.2s ease-in-out;
+}
+
+.sub-tab-item:hover {
+    transform: translateY(-1px);
+}

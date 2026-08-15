@@ -1,0 +1,67 @@
+<!-- ═══════════ Print Doctor Detailed Treatments Log ═══════════ -->
+<div class="report-section">
+    <div class="section-title">
+        {% if current_lang == 'ar' %}سجل المعالجات ومستحقات الطبيب تفصيلياً{% else %}Detailed Treatments & Commission Log{% endif %}
+    </div>
+
+    <table class="report-table">
+        <thead>
+            <tr>
+                <th class="text-center" style="width: 35px;">#</th>
+                <th style="width: 110px;">{% if current_lang == 'ar' %}التاريخ والوقت{% else %}Date & Time{% endif %}</th>
+                <th>{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</th>
+                <th>{% if current_lang == 'ar' %}الإجراء المعالج{% else %}Procedure{% endif %}</th>
+                <th class="text-center" style="width: 70px;">{% if current_lang == 'ar' %}السن{% else %}Tooth{% endif %}</th>
+                <th class="text-end" style="width: 110px;">{% if current_lang == 'ar' %}تكلفة الإجراء{% else %}Procedure Cost{% endif %}</th>
+                <th class="text-end" style="width: 110px;">{% if current_lang == 'ar' %}مستحق الطبيب{% else %}Doctor Share{% endif %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if treatments_list %}
+            {% for t in treatments_list %}
+            <tr>
+                <td class="text-center">{{ loop.index }}</td>
+                <td>
+                    {% if t.date %}
+                    <div><strong>{{ t.date.strftime('%Y-%m-%d') }}</strong></div>
+                    <div style="font-size: 8pt; color: #64748b;">{{ t.date.strftime('%I:%M %p') }}</div>
+                    {% else %}—{% endif %}
+                </td>
+                <td><strong>{{ t.patient_name }}</strong></td>
+                <td>
+                    {{ t.procedure_name }}
+                    {% if t.notes %}
+                    <br><small style="color: #64748b;">{{ t.notes }}</small>
+                    {% endif %}
+                </td>
+                <td class="text-center">{{ t.tooth_number }}</td>
+                <td class="text-end font-mono">{{ t.cost | format_price }} {{ currency_symbol }}</td>
+                <td class="text-end font-mono text-success">
+                    {% if salary_type == 'percentage' %}
+                    {{ t.doctor_share | format_price }} {{ currency_symbol }}
+                    <span style="font-size: 7.5pt; color: #64748b;">({{ t.doctor_pct }}%)</span>
+                    {% else %}
+                    {% if current_lang == 'ar' %}راتب ثابت{% else %}Fixed Salary{% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="7" class="text-center" style="padding: 20px; color: #64748b;">
+                    {% if current_lang == 'ar' %}لا توجد معالجات مسجلة لهذا الطبيب في الفترة المحددة.{% else %}No treatments recorded for this doctor in selected period.{% endif %}
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+        {% if treatments_list %}
+        <tfoot>
+            <tr>
+                <td colspan="5" class="text-end"><strong>{% if current_lang == 'ar' %}المحصلة الإجمالية:{% else %}Total Sum:{% endif %}</strong></td>
+                <td class="text-end font-mono"><strong>{{ total_revenue | format_price }} {{ currency_symbol }}</strong></td>
+                <td class="text-end font-mono text-success"><strong>{{ total_earned | format_price }} {{ currency_symbol }}</strong></td>
+            </tr>
+        </tfoot>
+        {% endif %}
+    </table>
+</div>

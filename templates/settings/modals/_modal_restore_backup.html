@@ -1,0 +1,89 @@
+<!-- ═══════════════════════════════════════════
+     Restore Backup Admin Verification Modal
+     ═══════════════════════════════════════════ -->
+<div class="modal fade" id="restoreBackupModal" tabindex="-1" aria-labelledby="restoreBackupModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content settings-modal border border-warning">
+            <div class="modal-header border-0 pb-0 d-flex align-items-center justify-content-between w-100">
+                <h5 class="modal-title fw-bold text-warning text-dark-emphasis mb-0" id="restoreBackupModalLabel">
+                    <i class="bi bi-shield-lock-fill me-2"></i>
+                    {% if current_lang == 'ar' %}تأكيد استعادة نسخة احتياطية{% else %}Admin Verification — Restore Backup{% endif %}
+                </h5>
+                <button type="button" class="btn-close ms-0 me-auto m-0" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('settings.restore_backup') }}" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                <div class="modal-body py-3">
+                    <div class="alert alert-warning d-flex align-items-start gap-2 mb-3">
+                        <i class="bi bi-info-circle-fill fs-5 flex-shrink-0 mt-1"></i>
+                        <div class="small">
+                            {% if current_lang == 'ar' %}
+                            <strong>تنبيه الاستعادة:</strong> اختر ملف النسخة الاحتياطية المراد استعادتها وأدخل اسم المستخدم وكلمة المرور للمدير (Admin) للمتابعة والتأكيد.
+                            {% else %}
+                            <strong>Restore Warning:</strong> Select the backup file to restore from and enter your Admin credentials to authorize.
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="restore_backup_filename" class="settings-label">
+                            {% if current_lang == 'ar' %}اختر النسخة الاحتياطية المراد استعادتها{% else %}Select Backup File to Restore{% endif %}
+                        </label>
+                        <select class="form-select settings-input" id="restore_backup_filename" name="backup_filename"
+                            required>
+                            <option value="__upload__">
+                                📂 {% if current_lang == 'ar' %}اختيار يدوي من الجهاز (رفع ملف)...{% else %}Manual file selection (Upload file)...{% endif %}
+                            </option>
+                            {% for b in backups %}
+                            <option value="{{ b.filename }}">
+                                📅 {{ b.mtime }} — ({{ b.size }})
+                            </option>
+                            {% else %}
+                            <option value="__upload__" selected>
+                                📂 {% if current_lang == 'ar' %}اختيار يدوي من الجهاز (رفع ملف)...{% else %}Manual file selection (Upload file)...{% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3 d-none" id="manual_backup_file_container">
+                        <label for="manual_backup_file" class="settings-label">
+                            {% if current_lang == 'ar' %}اختر ملف النسخة الاحتياطية (.db أو .sql){% else %}Select Backup File (.db or .sql){% endif %}
+                        </label>
+                        <input type="file" class="form-control settings-input" id="manual_backup_file"
+                            name="manual_backup_file" accept=".db,.sql">
+                        <div class="settings-hint mt-1 text-warning small">
+                            <i class="bi bi-info-circle me-1"></i>
+                            {% if current_lang == 'ar' %}سيتم رفع وفحص واستعادة البيانات مباشرة من هذا الملف.{% else %}Data will be uploaded, verified, and restored directly from this file.{% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="restore_admin_username" class="settings-label">
+                            {% if current_lang == 'ar' %}اسم المستخدم للمدير (Admin Username){% else %}Admin Username{% endif %}
+                        </label>
+                        <input type="text" class="form-control settings-input" id="restore_admin_username"
+                            name="admin_username" required
+                            placeholder="{% if current_lang == 'ar' %}أدخل اسم المستخدم للآدمن{% else %}Enter admin username{% endif %}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="restore_admin_password" class="settings-label">
+                            {% if current_lang == 'ar' %}كلمة المرور للمدير (Admin Password){% else %}Admin Password{% endif %}
+                        </label>
+                        <input type="password" class="form-control settings-input" id="restore_admin_password"
+                            name="admin_password" required
+                            placeholder="{% if current_lang == 'ar' %}أدخل كلمة المرور للآدمن{% else %}Enter admin password{% endif %}">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">
+                        {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                    </button>
+                    <button type="submit" class="btn btn-warning text-dark rounded-pill px-4 fw-bold">
+                        <i class="bi bi-box-arrow-in-down me-1"></i>
+                        {% if current_lang == 'ar' %}تأكيد واستعادة النسخة المحددة{% else %}Confirm & Restore Selected Backup{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

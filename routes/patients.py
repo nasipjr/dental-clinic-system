@@ -3,10 +3,11 @@ from flask import Blueprint, current_app, render_template, request, redirect, ur
 from sqlalchemy import func
 from sqlalchemy.orm import joinedload, selectinload
 
-from models import db, Patient, Appointment, Treatment, Payment, Invoice, PatientFile, ToothHistory, User
+from models import db, Patient, Appointment, Treatment, Payment, Invoice, PatientFile, ToothHistory, TreatmentPlanItem, User
 from utils.validators import parse_patient_data, cleanup_empty_quick_sessions
 from utils.auth_helper import role_required, get_safe_redirect_url
 from utils.constants import TREATMENT_PROCEDURE_TYPES
+import json
 from utils.settings_helper import get_treatment_details, get_treatment_prices
 
 
@@ -440,6 +441,17 @@ def patient_detail(patient_id):
                 "created_at": th.created_at.strftime("%Y-%m-%d %I:%M %p") if th.created_at else (th.history_date.strftime("%Y-%m-%d") if th.history_date else "")
             })
 
+        planned_items = TreatmentPlanItem.query.filter_by(patient_id=patient.id, status="Planned").order_by(TreatmentPlanItem.id.desc()).all()
+        planned_teeth_dict = defaultdict(list)
+        for pi in planned_items:
+            planned_teeth_dict[str(pi.tooth_number)].append({
+                "id": pi.id,
+                "procedure": pi.procedure_type,
+                "notes": pi.notes or "",
+                "cost": float(pi.estimated_cost or 0),
+                "created_at": pi.created_at.strftime("%Y-%m-%d") if pi.created_at else ""
+            })
+
         return render_template(
             "patients/patient_detail.html",
             patient=patient,
@@ -463,6 +475,8 @@ def patient_detail(patient_id):
             active_tab=active_tab,
             ledger_entries=ledger_entries,
             tooth_history_dict=tooth_history_dict,
+            planned_teeth_dict=planned_teeth_dict,
+            planned_treatments=planned_items,
             treatment_procedure_types=list(TREATMENT_PROCEDURE_TYPES),
             treatment_details=get_treatment_details(),
             treatment_prices=get_treatment_prices(),
@@ -589,6 +603,71 @@ def edit_tooth_history(patient_id, history_id):
             appointment_id = match.group(1)
 
     flash("تم تحديث السابقة المرضية بنجاح." if request.cookies.get("lang") == "ar" else "Tooth condition record updated successfully.", "success")
+    if appointment_id:
+        return redirect(url_for("treatments.appointment_session", appointment_id=appointment_id))
+    return redirect(url_for("patients.patient_detail", patient_id=patient_id, active_tab="chart"))
+
+
+@patients_bp.route("/patients/<int:patient_id>/treatment-plans/add", methods=["POST"])
+@role_required("admin", "doctor", "receptionist")
+def add_treatment_plan_item(patient_id):
+    import re
+    patient = Patient.query.get_or_404(patient_id)
+    tooth_number = request.form.get("tooth_number", "").strip()
+    procedure_type = request.form.get("procedure_type", "").strip()
+    estimated_cost_raw = request.form.get("estimated_cost", "").strip().replace(",", "")
+    notes = request.form.get("notes", "").strip()
+
+    appointment_id = request.form.get("appointment_id") or request.args.get("appointment_id")
+    if not appointment_id and request.referrer:
+        match = re.search(r'/appointments/(\d+)/session', request.referrer)
+        if match:
+            appointment_id = match.group(1)
+
+    if not tooth_number or not procedure_type:
+        flash("يرجى تحديد السن ونوع المعالجة للخطة العلاجية." if request.cookies.get("lang") == "ar" else "Please specify tooth number and procedure type.", "danger")
+        if appointment_id:
+            return redirect(url_for("treatments.appointment_session", appointment_id=appointment_id))
+        return redirect(url_for("patients.patient_detail", patient_id=patient_id, active_tab="chart"))
+
+    try:
+        est_cost = float(estimated_cost_raw) if estimated_cost_raw else 0.0
+    except ValueError:
+        est_cost = 0.0
+
+    plan_item = TreatmentPlanItem(
+        patient_id=patient.id,
+        tooth_number=str(tooth_number),
+        procedure_type=procedure_type,
+        estimated_cost=est_cost,
+        notes=notes,
+        status="Planned"
+    )
+    db.session.add(plan_item)
+    db.session.commit()
+
+    flash("تمت إضافة الإجراء إلى خطة العلاج المستقبلية بنجاح." if request.cookies.get("lang") == "ar" else "Added to future treatment plan successfully.", "success")
+    if appointment_id:
+        return redirect(url_for("treatments.appointment_session", appointment_id=appointment_id))
+    return redirect(url_for("patients.patient_detail", patient_id=patient_id, active_tab="chart"))
+
+
+@patients_bp.route("/patients/<int:patient_id>/treatment-plans/<int:plan_id>/delete", methods=["POST"])
+@role_required("admin", "doctor", "receptionist")
+def delete_treatment_plan_item(patient_id, plan_id):
+    import re
+    patient = Patient.query.get_or_404(patient_id)
+    plan_item = TreatmentPlanItem.query.filter_by(id=plan_id, patient_id=patient.id).first_or_404()
+    db.session.delete(plan_item)
+    db.session.commit()
+
+    appointment_id = request.form.get("appointment_id") or request.args.get("appointment_id")
+    if not appointment_id and request.referrer:
+        match = re.search(r'/appointments/(\d+)/session', request.referrer)
+        if match:
+            appointment_id = match.group(1)
+
+    flash("تم حذف الإجراء من خطة العلاج بنجاح." if request.cookies.get("lang") == "ar" else "Treatment plan item deleted.", "success")
     if appointment_id:
         return redirect(url_for("treatments.appointment_session", appointment_id=appointment_id))
     return redirect(url_for("patients.patient_detail", patient_id=patient_id, active_tab="chart"))
@@ -1241,12 +1320,25 @@ def get_patient_fdi_chart_api(patient_id):
                 "cost": float(tr.total_cost or 0)
             })
 
+    planned_items = TreatmentPlanItem.query.filter_by(patient_id=patient.id, status="Planned").order_by(TreatmentPlanItem.id.desc()).all()
+    planned_dict = defaultdict(list)
+    for pi in planned_items:
+        if pi.tooth_number:
+            planned_dict[str(pi.tooth_number)].append({
+                "id": pi.id,
+                "procedure": pi.procedure_type,
+                "notes": pi.notes or "",
+                "cost": float(pi.estimated_cost or 0),
+                "created_at": pi.created_at.strftime("%Y-%m-%d") if pi.created_at else ""
+            })
+
     return jsonify({
         "success": True,
         "patient_id": patient.id,
         "patient_name": f"{patient.first_name} {patient.last_name}",
         "tooth_history": dict(history_dict),
-        "clinic_treatments": dict(treatments_dict)
+        "clinic_treatments": dict(treatments_dict),
+        "planned_treatments": dict(planned_dict)
     })
 
 

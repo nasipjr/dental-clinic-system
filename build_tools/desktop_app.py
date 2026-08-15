@@ -53,4 +53,4 @@ if __name__ == '__main__':
         height=800,
         min_size=(1024, 768)
     )
-    webview.start()
+    webview.start(gui='edge')

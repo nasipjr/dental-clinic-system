@@ -1,0 +1,367 @@
+<!-- ═══════════ Tab 2: Expenses & Net Profit ═══════════ -->
+<div class="tab-pane fade" id="tab-expenses" role="tabpanel" aria-labelledby="expenses-tab">
+    
+    <!-- Print Page Title -->
+    <div class="d-none d-print-block mb-4">
+        <h3 class="fw-bold text-center">{% if current_lang == 'ar' %}تقرير مصاريف العيادة وصافي الأرباح{% else %}Clinic Expenses & Profitability Report{% endif %}</h3>
+        <p class="text-muted text-center">{% if current_lang == 'ar' %}تاريخ التصدير:{% else %}Printed Date:{% endif %} {{ now.strftime('%Y-%m-%d %I:%M %p') }}</p>
+    </div>
+
+    <!-- KPI Cards Grid for Expenses & Profit -->
+    <div class="row g-4 mb-5">
+        <!-- Total Revenue Received Card -->
+        <div class="col-lg-3 col-md-6">
+            <div class="kpi-card revenue-card h-100 p-4 border-0 rounded-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="kpi-icon-wrapper rounded-3 bg-success bg-opacity-10 text-success p-3">
+                        <i class="bi bi-wallet2 fs-3"></i>
+                    </div>
+                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1">
+                        {% if current_lang == 'ar' %}مقبوضات نقدية{% else %}Cash Inflow{% endif %}
+                    </span>
+                </div>
+                <h5 class="text-secondary mb-1">{% if current_lang == 'ar' %}إجمالي المقبوضات{% else %}Total Revenue{% endif %}</h5>
+                <h2 class="mb-0 fw-bold text-success">{{ total_payments | format_price }} {{ currency_symbol }}</h2>
+            </div>
+        </div>
+
+        <!-- Total Expenses Card -->
+        <div class="col-lg-3 col-md-6">
+            <div class="kpi-card debt-card h-100 p-4 border-0 rounded-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="kpi-icon-wrapper rounded-3 bg-danger bg-opacity-10 text-danger p-3">
+                        <i class="bi bi-cart-x fs-3"></i>
+                    </div>
+                    <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-3 py-1">
+                        {% if current_lang == 'ar' %}مصاريف{% else %}Expenses{% endif %}
+                    </span>
+                </div>
+                <h5 class="text-secondary mb-1">{% if current_lang == 'ar' %}إجمالي المصاريف{% else %}Total Expenses{% endif %}</h5>
+                <h2 class="mb-0 fw-bold text-danger">{{ total_expenses | format_price }} {{ currency_symbol }}</h2>
+            </div>
+        </div>
+
+        <!-- Cash Net Profit Card -->
+        <div class="col-lg-3 col-md-6">
+            <div class="kpi-card credit-card h-100 p-4 border-0 rounded-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="kpi-icon-wrapper rounded-3 p-3 {% if cash_net_profit >= 0 %}bg-success bg-opacity-10 text-success{% else %}bg-danger bg-opacity-10 text-danger{% endif %}">
+                        <i class="bi bi-currency-exchange fs-3"></i>
+                    </div>
+                    <span class="badge {% if cash_net_profit >= 0 %}bg-success bg-opacity-10 text-success{% else %}bg-danger bg-opacity-10 text-danger{% endif %} rounded-pill px-3 py-1">
+                        {% if current_lang == 'ar' %}نقدي{% else %}Cash-based{% endif %}
+                    </span>
+                </div>
+                <h5 class="text-secondary mb-1">{% if current_lang == 'ar' %}صافي الأرباح النقدية{% else %}Net Profit (Cash Flow){% endif %}</h5>
+                <h2 class="mb-0 fw-bold {% if cash_net_profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                    <span dir="ltr">{{ cash_net_profit | format_price }} {{ currency_symbol }}</span>
+                </h2>
+            </div>
+        </div>
+
+        <!-- Accrual Net Profit Card -->
+        <div class="col-lg-3 col-md-6">
+            <div class="kpi-card billing-card h-100 p-4 border-0 rounded-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="kpi-icon-wrapper rounded-3 p-3 {% if accrual_net_profit >= 0 %}bg-primary bg-opacity-10 text-primary{% else %}bg-danger bg-opacity-10 text-danger{% endif %}">
+                        <i class="bi bi-bank fs-3"></i>
+                    </div>
+                    <span class="badge {% if accrual_net_profit >= 0 %}bg-primary bg-opacity-10 text-primary{% else %}bg-danger bg-opacity-10 text-danger{% endif %} rounded-pill px-3 py-1">
+                        {% if current_lang == 'ar' %}محاسبي{% else %}Accrual-based{% endif %}
+                    </span>
+                </div>
+                <h5 class="text-secondary mb-1">{% if current_lang == 'ar' %}صافي الأرباح المحاسبية{% else %}Net Profit (Accrual){% endif %}</h5>
+                <h2 class="mb-0 fw-bold {% if accrual_net_profit >= 0 %}text-primary{% else %}text-danger{% endif %}">
+                    <span dir="ltr">{{ accrual_net_profit | format_price }} {{ currency_symbol }}</span>
+                </h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── AJAX Expenses Table + Add Form ── -->
+    <div class="row g-4 mb-5">
+        <!-- Expenses AJAX Table -->
+        <div class="col-lg-8">
+            <div class="card table-card border-0 rounded-4 shadow-sm p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <div>
+                        <h4 class="fw-bold mb-1">{% if current_lang == 'ar' %}سجل مصاريف العيادة{% else %}Clinic Expenses Log{% endif %}</h4>
+                        <p class="text-secondary mb-0 small">{% if current_lang == 'ar' %}إدارة وتتبع المصاريف والمدفوعات التشغيلية.{% else %}Track all clinic expenditures and operational costs.{% endif %}</p>
+                    </div>
+                    <span class="badge bg-danger bg-opacity-10 text-danger fw-bold px-3 py-2 rounded-pill" id="exp-total-badge">
+                        <i class="bi bi-cash-stack me-1"></i>
+                        <span id="exp-total-amount">—</span> {{ currency_symbol }}
+                    </span>
+                </div>
+
+                <!-- Filters Bar -->
+                <div class="d-flex flex-wrap gap-2 mb-3 align-items-center" id="expense-filters-bar">
+                    <select id="exp-filter-category" class="form-select form-select-sm rounded-pill border" style="width:auto;min-width:130px;">
+                        <option value="">{% if current_lang=='ar' %}كل الفئات{% else %}All Categories{% endif %}</option>
+                        <option value="Materials">{% if current_lang=='ar' %}مواد طبية{% else %}Materials{% endif %}</option>
+                        <option value="Rent">{% if current_lang=='ar' %}إيجار{% else %}Rent{% endif %}</option>
+                        <option value="Salaries">{% if current_lang=='ar' %}رواتب{% else %}Salaries{% endif %}</option>
+                        <option value="Other">{% if current_lang=='ar' %}أخرى{% else %}Other{% endif %}</option>
+                    </select>
+                    <div class="d-flex align-items-center gap-1">
+                        <span class="small text-secondary fw-semibold">{% if current_lang=='ar' %}السنة:{% else %}Year:{% endif %}</span>
+                        <select id="exp-filter-year" class="form-select form-select-sm rounded-pill border" style="width:auto;min-width:110px;">
+                            <option value="all" {% if selected_year == 'all' %}selected{% endif %}>{% if current_lang=='ar' %}الكل (جميع السنوات){% else %}All Years{% endif %}</option>
+                            {% for yr in available_years %}
+                            <option value="{{ yr }}" {% if yr|string == selected_year|string %}selected{% endif %}>{{ yr }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="d-flex align-items-center gap-1">
+                        <span class="small text-secondary fw-semibold">{% if current_lang=='ar' %}الشهر:{% else %}Month:{% endif %}</span>
+                        <select id="exp-filter-month" class="form-select form-select-sm rounded-pill border" style="width:auto;min-width:120px;">
+                            <option value="all" selected>{% if current_lang=='ar' %}كافة الأشهر{% else %}All Months{% endif %}</option>
+                            <option value="01">{% if current_lang=='ar' %}01 - كانون الثاني{% else %}01 - Jan{% endif %}</option>
+                            <option value="02">{% if current_lang=='ar' %}02 - شباط{% else %}02 - Feb{% endif %}</option>
+                            <option value="03">{% if current_lang=='ar' %}03 - آذار{% else %}03 - Mar{% endif %}</option>
+                            <option value="04">{% if current_lang=='ar' %}04 - نيسان{% else %}04 - Apr{% endif %}</option>
+                            <option value="05">{% if current_lang=='ar' %}05 - أيار{% else %}05 - May{% endif %}</option>
+                            <option value="06">{% if current_lang=='ar' %}06 - حزيران{% else %}06 - Jun{% endif %}</option>
+                            <option value="07">{% if current_lang=='ar' %}07 - تموز{% else %}07 - Jul{% endif %}</option>
+                            <option value="08">{% if current_lang=='ar' %}08 - آب{% else %}08 - Aug{% endif %}</option>
+                            <option value="09">{% if current_lang=='ar' %}09 - أيلول{% else %}09 - Sep{% endif %}</option>
+                            <option value="10">{% if current_lang=='ar' %}10 - تشرين الأول{% else %}10 - Oct{% endif %}</option>
+                            <option value="11">{% if current_lang=='ar' %}11 - تشرين الثاني{% else %}11 - Nov{% endif %}</option>
+                            <option value="12">{% if current_lang=='ar' %}12 - كانون الأول{% else %}12 - Dec{% endif %}</option>
+                        </select>
+                    </div>
+                    <input type="text" id="exp-filter-search" class="form-control form-control-sm rounded-pill border" style="width:auto;min-width:160px;" placeholder="{% if current_lang=='ar' %}بحث في الملاحظات...{% else %}Search notes...{% endif %}">
+                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="exp-reset-btn">
+                        <i class="bi bi-x-circle me-1"></i>{% if current_lang=='ar' %}إعادة تعيين{% else %}Reset{% endif %}
+                    </button>
+                    <div class="d-flex align-items-center gap-2 ms-auto">
+                        <label for="exp-per-page" class="small text-secondary fw-semibold mb-0 text-nowrap">{% if current_lang == 'ar' %}عرض في الصفحة:{% else %}Items per page:{% endif %}</label>
+                        <select id="exp-per-page" class="form-select form-select-sm border-secondary-subtle rounded-3 py-1 shadow-xs" style="width: auto;" onchange="if(typeof expPage !== 'undefined'){ expPage=1; loadExpenses(); }">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0" id="expenses-ajax-table">
+                        <thead>
+                            <tr>
+                                <th class="exp-sort-th" data-col="category" style="cursor:pointer;">
+                                    {% if current_lang=='ar' %}الفئة{% else %}Category{% endif %}
+                                    <i class="bi bi-arrow-down-up ms-1 text-muted" style="font-size:.75rem;"></i>
+                                </th>
+                                <th class="exp-sort-th text-end" data-col="amount" style="cursor:pointer;">
+                                    {% if current_lang=='ar' %}المبلغ{% else %}Amount{% endif %}
+                                    <i class="bi bi-arrow-down-up ms-1 text-muted" style="font-size:.75rem;"></i>
+                                </th>
+                                <th class="exp-sort-th text-center" data-col="date" style="cursor:pointer;">
+                                    {% if current_lang=='ar' %}التاريخ{% else %}Date{% endif %}
+                                    <i class="bi bi-arrow-down-up ms-1 text-muted" style="font-size:.75rem;"></i>
+                                </th>
+                                <th>{% if current_lang=='ar' %}ملاحظات{% else %}Notes{% endif %}</th>
+                                <th class="text-center d-print-none">{% if current_lang=='ar' %}إجراء{% else %}Action{% endif %}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expenses-table-body">
+                            <tr><td colspan="5" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2" id="exp-pagination-bar">
+                    <div class="text-secondary small">
+                        <span id="exp-pagination-info"></span>
+                    </div>
+                    <nav><ul class="pagination pagination-sm mb-0 gap-1" id="exp-pagination-links"></ul></nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Expense Sidebar -->
+        <div class="col-lg-4 d-print-none expense-form-card">
+            <div class="card p-4 border-0 rounded-4 shadow-sm h-100" style="background: rgba(0,0,0,0.015); border: 1px dashed color-mix(in srgb, var(--accent-color), transparent 80%) !important;">
+                <h4 class="fw-bold mb-3 text-main"><i class="bi bi-plus-circle me-1"></i>{% if current_lang == 'ar' %}إضافة مصروف جديد{% else %}Log New Expense{% endif %}</h4>
+                <p class="text-secondary small mb-4">
+                    {% if current_lang == 'ar' %}قم بتسجيل الفواتير، الإيجار، الرواتب أو المواد الطبية لحساب الأرباح الصافية بدقة.{% else %}Enter clinic expenditures here to track exact net profit margins.{% endif %}
+                </p>
+                <form method="POST" action="{{ url_for('reports.add_expense') }}" id="add-expense-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label for="expense-category" class="form-label fw-semibold text-secondary small">{% if current_lang == 'ar' %}فئة المصروف{% else %}Category{% endif %}</label>
+                        <select name="category" id="expense-category" class="form-select rounded-3 border-secondary-subtle" required>
+                            <option value="Materials">{% if current_lang == 'ar' %}مواد طبية{% else %}Medical Materials{% endif %}</option>
+                            <option value="Rent">{% if current_lang == 'ar' %}إيجار العيادة{% else %}Rent{% endif %}</option>
+                            <option value="Salaries">{% if current_lang == 'ar' %}رواتب وأجور{% else %}Salaries{% endif %}</option>
+                            <option value="Other" selected>{% if current_lang == 'ar' %}أخرى{% else %}Other / General{% endif %}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="expense-amount" class="form-label fw-semibold text-secondary small">{% if current_lang == 'ar' %}قيمة المصروف{% else %}Amount{% endif %}</label>
+                        <div class="input-group">
+                            <input type="number" step="1" name="amount" id="expense-amount" class="form-control rounded-start-3" placeholder="0" required>
+                            <span class="input-group-text rounded-end-3 bg-secondary-subtle text-secondary small">{{ currency_symbol }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="expense-date" class="form-label fw-semibold text-secondary small">{% if current_lang == 'ar' %}تاريخ المصروف{% else %}Expense Date{% endif %}</label>
+                        <input type="date" name="expense_date" id="expense-date" class="form-control rounded-3" value="{{ now.strftime('%Y-%m-%d') }}" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="expense-notes" class="form-label fw-semibold text-secondary small">{% if current_lang == 'ar' %}ملاحظات وتفاصيل{% else %}Notes{% endif %}</label>
+                        <textarea name="notes" id="expense-notes" class="form-control rounded-3" rows="3" placeholder="{% if current_lang == 'ar' %}اكتب تفاصيل الفاتورة...{% else %}Enter details like supplier, invoice number...{% endif %}"></textarea>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary rounded-pill py-2 fw-bold">
+                            <i class="bi bi-check-lg me-1"></i>
+                            {% if current_lang == 'ar' %}حفظ المصروف{% else %}Log Expense{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Doctors & Assistant Doctors Financial Performance & Revenue Share Table ── -->
+    <div class="card border-0 rounded-4 shadow-sm p-4 mb-4 d-print-none" id="doctors-revenue-share-section" style="overflow: visible;">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+                <h4 class="fw-bold mb-1">
+                    <i class="bi bi-person-badge-fill me-2 text-primary"></i>
+                    {% if current_lang=='ar' %}جدول أداء الأطباء المساعدين وتحليل نسبة الأرباح والمستحقات{% else %}Assistant Doctors Performance & Profit Share Table{% endif %}
+                </h4>
+                <p class="text-secondary mb-0 small">
+                    {% if current_lang=='ar' %}إحصائيات الدخل المحقق لكل طبيب (بدون المدير) وحساب حصة الربح والمستحقات المباشرة تزامناً مع الفلترة والتاريخ.{% else %}Doctor productivity & profit share stats with date range & search filters (excludes Admin).{% endif %}
+                </p>
+            </div>
+            <!-- Doctor filter dropdown -->
+            <div class="dropdown" id="doc-share-filter-dropdown">
+                <button class="btn btn-outline-primary rounded-pill px-4 fw-semibold d-flex align-items-center gap-2"
+                        type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-badge"></i>
+                    <span id="doc-share-filter-label">{% if current_lang=='ar' %}كل الأطباء المساعدين{% else %}All Doctors{% endif %}</span>
+                    <i class="bi bi-chevron-down" style="font-size:.8rem;"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 py-2 mt-1"
+                    style="min-width:210px; background:var(--surface-color);" id="doc-share-filter-menu">
+                    <li>
+                        <a class="dropdown-item rounded-3 d-flex align-items-center gap-2 py-2 px-3 doc-share-filter-item active fw-bold"
+                           href="#" data-doc-id="">
+                            <i class="bi bi-grid-fill text-primary"></i>
+                            {% if current_lang=='ar' %}كل الأطباء المساعدين{% else %}All Doctors{% endif %}
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider my-1" style="border-color:rgba(255,255,255,0.08);"></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+            <!-- Custom Month & Year Grid Picker Widget -->
+            <div class="d-flex align-items-center gap-1">
+                <span class="small text-secondary fw-semibold me-1"><i class="bi bi-calendar3 me-1"></i>{% if current_lang=='ar' %}الشهر المحاسبي:{% else %}Month:{% endif %}</span>
+                <div class="dropdown" id="doc-share-month-picker-wrapper">
+                    <button class="btn btn-sm rounded-pill px-3.5 py-1.5 fw-semibold d-flex align-items-center gap-2 shadow-xs"
+                            type="button" id="doc-share-month-picker-btn" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-boundary="viewport" aria-expanded="false"
+                            style="background: var(--surface-color); color: var(--heading-color); border: 1px solid color-mix(in srgb, var(--heading-color), transparent 85%) !important; font-size: 0.85rem;">
+                        <i class="bi bi-calendar-range text-primary"></i>
+                        <span id="doc-share-month-picker-text">{% if current_lang=='ar' %}كافة الأشهر / الشهر الحالي{% else %}All Months / Current{% endif %}</span>
+                        <i class="bi bi-chevron-down ms-1" style="font-size:0.75rem;"></i>
+                    </button>
+
+                    <div class="dropdown-menu dropdown-menu-start shadow-lg border-0 rounded-4 p-2.5 mt-1"
+                         style="min-width: 320px; max-height: 80vh; overflow-y: auto; background: var(--surface-color); border: 1px solid color-mix(in srgb, var(--heading-color), transparent 85%) !important; color: var(--heading-color); z-index: 1060;">
+                        
+                        <!-- Header: Year Selector Pills -->
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-1.5 border-bottom border-secondary border-opacity-25">
+                            <span class="small fw-bold text-muted">{% if current_lang=='ar' %}السنة المحاسبية:{% else %}Select Year:{% endif %}</span>
+                            <div class="btn-group btn-group-sm rounded-pill p-0.5 border border-secondary border-opacity-25" role="group" id="month-picker-year-pills">
+                                <button type="button" class="btn btn-xs rounded-pill px-2 py-0.5 year-pill-btn active btn-primary" data-year="2026">2026</button>
+                                <button type="button" class="btn btn-xs rounded-pill px-2 py-0.5 year-pill-btn btn-outline-secondary border-0 text-body" data-year="2025">2025</button>
+                                <button type="button" class="btn btn-xs rounded-pill px-2 py-0.5 year-pill-btn btn-outline-secondary border-0 text-body" data-year="2024">2024</button>
+                            </div>
+                        </div>
+
+                        <!-- 12 Months Grid (4x3) -->
+                        <div class="row g-1.5 text-center" id="month-picker-grid">
+                            <!-- Dynamically generated month cards -->
+                        </div>
+
+                        <!-- Bottom Actions -->
+                        <div class="mt-2 pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+                            <button type="button" class="btn btn-sm btn-link text-secondary p-0 text-decoration-none small opacity-75 hover-opacity-100" id="month-picker-clear-btn">
+                                <i class="bi bi-x-circle me-1"></i>{% if current_lang=='ar' %}كافة الأشهر / كافة السنين{% else %}All Months / Years{% endif %}
+                            </button>
+                            <button type="button" class="btn btn-sm btn-primary rounded-pill px-3 py-1 text-white fw-bold shadow-xs" id="month-picker-apply-btn">
+                                {% if current_lang=='ar' %}إغلاق{% else %}Close{% endif %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" id="doc-share-filter-month" value="">
+            </div>
+            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="doc-share-reset-btn">
+                <i class="bi bi-x-circle me-1"></i>{% if current_lang=='ar' %}إعادة تعيين{% else %}Reset{% endif %}
+            </button>
+            <div class="ms-auto d-flex gap-2 flex-wrap">
+                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fw-semibold">
+                    <span id="doc-share-revenue-label">{% if current_lang=='ar' %}إجمالي دخل العيادة:{% else %}Total Revenue:{% endif %}</span>
+                    <span id="doc-share-total-revenue">—</span> {{ currency_symbol }}
+                </span>
+                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill fw-semibold">
+                    <span id="doc-share-earned-label">{% if current_lang=='ar' %}أرباح الأطباء:{% else %}Doctors Earned:{% endif %}</span>
+                    <span id="doc-share-total-earned">—</span> {{ currency_symbol }}
+                </span>
+                <span class="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill fw-semibold">
+                    <span id="doc-share-net-label">{% if current_lang=='ar' %}صافي العيادة:{% else %}Clinic Net:{% endif %}</span>
+                    <span id="doc-share-total-net">—</span> {{ currency_symbol }}
+                </span>
+            </div>
+        </div>
+
+        <div class="table-responsive" style="overflow: visible;">
+            <table class="table align-middle mb-0" style="table-layout: auto; width: 100%;">
+                <thead>
+                    <tr class="table-light text-nowrap" style="font-size: 0.84rem;">
+                        <th class="doc-share-sort-th" data-col="name" style="cursor:pointer; padding: 10px 8px;">
+                            {% if current_lang=='ar' %}الطبيب{% else %}Doctor{% endif %}
+                            <i class="bi bi-arrow-down-up ms-1 text-muted" style="font-size:.75rem;"></i>
+                        </th>
+                        <th class="text-center" style="padding: 10px 8px;">{% if current_lang=='ar' %}نظام الراتب{% else %}Salary Scheme{% endif %}</th>
+                        <th class="doc-share-sort-th text-center" data-col="appts" style="cursor:pointer; padding: 10px 8px;">
+                            {% if current_lang=='ar' %}المواعيد{% else %}Appointments{% endif %}
+                            <i class="bi bi-arrow-down-up ms-1 text-muted" style="font-size:.75rem;"></i>
+                        </th>
+                        <th class="doc-share-sort-th text-end" data-col="revenue" style="cursor:pointer; padding: 10px 8px;">
+                            {% if current_lang=='ar' %}الدخل المحقق{% else %}Brought Revenue{% endif %}
+                            <i class="bi bi-arrow-down-up ms-1 text-muted" style="font-size:.75rem;"></i>
+                        </th>
+                        <th class="doc-share-sort-th text-end" data-col="earned" style="cursor:pointer; padding: 10px 8px;">
+                            {% if current_lang=='ar' %}مستحقات الطبيب{% else %}Doctor Share{% endif %}
+                            <i class="bi bi-arrow-down-up ms-1 text-muted" style="font-size:.75rem;"></i>
+                        </th>
+                        <th class="doc-share-sort-th text-end" data-col="net" style="cursor:pointer; padding: 10px 8px;">
+                            {% if current_lang=='ar' %}صافي العيادة{% else %}Clinic Net{% endif %}
+                            <i class="bi bi-arrow-down-up ms-1 text-muted" style="font-size:.75rem;"></i>
+                        </th>
+                        <th class="text-center" style="padding: 10px 8px;">{% if current_lang=='ar' %}الإجراء{% else %}Action{% endif %}</th>
+                    </tr>
+                </thead>
+                <tbody id="doc-share-table-body">
+                    <tr><td colspan="7" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm"></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2" id="doc-share-pagination-bar">
+            <small class="text-muted" id="doc-share-pagination-info"></small>
+            <nav><ul class="pagination pagination-sm mb-0 gap-1" id="doc-share-pagination-links"></ul></nav>
+        </div>
+    </div>
+
+</div>

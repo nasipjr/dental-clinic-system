@@ -1,0 +1,81 @@
+<!-- ═══════════ Invoices Status Pills & Search Filter ═══════════ -->
+<!-- Status Tabs Bar -->
+<div class="d-flex align-items-center gap-2 mb-3 overflow-x-auto pb-2 user-select-none">
+    <a href="{{ url_for('invoices.invoices', status='', search=search_query, patient_id=patient_id) }}"
+       class="sub-tab-item btn btn-sm rounded-pill px-3.5 py-2 fw-semibold text-nowrap transition-all {% if not status_filter %}btn-primary text-white shadow-sm{% else %}btn-outline-secondary border-0 text-body opacity-75{% endif %}">
+        {% if current_lang == 'ar' %}الكل{% else %}All Invoices{% endif %}
+        <span class="badge rounded-pill {% if not status_filter %}bg-white text-primary fw-bold{% else %}bg-primary-subtle text-primary-emphasis{% endif %} ms-1" style="font-size: 0.78rem;">{{ status_counts.all if status_counts else 0 }}</span>
+    </a>
+
+    <a href="{{ url_for('invoices.invoices', status='Paid', search=search_query, patient_id=patient_id) }}"
+       class="sub-tab-item btn btn-sm rounded-pill px-3.5 py-2 fw-semibold text-nowrap transition-all {% if status_filter == 'Paid' %}btn-success text-white shadow-sm{% else %}btn-outline-secondary border-0 text-body opacity-75{% endif %}">
+        <i class="bi bi-check-circle-fill me-1"></i>
+        {% if current_lang == 'ar' %}مدفوع بالكامل{% else %}Paid{% endif %}
+        <span class="badge rounded-pill {% if status_filter == 'Paid' %}bg-white text-success fw-bold{% else %}bg-success-subtle text-success-emphasis{% endif %} ms-1" style="font-size: 0.78rem;">{{ status_counts.paid if status_counts else 0 }}</span>
+    </a>
+
+    <a href="{{ url_for('invoices.invoices', status='Partially Paid', search=search_query, patient_id=patient_id) }}"
+       class="sub-tab-item btn btn-sm rounded-pill px-3.5 py-2 fw-semibold text-nowrap transition-all {% if status_filter == 'Partially Paid' or status_filter == 'Partial' %}btn-warning text-dark shadow-sm{% else %}btn-outline-secondary border-0 text-body opacity-75{% endif %}">
+        <i class="bi bi-pie-chart-fill me-1"></i>
+        {% if current_lang == 'ar' %}مدفوع جزئياً{% else %}Partially Paid{% endif %}
+        <span class="badge rounded-pill {% if status_filter == 'Partially Paid' or status_filter == 'Partial' %}bg-dark text-warning fw-bold{% else %}bg-warning-subtle text-warning-emphasis{% endif %} ms-1" style="font-size: 0.78rem;">{{ status_counts.partial if status_counts else 0 }}</span>
+    </a>
+
+    <a href="{{ url_for('invoices.invoices', status='Unpaid', search=search_query, patient_id=patient_id) }}"
+       class="sub-tab-item btn btn-sm rounded-pill px-3.5 py-2 fw-semibold text-nowrap transition-all {% if status_filter == 'Unpaid' %}btn-danger text-white shadow-sm{% else %}btn-outline-secondary border-0 text-body opacity-75{% endif %}">
+        <i class="bi bi-exclamation-circle-fill me-1"></i>
+        {% if current_lang == 'ar' %}غير مدفوع (مستحق){% else %}Unpaid{% endif %}
+        <span class="badge rounded-pill {% if status_filter == 'Unpaid' %}bg-white text-danger fw-bold{% else %}bg-danger-subtle text-danger-emphasis{% endif %} ms-1" style="font-size: 0.78rem;">{{ status_counts.unpaid if status_counts else 0 }}</span>
+    </a>
+</div>
+
+<!-- Search & Filter Form -->
+<form id="invoices-filter-form" method="GET" action="{{ url_for('invoices.invoices') }}" class="appointments-filter-bar mb-4">
+    <div class="row gy-3 align-items-end">
+
+        <div class="col-md-5">
+            <label class="form-label">{% if current_lang == 'ar' %}بحث عن فاتورة{% else %}Search Invoice{% endif %}</label>
+            <input type="text" name="search" class="form-control"
+                placeholder="{% if current_lang == 'ar' %}رقم الفاتورة، اسم المريض، الهاتف، حالة الموعد{% else %}Invoice number, patient name, phone, appointment status{% endif %}"
+                value="{{ search_query }}">
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">{% if current_lang == 'ar' %}حالة السداد{% else %}Payment Status{% endif %}</label>
+            <select name="status" class="form-select">
+                <option value="" {% if not status_filter %}selected{% endif %}>{% if current_lang == 'ar' %}جميع الحالات{% else %}All Statuses{% endif %}</option>
+                <option value="Paid" {% if status_filter == 'Paid' %}selected{% endif %}>{% if current_lang == 'ar' %}مدفوع بالكامل{% else %}Fully Paid{% endif %}</option>
+                <option value="Partially Paid" {% if status_filter == 'Partially Paid' or status_filter == 'Partial' %}selected{% endif %}>{% if current_lang == 'ar' %}مدفوع جزئياً{% else %}Partially Paid{% endif %}</option>
+                <option value="Unpaid" {% if status_filter == 'Unpaid' %}selected{% endif %}>{% if current_lang == 'ar' %}غير مدفوع (مستحق){% else %}Unpaid (Outstanding){% endif %}</option>
+            </select>
+        </div>
+
+        <input type="hidden" name="patient_id" value="{{ patient_id or '' }}">
+        <input type="hidden" name="sort" value="{{ sort_by }}">
+        <input type="hidden" name="order" value="{{ order }}">
+        <input type="hidden" name="per_page" id="invoices-per-page-input" value="{{ per_page or 10 }}">
+
+        <div class="col-md-4 d-flex gap-2 flex-wrap align-items-center">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search me-1"></i>
+                {% if current_lang == 'ar' %}بحث{% else %}Search{% endif %}
+            </button>
+
+            <a href="{{ url_for('invoices.invoices') }}" class="btn btn-outline-secondary">
+                {% if current_lang == 'ar' %}إعادة تعيين{% else %}Reset{% endif %}
+            </a>
+
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <label for="invoices-per-page-select-top" class="small text-muted mb-0 fw-semibold text-nowrap">{% if current_lang == 'ar' %}عرض في الصفحة:{% else %}Items per page:{% endif %}</label>
+                <select id="invoices-per-page-select-top" class="form-select form-select-sm border-secondary-subtle rounded-3 py-1.5 shadow-xs" style="width: auto;" onchange="changeTablePerPage(this.value, 'invoices')">
+                    <option value="5" {% if per_page == 5 %}selected{% endif %}>5</option>
+                    <option value="10" {% if per_page == 10 or not per_page %}selected{% endif %}>10</option>
+                    <option value="25" {% if per_page == 25 %}selected{% endif %}>25</option>
+                    <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                    <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+                </select>
+            </div>
+        </div>
+
+    </div>
+</form>

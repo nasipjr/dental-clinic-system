@@ -1,0 +1,50 @@
+<!-- ═══════════ Portal Invoice Header & Summary Grid ═══════════ -->
+<!-- Header buttons -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <a href="{{ url_for('portal.billing') }}" class="btn btn-outline-secondary rounded-pill px-3">
+        <i class="bi bi-arrow-left me-1"></i> {% if current_lang == 'ar' %}العودة للفواتير والمالية{% else %}Back to Billing{% endif %}
+    </a>
+    <button onclick="window.print()" class="btn btn-success rounded-pill px-4 d-inline-flex align-items-center gap-2">
+        <i class="bi bi-printer"></i>
+        <span>{% if current_lang == 'ar' %}طباعة الفاتورة{% else %}Print Invoice{% endif %}</span>
+    </button>
+</div>
+
+<div class="text-center mb-4">
+    <h3 class="fw-bold mb-1">{% if current_lang == 'ar' %}فاتورة رقم{% else %}Invoice{% endif %} {{ invoice.invoice_number }}</h3>
+    <span class="text-secondary small">{% if current_lang == 'ar' %}صادرة ومولدة من معالجات الموعد السريري{% else %}Generated from appointment treatments{% endif %}</span>
+</div>
+
+<!-- Invoice Info Grid -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-md-3">
+        <div class="p-3 rounded-3 h-100" style="background: color-mix(in srgb, var(--default-color), transparent 96%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);">
+            <span class="small d-block mb-1" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">{% if current_lang == 'ar' %}رقم الفاتورة{% else %}Invoice Number{% endif %}</span>
+            <span class="fw-bold" style="color: var(--heading-color);">{{ invoice.invoice_number }}</span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="p-3 rounded-3 h-100" style="background: color-mix(in srgb, var(--default-color), transparent 96%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);">
+            <span class="small d-block mb-1" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">{% if current_lang == 'ar' %}تاريخ الإصدار{% else %}Issue Date{% endif %}</span>
+            <span class="fw-bold" style="color: var(--heading-color);">{{ invoice.issue_date.strftime('%Y-%m-%d') }}</span>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="p-3 rounded-3 h-100" style="background: color-mix(in srgb, var(--default-color), transparent 96%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);">
+            <span class="small d-block mb-1" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">{% if current_lang == 'ar' %}حالة الفاتورة{% else %}Invoice Status{% endif %}</span>
+            {% if invoice.status == 'Paid' %}
+            <span class="badge bg-success rounded-pill px-3 py-1 border border-success-subtle">{% if current_lang == 'ar' %}مدفوعة{% else %}Paid{% endif %}</span>
+            {% elif invoice.status == 'Partially Paid' %}
+            <span class="badge bg-warning text-dark rounded-pill px-3 py-1 border border-warning-subtle">{% if current_lang == 'ar' %}دفع جزئي{% else %}Partial{% endif %}</span>
+            {% else %}
+            <span class="badge bg-danger rounded-pill px-3 py-1 border border-danger-subtle">{% if current_lang == 'ar' %}غير مدفوعة{% else %}Unpaid{% endif %}</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3 text-center">
+        <div class="p-2 rounded-3 h-100 d-flex flex-column align-items-center justify-content-center" style="background: color-mix(in srgb, var(--default-color), transparent 96%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);">
+            <span class="small d-block mb-1" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">{% if current_lang == 'ar' %}رمز التحقق QR{% else %}QR Verification{% endif %}</span>
+            <canvas id="invoice-qrcode" style="width: 70px; height: 70px;"></canvas>
+        </div>
+    </div>
+</div>

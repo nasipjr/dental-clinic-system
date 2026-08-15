@@ -1,0 +1,76 @@
+<!-- ═══════════ Add Patient Payment Form ═══════════ -->
+<form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="invoice_id" value="{{ invoice_id or '' }}">
+
+    <div class="row gy-4">
+
+        <!-- Patient Selector -->
+        <div class="col-md-12">
+            <label for="patient_id" class="form-label">{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</label>
+            <select id="patient_id" name="patient_id" class="form-select" required>
+                <option value="">{% if current_lang == 'ar' %}اختر المريض{% else %}Select Patient{% endif %}</option>
+                {% for patient in patients %}
+                <option value="{{ patient.id }}" {% if selected_patient_id and selected_patient_id==patient.id %}selected{% endif %}>
+                    {{ patient.first_name }} {{ patient.last_name }}
+                    {% if patient.phone %} - {{ patient.phone }}{% endif %}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Payment Amount Input & Quick Pay Buttons -->
+        <div class="col-md-12">
+            <label for="payment_amount" class="form-label">{% if current_lang == 'ar' %}مبلغ الدفعة{% else %}Payment Amount{% endif %}</label>
+            <input type="number" step="any" min="0" id="payment_amount" name="payment_amount"
+                class="form-control" placeholder="{% if current_lang == 'ar' %}أدخل مبلغ الدفعة{% else %}Enter payment amount{% endif %}"
+                value="{% if target_invoice and target_invoice.outstanding_amount > 0 %}{{ target_invoice.outstanding_amount }}{% endif %}" required>
+
+            {% if selected_patient %}
+            <div class="quick-payment-buttons-container d-flex flex-wrap gap-2.5 mt-3">
+                {% if target_invoice and target_invoice.outstanding_amount > 0 %}
+                <button type="button" class="btn btn-quick-pay invoice-pay-btn" id="btn-invoice-payment" data-amount="{{ target_invoice.outstanding_amount }}">
+                    <i class="bi bi-receipt me-1"></i>
+                    <span>{% if current_lang == 'ar' %}دفع كامل قيمة الفاتورة ({{ target_invoice.outstanding_amount | format_price }} {{ currency_symbol }}){% else %}Pay Full Invoice ({{ target_invoice.outstanding_amount | format_price }} {{ currency_symbol }}){% endif %}</span>
+                </button>
+                {% endif %}
+
+                {% if selected_patient.outstanding_amount > 0 %}
+                <button type="button" class="btn btn-quick-pay debt-pay-btn" id="btn-total-debt-payment" data-amount="{{ selected_patient.outstanding_amount }}">
+                    <i class="bi bi-layers me-1"></i>
+                    <span>{% if current_lang == 'ar' %}دفع كامل المستحقات المتراكمة ({{ selected_patient.outstanding_amount | format_price }} {{ currency_symbol }}){% else %}Pay Full Accumulated Debt ({{ selected_patient.outstanding_amount | format_price }} {{ currency_symbol }}){% endif %}</span>
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Notes -->
+        <div class="col-md-12">
+            <label for="notes" class="form-label">{% if current_lang == 'ar' %}ملاحظات الدفعة{% else %}Payment Notes{% endif %}</label>
+            <textarea id="notes" name="notes" class="form-control" rows="3"
+                placeholder="{% if current_lang == 'ar' %}ملاحظات اختيارية حول هذه الدفعة وطريقة استلامها...{% else %}Optional notes about this payment{% endif %}"></textarea>
+        </div>
+
+        <!-- Actions -->
+        <div class="col-12">
+            <div class="action-buttons justify-content-center gap-3">
+                <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">
+                    <i class="bi bi-check-circle me-1"></i>
+                    {% if current_lang == 'ar' %}حفظ الدفعة وتأكيدها{% else %}Save Payment{% endif %}
+                </button>
+
+                {% if invoice_id %}
+                <a href="{{ url_for('invoices.view_invoice', invoice_id=invoice_id) }}" class="btn-outline-main px-4">
+                    {% if current_lang == 'ar' %}عودة للفاتورة{% else %}Back{% endif %}
+                </a>
+                {% else %}
+                <a href="{{ url_for('payments.payments') }}" class="btn-outline-main px-4">
+                    {% if current_lang == 'ar' %}عودة لسجل المدفوعات{% else %}Back{% endif %}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</form>

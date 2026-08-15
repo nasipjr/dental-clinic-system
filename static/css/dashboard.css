@@ -1,0 +1,110 @@
+/**
+ * Dental Clinic Management System - Dashboard Stylesheet
+ * Contains Hero section styling, stat counters, glassmorphic visualizer, and table action cards.
+ */
+
+main.main {
+    padding-top: 120px !important;
+}
+
+#hero {
+    padding-top: 10px !important;
+    margin-top: 0 !important;
+}
+
+/* Stat Grid Items inside Visualizer */
+.stat-grid-item {
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);
+    background: color-mix(in srgb, var(--default-color), transparent 97%);
+    transition: all 0.2s ease;
+}
+
+.stat-grid-item.scheduled {
+    border-left: 3px solid #0d6efd;
+}
+
+.stat-grid-item.completed {
+    border-left: 3px solid #10b981;
+}
+
+.stat-grid-item.revenue {
+    border-left: 3px solid #6366f1;
+}
+
+.stat-grid-item.collected {
+    border-left: 3px solid #14b8a6;
+}
+
+[dir="rtl"] .stat-grid-item.scheduled {
+    border-left: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);
+    border-right: 3px solid #0d6efd;
+}
+
+[dir="rtl"] .stat-grid-item.completed {
+    border-left: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);
+    border-right: 3px solid #10b981;
+}
+
+[dir="rtl"] .stat-grid-item.revenue {
+    border-left: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);
+    border-right: 3px solid #6366f1;
+}
+
+[dir="rtl"] .stat-grid-item.collected {
+    border-left: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);
+    border-right: 3px solid #14b8a6;
+}
+
+/* Credit and Due Badges */
+.credit-amount {
+    color: #10b981;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.credit-badge {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.remaining-due {
+    color: #ef4444;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.due-badge {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.remaining-clear {
+    color: #10b981;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.paid-badge {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}

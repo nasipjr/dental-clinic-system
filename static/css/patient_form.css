@@ -1,0 +1,24 @@
+/**
+ * Dental Clinic Management System - Patient Add & Edit Stylesheet
+ * Styles for Syrian phone prefix input (+963), emergency contact dual mode selector, duplicate warnings, and read-only forms.
+ */
+
+.readonly-form input:disabled,
+.readonly-form select:disabled,
+.readonly-form textarea:disabled {
+    background-color: color-mix(in srgb, var(--default-color), transparent 96%) !important;
+    cursor: not-allowed;
+    opacity: 0.85;
+}
+
+#duplicate-warning-box,
+#live-duplicate-alert {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.12), rgba(15, 23, 42, 0.95));
+    backdrop-filter: blur(10px);
+}
+
+.emergency-mode-btn {
+    font-size: 0.72rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}

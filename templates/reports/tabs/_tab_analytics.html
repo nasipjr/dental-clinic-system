@@ -1,0 +1,126 @@
+<!-- ═══════════ Tab 1: General Analytics ═══════════ -->
+<div class="tab-pane fade show active" id="tab-analytics" role="tabpanel" aria-labelledby="analytics-tab">
+    
+    <!-- Print Page Title -->
+    <div class="d-none d-print-block mb-4">
+        <h3 class="fw-bold text-center">{% if current_lang == 'ar' %}تقرير التحليلات والإحصائيات العامة للمعيّنات{% else %}General Analytics & Statistics Report{% endif %}</h3>
+        <p class="text-muted text-center">{% if current_lang == 'ar' %}تاريخ التصدير:{% else %}Printed Date:{% endif %} {{ now.strftime('%Y-%m-%d %I:%M %p') }}</p>
+    </div>
+
+    <!-- KPI Cards Grid -->
+    <div class="row g-4 mb-5">
+        <!-- Total Billed Card -->
+        <div class="col-md-4">
+            <div class="kpi-card billing-card h-100 p-4 border-0 rounded-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="kpi-icon-wrapper rounded-3 bg-primary bg-opacity-10 text-primary p-3">
+                        <i class="bi bi-receipt-cutoff fs-3"></i>
+                    </div>
+                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-1">
+                        {% if current_lang == 'ar' %}مفوتر{% else %}Invoiced{% endif %}
+                    </span>
+                </div>
+                <h5 class="text-secondary mb-1">{% if current_lang == 'ar' %}إجمالي المفوتر{% else %}Total Invoiced{% endif %}</h5>
+                <h2 class="mb-0 fw-bold">{{ total_invoiced | format_price }} {{ currency_symbol }}</h2>
+            </div>
+        </div>
+
+        <!-- Total Paid Card -->
+        <div class="col-md-4">
+            <div class="kpi-card revenue-card h-100 p-4 border-0 rounded-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="kpi-icon-wrapper rounded-3 bg-success bg-opacity-10 text-success p-3">
+                        <i class="bi bi-wallet2 fs-3"></i>
+                    </div>
+                    <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-1">
+                        {% if current_lang == 'ar' %}المقبوضات{% else %}Revenue{% endif %}
+                    </span>
+                </div>
+                <h5 class="text-secondary mb-1">{% if current_lang == 'ar' %}إجمالي المقبوضات{% else %}Total Payments{% endif %}</h5>
+                <h2 class="mb-0 fw-bold text-success">{{ total_payments | format_price }} {{ currency_symbol }}</h2>
+            </div>
+        </div>
+
+        <!-- Total Patients Card -->
+        <div class="col-md-4">
+            <div class="kpi-card patients-card h-100 p-4 border-0 rounded-4 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="kpi-icon-wrapper rounded-3 bg-info bg-opacity-10 text-info p-3">
+                        <i class="bi bi-people fs-3"></i>
+                    </div>
+                    <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-1">
+                        {% if current_lang == 'ar' %}مرضى{% else %}Patients{% endif %}
+                    </span>
+                </div>
+                <h5 class="text-secondary mb-1">{% if current_lang == 'ar' %}إجمالي المرضى{% else %}Total Patients{% endif %}</h5>
+                <h2 class="mb-0 fw-bold text-info">{{ total_patients }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section 1: Monthly Financials & Appointment Status -->
+    <div class="row g-4 mb-5">
+        <!-- Monthly Revenue & Billing Chart -->
+        <div class="col-lg-8">
+            <div class="card chart-card border-0 rounded-4 shadow-sm p-4 h-100">
+                <h4 class="card-title fw-bold mb-4">
+                    {% if current_lang == 'ar' %}الأداء المالي الشهري{% else %}Monthly Financial Performance{% endif %}
+                </h4>
+                <div class="chart-container" style="position: relative; height:320px;">
+                    <canvas id="monthlyFinancialsChart"
+                            data-labels='{{ monthly_labels | tojson }}'
+                            data-billed='{{ monthly_billed | tojson }}'
+                            data-paid='{{ monthly_paid | tojson }}'></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointment Status Chart -->
+        <div class="col-lg-4">
+            <div class="card chart-card border-0 rounded-4 shadow-sm p-4 h-100">
+                <h4 class="card-title fw-bold mb-4">
+                    {% if current_lang == 'ar' %}حالات المواعيد{% else %}Appointment Statuses{% endif %}
+                </h4>
+                <div class="chart-container d-flex justify-content-center align-items-center"
+                    style="position: relative; height:320px;">
+                    <canvas id="appointmentStatusChart"
+                            data-labels='{{ appointment_status_labels | tojson }}'
+                            data-values='{{ appointment_status_values | tojson }}'></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section 2: Top Procedures & Gender Demographics -->
+    <div class="row g-4 mb-5">
+        <!-- Top Procedures Chart -->
+        <div class="col-lg-6">
+            <div class="card chart-card border-0 rounded-4 shadow-sm p-4 h-100">
+                <h4 class="card-title fw-bold mb-4">
+                    {% if current_lang == 'ar' %}أكثر 5 إجراءات علاجية طلباً (بالعدد){% else %}Top 5 Procedure Types (by Volume){% endif %}
+                </h4>
+                <div class="chart-container" style="position: relative; height:300px;">
+                    <canvas id="topProceduresChart"
+                            data-labels='{{ procedure_labels | tojson }}'
+                            data-counts='{{ procedure_values_counts | tojson }}'></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patient Demographics (Gender) Chart -->
+        <div class="col-lg-6">
+            <div class="card chart-card border-0 rounded-4 shadow-sm p-4 h-100">
+                <h4 class="card-title fw-bold mb-4">
+                    {% if current_lang == 'ar' %}التوزيع الديمغرافي للمرضى (الجنس){% else %}Patient Gender Demographics{% endif %}
+                </h4>
+                <div class="chart-container d-flex justify-content-center align-items-center"
+                    style="position: relative; height:300px;">
+                    <canvas id="genderDemographicsChart"
+                            data-labels='{{ gender_labels | tojson }}'
+                            data-values='{{ gender_values | tojson }}'></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

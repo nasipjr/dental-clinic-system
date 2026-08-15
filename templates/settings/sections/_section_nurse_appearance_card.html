@@ -1,0 +1,55 @@
+<!-- ═══════════ Nurse Appearance Settings Card ═══════════ -->
+<div class="settings-content-card p-4 p-md-5">
+
+    <!-- Header -->
+    <div class="settings-tab-header mb-4">
+        <div class="settings-tab-icon"><i class="bi bi-palette"></i></div>
+        <div>
+            <h4>{% if current_lang == 'ar' %}المظهر واللغة{% else %}Theme &amp; Appearance{% endif %}</h4>
+            <p>{% if current_lang == 'ar' %}تخصيص الثيم البصري ولغة واجهة النظام{% else %}Customize the visual theme of the application{% endif %}</p>
+        </div>
+    </div>
+
+    <!-- Theme Selector -->
+    <div class="mb-5">
+        <label class="settings-label d-block mb-3">{% if current_lang == 'ar' %}مظهر عرض النظام{% else %}System Display Theme{% endif %}</label>
+        <div class="d-flex gap-3">
+            <button type="button"
+                class="btn theme-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"
+                id="theme-light-btn" onclick="setAppTheme('light')"
+                style="border-radius: 16px; transition: all 0.3s ease;">
+                <i class="bi bi-sun-fill fs-2 mb-2 text-warning"></i>
+                <strong style="font-size: 1.05rem;">{% if current_lang == 'ar' %}الوضع الفاتح{% else %}Light Mode{% endif %}</strong>
+            </button>
+            <button type="button"
+                class="btn theme-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"
+                id="theme-dark-btn" onclick="setAppTheme('dark')"
+                style="border-radius: 16px; transition: all 0.3s ease;">
+                <i class="bi bi-moon-stars-fill fs-2 mb-2 text-primary"></i>
+                <strong style="font-size: 1.05rem;">{% if current_lang == 'ar' %}الوضع الداكن{% else %}Dark Mode{% endif %}</strong>
+            </button>
+        </div>
+    </div>
+
+    <!-- Language Selector -->
+    <div class="pt-4 border-top" style="border-top-color: rgba(13, 110, 253, 0.08) !important;">
+        <label class="settings-label d-block mb-3">{% if current_lang == 'ar' %}لغة واجهة النظام{% else %}System Interface Language{% endif %}</label>
+        <div class="d-flex gap-3">
+            <button type="button"
+                class="btn lang-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"
+                id="lang-en-btn" onclick="setAppLang('en')"
+                style="border-radius: 16px; transition: all 0.3s ease;">
+                <span class="fs-2 mb-2">🇺🇸</span>
+                <strong style="font-size: 1.05rem;">English</strong>
+            </button>
+            <button type="button"
+                class="btn lang-selector-btn flex-fill py-4 d-flex flex-column align-items-center justify-content-center border-2"
+                id="lang-ar-btn" onclick="setAppLang('ar')"
+                style="border-radius: 16px; transition: all 0.3s ease;">
+                <span class="fs-2 mb-2">🇸🇦</span>
+                <strong style="font-size: 1.05rem;">العربية</strong>
+            </button>
+        </div>
+    </div>
+
+</div>

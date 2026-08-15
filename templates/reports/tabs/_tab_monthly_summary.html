@@ -1,0 +1,293 @@
+<!-- ═══════════ Tab 3: Monthly Financial Summary ═══════════ -->
+<div class="tab-pane fade" id="tab-monthly-summary" role="tabpanel" aria-labelledby="monthly-summary-tab">
+    
+    <!-- Print Page Title -->
+    <div class="d-none d-print-block mb-4">
+        <h3 class="fw-bold text-center">{% if current_lang == 'ar' %}تقرير الخلاصة المالية الشهرية{% else %}Monthly Financial Summary Report{% endif %}</h3>
+        <p class="text-muted text-center">{% if current_lang == 'ar' %}تاريخ التصدير:{% else %}Printed Date:{% endif %} {{ now.strftime('%Y-%m-%d %I:%M %p') }}</p>
+    </div>
+
+    <!-- Interactive Daily Financial Calendar -->
+    <div class="card border-0 rounded-4 shadow-sm p-4 mb-5 d-print-none" id="monthly-calendar-wrapper">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h4 class="fw-bold mb-1">
+                    {% if current_lang == 'ar' %}التقويم المالي اليومي{% else %}Daily Financial Calendar{% endif %}
+                </h4>
+                <p class="text-secondary mb-0 small">
+                    {% if current_lang == 'ar' %}تصفح الأيام للوقوف على المفوتر، المقبوضات، والمصاريف اليومية بالتفصيل.{% else %}Browse days to review daily billing, collections, and expense lists.{% endif %}
+                </p>
+            </div>
+            
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-sm btn-outline-primary rounded-circle" id="cal-prev-month-btn" title="{% if current_lang == 'ar' %}الشهر السابق{% else %}Previous Month{% endif %}">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <span class="fw-bold fs-5 text-main px-1" id="calendar-month-display" style="min-width: 90px; text-align: center;"></span>
+                <select id="cal-year-select" class="form-select form-select-sm rounded-pill fw-bold border-primary text-primary px-3 py-1" style="width: auto; cursor: pointer; font-size: 0.95rem;">
+                    {% for y in available_years %}
+                    <option value="{{ y }}" {% if selected_year == y|string or (selected_year == 'all' and loop.first) %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+                <button type="button" class="btn btn-sm btn-outline-primary rounded-circle" id="cal-next-month-btn" title="{% if current_lang == 'ar' %}الشهر التالي{% else %}Next Month{% endif %}">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Calendar Grid Wrapper -->
+        <div class="calendar-grid-container mb-2">
+            <!-- Days of Week Headers -->
+            <div class="calendar-week-headers mb-2">
+                <div>{% if current_lang == 'ar' %}الأحد{% else %}Sun{% endif %}</div>
+                <div>{% if current_lang == 'ar' %}الاثنين{% else %}Mon{% endif %}</div>
+                <div>{% if current_lang == 'ar' %}الثلاثاء{% else %}Tue{% endif %}</div>
+                <div>{% if current_lang == 'ar' %}الأربعاء{% else %}Wed{% endif %}</div>
+                <div>{% if current_lang == 'ar' %}الخميس{% else %}Thu{% endif %}</div>
+                <div>{% if current_lang == 'ar' %}الجمعة{% else %}Fri{% endif %}</div>
+                <div>{% if current_lang == 'ar' %}السبت{% else %}Sat{% endif %}</div>
+            </div>
+            
+            <!-- Days Cells Grid -->
+            <div class="calendar-days-grid" id="calendar-days-container">
+                <!-- Populated dynamically via Javascript -->
+            </div>
+        </div>
+
+        <!-- Calendar Footer: Legend & Monthly Totals -->
+        <div class="border-top pt-3 mt-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <!-- Legend -->
+            <div class="d-flex gap-3 small text-secondary flex-wrap">
+                <div class="d-flex align-items-center gap-1.5">
+                    <span class="d-inline-block rounded-circle" style="width: 10px; height: 10px; background-color: var(--primary-color);"></span>
+                    <span>{% if current_lang == 'ar' %}مفوتر{% else %}Billed{% endif %}</span>
+                </div>
+                <div class="d-flex align-items-center gap-1.5">
+                    <span class="d-inline-block rounded-circle" style="width: 10px; height: 10px; background-color: var(--success-color);"></span>
+                    <span>{% if current_lang == 'ar' %}مقبوض{% else %}Paid{% endif %}</span>
+                </div>
+                <div class="d-flex align-items-center gap-1.5">
+                    <span class="d-inline-block rounded-circle" style="width: 10px; height: 10px; background-color: var(--danger-color);"></span>
+                    <span>{% if current_lang == 'ar' %}مصاريف{% else %}Expenses{% endif %}</span>
+                </div>
+                <div class="d-flex align-items-center gap-1.5">
+                    <span class="d-inline-block" style="width: 15px; height: 4px; border-top: 3px solid #198754;"></span>
+                    <span>{% if current_lang == 'ar' %}صافي ربح{% else %}Net Profit{% endif %}</span>
+                </div>
+                <div class="d-flex align-items-center gap-1.5">
+                    <span class="d-inline-block" style="width: 15px; height: 4px; border-top: 3px solid #dc3545;"></span>
+                    <span>{% if current_lang == 'ar' %}صافي خسارة{% else %}Net Loss{% endif %}</span>
+                </div>
+            </div>
+            
+            <!-- Month Totals Summary -->
+            <div class="d-flex gap-3 align-items-center flex-wrap" id="calendar-month-totals">
+                <!-- Populated dynamically via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Year Financial Chart Card -->
+    <div class="card chart-card border-0 rounded-4 shadow-sm p-4 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+                <h4 class="fw-bold mb-1">
+                    {% if current_lang == 'ar' %}التحليلات المالية التفاعلية (أداء السنة {{ selected_year }}){% else %}Interactive Financial Analytics (Year {{ selected_year }} Performance){% endif %}
+                </h4>
+                <p class="text-secondary mb-0 small">
+                    {% if current_lang == 'ar' %}رسم بياني تفاعلي للمقارنة بين المفوتر، المقبوضات، المصاريف، وصافي الأرباح شهرياً.{% else %}Interactive month-by-month chart comparing billed, paid, expenses, and net profit margins.{% endif %}
+                </p>
+            </div>
+            
+            <!-- Interactive Controls -->
+            <div class="d-flex align-items-center gap-3 flex-wrap d-print-none">
+                <!-- View filter buttons -->
+                <div class="btn-group btn-group-sm rounded-pill p-1 bg-light-subtle border" role="group" id="chart-view-filter">
+                    <button type="button" class="btn btn-primary rounded-pill px-3 active" data-view="all">
+                        {% if current_lang == 'ar' %}الكل{% else %}All{% endif %}
+                    </button>
+                    <button type="button" class="btn rounded-pill px-3 text-secondary" data-view="income-expense">
+                        {% if current_lang == 'ar' %}الدخل والمصاريف{% else %}Income & Expenses{% endif %}
+                    </button>
+                    <button type="button" class="btn rounded-pill px-3 text-secondary" data-view="profits">
+                        {% if current_lang == 'ar' %}صافي الأرباح{% else %}Net Profits{% endif %}
+                    </button>
+                </div>
+
+                <!-- Chart style selector -->
+                <div class="btn-group btn-group-sm rounded-pill p-1 bg-light-subtle border" role="group" id="chart-style-filter">
+                    <button type="button" class="btn btn-primary rounded-pill px-2.5 active" data-style="bar" title="{% if current_lang == 'ar' %}مخطط أعمدة ومؤشرات{% else %}Bar Combo Chart{% endif %}">
+                        <i class="bi bi-bar-chart-line-fill"></i>
+                    </button>
+                    <button type="button" class="btn rounded-pill px-2.5 text-secondary" data-style="line" title="{% if current_lang == 'ar' %}مخطط خطي كامل{% else %}Line Chart{% endif %}">
+                        <i class="bi bi-graph-up"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart Container -->
+        <div class="chart-container" style="position: relative; height: 420px;">
+            <canvas id="yearFinancialsChart"
+                    data-labels='{{ summary_labels | tojson }}'
+                    data-billed='{{ summary_billed | tojson }}'
+                    data-paid='{{ summary_paid | tojson }}'
+                    data-expenses='{{ summary_expenses | tojson }}'
+                    data-net-profit='{{ summary_net_profit | tojson }}'
+                    data-accrual-profit='{{ summary_accrual_profit | tojson }}'></canvas>
+        </div>
+    </div>
+
+    <!-- Explanatory Table Card -->
+    <div class="card table-card border-0 rounded-4 shadow-sm p-4 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h4 class="fw-bold mb-1">
+                    {% if current_lang == 'ar' %}الجدول التوضيحي المالي{% else %}Explanatory Financial Table{% endif %}
+                </h4>
+                <p class="text-secondary mb-0 small">
+                    {% if current_lang == 'ar' %}مقارنة المبالغ المفوترة والمحصلة والمصاريف وصافي الربح شهرياً بالتفصيل.{% else %}Detailed month-by-month table comparing billed, paid, expenses, and net profit margins.{% endif %}
+                </p>
+            </div>
+            <div class="d-flex align-items-center gap-2 d-print-none">
+                <label for="table-year-select" class="form-label mb-0 fw-semibold text-secondary small">
+                    {% if current_lang == 'ar' %}السنة:{% else %}Year:{% endif %}
+                </label>
+                <select id="table-year-select" class="form-select form-select-sm rounded-3" style="width: 100px;" onchange="location.href='{{ url_for('reports.reports_dashboard') }}?year=' + this.value + '#tab-monthly-summary'">
+                    <option value="all" {% if selected_year == 'all' %}selected{% endif %}>{% if current_lang == 'ar' %}الكل{% else %}All{% endif %}</option>
+                    {% for yr in available_years %}
+                    <option value="{{ yr }}" {% if yr|string == selected_year|string %}selected{% endif %}>{{ yr }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        {% if monthly_summary %}
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>{% if current_lang == 'ar' %}الشهر{% else %}Month{% endif %}</th>
+                        <th class="text-end">{% if current_lang == 'ar' %}إجمالي المفوتر{% else %}Total Billed{% endif %}</th>
+                        <th class="text-end">{% if current_lang == 'ar' %}إجمالي المقبوضات{% else %}Total Paid{% endif %}</th>
+                        <th class="text-end text-danger">{% if current_lang == 'ar' %}المصاريف{% else %}Expenses{% endif %}</th>
+                        <th class="text-end">{% if current_lang == 'ar' %}صافي الأرباح (نقدي){% else %}Net Profit (Cash){% endif %}</th>
+                        <th class="text-end">{% if current_lang == 'ar' %}صافي الأرباح (تراكمي/مفوتر){% else %}Net Profit (Accrual){% endif %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in monthly_summary %}
+                    <tr>
+                        <td>
+                            <strong class="text-body">{{ item.month_label }}</strong>
+                        </td>
+                        <td class="text-end fw-semibold">{{ item.billed | format_price }} {{ currency_symbol }}</td>
+                        <td class="text-end text-success fw-semibold">{{ item.paid | format_price }} {{ currency_symbol }}</td>
+                        <td class="text-end text-danger fw-semibold">{{ item.expenses | format_price }} {{ currency_symbol }}</td>
+                        <td class="text-end">
+                            <strong class="{% if item.net_profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {{ item.net_profit | format_price }} {{ currency_symbol }}
+                            </strong>
+                        </td>
+                        <td class="text-end">
+                            <strong class="{% if item.accrual_profit >= 0 %}text-primary{% else %}text-danger{% endif %}">
+                                {{ item.accrual_profit | format_price }} {{ currency_symbol }}
+                            </strong>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Separate Grand Totals Summary Cards Block -->
+        {% set grand_billed = (monthly_summary | map(attribute='billed') | sum) %}
+        {% set grand_paid = (monthly_summary | map(attribute='paid') | sum) %}
+        {% set grand_expenses = (monthly_summary | map(attribute='expenses') | sum) %}
+        {% set grand_cash = (monthly_summary | map(attribute='net_profit') | sum) %}
+        {% set grand_accrual = (monthly_summary | map(attribute='accrual_profit') | sum) %}
+
+        <div class="mt-4 pt-3 border-top border-secondary border-opacity-25">
+            <div class="d-flex align-items-center mb-3">
+                <h5 class="fw-bold mb-0 text-main d-flex align-items-center gap-2">
+                    <i class="bi bi-pie-chart-fill text-primary"></i>
+                    {% if current_lang == 'ar' %}محصلة ومجاميع الجدول المالي{% else %}Financial Summary Totals{% endif %}
+                </h5>
+                <span class="badge bg-primary bg-opacity-10 text-primary ms-auto px-3 py-1.5 rounded-pill small fw-semibold">
+                    <i class="bi bi-calculator me-1"></i>
+                    {% if current_lang == 'ar' %}إجمالي المحصلات{% else %}Grand Totals{% endif %}
+                </span>
+            </div>
+
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-5 g-3">
+                <!-- 1. Total Billed -->
+                <div class="col">
+                    <div class="p-3 rounded-4 h-100 border border-secondary border-opacity-20 shadow-xs" style="background: rgba(255,255,255,0.02);">
+                        <div class="d-flex align-items-center gap-2 mb-2 text-secondary small">
+                            <i class="bi bi-receipt fs-5 text-info"></i>
+                            <span>{% if current_lang == 'ar' %}إجمالي المفوتر{% else %}Total Billed{% endif %}</span>
+                        </div>
+                        <h5 class="fw-bold mb-0 text-body">{{ grand_billed | format_price }} <small class="fs-6 fw-normal text-muted">{{ currency_symbol }}</small></h5>
+                    </div>
+                </div>
+
+                <!-- 2. Total Paid -->
+                <div class="col">
+                    <div class="p-3 rounded-4 h-100 border border-success border-opacity-25 shadow-xs" style="background: rgba(16,185,129,0.04);">
+                        <div class="d-flex align-items-center gap-2 mb-2 text-success small fw-semibold">
+                            <i class="bi bi-wallet2 fs-5 text-success"></i>
+                            <span>{% if current_lang == 'ar' %}إجمالي المقبوضات{% else %}Total Paid{% endif %}</span>
+                        </div>
+                        <h5 class="fw-bold mb-0 text-success">{{ grand_paid | format_price }} <small class="fs-6 fw-normal opacity-75">{{ currency_symbol }}</small></h5>
+                    </div>
+                </div>
+
+                <!-- 3. Expenses -->
+                <div class="col">
+                    <div class="p-3 rounded-4 h-100 border border-danger border-opacity-25 shadow-xs" style="background: rgba(239,68,68,0.04);">
+                        <div class="d-flex align-items-center gap-2 mb-2 text-danger small fw-semibold">
+                            <i class="bi bi-cash-coin fs-5 text-danger"></i>
+                            <span>{% if current_lang == 'ar' %}المصاريف التشغيلية{% else %}Total Expenses{% endif %}</span>
+                        </div>
+                        <h5 class="fw-bold mb-0 text-danger">{{ grand_expenses | format_price }} <small class="fs-6 fw-normal opacity-75">{{ currency_symbol }}</small></h5>
+                    </div>
+                </div>
+
+                <!-- 4. Net Cash Profit -->
+                <div class="col">
+                    <div class="p-3 rounded-4 h-100 border {% if grand_cash >= 0 %}border-success border-opacity-25{% else %}border-danger border-opacity-25{% endif %} shadow-xs"
+                         style="background: {% if grand_cash >= 0 %}rgba(16,185,129,0.06){% else %}rgba(239,68,68,0.06){% endif %};">
+                        <div class="d-flex align-items-center gap-2 mb-2 {% if grand_cash >= 0 %}text-success{% else %}text-danger{% endif %} small fw-semibold">
+                            <i class="bi bi-currency-exchange fs-5"></i>
+                            <span>{% if current_lang == 'ar' %}صافي الأرباح (نقدي){% else %}Net Cash Profit{% endif %}</span>
+                        </div>
+                        <h5 class="fw-bold mb-0 {% if grand_cash >= 0 %}text-success{% else %}text-danger{% endif %}">
+                            {{ grand_cash | format_price }} <small class="fs-6 fw-normal opacity-75">{{ currency_symbol }}</small>
+                        </h5>
+                    </div>
+                </div>
+
+                <!-- 5. Net Accrual Profit -->
+                <div class="col">
+                    <div class="p-3 rounded-4 h-100 border {% if grand_accrual >= 0 %}border-primary border-opacity-25{% else %}border-danger border-opacity-25{% endif %} shadow-xs"
+                         style="background: {% if grand_accrual >= 0 %}rgba(59,130,246,0.06){% else %}rgba(239,68,68,0.06){% endif %};">
+                        <div class="d-flex align-items-center gap-2 mb-2 {% if grand_accrual >= 0 %}text-primary{% else %}text-danger{% endif %} small fw-semibold">
+                            <i class="bi bi-graph-up-arrow fs-5"></i>
+                            <span>{% if current_lang == 'ar' %}صافي الأرباح (تراكمي){% else %}Net Accrual Profit{% endif %}</span>
+                        </div>
+                        <h5 class="fw-bold mb-0 {% if grand_accrual >= 0 %}text-primary{% else %}text-danger{% endif %}">
+                            {{ grand_accrual | format_price }} <small class="fs-6 fw-normal opacity-75">{{ currency_symbol }}</small>
+                        </h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="bi bi-file-earmark-break text-muted fs-1 opacity-50 mb-3 d-block"></i>
+            <p>{% if current_lang == 'ar' %}لا توجد بيانات خلاصة مالية بعد.{% else %}No financial summary data available yet.{% endif %}</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>

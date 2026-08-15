@@ -1,0 +1,76 @@
+<!-- ═══════════ Section 1: General KPIs & Procedure Breakdown ═══════════ -->
+<div class="report-section">
+    <div class="section-header">
+        <h2>1. {% if current_lang == 'ar' %}المؤشرات الرئيسية والتحليلات العامة{% else %}Key Performance Indicators (KPIs){% endif %}</h2>
+    </div>
+
+    <div class="metrics-grid">
+        <div class="metric-box">
+            <div class="label">{% if current_lang == 'ar' %}إجمالي المفوتر{% else %}Total Invoiced{% endif %}</div>
+            <div class="value">{{ total_invoiced | format_price }} {{ currency_symbol }}</div>
+        </div>
+        <div class="metric-box revenue">
+            <div class="label">{% if current_lang == 'ar' %}إجمالي المقبوضات{% else %}Total Payments{% endif %}</div>
+            <div class="value">{{ total_payments | format_price }} {{ currency_symbol }}</div>
+        </div>
+        <div class="metric-box debt">
+            <div class="label">{% if current_lang == 'ar' %}الديون المستحقة{% else %}Outstanding Debt{% endif %}</div>
+            <div class="value">{{ total_outstanding | format_price }} {{ currency_symbol }}</div>
+        </div>
+        <div class="metric-box credit">
+            <div class="label">{% if current_lang == 'ar' %}رصيد المرضى{% else %}Patient Credit{% endif %}</div>
+            <div class="value">{{ total_credit | format_price }} {{ currency_symbol }}</div>
+        </div>
+    </div>
+
+    <!-- Top Procedures & Gender Breakdown -->
+    <div style="display: flex; gap: 20px;">
+        <div style="flex: 1;">
+            <h4 style="margin: 0 0 8px 0; color: #1e3a8a;">{% if current_lang == 'ar' %}أكثر الإجراءات العلاجية طلباً{% else %}Top Procedures{% endif %}</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>{% if current_lang == 'ar' %}نوع الإجراء العلاجي{% else %}Procedure Type{% endif %}</th>
+                        <th class="text-end">{% if current_lang == 'ar' %}العدد{% else %}Count{% endif %}</th>
+                        <th class="text-end">{% if current_lang == 'ar' %}الإيراد{% else %}Revenue{% endif %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(procedure_labels|length) %}
+                    <tr>
+                        <td>{{ i + 1 }}</td>
+                        <td class="fw-bold">{{ procedure_labels[i] }}</td>
+                        <td class="text-end">{{ procedure_values_counts[i] }}</td>
+                        <td class="text-end fw-bold text-success">{{ procedure_values_revenue[i] | format_price }} {{ currency_symbol }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" style="text-align: center;">{% if current_lang == 'ar' %}لا توجد بيانات{% else %}No data{% endif %}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div style="flex: 1;">
+            <h4 style="margin: 0 0 8px 0; color: #1e3a8a;">{% if current_lang == 'ar' %}توزيع المرضى حسب الجنس{% else %}Patient Gender Demographics{% endif %}</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>{% if current_lang == 'ar' %}الجنس{% else %}Gender{% endif %}</th>
+                        <th class="text-end">{% if current_lang == 'ar' %}عدد المرضى{% else %}Patient Count{% endif %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(gender_labels|length) %}
+                    <tr>
+                        <td class="fw-bold">{{ gender_labels[i] }}</td>
+                        <td class="text-end fw-bold">{{ gender_values[i] }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="2" style="text-align: center;">{% if current_lang == 'ar' %}لا توجد بيانات{% else %}No data{% endif %}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

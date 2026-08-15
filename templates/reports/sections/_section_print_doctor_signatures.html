@@ -1,0 +1,11 @@
+<!-- ═══════════ Print Doctor Report Signatures Footer ═══════════ -->
+<div class="report-signatures">
+    <div class="signature-box">
+        {% if current_lang == 'ar' %}توقيع الطبيب المعالج{% else %}Attending Doctor Signature{% endif %}<br><br>
+        <strong>د. {{ doctor.first_name }} {{ doctor.last_name }}</strong>
+    </div>
+    <div class="signature-box">
+        {% if current_lang == 'ar' %}ختم وإعتماد إدارة العيادة{% else %}Clinic Administration Stamp & Signature{% endif %}<br><br>
+        _______________________
+    </div>
+</div>

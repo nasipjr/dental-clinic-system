@@ -593,6 +593,14 @@ def edit_appointment(appointment_id):
         from flask import session
         user_id = session.get("user_id")
         user_role = session.get("role")
+        if appointment.status in ("Done", "منجز", "Cancelled", "ملغي"):
+            is_ar = request.cookies.get("lang", "ar") != "en" and session.get("lang", "ar") != "en"
+            return render_template(
+                "error_message.html",
+                title="إجراء غير مسموح" if is_ar else "Action Not Allowed",
+                message="لا يمكن تعديل موعد تم إنجازه أو إلغاؤه." if is_ar else "Cannot edit a completed or cancelled appointment.",
+                back_url=url_for("appointments.view_appointment", appointment_id=appointment.id),
+            ), 403
 
         if user_role == "doctor" and appointment.doctor_id and appointment.doctor_id != user_id:
             return render_template(
@@ -603,8 +611,14 @@ def edit_appointment(appointment_id):
             ), 403
 
         if request.method == "POST":
-            if user_role != "admin" and appointment.status != "Scheduled":
-                return "Cannot edit a closed or cancelled appointment.", 403
+            if appointment.status != "Scheduled":
+                is_ar = request.cookies.get("lang", "ar") != "en" and session.get("lang", "ar") != "en"
+                return render_template(
+                    "error_message.html",
+                    title="إجراء غير مسموح" if is_ar else "Action Not Allowed",
+                    message="لا يمكن تعديل موعد تم إنجازه أو إلغاؤه." if is_ar else "Cannot edit a completed or cancelled appointment.",
+                    back_url=url_for("appointments.view_appointment", appointment_id=appointment.id),
+                ), 403
 
             appointment_data, appointment_error = parse_appointment_data(request.form, is_edit=True)
 
@@ -1135,7 +1149,7 @@ def reschedule_appointment(appointment_id):
         if appt.status != "Scheduled":
             return jsonify({"success": False, "message": "Only scheduled appointments can be rescheduled."}), 400
         
-        data = request.get_json() or {}
+        data = request.get_json(silent=True) or request.form or {}
         new_start_str = data.get("start")
         if not new_start_str:
             return jsonify({"success": False, "message": "Missing start time parameter."}), 400
@@ -1180,7 +1194,7 @@ def update_appointment_status(appointment_id):
     try:
         is_ar = request.cookies.get("lang") != "en" and session.get("lang") != "en"
         appt = Appointment.query.get_or_404(appointment_id)
-        data = request.get_json() or {}
+        data = request.get_json(silent=True) or request.form or {}
         new_status = data.get("status")
 
         valid_statuses = ["Scheduled", "Done", "Cancelled"]
@@ -1487,7 +1501,8 @@ def permanent_delete_all_archived_appointments():
 def quick_session_start():
     current_app.logger.info("Quick session start requested")
     try:
-        patient_id = request.form.get("patient_id") or (request.get_json() or {}).get("patient_id")
+        json_data = request.get_json(silent=True) or {}
+        patient_id = request.form.get("patient_id") or json_data.get("patient_id")
         if not patient_id:
             msg = "يرجى اختيار المريض أولاً." if request.cookies.get("lang") == "ar" else "Patient selection is required."
             return jsonify({"success": False, "message": msg}), 400

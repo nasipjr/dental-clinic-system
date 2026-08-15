@@ -1,0 +1,23 @@
+<!-- ═══════════ Print Action Bar & Report Header ═══════════ -->
+<!-- Screen Action Bar -->
+<div class="screen-action-bar">
+    <div>
+        <strong>📄 {% if current_lang == 'ar' %}معاينة التقرير النهائي للطباعة (PDF){% else %}Print PDF Report Preview{% endif %}</strong>
+        <span style="opacity: 0.8; font-size: 0.9em; margin-right: 15px;">{% if current_lang == 'ar' %}اضغط على زر الطباعة أدناه أو اختر حفظ كـ PDF{% else %}Click Print button below or Save as PDF{% endif %}</span>
+    </div>
+    <div>
+        <button onclick="window.print()">🖨️ {% if current_lang == 'ar' %}طباعة المستند (PDF){% else %}Print Document (PDF){% endif %}</button>
+    </div>
+</div>
+
+<!-- Header Banner -->
+<div class="report-header">
+    <div class="report-header-title">
+        <h1>{% if current_lang == 'ar' %}التقرير المالي والتشغيلي الشامل للعيادة{% else %}Comprehensive Clinic Financial & Operational Report{% endif %}</h1>
+        <p>{% if current_lang == 'ar' %}سجل تحليلي مفصل وموحد لكافة الفواتير والمقبوضات والمصاريف وأداء الأطباء.{% else %}Unified analytical ledger of all invoices, payments, expenses, and doctor performance.{% endif %}</p>
+    </div>
+    <div class="report-header-meta">
+        <div><strong>{% if current_lang == 'ar' %}تاريخ التصدير:{% else %}Export Date:{% endif %}</strong> {{ print_date }}</div>
+        <div><strong>{% if current_lang == 'ar' %}السنة المالية:{% else %}Fiscal Year:{% endif %}</strong> {{ selected_year }}</div>
+    </div>
+</div>

@@ -185,7 +185,7 @@ def add_patient_payment():
 
         if request.method == "POST":
             patient_id = request.form.get("patient_id", type=int)
-            payment_amount_raw = request.form.get("payment_amount", "")
+            payment_amount_raw = request.form.get("payment_amount") or request.form.get("amount") or ""
             notes = request.form.get("notes", "").strip()
             invoice_id = request.form.get("invoice_id", type=int) or invoice_id
 

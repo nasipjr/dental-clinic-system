@@ -53,31 +53,39 @@ def flash_message(key, category="danger", **kwargs):
 def patient_login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        from flask import g
         if "user_id" not in session or session.get("role") != "patient":
+            session.clear()
             flash_message("login_required", "danger")
-            return redirect(url_for("portal.login"))
+            return redirect(url_for("auth.login"))
         
-        # Verify the patient still exists in the database (e.g. in case database was cleared/reseeded)
         patient_id = session.get("patient_id")
-        patient = db.session.get(Patient, patient_id)
+        if not patient_id and g.current_user:
+            patient_id = g.current_user.patient_id
+
+        patient = db.session.get(Patient, patient_id) if patient_id else None
         if not patient:
             session.clear()
             flash_message("login_required", "danger")
-            return redirect(url_for("portal.login"))
+            return redirect(url_for("auth.login"))
             
+        session["patient_id"] = patient.id
         return f(*args, **kwargs)
     return decorated_function
 
 
 @portal_bp.route("/login", methods=["GET", "POST"])
 def login():
+    from flask import g
+    if g.current_user and g.current_user.role == "patient":
+        return redirect(url_for("portal.dashboard"))
     return redirect(url_for("auth.login"))
 
 
 @portal_bp.route("/register", methods=["GET", "POST"])
 def register():
     flash_message("registration_disabled", "danger")
-    return redirect(url_for("portal.login"))
+    return redirect(url_for("auth.login"))
 
 
 @portal_bp.route("/logout")

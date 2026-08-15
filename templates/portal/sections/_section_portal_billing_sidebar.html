@@ -1,0 +1,44 @@
+<!-- ═══════════ Portal Billing Financial Summary Sidebar ═══════════ -->
+<div class="card shadow-sm border-0 rounded-4 mb-4" style="background: var(--surface-color);">
+    <div class="card-body p-4 text-center">
+        <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle mb-3" style="width: 80px; height: 80px;">
+            <i class="bi bi-wallet2 fs-1"></i>
+        </div>
+        <h4 class="fw-bold mb-1">{% if current_lang == 'ar' %}الملخص المالي{% else %}Financial Summary{% endif %}</h4>
+        <p class="text-secondary small mb-4">{% if current_lang == 'ar' %}نظرة عامة على رصيدك وحسابك المالي{% else %}Quick overview of your financial balance{% endif %}</p>
+        
+        <div class="text-start border-top pt-3">
+            <div class="d-flex justify-content-between mb-2">
+                <span class="small fw-medium" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">{% if current_lang == 'ar' %}إجمالي الفواتير{% else %}Total Invoiced{% endif %}</span>
+                <span class="small fw-bold text-primary">{{ patient.total_invoice_amount | format_price }} {{ currency_symbol }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span class="small fw-medium" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">{% if current_lang == 'ar' %}إجمالي المسدد{% else %}Total Paid{% endif %}</span>
+                <span class="small fw-bold text-success">{{ patient.total_payments_amount | format_price }} {{ currency_symbol }}</span>
+            </div>
+            
+            <hr class="my-3 opacity-50">
+            
+            {% if patient.outstanding_amount > 0 %}
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-danger fw-bold small">{% if current_lang == 'ar' %}المبلغ المتبقي المستحق{% else %}Outstanding Balance{% endif %}</span>
+                <span class="badge bg-danger rounded-pill px-3 py-1.5 fw-bold">{{ patient.outstanding_amount | format_price }} {{ currency_symbol }}</span>
+            </div>
+            {% endif %}
+            
+            {% if patient.credit_amount > 0 %}
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-success fw-bold small">{% if current_lang == 'ar' %}رصيد المريض الدائن{% else %}Patient Credit{% endif %}</span>
+                <span class="badge bg-success rounded-pill px-3 py-1.5 fw-bold">{{ patient.credit_amount | format_price }} {{ currency_symbol }}</span>
+            </div>
+            {% endif %}
+            
+            {% if patient.outstanding_amount == 0 and patient.credit_amount == 0 %}
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="small fw-medium" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">{% if current_lang == 'ar' %}حالة الرصيد{% else %}Balance Status{% endif %}</span>
+                <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1.5 border border-success-subtle fw-semibold">{% if current_lang == 'ar' %}خالص / مسدد بالكامل{% else %}All Settled{% endif %}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

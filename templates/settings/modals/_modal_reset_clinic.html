@@ -1,0 +1,57 @@
+<!-- ═══════════════════════════════════════════
+     Reset Operational Data Modal
+     ═══════════════════════════════════════════ -->
+<div class="modal fade" id="resetClinicModal" tabindex="-1" aria-labelledby="resetClinicModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content settings-modal border border-danger">
+            <div class="modal-header border-0 pb-0 d-flex align-items-center justify-content-between w-100">
+                <h5 class="modal-title fw-bold text-danger mb-0" id="resetClinicModalLabel">
+                    <i class="bi bi-shield-lock-fill me-2"></i>
+                    {% if current_lang == 'ar' %}التحقق الأمني لتصفير سجلات العيادة{% else %}Admin Verification — Reset Operational Data{% endif %}
+                </h5>
+                <button type="button" class="btn-close ms-0 me-auto m-0" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('settings.reset_clinic') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+                <div class="modal-body py-3">
+                    <div class="alert alert-danger d-flex align-items-start gap-2 mb-3">
+                        <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0 mt-1"></i>
+                        <div class="small">
+                            {% if current_lang == 'ar' %}
+                            <strong>تنبيه:</strong> سيتم حذف كافة سجلات المرضى والمواعيد والمعالجات والفواتير والمصاريف بشكل دائم، مع الحفاظ على الإعدادات، التوكنز، وحسابات المستخدمين والكوادر. يرجى إدخال اسم المستخدم وكلمة المرور للمدير للتأكيد.
+                            {% else %}
+                            <strong>Warning:</strong> All patients, appointments, treatments, and billing data will be permanently wiped out while maintaining settings and user accounts. Please enter your Admin credentials to authorize.
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reset_admin_username" class="settings-label">
+                            {% if current_lang == 'ar' %}اسم المستخدم للمدير (Admin Username){% else %}Admin Username{% endif %}
+                        </label>
+                        <input type="text" class="form-control settings-input" id="reset_admin_username"
+                            name="admin_username" required
+                            placeholder="{% if current_lang == 'ar' %}أدخل اسم المستخدم للآدمن{% else %}Enter admin username{% endif %}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="reset_admin_password" class="settings-label">
+                            {% if current_lang == 'ar' %}كلمة المرور للمدير (Admin Password){% else %}Admin Password{% endif %}
+                        </label>
+                        <input type="password" class="form-control settings-input" id="reset_admin_password"
+                            name="admin_password" required
+                            placeholder="{% if current_lang == 'ar' %}أدخل كلمة المرور للآدمن{% else %}Enter admin password{% endif %}">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">
+                        {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                    </button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">
+                        <i class="bi bi-trash3-fill me-1"></i>
+                        {% if current_lang == 'ar' %}تأكيد وتصفير السجلات{% else %}Confirm & Clear Records{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

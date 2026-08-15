@@ -410,6 +410,57 @@ class DentalClinicTestCase(unittest.TestCase):
             self.assertEqual(inv1.status, "Unpaid")
             self.assertEqual(inv1.total_paid, Decimal("0.00"))
 
+    def test_treatment_plan_item_and_execution(self):
+        from app import app, db
+        from models import Patient, Appointment, TreatmentPlanItem, Treatment
+        with app.app_context():
+            patient = Patient(first_name="Plan", last_name="Tester", phone="+963911223344")
+            db.session.add(patient)
+            db.session.commit()
+
+            # 1. Add planned treatment item
+            plan_item = TreatmentPlanItem(
+                patient_id=patient.id,
+                tooth_number="14",
+                procedure_type="حشوة ضوئية كومبوزيت",
+                estimated_cost=Decimal("60000.00"),
+                notes="بحاجة حشوة السطح الإطباقي",
+                status="Planned"
+            )
+            db.session.add(plan_item)
+            db.session.commit()
+
+            self.assertIsNotNone(plan_item.id)
+            self.assertEqual(plan_item.status, "Planned")
+            self.assertEqual(plan_item.tooth_number, "14")
+
+            # 2. Create appointment and test execute route logic
+            appt = Appointment(patient_id=patient.id, appointment_date=datetime.now(), status="Scheduled")
+            db.session.add(appt)
+            db.session.commit()
+
+            # Execute plan item into session
+            new_treatment = Treatment(
+                appointment_id=appt.id,
+                treatment_date=datetime.now(),
+                procedure_type=plan_item.procedure_type,
+                tooth_number=plan_item.tooth_number,
+                notes=f"تم التنفيذ من خطة العلاج. {plan_item.notes}",
+                total_cost=plan_item.estimated_cost
+            )
+            db.session.add(new_treatment)
+            db.session.flush()
+
+            plan_item.status = "Completed"
+            plan_item.completed_at = datetime.now()
+            plan_item.completed_treatment_id = new_treatment.id
+            db.session.commit()
+
+            self.assertEqual(plan_item.status, "Completed")
+            self.assertEqual(plan_item.completed_treatment_id, new_treatment.id)
+            self.assertEqual(len(appt.treatments), 1)
+            self.assertEqual(appt.treatments[0].procedure_type, "حشوة ضوئية كومبوزيت")
+
 
 if __name__ == "__main__":
     unittest.main()

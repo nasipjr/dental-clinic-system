@@ -1,0 +1,39 @@
+/**
+ * Dental Clinic Management System - Doctor Reports Stylesheet
+ * Styles for doctor performance dashboards, KPI cards, sortable table headers, and print layouts.
+ */
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.sortable-col:hover {
+    background: rgba(13, 110, 253, 0.05);
+}
+
+.hover-translate-y {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-translate-y:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+@media print {
+    .navbar, .footer, .btn, .d-print-none, form, select, input, #doctor-pagination-container {
+        display: none !important;
+    }
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+        background: #ffffff !important;
+    }
+    .text-success {
+        color: #059669 !important;
+    }
+}

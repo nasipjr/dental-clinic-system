@@ -1,0 +1,28 @@
+/**
+ * Dental Clinic Management System - Invoice Creation & Form Stylesheet
+ * Custom styles for manual invoice creation, dynamic items table, discount group, and payment preview cards.
+ */
+
+.patient-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+}
+
+.patient-info-box {
+    background: var(--surface-color, #1e293b);
+    border: 1px solid color-mix(in srgb, var(--heading-color), transparent 88%);
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.patient-info-box .info-label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent-color, #0d6efd);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}

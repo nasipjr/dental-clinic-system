@@ -1,0 +1,88 @@
+/**
+ * Dental Clinic Management System - Appointment Add & Edit Stylesheet
+ * Styles for procedure category navigation pills, quick procedure selection cards, badges, and custom procedure creation.
+ */
+
+.category-pills-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.procedure-cat-pill {
+    background: color-mix(in srgb, var(--default-color), transparent 94%);
+    color: var(--default-color);
+    border: 1px solid color-mix(in srgb, var(--default-color), transparent 85%);
+    border-radius: 50px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.procedure-cat-pill:hover {
+    background: color-mix(in srgb, var(--accent-color), transparent 85%);
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.procedure-cat-pill.active {
+    background: var(--accent-color) !important;
+    color: #ffffff !important;
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+.procedure-quick-card {
+    background: var(--surface-color);
+    border: 1.5px solid color-mix(in srgb, var(--default-color), transparent 88%);
+    border-radius: 12px;
+    padding: 12px 14px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.procedure-quick-card:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.procedure-quick-card.selected-card {
+    border-color: #10b981 !important;
+    background: rgba(16, 185, 129, 0.08) !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+}
+
+.proc-title {
+    font-size: 0.92rem;
+    color: var(--heading-color);
+}
+
+.duration-badge {
+    background: rgba(14, 165, 233, 0.12);
+    color: #0284c7;
+    font-weight: 600;
+    font-size: 0.78rem;
+    border-radius: 6px;
+    padding: 4px 8px;
+}
+
+.price-badge {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-family: monospace;
+}
+
+.readonly-form input:disabled,
+.readonly-form select:disabled,
+.readonly-form textarea:disabled {
+    background-color: color-mix(in srgb, var(--default-color), transparent 96%) !important;
+    cursor: not-allowed;
+    opacity: 0.85;
+}

@@ -1,0 +1,150 @@
+<!-- ═══════════ Printable Invoice Layout (d-none d-print-block) ═══════════ -->
+<div class="d-none d-print-block container mt-4" id="invoice-print-area" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+    <div class="print-header d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h1 class="clinic-name-print mb-1 fw-bold text-main">{{ clinic_name }}</h1>
+            <p class="mb-1"><i class="bi bi-geo-alt"></i> {{ clinic_address }}</p>
+            <p class="mb-1"><i class="bi bi-phone me-1 ms-1"></i> <span dir="ltr">{{ clinic_phone }}</span></p>
+            <p class="mb-0"><i class="bi bi-envelope"></i> {{ clinic_email }}</p>
+        </div>
+        <div class="text-end">
+            <h2 class="text-uppercase fw-bold text-primary mb-2">{% if current_lang == 'ar' %}فاتورة علاجية{% else %}Invoice{% endif %}</h2>
+            <h5 class="text-muted mb-3">{% if current_lang == 'ar' %}رقم الفاتورة:{% else %}Invoice Number:{% endif %} {{ invoice.invoice_number }}</h5>
+            <p class="mb-1"><strong>{% if current_lang == 'ar' %}التاريخ:{% else %}Date:{% endif %}</strong> {{ invoice.issue_date.strftime('%Y-%m-%d %I:%M %p') }}</p>
+            <p class="mb-0"><strong>{% if current_lang == 'ar' %}الحالة:{% else %}Status:{% endif %}</strong> 
+                {% if invoice.status == 'Paid' %}{% if current_lang == 'ar' %}مدفوعة بالكامل{% else %}Paid{% endif %}
+                {% elif invoice.status == 'Partially Paid' %}{% if current_lang == 'ar' %}دفعة جزئية{% else %}Partially Paid{% endif %}
+                {% else %}{% if current_lang == 'ar' %}غير مدفوعة{% else %}Unpaid{% endif %}{% endif %}
+            </p>
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <!-- Bill To -->
+    <div class="row mb-4">
+        <div class="col-6">
+            <h5 class="text-uppercase text-secondary fw-semibold mb-2">{% if current_lang == 'ar' %}المريض:{% else %}Bill To:{% endif %}</h5>
+            <h4 class="mb-1 fw-bold">{{ patient.first_name }} {{ patient.last_name }}</h4>
+            {% if patient.phone %}<p class="mb-1"><strong>{% if current_lang == 'ar' %}الهاتف:{% else %}Phone:{% endif %}</strong> {{ patient.phone }}</p>{% endif %}
+            {% if patient.email %}<p class="mb-0"><strong>{% if current_lang == 'ar' %}البريد:{% else %}Email:{% endif %}</strong> {{ patient.email }}</p>{% endif %}
+        </div>
+    </div>
+
+    <!-- Items Table -->
+    <table class="table table-bordered print-table mb-4">
+        <thead class="table-light">
+            <tr>
+                <th style="width: 8%">#</th>
+                <th>{% if current_lang == 'ar' %}الإجراء / المعالجة{% else %}Treatment / Procedure{% endif %}</th>
+                <th style="width: 15%">{% if current_lang == 'ar' %}السن{% else %}Tooth{% endif %}</th>
+                <th>{% if current_lang == 'ar' %}الملاحظات{% else %}Notes{% endif %}</th>
+                <th style="width: 20%" class="text-end">{% if current_lang == 'ar' %}السعر{% else %}Price{% endif %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for treatment in treatments %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>
+                    <strong>{{ treatment.procedure_type or ('معالجة عامة' if current_lang == 'ar' else 'General Procedure') }}</strong>
+                </td>
+                <td>{{ (treatment.tooth_number | format_tooth_number) or 'N/A' }}</td>
+                <td>{{ treatment.notes or '' }}</td>
+                <td class="text-end">{{ treatment.procedure_cost | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% if treatment.use_anesthesia and treatment.anesthesia_cost > 0 %}
+            <tr style="background-color: #f8fafc;">
+                <td class="text-muted text-center">↳</td>
+                <td>
+                    <i class="bi bi-shield-fill-plus me-1 text-info"></i>
+                    <strong>{% if current_lang == 'ar' %}تخدير موضع المعالجة{% else %}Anesthesia{% endif %}</strong>
+                    <small class="text-muted">({{ treatment.anesthesia_needles }} {% if current_lang == 'ar' %}إبرة{% else %}needle{% endif %})</small>
+                </td>
+                <td><small class="text-muted">{{ (treatment.tooth_number | format_tooth_number) or 'N/A' }}</small></td>
+                <td><small class="text-muted">{% if current_lang == 'ar' %}تخدير مرتبط بالمعالجة أعلاه{% else %}Linked anesthesia fee{% endif %}</small></td>
+                <td class="text-end text-info">{{ treatment.anesthesia_cost | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4" class="text-end fw-semibold">{% if current_lang == 'ar' %}المجموع الفرعي{% else %}Subtotal{% endif %}</td>
+                <td class="text-end">{{ invoice.subtotal | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% if invoice.discount_amount > 0 %}
+            <tr>
+                <td colspan="4" class="text-end fw-semibold text-danger">{% if current_lang == 'ar' %}الخصم{% else %}Discount{% endif %} {% if invoice.discount_type == 'percentage' %}({{ "{:,.0f}".format(invoice.discount) }}%){% endif %}</td>
+                <td class="text-end text-danger">- {{ invoice.discount_amount | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% endif %}
+            {% if invoice.additional_charges_amount > 0 %}
+            <tr>
+                <td colspan="4" class="text-end fw-semibold text-warning">{% if current_lang == 'ar' %}التكاليف الإضافية{% else %}Additional Charges{% endif %}</td>
+                <td class="text-end text-warning">+ {{ invoice.additional_charges_amount | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% endif %}
+
+            <tr class="table-light">
+                <td colspan="4" class="text-end fw-bold fs-5">{% if current_lang == 'ar' %}المجموع الكلي{% else %}Total Amount{% endif %}</td>
+                <td class="text-end fw-bold fs-5">{{ invoice.total_amount | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            <tr>
+                <td colspan="4" class="text-end fw-semibold text-success">{% if current_lang == 'ar' %}المبلغ المسدد{% else %}Total Paid{% endif %}</td>
+                <td class="text-end text-success">{{ invoice.total_paid | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% if invoice.outstanding_amount > 0 %}
+            <tr class="table-danger-light">
+                <td colspan="4" class="text-end fw-bold text-danger">{% if current_lang == 'ar' %}الرصيد المتبقي المستحق{% else %}Remaining Balance Due{% endif %}</td>
+                <td class="text-end fw-bold text-danger">{{ invoice.outstanding_amount | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% endif %}
+        </tfoot>
+    </table>
+
+    <!-- Printable Invoice Notes -->
+    <div id="print-notes-section" class="mt-3 p-2 border rounded {% if not invoice.notes %}d-none{% endif %}" style="background-color: #f8f9fa;">
+        <strong>{% if current_lang == 'ar' %}ملاحظات الفاتورة:{% else %}Invoice Notes:{% endif %}</strong>
+        <p id="print-notes-text" class="mb-0 text-dark small" style="white-space: pre-wrap;">{{ invoice.notes or '' }}</p>
+    </div>
+
+    <!-- Installments / Payment Allocations History -->
+    {% if invoice.payment_allocations %}
+    <div class="mb-4">
+        <h5 class="text-uppercase text-secondary fw-semibold mb-2">{% if current_lang == 'ar' %}سجل الدفعات والتسديدات{% else %}Installment / Payment History{% endif %}</h5>
+        <table class="table table-sm table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>{% if current_lang == 'ar' %}رقم الإيصال{% else %}Receipt #{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}تاريخ الدفع{% else %}Date Paid{% endif %}</th>
+                    <th class="text-end">{% if current_lang == 'ar' %}المبلغ المدفوع{% else %}Amount Paid{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}ملاحظات{% else %}Notes{% endif %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for allocation in invoice.payment_allocations %}
+                <tr>
+                    <td><bdi dir="ltr">PAY-{{ "%04d"|format(allocation.payment.id) }}</bdi></td>
+                    <td>{{ allocation.payment.payment_date.strftime('%Y-%m-%d %I:%M %p') }}</td>
+                    <td class="text-end">{{ allocation.amount | format_price }} {{ currency_symbol }}</td>
+                    <td>{{ allocation.payment.notes or '' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Footer Section with QR Code -->
+    <div class="d-flex justify-content-between align-items-end mt-5 pt-4 border-top">
+        <div class="text-center" style="width: 150px;">
+            <canvas id="print-invoice-qrcode" style="width: 130px; height: 130px;"></canvas>
+            <div class="text-muted small mt-1">{% if current_lang == 'ar' %}ملخص الفاتورة{% else %}Invoice Summary{% endif %}</div>
+        </div>
+        <div class="text-center pe-4">
+            <div class="mb-5 text-muted">{% if current_lang == 'ar' %}توقيع وخاتم العيادة المعتمد{% else %}Authorized Signature & Seal{% endif %}</div>
+            <div style="border-bottom: 1px solid #000; width: 200px;"></div>
+        </div>
+    </div>
+</div>

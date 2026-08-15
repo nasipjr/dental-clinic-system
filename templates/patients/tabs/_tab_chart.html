@@ -1,0 +1,222 @@
+{% from "partials/_odontogram_macros.html" import render_tooth_svg, fdi_map, upper_arch_positions, lower_arch_positions %}
+
+<!-- Sub-Tabs Navigation for Patient Dental Charts -->
+<div class="d-flex justify-content-center mb-4 mt-2">
+    <ul class="nav nav-pills custom-chart-pills p-1.5 rounded-pill shadow-sm border" id="patientChartSubTabs" role="tablist" style="background: color-mix(in srgb, var(--surface-color), #ffffff 4%); border-color: color-mix(in srgb, var(--accent-color), transparent 85%) !important;">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2" id="p-circular-tab" data-bs-toggle="tab" data-bs-target="#p-circular-pane" type="button" role="tab" aria-controls="p-circular-pane" aria-selected="true">
+                <i class="bi bi-circle-aspect-ratio-fill fs-5"></i>
+                <span>{{ 'المخطط الدائري التفاعلي' if current_lang == 'ar' else 'Interactive Circular Chart' }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4 py-2 fw-bold d-flex align-items-center gap-2" id="p-anatomical-tab" data-bs-toggle="tab" data-bs-target="#p-anatomical-pane" type="button" role="tab" aria-controls="p-anatomical-pane" aria-selected="false">
+                <i class="bi bi-grid-3x3-gap-fill fs-5"></i>
+                <span>{{ 'المخطط التشريحي (FDI)' if current_lang == 'ar' else 'Anatomical Chart (FDI)' }}</span>
+            </button>
+        </li>
+    </ul>
+</div>
+
+<!-- Tab Content for Dental Charts -->
+<div class="tab-content" id="patientChartSubTabsContent">
+    
+    <!-- Sub Tab 1: Circular Interactive Chart (Default Active) -->
+    <div class="tab-pane fade show active" id="p-circular-pane" role="tabpanel" aria-labelledby="p-circular-tab">
+        <div class="card odontogram-card shadow-sm border-0 rounded-4 mb-4">
+            <div class="card-body p-4">
+                <h3 class="card-title h5 mb-3 text-primary d-flex align-items-center">
+                    <i class="bi bi-symmetry-vertical me-2"></i>
+                    {{ 'مخطط الأسنان التفاعلي' if current_lang == 'ar' else 'Interactive Dental Chart' }}
+                </h3>
+                <p class="text-muted small mb-4">
+                    {{ 'انقر على أي سن لمراجعة كافة المعالجات السابقة والقلوعات الخاصة به.' if current_lang == 'ar' else 'Click on any tooth to view treatment history and status.' }}
+                </p>
+
+                <div class="odontogram-container py-2" dir="ltr">
+                    <div class="unified-mouth-container">
+                        <svg class="jaw-bg-line" viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <path d="M 8.2 37 C 8.2 3, 91.8 3, 91.8 37"
+                                fill="none" stroke="rgba(13,110,253,0.35)"
+                                stroke-width="1.0" stroke-dasharray="2.5 2.5" stroke-linecap="round"/>
+                            <path d="M 91.8 63 C 91.8 97, 8.2 97, 8.2 63"
+                                fill="none" stroke="rgba(13,202,240,0.35)"
+                                stroke-width="1.0" stroke-dasharray="2.5 2.5" stroke-linecap="round"/>
+                        </svg>
+
+                        <!-- Upper jaw label -->
+                        <div style="position:absolute;top:28%;left:50%;transform:translateX(-50%);z-index:3;pointer-events:none;">
+                            <span class="jaw-title-badge jaw-upper-badge">
+                                <i class="bi bi-arrow-up me-1"></i>
+                                {{ 'الفك العلوي' if current_lang == 'ar' else 'Upper Jaw' }}
+                            </span>
+                        </div>
+
+                        <!-- Lower jaw label -->
+                        <div style="position:absolute;top:64%;left:50%;transform:translateX(-50%);z-index:3;pointer-events:none;">
+                            <span class="jaw-title-badge jaw-lower-badge">
+                                <i class="bi bi-arrow-down me-1"></i>
+                                {{ 'الفك السفلي' if current_lang == 'ar' else 'Lower Jaw' }}
+                            </span>
+                        </div>
+
+                        <!-- Upper Teeth (1-16) -->
+                        {% for i in range(1, 17) %}
+                        {% set pos = upper_arch_positions[i] %}
+                        <div class="tooth-wrapper p-tooth-item" data-patient-tooth="{{ i }}"
+                            style="left:{{ pos.x }};top:{{ pos.y }};--rot:{{ pos.r }};transform:translate(-50%,-50%) rotate({{ pos.r }});">
+                            <span class="tooth-label-top small fw-bold">{{ fdi_map[i] }}</span>
+                            <div class="tooth-svg-container">{{ render_tooth_svg(i, false) }}</div>
+                        </div>
+                        {% endfor %}
+
+                        <!-- Lower Teeth (32→17) -->
+                        {% for i in [32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17] %}
+                        {% set pos = lower_arch_positions[i] %}
+                        <div class="tooth-wrapper p-tooth-item" data-patient-tooth="{{ i }}"
+                            style="left:{{ pos.x }};top:{{ pos.y }};--rot:{{ pos.r }};transform:translate(-50%,-50%) rotate({{ pos.r }});">
+                            <span class="tooth-label-top small fw-bold">{{ fdi_map[i] }}</span>
+                            <div class="tooth-svg-container">{{ render_tooth_svg(i, true) }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="d-flex justify-content-center align-items-center flex-wrap gap-4 mt-4 pt-3 border-top">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="legend-dot history-treatment-bg"></span>
+                        <span class="small text-muted">{{ 'معالجة بالعيادة' if current_lang == 'ar' else 'Clinic Treatment' }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="legend-dot extracted-treatment-bg"></span>
+                        <span class="small text-muted">{{ 'سن مقلوع' if current_lang == 'ar' else 'Extracted Tooth' }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="legend-dot history-external-bg"></span>
+                        <span class="small text-muted">{{ 'سوابق مرضية وخارجية' if current_lang == 'ar' else 'Prior / External Record' }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="plan-star-badge fs-6"><i class="bi bi-star-fill"></i></span>
+                        <span class="small text-muted">{{ 'خطة علاج مستقبلية' if current_lang == 'ar' else 'Future Treatment Plan' }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="legend-dot no-treatment-bg"></span>
+                        <span class="small text-muted">{{ 'سليم / غير معالج' if current_lang == 'ar' else 'Untreated' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sub Tab 2: Anatomical FDI Chart -->
+    <div class="tab-pane fade" id="p-anatomical-pane" role="tabpanel" aria-labelledby="p-anatomical-tab">
+        <div class="card odontogram-card shadow-sm border-0 rounded-4">
+            <div class="card-body p-4">
+                <h3 class="card-title h5 mb-3 text-primary d-flex align-items-center">
+                    <i class="bi bi-grid-3x3-gap me-2"></i>
+                    {{ 'المخطط التشريحي للأسنان (التقسيم الدولي FDI)' if current_lang == 'ar' else 'Anatomical Dental Chart (FDI System)' }}
+                </h3>
+
+                <div class="anatomical-chart-wrapper" dir="ltr">
+                    <div class="anatomical-teeth-container">
+                        <div class="d-flex justify-content-center mb-2">
+                            <span class="jaw-title-badge jaw-upper-badge">
+                                <i class="bi bi-symmetry-horizontal me-1.5"></i>
+                                {{ 'الفك العلوي' if current_lang == 'ar' else 'Upper Jaw (Maxillary)' }}
+                            </span>
+                        </div>
+
+                        <!-- Top Brackets Header -->
+                        <div class="d-flex justify-content-between text-center small fw-bold mb-2" style="color: #38bdf8; font-size: 0.8rem;">
+                            <div class="d-flex" style="width: 50%;">
+                                <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5" style="width: 37.5%;">{% if current_lang == 'ar' %}أضراس{% else %}Molars{% endif %}</div>
+                                <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1" style="width: 25%;">{% if current_lang == 'ar' %}ضواحك{% else %}Premolars{% endif %}</div>
+                                <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1" style="width: 12.5%;">{% if current_lang == 'ar' %}ناب{% else %}Canine{% endif %}</div>
+                                <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1" style="width: 25%;">{% if current_lang == 'ar' %}قواطع{% else %}Incisors{% endif %}</div>
+                            </div>
+                            <div class="d-flex ms-2" style="width: 50%;">
+                                <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5" style="width: 25%;">{% if current_lang == 'ar' %}قواطع{% else %}Incisors{% endif %}</div>
+                                <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1" style="width: 12.5%;">{% if current_lang == 'ar' %}ناب{% else %}Canine{% endif %}</div>
+                                <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1" style="width: 25%;">{% if current_lang == 'ar' %}ضواحك{% else %}Premolars{% endif %}</div>
+                                <div class="border-top border-start border-end border-info border-opacity-50 rounded-top py-0.5 ms-1" style="width: 37.5%;">{% if current_lang == 'ar' %}أضراس{% else %}Molars{% endif %}</div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between position-relative py-1">
+                            <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #38bdf8; z-index: 5; transform: translateX(-50%); opacity: 0.7;"></div>
+                            {% for i in range(1, 17) %}
+                            {% set fdi = fdi_map[i] %}
+                            <button type="button" class="tooth-select-btn tooth-btn p-tooth-btn anatomical-tooth-btn" data-patient-tooth="{{ i }}">
+                                <div class="tooth-svg-container mb-1">
+                                    {{ render_tooth_svg(i, false) }}
+                                </div>
+                                <span class="tooth-fdi-badge">{{ fdi }}</span>
+                            </button>
+                            {% endfor %}
+                        </div>
+
+                        <div class="my-3" style="height: 2px; background: linear-gradient(to right, transparent, #38bdf8 20%, #38bdf8 80%, transparent); opacity: 0.7;"></div>
+
+                        <div class="d-flex justify-content-center mb-2">
+                            <span class="jaw-title-badge jaw-upper-badge" style="background: rgba(14, 165, 233, 0.15); border-color: #0ea5e9; color: #38bdf8;">
+                                <i class="bi bi-symmetry-horizontal me-1.5"></i>
+                                {{ 'الفك السفلي' if current_lang == 'ar' else 'Lower Jaw (Mandibular)' }}
+                            </span>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between position-relative py-1">
+                            <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: #38bdf8; z-index: 5; transform: translateX(-50%); opacity: 0.7;"></div>
+                            {% for i in range(32, 16, -1) %}
+                            {% set fdi = fdi_map[i] %}
+                            <button type="button" class="tooth-select-btn tooth-btn p-tooth-btn anatomical-tooth-btn" data-patient-tooth="{{ i }}">
+                                <span class="tooth-fdi-badge mb-1">{{ fdi }}</span>
+                                <div class="tooth-svg-container">
+                                    {{ render_tooth_svg(i, true) }}
+                                </div>
+                            </button>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Bottom Brackets Footer -->
+                        <div class="d-flex justify-content-between text-center small fw-bold mt-2" style="color: #38bdf8; font-size: 0.8rem;">
+                            <div class="d-flex" style="width: 50%;">
+                                <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5" style="width: 37.5%;">{% if current_lang == 'ar' %}أضراس{% else %}Molars{% endif %}</div>
+                                <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1" style="width: 25%;">{% if current_lang == 'ar' %}ضواحك{% else %}Premolars{% endif %}</div>
+                                <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1" style="width: 12.5%;">{% if current_lang == 'ar' %}ناب{% else %}Canine{% endif %}</div>
+                                <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1" style="width: 25%;">{% if current_lang == 'ar' %}قواطع{% else %}Incisors{% endif %}</div>
+                            </div>
+                            <div class="d-flex ms-2" style="width: 50%;">
+                                <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5" style="width: 25%;">{% if current_lang == 'ar' %}قواطع{% else %}Incisors{% endif %}</div>
+                                <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1" style="width: 12.5%;">{% if current_lang == 'ar' %}ناب{% else %}Canine{% endif %}</div>
+                                <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1" style="width: 25%;">{% if current_lang == 'ar' %}ضواحك{% else %}Premolars{% endif %}</div>
+                                <div class="border-bottom border-start border-end border-info border-opacity-50 rounded-bottom py-0.5 ms-1" style="width: 37.5%;">{% if current_lang == 'ar' %}أضراس{% else %}Molars{% endif %}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legend for Anatomical Chart -->
+                <div class="d-flex justify-content-center align-items-center flex-wrap gap-4 mt-4 pt-3 border-top">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="legend-dot history-treatment-bg"></span>
+                        <span class="small text-muted">{{ 'سوابق معالجة' if current_lang == 'ar' else 'Treated in history' }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="legend-dot extracted-treatment-bg"></span>
+                        <span class="small text-muted">{{ 'سن مقلوع' if current_lang == 'ar' else 'Extracted Tooth' }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="plan-star-badge fs-6"><i class="bi bi-star-fill"></i></span>
+                        <span class="small text-muted">{{ 'خطة علاج مستقبلية' if current_lang == 'ar' else 'Future Treatment Plan' }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="legend-dot no-treatment-bg"></span>
+                        <span class="small text-muted">{{ 'سليم / غير معالج' if current_lang == 'ar' else 'Untreated' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

@@ -1,0 +1,187 @@
+<!-- ═══════════ Appointments Main Content (Pending / Tables) ═══════════ -->
+<div id="appointments-tab-content-container">
+{% if show_pending %}
+    <!-- Pending Requests Tab Content -->
+    {% if pending_appointments %}
+    <div class="appointments-table-wrapper table-responsive shadow-sm rounded-4 border p-3 mb-5" style="background: var(--surface-color);">
+        <table class="table appointments-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>{% if current_lang == 'ar' %}التاريخ والوقت{% else %}Date & Time{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}رقم الهاتف{% else %}Phone{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}سبب الموعد{% else %}Reason{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+                    {% if current_user.role in ('admin', 'receptionist') %}
+                    <th class="text-center">{% if current_lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
+                    {% endif %}
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for appointment in pending_appointments %}
+                <tr>
+                    <td>
+                        {% if appointment.appointment_date %}
+                            <div class="fw-semibold text-nowrap" style="font-size: 0.93rem;">{{ appointment.appointment_date.strftime('%Y-%m-%d') }}</div>
+                            <div class="text-muted text-nowrap" style="font-size: 0.82rem; margin-top: 2px;">
+                                <i class="bi bi-clock me-1" style="font-size: 0.78rem;"></i>{{ appointment.appointment_date.strftime('%I:%M %p') }}
+                            </div>
+                        {% else %}
+                            <span class="text-muted">{% if current_lang == 'ar' %}لا يوجد تاريخ{% else %}No date{% endif %}</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <strong>
+                            {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                        </strong>
+                    </td>
+
+                    <td>
+                        {{ appointment.patient.phone or ('لا يوجد هاتف' if current_lang == 'ar' else 'No phone number') }}
+                    </td>
+
+                    <td>
+                        {{ appointment.reason or ('غير محدد' if current_lang == 'ar' else 'No reason provided') }}
+                    </td>
+
+                    <td>
+                        <span class="badge bg-warning text-dark rounded-pill px-3 py-1.5 border border-warning-subtle">
+                            {{ appointment.status }}
+                        </span>
+                    </td>
+
+                    {% if current_user.role in ('admin', 'receptionist') %}
+                    <td class="text-center">
+                        <div class="d-flex justify-content-center gap-2">
+                            <button type="button"
+                                class="btn btn-sm btn-success quick-action-btn py-1.5 px-3 fw-bold rounded-pill"
+                                data-action-url="{{ url_for('appointments.confirm_appointment', appointment_id=appointment.id) }}"
+                                data-confirm-msg="{% if current_lang == 'ar' %}هل أنت متأكد من تأكيد وقبول طلب الحجز هذا؟{% else %}Are you sure you want to confirm this booking request?{% endif %}"
+                                title="{% if current_lang == 'ar' %}تأكيد الحجز{% else %}Confirm Booking{% endif %}">
+                                <i class="bi bi-check-lg"></i> {% if current_lang == 'ar' %}تأكيد{% else %}Confirm{% endif %}
+                            </button>
+
+                            <button type="button"
+                                class="btn btn-sm btn-danger quick-action-btn py-1.5 px-3 fw-bold rounded-pill"
+                                data-action-url="{{ url_for('appointments.decline_appointment', appointment_id=appointment.id) }}"
+                                data-confirm-msg="{% if current_lang == 'ar' %}هل أنت متأكد من رفض وإلغاء طلب الحجز هذا؟{% else %}Are you sure you want to decline this booking request?{% endif %}"
+                                title="{% if current_lang == 'ar' %}رفض الحجز{% else %}Decline Booking{% endif %}">
+                                <i class="bi bi-x-lg"></i> {% if current_lang == 'ar' %}رفض{% else %}Decline{% endif %}
+                            </button>
+                        </div>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state-card text-center py-5 shadow-sm rounded-4 border mb-5" style="background: var(--surface-color);">
+        <i class="bi bi-check-circle text-success fs-1 mb-3"></i>
+        <h4>{% if current_lang == 'ar' %}لا توجد طلبات معلقة!{% else %}All Caught Up!{% endif %}</h4>
+        <p class="text-muted">{% if current_lang == 'ar' %}لا توجد أي طلبات حجز معلقة بانتظار المراجعة حالياً.{% else %}There are no pending booking requests from patients.{% endif %}</p>
+    </div>
+    {% endif %}
+{% else %}
+
+    <!-- Sleek Search Bar -->
+    <form id="appointments-filter-form" method="GET" action="{{ url_for('appointments.appointments_table') }}" class="appointments-filter-bar mb-4">
+        <input type="hidden" name="date_filter" value="{{ date_filter }}">
+        <input type="hidden" name="status" value="{{ status_filter }}">
+        <input type="hidden" name="sort" value="{{ sort_by }}">
+        <input type="hidden" name="order" value="{{ order }}">
+        <input type="hidden" name="per_page" id="appointments-per-page-input" value="{{ per_page or 10 }}">
+
+        <div class="row justify-content-center align-items-center g-2">
+            <div class="col-md-6 col-lg-5">
+                <div class="input-group shadow-sm rounded-pill overflow-hidden border">
+                    <span class="input-group-text bg-body-tertiary border-0 px-3">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input type="text" name="search" class="form-control border-0 bg-body-tertiary px-2"
+                           placeholder="{% if current_lang == 'ar' %}البحث باسم المريض...{% else %}Search by patient name...{% endif %}"
+                           value="{{ search_query }}" style="box-shadow: none;">
+                    {% if search_query %}
+                    <a href="{{ url_for('appointments.appointments', date_filter=date_filter, status=status_filter, doctor_id=doctor_filter) }}" id="appointments-reset-btn" class="btn btn-outline-secondary border-0 px-3 d-flex align-items-center">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary px-4 fw-bold">
+                        {% if current_lang == 'ar' %}بحث{% else %}Search{% endif %}
+                    </button>
+                </div>
+            </div>
+
+            {% if doctors_list %}
+            <div class="col-auto">
+                <div class="dropdown" id="doctor-filter-dropdown">
+                    <button class="btn rounded-pill px-4 fw-semibold d-flex align-items-center gap-2 shadow-sm {% if doctor_filter %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+                            type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                            style="border-width:1.5px; transition: all .2s;">
+                        <i class="bi bi-person-badge"></i>
+                        <span id="doctor-filter-label">
+                            {% if doctor_filter %}
+                                {% for doc in doctors_list %}{% if doc.id|string == doctor_filter|string %}{{ doc.first_name }} {{ doc.last_name }}{% endif %}{% endfor %}
+                            {% else %}
+                                {% if current_lang == 'ar' %}الطبيب المعالج{% else %}Doctor{% endif %}
+                            {% endif %}
+                        </span>
+                        <i class="bi bi-chevron-down" style="font-size:.8rem;"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 py-2 mt-1"
+                        style="min-width:200px; background: var(--surface-color); border: 1px solid rgba(255,255,255,0.08) !important;">
+                        <li>
+                            <a class="dropdown-item rounded-3 d-flex align-items-center gap-2 py-2 px-3 doctor-filter-option {% if not doctor_filter %}active fw-bold{% endif %}"
+                               href="#" data-doctor-id=""
+                               style="transition: background .15s;">
+                                <i class="bi bi-grid-fill text-primary"></i>
+                                {% if current_lang == 'ar' %}الجميع{% else %}All Doctors{% endif %}
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider my-1" style="border-color: rgba(255,255,255,0.08);"></li>
+                        {% for doc in doctors_list %}
+                        <li>
+                            <a class="dropdown-item rounded-3 d-flex align-items-center gap-2 py-2 px-3 doctor-filter-option {% if doctor_filter|string == doc.id|string %}active fw-bold{% endif %}"
+                               href="#" data-doctor-id="{{ doc.id }}"
+                               style="transition: background .15s;">
+                                <span class="rounded-circle d-inline-flex align-items-center justify-content-center fw-bold text-white"
+                                      style="width:26px;height:26px;font-size:.75rem;background: linear-gradient(135deg,#6366f1,#8b5cf6);flex-shrink:0;">{{ doc.first_name[0] }}</span>
+                                {{ doc.first_name }} {{ doc.last_name }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <input type="hidden" name="doctor_id" id="doctor-filter-input" value="{{ doctor_filter }}">
+            </div>
+            {% endif %}
+
+            <!-- Per Page Select Dropdown -->
+            <div class="col-auto d-flex align-items-center gap-2">
+                <label for="appointments-per-page-select-top" class="small text-muted mb-0 fw-semibold text-nowrap">
+                    {% if current_lang == 'ar' %}عرض في الصفحة:{% else %}Items per page:{% endif %}
+                </label>
+                <select id="appointments-per-page-select-top"
+                        class="form-select form-select-sm rounded-pill px-3 fw-semibold shadow-sm"
+                        style="width: auto; cursor: pointer; border-width: 1.5px; background: var(--surface-color); color: var(--heading-color); border-color: color-mix(in srgb, var(--heading-color), transparent 85%);"
+                        onchange="changeTablePerPage(this.value, 'appointments')">
+                    <option value="5" {% if per_page == 5 %}selected{% endif %}>5</option>
+                    <option value="10" {% if per_page == 10 or not per_page %}selected{% endif %}>10</option>
+                    <option value="25" {% if per_page == 25 %}selected{% endif %}>25</option>
+                    <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                    <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+                </select>
+            </div>
+
+        </div>
+    </form>
+
+    <!-- Table Container -->
+    <div id="appointments-table-container">
+        {% include "partials/_appointments_table.html" %}
+    </div>
+{% endif %}
+</div>

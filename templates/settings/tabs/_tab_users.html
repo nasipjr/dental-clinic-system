@@ -1,0 +1,180 @@
+<!-- ═══════════ User Accounts Tab ═══════════ -->
+<div class="tab-pane fade" id="tab-users" role="tabpanel">
+    <div class="settings-tab-header">
+        <div class="settings-tab-icon"><i class="bi bi-people"></i></div>
+        <div>
+            <h4>User Accounts</h4>
+            <p>Manage system users, roles, and credentials</p>
+        </div>
+        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 ms-auto"
+            data-bs-toggle="modal" data-bs-target="#addUserModal">
+            <i class="bi bi-person-plus me-1"></i> Add New User
+        </button>
+    </div>
+
+    <!-- Sub-Tabs Navigation -->
+    <ul class="nav nav-pills mb-4 gap-2 border-bottom pb-3 mt-4" id="user-subtabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active rounded-pill px-4" id="staff-users-tab"
+                data-bs-toggle="tab" data-bs-target="#staff-users-pane" type="button" role="tab">
+                <i class="bi bi-person-workspace me-1"></i> {% if current_lang == 'ar' %}طاقم العمل{% else %}Clinic Staff{% endif %}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4" id="patient-users-tab"
+                data-bs-toggle="tab" data-bs-target="#patient-users-pane" type="button" role="tab">
+                <i class="bi bi-people me-1"></i> {% if current_lang == 'ar' %}حسابات المرضى{% else %}Patient Accounts{% endif %}
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="user-subtabs-content">
+        <!-- Staff Users Tab -->
+        <div class="tab-pane fade show active" id="staff-users-pane" role="tabpanel">
+            <div class="row mb-3">
+                <div class="col-md-6 col-lg-5 ms-auto">
+                    <div class="input-group">
+                        <span class="input-group-text border-end-0 text-muted ps-3 pe-3" style="border-radius: 50rem 0 0 50rem;">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0 ps-2" style="border-radius: 0 50rem 50rem 0;"
+                            placeholder="{% if current_lang == 'ar' %}بحث باسم الموظف أو اسم المستخدم...{% else %}Search by staff name or username...{% endif %}"
+                            oninput="filterUserTable('staff-table-body', this.value)"
+                            onkeyup="filterUserTable('staff-table-body', this.value)">
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table settings-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Role</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staff-table-body">
+                        {% for user in users if user.role != 'patient' %}
+                        <tr>
+                            <td>
+                                <div class="user-cell">
+                                    <div class="user-avatar {% if user.role == 'admin' %}avatar-admin{% elif user.role == 'doctor' %}avatar-doctor{% else %}avatar-receptionist{% endif %}">
+                                        <i class="bi {% if user.role == 'admin' %}bi-shield-lock{% elif user.role == 'doctor' %}bi-person-badge{% else %}bi-headset{% endif %}"></i>
+                                    </div>
+                                    <strong translate="no">{{ user.username }}</strong>
+                                </div>
+                            </td>
+                            <td>{{ user.first_name or '' }} {{ user.last_name or '' }}</td>
+                            <td>
+                                <span class="role-badge {% if user.role == 'admin' %}role-admin{% elif user.role == 'doctor' %}role-doctor{% else %}role-receptionist{% endif %}">
+                                    {{ user.role|capitalize }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-inline-flex align-items-center gap-2">
+                                    <!-- Edit Button -->
+                                    <button type="button"
+                                        class="table-action-btn edit-btn edit-user-btn"
+                                        data-user-id="{{ user.id }}"
+                                        data-username="{{ user.username }}"
+                                        data-first-name="{{ user.first_name or '' }}"
+                                        data-last-name="{{ user.last_name or '' }}"
+                                        data-role="{{ user.role }}" data-tooltip="Edit User"
+                                        data-bs-toggle="modal" data-bs-target="#editUserModal">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                    <!-- Delete Button -->
+                                    {% if session.get('user_id') != user.id %}
+                                    <button type="button"
+                                        class="table-action-btn delete-table-btn"
+                                        data-tooltip="Delete User"
+                                        onclick="confirmDeleteUser('{{ user.id }}', '{{ user.username }}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    {% else %}
+                                    <span class="active-user-badge"><i class="bi bi-check-circle me-1"></i>You</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Patient Users Tab -->
+        <div class="tab-pane fade" id="patient-users-pane" role="tabpanel">
+            <div class="row mb-3">
+                <div class="col-md-6 col-lg-5 ms-auto">
+                    <div class="input-group">
+                        <span class="input-group-text border-end-0 text-muted ps-3 pe-3" style="border-radius: 50rem 0 0 50rem;">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control border-start-0 ps-2" style="border-radius: 0 50rem 50rem 0;"
+                            placeholder="{% if current_lang == 'ar' %}بحث باسم المريض أو اسم المستخدم...{% else %}Search by patient name or username...{% endif %}"
+                            oninput="filterUserTable('patient-table-body', this.value)"
+                            onkeyup="filterUserTable('patient-table-body', this.value)">
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table settings-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Role</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patient-table-body">
+                        {% for user in users if user.role == 'patient' %}
+                        <tr>
+                            <td>
+                                <div class="user-cell">
+                                    <div class="user-avatar avatar-patient">
+                                        <i class="bi bi-person"></i>
+                                    </div>
+                                    <strong translate="no">{{ user.username }}</strong>
+                                </div>
+                            </td>
+                            <td>{{ user.first_name or '' }} {{ user.last_name or '' }}</td>
+                            <td>
+                                <span class="role-badge role-patient">
+                                    Patient
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-inline-flex align-items-center gap-2">
+                                    <!-- Edit Button -->
+                                    <button type="button"
+                                        class="table-action-btn edit-btn edit-user-btn"
+                                        data-user-id="{{ user.id }}"
+                                        data-username="{{ user.username }}"
+                                        data-first-name="{{ user.first_name or '' }}"
+                                        data-last-name="{{ user.last_name or '' }}"
+                                        data-role="{{ user.role }}" data-tooltip="Edit User"
+                                        data-bs-toggle="modal" data-bs-target="#editUserModal">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                    <!-- Delete Button -->
+                                    {% if session.get('user_id') != user.id %}
+                                    <button type="button"
+                                        class="table-action-btn delete-table-btn"
+                                        data-tooltip="Delete User"
+                                        onclick="confirmDeleteUser('{{ user.id }}', '{{ user.username }}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

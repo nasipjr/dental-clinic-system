@@ -1,0 +1,69 @@
+<!-- ═══════════ Edit Payment Header & Summary ═══════════ -->
+<div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
+    <h2>{% if current_lang == 'ar' %}تعديل بيانات الدفعة المالية{% else %}Edit Payment Details{% endif %} <bdi dir="ltr">PAY-{{ "%04d"|format(payment.id) }}</bdi></h2>
+    <p>{% if current_lang == 'ar' %}تعديل مبلغ الدفعة أو ملاحظاتها أو تاريخها. سيتم إعادة احتساب التوزيع المالي تلقائياً.{% else %}Update payment amount, notes, or date. The financial allocation will automatically be updated.{% endif %}</p>
+</div>
+
+<div class="add-patient-icon" data-aos="zoom-in" data-aos-delay="200">
+    <i class="bi bi-pencil-square"></i>
+</div>
+
+{% if error_message %}
+<div class="alert alert-danger text-center" role="alert">
+    {{ error_message }}
+</div>
+{% endif %}
+
+{% if selected_patient %}
+<div class="patient-info-grid mb-4">
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</span>
+        <p class="mb-0">
+            <strong>{{ selected_patient.first_name }} {{ selected_patient.last_name }}</strong>
+            <br>
+            <small class="text-secondary"><bdi dir="ltr">{{ selected_patient.phone or ('No phone number' if current_lang != 'ar' else 'لا يوجد رقم هاتف') }}</bdi></small>
+        </p>
+    </div>
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}إجمالي الفواتير{% else %}Total Invoices{% endif %}</span>
+        <p class="mb-0 fw-semibold">{{ selected_patient.total_invoice_amount | format_price }} {{ currency_symbol }}</p>
+    </div>
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}إجمالي الدفعات{% else %}Total Payments{% endif %}</span>
+        <p class="mb-0 fw-semibold text-success">{{ selected_patient.total_payments_amount | format_price }} {{ currency_symbol }}</p>
+    </div>
+
+    <div class="patient-info-box">
+        <span class="info-label">
+            {% if selected_patient.credit_amount > 0 %}
+            {% if current_lang == 'ar' %}رصيد مالي دائن للمريض{% else %}Patient Credit{% endif %}
+            {% else %}
+            {% if current_lang == 'ar' %}المبلغ المتبقي للعيادة{% else %}Outstanding Amount{% endif %}
+            {% endif %}
+        </span>
+
+        <p class="mb-0">
+            {% if selected_patient.credit_amount > 0 %}
+            <span class="credit-amount fw-bold text-info">
+                {{ selected_patient.credit_amount | format_price }} {{ currency_symbol }}
+                <span class="credit-badge ms-1">{% if current_lang == 'ar' %}رصيد{% else %}Credit{% endif %}</span>
+            </span>
+            {% elif selected_patient.outstanding_amount > 0 %}
+            <span class="remaining-due fw-bold text-danger">
+                {{ selected_patient.outstanding_amount | format_price }} {{ currency_symbol }}
+                <span class="due-badge ms-1">{% if current_lang == 'ar' %}مستحق{% else %}Due{% endif %}</span>
+            </span>
+            {% else %}
+            <span class="remaining-clear fw-bold text-success">
+                0 {{ currency_symbol }}
+                <span class="paid-badge ms-1">{% if current_lang == 'ar' %}خالص{% else %}Paid{% endif %}</span>
+            </span>
+            {% endif %}
+        </p>
+    </div>
+
+</div>
+{% endif %}

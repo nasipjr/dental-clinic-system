@@ -1,0 +1,57 @@
+<!-- ═══════════ Edit Payment Form ═══════════ -->
+<form id="edit-payment-form" method="POST" data-aos="fade-up" data-aos-delay="300">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    
+    <div class="row gy-4">
+
+        <!-- Patient Selector -->
+        <div class="col-md-12">
+            <label for="patient_id" class="form-label">{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</label>
+            <select id="patient_id" name="patient_id" class="form-select" required>
+                <option value="">{% if current_lang == 'ar' %}اختر المريض{% else %}Select Patient{% endif %}</option>
+                {% for p in patients %}
+                <option value="{{ p.id }}" {% if selected_patient and selected_patient.id == p.id %}selected{% endif %}>
+                    {{ p.first_name }} {{ p.last_name }}
+                    {% if p.phone %} - {{ p.phone }}{% endif %}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Payment Amount -->
+        <div class="col-md-6">
+            <label for="payment_amount" class="form-label">{% if current_lang == 'ar' %}مبلغ الدفعة{% else %}Payment Amount{% endif %}</label>
+            <input type="number" step="any" min="0" id="payment_amount" name="payment_amount"
+                class="form-control" placeholder="{% if current_lang == 'ar' %}أدخل مبلغ الدفعة{% else %}Enter payment amount{% endif %}"
+                value="{{ payment.amount }}" required>
+        </div>
+
+        <!-- Payment Date & Time -->
+        <div class="col-md-6">
+            <label for="payment_date" class="form-label">{% if current_lang == 'ar' %}تاريخ وساعة الدفع{% else %}Payment Date & Time{% endif %}</label>
+            <input type="datetime-local" id="payment_date" name="payment_date" class="form-control"
+                value="{{ payment.payment_date.strftime('%Y-%m-%d\TH:%M') if payment.payment_date else '' }}" required>
+        </div>
+
+        <!-- Payment Notes -->
+        <div class="col-md-12">
+            <label for="notes" class="form-label">{% if current_lang == 'ar' %}ملاحظات الدفعة{% else %}Payment Notes{% endif %}</label>
+            <textarea id="notes" name="notes" class="form-control" rows="3"
+                placeholder="{% if current_lang == 'ar' %}ملاحظات أو بيانات إضافية حول الدفعة{% else %}Optional notes about this payment{% endif %}">{{ payment.notes or '' }}</textarea>
+        </div>
+
+        <!-- Actions -->
+        <div class="col-12">
+            <div class="action-buttons justify-content-center gap-3">
+                <button type="submit" class="btn btn-primary px-4 fw-bold">
+                    <i class="bi bi-floppy me-1"></i>{% if current_lang == 'ar' %}حفظ التغييرات{% else %}Save Changes{% endif %}
+                </button>
+
+                <a href="{{ next_url or url_for('payments.view_payment', payment_id=payment.id) }}" class="btn-outline-main px-4">
+                    {% if current_lang == 'ar' %}إلغاء وعودة{% else %}Cancel{% endif %}
+                </a>
+            </div>
+        </div>
+
+    </div>
+</form>

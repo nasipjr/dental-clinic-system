@@ -1,0 +1,26 @@
+<!-- ═══════════ Portal Invoice Installments History ═══════════ -->
+{% if invoice.payment_allocations %}
+<h5 class="fw-bold mb-3"><i class="bi bi-history me-1 text-success"></i> {% if current_lang == 'ar' %}سجل الدفعات والأقساط المسددة{% else %}Installment / Payment History{% endif %}</h5>
+<div class="table-responsive">
+    <table class="table align-middle table-sm">
+        <thead style="background-color: color-mix(in srgb, var(--default-color), transparent 95%); color: var(--heading-color);">
+            <tr>
+                <th class="ps-3">{% if current_lang == 'ar' %}رقم الإيصال{% else %}Receipt #{% endif %}</th>
+                <th>{% if current_lang == 'ar' %}تاريخ السداد{% else %}Date Paid{% endif %}</th>
+                <th class="text-end">{% if current_lang == 'ar' %}المبلغ المسدد{% else %}Amount Paid{% endif %}</th>
+                <th class="pe-3">{% if current_lang == 'ar' %}الملاحظات{% else %}Notes{% endif %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for allocation in invoice.payment_allocations %}
+            <tr>
+                <td class="fw-bold text-success ps-3"><bdi dir="ltr">PAY-{{ "%04d"|format(allocation.payment.id) }}</bdi></td>
+                <td>{{ allocation.payment.payment_date.strftime('%Y-%m-%d %I:%M %p') }}</td>
+                <td class="text-end fw-semibold text-success">{{ allocation.amount | format_price }} {{ currency_symbol }}</td>
+                <td class="pe-3"><span class="small" style="color: color-mix(in srgb, var(--default-color), transparent 25%);">{{ allocation.payment.notes or '' }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}

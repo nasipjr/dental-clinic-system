@@ -1,0 +1,40 @@
+<!-- ═══════════ License Activation Header & Alerts ═══════════ -->
+<div class="activation-header">
+    <div class="lock-icon-circle">
+        <i class="bi bi-shield-lock-fill"></i>
+    </div>
+    <h3 class="fw-bold mb-1">
+        {% if current_lang == 'ar' %}تفعيل ترخيص النظام{% else %}License Activation{% endif %}
+    </h3>
+    <p class="text-secondary small mb-0">
+        {% if current_lang == 'ar' %}منظومة إدارة العيادة السنية الموحدة{% else %}Dental Clinic Management System Suite{% endif %}
+    </p>
+</div>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }} rounded-3 mb-4" role="alert">
+                <i class="bi bi-exclamation-circle-fill me-2"></i>{{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<!-- Current Status Notice -->
+{% if status_code == 'CLOCK_TAMPERED' %}
+    <div class="alert alert-danger rounded-3 mb-4 border-2">
+        <h6 class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>{% if current_lang == 'ar' %}تم الكشف عن تلاعب بالوقت والتاريخ{% else %}Clock Tampering Detected{% endif %}</h6>
+        <small>{{ message }}</small>
+    </div>
+{% elif status_code == 'EXPIRED_OR_INVALID' %}
+    <div class="alert alert-warning rounded-3 mb-4">
+        <h6 class="fw-bold mb-1"><i class="bi bi-clock-history me-2"></i>{% if current_lang == 'ar' %}انتهت فترة التجربة المجانية{% else %}Trial Period Expired{% endif %}</h6>
+        <small>{% if current_lang == 'ar' %}انتهت صلاحية فترة التجربة الخاصة بالعيادة. يرجى تفعيل مفتاح جديد للاستمرار.{% else %}Your trial period has expired. Please enter a valid license key.{% endif %}</small>
+    </div>
+{% else %}
+    <div class="alert alert-info rounded-3 mb-4">
+        <small>{% if current_lang == 'ar' %}يرجى إدخال مفتاح الترخيص لتفعيل التطبيق وصلاحية الاستخدام.{% else %}Please enter your license key to activate the application.{% endif %}</small>
+    </div>
+{% endif %}

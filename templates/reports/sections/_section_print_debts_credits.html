@@ -1,0 +1,73 @@
+<!-- ═══════════ Sections 4 & 5: Debts & Credits Ledgers ═══════════ -->
+<!-- SECTION 4: PATIENT DEBTS LEDGER -->
+<div class="report-section">
+    <div class="section-header">
+        <h2>4. {% if current_lang == 'ar' %}جدول الديون المستحقة على المرضى{% else %}Patient Outstanding Debts Ledger{% endif %}</h2>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>{% if current_lang == 'ar' %}اسم المريض{% else %}Patient Name{% endif %}</th>
+                <th>{% if current_lang == 'ar' %}رقم الهاتف{% else %}Phone{% endif %}</th>
+                <th class="text-end">{% if current_lang == 'ar' %}إجمالي المفوتر{% else %}Total Invoiced{% endif %}</th>
+                <th class="text-end">{% if current_lang == 'ar' %}إجمالي المدفوع{% else %}Total Paid{% endif %}</th>
+                <th class="text-end">{% if current_lang == 'ar' %}المبلغ المتبقي (الدين){% else %}Remaining Debt{% endif %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in all_debtors %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td class="fw-bold">{{ p.name }}</td>
+                <td>{{ p.phone }}</td>
+                <td class="text-end">{{ p.total_billed | format_price }} {{ currency_symbol }}</td>
+                <td class="text-end text-success">{{ p.total_paid | format_price }} {{ currency_symbol }}</td>
+                <td class="text-end text-danger fw-bold">{{ p.outstanding | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" style="text-align: center;">{% if current_lang == 'ar' %}لا توجد ديون مستحقة حالياً{% else %}No outstanding debts{% endif %}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- SECTION 5: PATIENT CREDITS LEDGER -->
+<div class="report-section">
+    <div class="section-header">
+        <h2>5. {% if current_lang == 'ar' %}جدول أرصدة المرضى الدائنة (الرصيد المسبق){% else %}Patient Credit Balances Ledger{% endif %}</h2>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>{% if current_lang == 'ar' %}اسم المريض{% else %}Patient Name{% endif %}</th>
+                <th>{% if current_lang == 'ar' %}رقم الهاتف{% else %}Phone{% endif %}</th>
+                <th class="text-end">{% if current_lang == 'ar' %}إجمالي المفوتر{% else %}Total Invoiced{% endif %}</th>
+                <th class="text-end">{% if current_lang == 'ar' %}إجمالي المدفوع{% else %}Total Paid{% endif %}</th>
+                <th class="text-end">{% if current_lang == 'ar' %}الرصيد الدائن المتاح{% else %}Available Credit{% endif %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in all_credited_patients %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td class="fw-bold">{{ p.name }}</td>
+                <td>{{ p.phone }}</td>
+                <td class="text-end">{{ p.total_billed | format_price }} {{ currency_symbol }}</td>
+                <td class="text-end text-success">{{ p.total_paid | format_price }} {{ currency_symbol }}</td>
+                <td class="text-end text-primary fw-bold">+ {{ p.credit | format_price }} {{ currency_symbol }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" style="text-align: center;">{% if current_lang == 'ar' %}لا توجد أرصدة دائنة حالياً{% else %}No credit balances{% endif %}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="footer-note">
+    <div>{% if current_lang == 'ar' %}نظام إدارة عيادة الأسنان - تقرير رسمي معتمد{% else %}Dental Clinic Management System — Official Certified Report{% endif %}</div>
+    <div>{% if current_lang == 'ar' %}صفحة 1 من 3{% else %}Page 1 of 3{% endif %}</div>
+</div>

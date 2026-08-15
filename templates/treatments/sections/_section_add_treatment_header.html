@@ -1,0 +1,59 @@
+<!-- ═══════════ Add Treatment Header & Appointment Context ═══════════ -->
+<div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
+    <h2>{% if current_lang == 'ar' %}إضافة معالجة جديدة{% else %}Add New Treatment{% endif %}</h2>
+    <p>{% if current_lang == 'ar' %}تسجيل معالجة وإجراء طبي جديد ضمن هذه الجلسة العلاجية.{% else %}Add a treatment record for this appointment session.{% endif %}</p>
+</div>
+
+<div class="add-patient-icon" data-aos="zoom-in" data-aos-delay="200">
+    <i class="bi bi-clipboard2-pulse"></i>
+</div>
+
+{% if error_message %}
+<div class="alert alert-danger text-center rounded-3 mb-4 shadow-sm" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ error_message }}
+</div>
+{% endif %}
+
+<!-- Appointment Context Grid -->
+<div class="patient-info-grid mb-4">
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</span>
+        <p>
+            <a href="{{ url_for('patients.patient_detail', patient_id=patient.id) }}" class="fw-bold text-decoration-none text-primary">
+                {{ patient.first_name }} {{ patient.last_name }}
+            </a>
+        </p>
+    </div>
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}تاريخ الموعد والجلسة{% else %}Appointment Date{% endif %}</span>
+        <p>
+            {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else ('بدون تاريخ' if current_lang == 'ar' else 'No date') }}
+        </p>
+    </div>
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}سبب الزيارة{% else %}Appointment Reason{% endif %}</span>
+        <p>{{ appointment.reason or ('لم يحدد' if current_lang == 'ar' else 'No reason provided') }}</p>
+    </div>
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}حالة الموعد{% else %}Status{% endif %}</span>
+        <p>
+            <span class="appointment-status
+                {% if appointment.status == 'Done' %}status-done
+                {% elif appointment.status == 'Cancelled' %}status-cancelled
+                {% elif appointment.status == 'Pending' %}status-pending
+                {% else %}status-scheduled{% endif %}">
+                {% if current_lang == 'ar' %}
+                    {% if appointment.status == 'Done' %}منجز
+                    {% elif appointment.status == 'Cancelled' %}ملغى
+                    {% elif appointment.status == 'Pending' %}معلق
+                    {% else %}مجدول{% endif %}
+                {% else %}
+                    {{ appointment.status }}
+                {% endif %}
+            </span>
+        </p>
+    </div>
+</div>

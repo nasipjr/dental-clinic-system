@@ -1,0 +1,106 @@
+/* Settings Page Modular Stylesheet */
+.treatment-card-box {
+    background: var(--surface-color, rgba(30, 41, 59, 0.5)) !important;
+    border: 1px solid color-mix(in srgb, var(--default-color), transparent 88%) !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+    transition: all 0.3s ease !important;
+}
+
+.treatment-card-header {
+    background: color-mix(in srgb, var(--default-color), transparent 96%) !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--default-color), transparent 90%) !important;
+}
+
+.treatment-table th {
+    background: color-mix(in srgb, var(--default-color), transparent 97%) !important;
+    color: color-mix(in srgb, var(--default-color), transparent 30%) !important;
+    border-bottom: 1px solid color-mix(in srgb, var(--default-color), transparent 90%) !important;
+    font-weight: 600 !important;
+    font-size: 0.82rem !important;
+    letter-spacing: 0.3px !important;
+}
+
+.treatment-table tr {
+    border-bottom: 1px solid color-mix(in srgb, var(--default-color), transparent 93%) !important;
+    transition: background 0.2s ease !important;
+}
+
+.treatment-table tr:hover {
+    background: color-mix(in srgb, var(--accent-color, #6366f1), transparent 94%) !important;
+}
+
+.treatment-input-pill {
+    background: color-mix(in srgb, var(--default-color), transparent 94%) !important;
+    border: 1px solid color-mix(in srgb, var(--default-color), transparent 82%) !important;
+    border-radius: 50rem !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+.treatment-input-pill:focus-within {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18) !important;
+}
+
+.treatment-input-pill input {
+    color: var(--default-color) !important;
+}
+
+.treatment-input-pill .unit-badge {
+    background: transparent !important;
+    color: color-mix(in srgb, var(--default-color), transparent 35%) !important;
+    font-size: 0.8rem !important;
+}
+
+.treatment-name-input {
+    color: var(--default-color) !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+.treatment-name-input:focus {
+    background: color-mix(in srgb, var(--accent-color, #6366f1), transparent 92%) !important;
+    border-radius: 8px !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3) !important;
+}
+
+.treatment-search-input {
+    background: color-mix(in srgb, var(--default-color), transparent 94%) !important;
+    border: 1px solid color-mix(in srgb, var(--default-color), transparent 82%) !important;
+    color: var(--default-color) !important;
+    border-radius: 50rem !important;
+}
+
+.treatment-search-input::placeholder {
+    color: color-mix(in srgb, var(--default-color), transparent 50%) !important;
+}
+
+.treatment-search-input:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+}
+
+.cat-pill-btn {
+    background: color-mix(in srgb, var(--default-color), transparent 96%) !important;
+    border: 1px solid color-mix(in srgb, var(--default-color), transparent 88%) !important;
+    color: var(--default-color) !important;
+    transition: all 0.25s ease !important;
+    font-size: 0.82rem !important;
+}
+
+.cat-pill-btn:hover {
+    background: rgba(99, 102, 241, 0.15) !important;
+    border-color: rgba(99, 102, 241, 0.4) !important;
+    color: #818cf8 !important;
+    transform: translateY(-1px);
+}
+
+.cat-pill-btn.active {
+    background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+    border-color: #6366f1 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4) !important;
+}

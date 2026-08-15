@@ -1,0 +1,59 @@
+/**
+ * Dental Clinic Management System - Patient Financial Ledger Print Stylesheet
+ * High contrast A4 print statement, running balance ledger, debit and credit colors.
+ */
+
+body.ledger-print-layout {
+    background-color: #fff;
+    color: #000;
+    padding: 40px;
+}
+
+.clinic-header {
+    border-bottom: 2px double #dee2e6;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+
+.patient-card {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin-bottom: 30px;
+    border: 1px solid #e9ecef;
+}
+
+.table th {
+    background-color: #f8f9fa !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    font-weight: 700;
+}
+
+.text-debit {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.text-credit {
+    color: #198754;
+    font-weight: 600;
+}
+
+.balance-debit {
+    font-weight: 700;
+    color: #dc3545;
+}
+
+.balance-credit {
+    font-weight: 700;
+    color: #198754;
+}
+
+@media print {
+    body.ledger-print-layout {
+        padding: 10px;
+    }
+    .no-print {
+        display: none !important;
+    }
+}

@@ -1,0 +1,46 @@
+/**
+ * Dental Clinic Management System - Patient Payment Stylesheet
+ * Custom styles for quick pay buttons, debt badges, and patient financial cards.
+ */
+
+.btn-quick-pay {
+    padding: 7px 18px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.84rem;
+    letter-spacing: 0.01em;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.invoice-pay-btn {
+    background: rgba(16, 185, 129, 0.12) !important;
+    color: #10b981 !important;
+    border: 1px solid rgba(16, 185, 129, 0.45) !important;
+}
+
+.invoice-pay-btn:hover, .invoice-pay-btn:focus {
+    background: rgba(16, 185, 129, 0.24) !important;
+    color: #34d399 !important;
+    border-color: rgba(16, 185, 129, 0.75) !important;
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3) !important;
+}
+
+.debt-pay-btn {
+    background: rgba(245, 158, 11, 0.12) !important;
+    color: #f59e0b !important;
+    border: 1px solid rgba(245, 158, 11, 0.45) !important;
+}
+
+.debt-pay-btn:hover, .debt-pay-btn:focus {
+    background: rgba(245, 158, 11, 0.24) !important;
+    color: #fbbf24 !important;
+    border-color: rgba(245, 158, 11, 0.75) !important;
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3) !important;
+}

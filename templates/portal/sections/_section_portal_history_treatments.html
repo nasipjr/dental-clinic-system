@@ -1,0 +1,48 @@
+<!-- ═══════════ Portal Treatments & Procedures Tab Pane ═══════════ -->
+<div class="tab-pane fade show active" id="treatments-pane" role="tabpanel">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>{% if current_lang == 'ar' %}تاريخ المعالجة{% else %}Date{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}نوع الإجراء العلاجي{% else %}Procedure Type{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}السن{% else %}Tooth{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}ملاحظات الطبيب المعالج{% else %}Doctor Notes{% endif %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in treatments %}
+                <tr>
+                    <td class="fw-semibold">{{ t.treatment_date.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <span class="badge bg-primary bg-opacity-10 text-primary px-2.5 py-1.5 rounded-pill fw-semibold">
+                            {{ t.procedure_type or ('معالجة عامة' if current_lang == 'ar' else 'General Treatment') }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if t.tooth_number %}
+                            <span class="badge bg-light text-dark border px-2.5 py-1.5 rounded-pill">{{ t.tooth_number | format_tooth_number }}</span>
+                        {% else %}
+                            <span class="text-muted small">{% if current_lang == 'ar' %}لا يوجد{% else %}N/A{% endif %}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if t.notes %}
+                            <span class="small text-secondary">{{ t.notes }}</span>
+                        {% else %}
+                            <span class="text-muted small italic">{% if current_lang == 'ar' %}لا توجد ملاحظات{% else %}No notes available{% endif %}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center py-5">
+                        <i class="bi bi-shield-slash text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-2 mb-0">{% if current_lang == 'ar' %}لا توجد معالجات مسجلة حتى الآن{% else %}No treatments recorded yet{% endif %}</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

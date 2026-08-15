@@ -1,0 +1,32 @@
+/**
+ * Dental Clinic Management System - Patient Portal Invoice Detail Stylesheet
+ * Responsive screen card layout and print-media sheet rendering.
+ */
+
+@media print {
+    /* Hide layout elements during print */
+    #header, #footer, .topbar, #scroll-top, .section-title, .btn, .alert, .mobile-nav-toggle, #invoice-detail-section {
+        display: none !important;
+    }
+    
+    html, body, #main, #invoice-print-area, #invoice-print-area * {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+    
+    body {
+        font-size: 11pt !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    #invoice-print-area {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 10px !important;
+    }
+}

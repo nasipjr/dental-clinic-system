@@ -5,10 +5,19 @@ auth_bp = Blueprint("auth", __name__)
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
+    from flask import g
+    from models import Patient
     if "user_id" in session:
-        if session.get("role") == "patient":
-            return redirect(url_for("portal.dashboard"))
-        return redirect(url_for("dashboard.home"))
+        if not g.current_user:
+            session.clear()
+        elif g.current_user.role == "patient":
+            if g.current_user.patient_id and db.session.get(Patient, g.current_user.patient_id):
+                session["patient_id"] = g.current_user.patient_id
+                return redirect(url_for("portal.dashboard"))
+            else:
+                session.clear()
+        else:
+            return redirect(url_for("dashboard.home"))
 
     lang = request.cookies.get('lang', 'en')
 

@@ -1,0 +1,26 @@
+<!-- ═══════════ Patient Ledger Summary Box ═══════════ -->
+<div class="row justify-content-end mt-4">
+    <div class="col-md-5">
+        <div class="border rounded-3 p-3 bg-light">
+            <div class="d-flex justify-content-between mb-2">
+                <span class="fw-semibold">{% if current_lang == 'ar' %}إجمالي المفوتر:{% else %}Total Invoiced:{% endif %}</span>
+                <span class="fw-bold" dir="ltr">{{ patient.total_invoice_amount | format_price }} {{ currency_symbol }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span class="fw-semibold">{% if current_lang == 'ar' %}إجمالي المسدد:{% else %}Total Paid:{% endif %}</span>
+                <span class="text-success fw-bold" dir="ltr">{{ patient.total_payments_amount | format_price }} {{ currency_symbol }}</span>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between">
+                <span class="fw-bold">{% if current_lang == 'ar' %}الرصيد النهائي المستحق:{% else %}Final Balance Due:{% endif %}</span>
+                {% if patient.outstanding_amount > 0 %}
+                    <span class="text-danger fw-bold fs-5" dir="ltr">{{ patient.outstanding_amount | format_price }} {{ currency_symbol }}</span>
+                {% elif patient.credit_amount > 0 %}
+                    <span class="text-success fw-bold fs-5" dir="ltr">-{{ patient.credit_amount | format_price }} {{ currency_symbol }}</span>
+                {% else %}
+                    <span class="text-muted fw-bold fs-5">0 {{ currency_symbol }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

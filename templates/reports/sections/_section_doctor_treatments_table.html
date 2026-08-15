@@ -1,0 +1,165 @@
+<!-- ═══════════ Detailed Treatments & Commission Table ═══════════ -->
+<div class="card border-0 rounded-4 shadow-sm p-4" style="background: var(--surface-color);">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3 pb-2 border-bottom">
+        <div>
+            <h5 class="fw-bold mb-0">
+                <i class="bi bi-journal-medical text-success me-2"></i>
+                {% if current_lang == 'ar' %}سجل المعالجات ومستحقات الطبيب التفصيلي{% else %}Detailed Treatments & Commission Log{% endif %}
+            </h5>
+            <p class="text-secondary small mb-0">{% if current_lang == 'ar' %}عرض تفصيلي لكل إجراء طبي قام به الدكتور مع حساب حصته المالية المستحقة{% else %}Detailed view of each medical procedure performed with calculated doctor earnings{% endif %}</p>
+        </div>
+
+        <!-- Controls: Live Search & Rows Per Page -->
+        <div class="d-flex flex-wrap align-items-center gap-3 d-print-none">
+            <div class="input-group input-group-sm" style="width: 220px;">
+                <span class="input-group-text bg-transparent border-end-0 text-muted">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" id="doctor-treatments-search" class="form-control border-start-0 ps-0" placeholder="{% if current_lang == 'ar' %}بحث عن مريض أو إجراء...{% else %}Search patient or procedure...{% endif %}">
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <label for="doctor-page-size" class="text-secondary small fw-semibold text-nowrap">{% if current_lang == 'ar' %}عرض في الصفحة:{% else %}Per page:{% endif %}</label>
+                <select id="doctor-page-size" class="form-select form-select-sm rounded-3 fw-semibold" style="width: 80px;">
+                    <option value="10" selected>10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="all">{% if current_lang == 'ar' %}الكل{% else %}All{% endif %}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" id="doctor-treatments-table" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+            <thead class="table-light border-0">
+                <tr class="text-secondary small text-uppercase fw-bold">
+                    <th class="text-center" style="width: 50px;">#</th>
+                    <th class="cursor-pointer sortable-col" data-sort="date">
+                        {% if current_lang == 'ar' %}التاريخ والوقت{% else %}Date & Time{% endif %}
+                        <i class="bi bi-arrow-down-up ms-1 text-muted opacity-50 sort-icon"></i>
+                    </th>
+                    <th class="cursor-pointer sortable-col" data-sort="patient">
+                        {% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}
+                        <i class="bi bi-arrow-down-up ms-1 text-muted opacity-50 sort-icon"></i>
+                    </th>
+                    <th class="cursor-pointer sortable-col" data-sort="procedure">
+                        {% if current_lang == 'ar' %}الإجراء المعالج{% else %}Procedure{% endif %}
+                        <i class="bi bi-arrow-down-up ms-1 text-muted opacity-50 sort-icon"></i>
+                    </th>
+                    <th class="text-center">{% if current_lang == 'ar' %}السن / الجهة{% else %}Tooth/Site{% endif %}</th>
+                    <th class="text-end cursor-pointer sortable-col" data-sort="cost">
+                        {% if current_lang == 'ar' %}تكلفة الإجراء{% else %}Procedure Cost{% endif %}
+                        <i class="bi bi-arrow-down-up ms-1 text-muted opacity-50 sort-icon"></i>
+                    </th>
+                    <th class="text-end cursor-pointer sortable-col" data-sort="share">
+                        {% if current_lang == 'ar' %}مستحق الطبيب{% else %}Doctor Share{% endif %}
+                        <i class="bi bi-arrow-down-up ms-1 text-muted opacity-50 sort-icon"></i>
+                    </th>
+                    <th class="text-center d-print-none">{% if current_lang == 'ar' %}الملف الطبي{% else %}Patient Profile{% endif %}</th>
+                </tr>
+            </thead>
+            <tbody id="doctor-treatments-tbody">
+                {% if treatments_list %}
+                {% for t in treatments_list %}
+                <tr class="treatment-row"
+                    data-date="{{ t.date.isoformat() if t.date else '' }}"
+                    data-patient="{{ t.patient_name | lower }}"
+                    data-procedure="{{ t.procedure_name | lower }}"
+                    data-cost="{{ t.cost }}"
+                    data-share="{{ t.doctor_share }}">
+                    <td class="text-center text-muted fw-bold small row-index">{{ loop.index }}</td>
+                    <td class="text-nowrap py-2.5">
+                        {% if t.date %}
+                        <div class="fw-semibold text-body">{{ t.date.strftime('%Y-%m-%d') }}</div>
+                        <div class="text-secondary small" style="font-size: 0.78rem;">
+                            <i class="bi bi-clock me-1 text-primary"></i>{{ t.date.strftime('%I:%M %p') }}
+                        </div>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td>
+                        {% if t.patient_id %}
+                        <a href="{{ url_for('patients.patient_detail', patient_id=t.patient_id) }}" class="fw-bold text-decoration-none text-primary hover-underline">
+                            <i class="bi bi-person me-1 text-secondary"></i>{{ t.patient_name }}
+                        </a>
+                        {% else %}
+                        <span class="text-secondary">{{ t.patient_name }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="fw-semibold text-body">{{ t.procedure_name }}</span>
+                        {% if t.notes %}
+                        <br><small class="text-muted" style="font-size: 0.78rem;">{{ t.notes }}</small>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if t.tooth_number != '—' %}
+                        <span class="badge rounded-pill bg-secondary bg-opacity-15 text-body border border-secondary border-opacity-25 px-2.5 py-1 fw-bold">
+                            <i class="bi bi-grid-3x3-gap-fill me-1 text-primary"></i>{{ t.tooth_number }}
+                        </span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end fw-bold text-body font-monospace">
+                        {{ t.cost | format_price }} {{ currency_symbol }}
+                    </td>
+                    <td class="text-end fw-bold font-monospace text-success" style="color: #059669 !important;">
+                        {% if salary_type == 'percentage' %}
+                        {{ t.doctor_share | format_price }} {{ currency_symbol }}
+                        <small class="d-block text-muted fw-normal" style="font-size: 0.75rem;">({{ t.doctor_pct }}%)</small>
+                        {% else %}
+                        <span class="badge rounded-pill bg-info bg-opacity-10 text-info fw-semibold">{% if current_lang == 'ar' %}راتب ثابت{% else %}Fixed Salary{% endif %}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center d-print-none">
+                        {% if t.patient_id %}
+                        <a href="{{ url_for('patients.patient_detail', patient_id=t.patient_id) }}" class="table-action-btn view-btn" title="{% if current_lang == 'ar' %}ملف المريض{% else %}Patient Profile{% endif %}">
+                            <i class="bi bi-person-lines-fill"></i>
+                        </a>
+                        {% else %}—{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr id="doctor-no-data-row">
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <i class="bi bi-folder-x fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                        {% if current_lang == 'ar' %}لا توجد معالجات مسجلة لهذا الطبيب في الفترة المحددة.{% else %}No treatments found for this doctor in the selected period.{% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+            {% if treatments_list %}
+            <tfoot class="border-top border-secondary border-opacity-25 fw-bold" style="background: rgba(13, 110, 253, 0.05);">
+                <tr>
+                    <td colspan="5" class="py-3 text-end fw-extrabold fs-6" style="color: var(--bs-body-color, #0f172a) !important;">
+                        <i class="bi bi-calculator me-1 text-primary"></i>
+                        {% if current_lang == 'ar' %}المحصلة الإجمالية:{% else %}Total Sum:{% endif %}
+                    </td>
+                    <td class="text-end py-3 font-monospace fw-extrabold fs-6" id="foot-total-revenue" style="color: #0284c7 !important;">
+                        {{ total_revenue | format_price }} {{ currency_symbol }}
+                    </td>
+                    <td class="text-end py-3 font-monospace fw-extrabold fs-6" id="foot-total-earned" style="color: #059669 !important;">
+                        {{ total_earned | format_price }} {{ currency_symbol }}
+                    </td>
+                    <td class="d-print-none"></td>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+
+    <!-- AJAX Pagination Controls -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4 pt-3 border-top d-print-none" id="doctor-pagination-container">
+        <div class="text-secondary small">
+            <span id="doctor-pagination-info"></span>
+        </div>
+        <nav aria-label="Treatments pagination">
+            <ul class="pagination pagination-sm mb-0" id="doctor-pagination-controls">
+                <!-- Generated dynamically by JS -->
+            </ul>
+        </nav>
+    </div>
+</div>

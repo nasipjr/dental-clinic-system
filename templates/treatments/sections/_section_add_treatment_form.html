@@ -1,0 +1,101 @@
+<!-- ═══════════ Add Treatment Form ═══════════ -->
+<form id="add-patient-form" method="POST" data-aos="fade-up" data-aos-delay="300">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="row gy-4">
+
+        <!-- Treatment Date Display -->
+        <div class="col-md-12">
+            <label class="form-label">{% if current_lang == 'ar' %}تاريخ الجلسة والمعالجة{% else %}Treatment Date{% endif %}</label>
+            <div class="form-control readonly-status-field">
+                {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else ('بدون تاريخ' if current_lang == 'ar' else 'No date') }}
+            </div>
+        </div>
+
+        <!-- Procedure Type Select -->
+        <div class="col-md-12">
+            <label for="procedure_type" class="form-label">{% if current_lang == 'ar' %}نوع الإجراء / المعالجة{% else %}Procedure Type{% endif %} <span class="text-danger">*</span></label>
+            <select id="procedure_type" name="procedure_type" class="form-select form-control" data-prices='{{ treatment_prices|tojson }}' required>
+                <option value="">{% if current_lang == 'ar' %}-- اختر نوع الإجراء --{% else %}-- Select Procedure --{% endif %}</option>
+                {% for proc_name, price in treatment_prices.items() %}
+                <option value="{{ proc_name }}">
+                    {{ proc_name }} ({{ price | format_price }} {{ currency_symbol }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Tooth Number Field -->
+        <div class="col-md-12">
+            <label for="tooth_number" class="form-label">{% if current_lang == 'ar' %}رقم السن / الأسنان (FDI){% else %}Tooth Number (FDI){% endif %}</label>
+            <input type="text" id="tooth_number" name="tooth_number" class="form-control" placeholder="{% if current_lang == 'ar' %}مثال: 18 أو 11, 21 (اتركه فارغاً للإجراءات العامة){% else %}e.g. 18 or 11, 21 (leave blank for general){% endif %}">
+        </div>
+
+        <!-- Notes -->
+        <div class="col-12">
+            <label for="notes" class="form-label">{% if current_lang == 'ar' %}ملاحظات المعالجة{% else %}Notes{% endif %}</label>
+            <textarea id="notes" name="notes" class="form-control" rows="4"
+                placeholder="{% if current_lang == 'ar' %}أضف أي ملاحظات سريرية أو تفاصيل خاصة بالإجراء...{% else %}Add treatment notes...{% endif %}"></textarea>
+        </div>
+        
+        <!-- Anesthesia Toggle -->
+        <div class="col-12 mt-3">
+            <div class="form-check form-switch mb-2">
+                <input class="form-check-input" type="checkbox" id="use_anesthesia" name="use_anesthesia">
+                <label class="form-check-label text-secondary small fw-bold ms-1" for="use_anesthesia">
+                    <i class="bi bi-shield-plus text-primary me-1"></i>
+                    {{ 'إضافة واستخدام تخدير للمعالجة' if current_lang == 'ar' else 'Use Anesthesia' }}
+                </label>
+            </div>
+        </div>
+        
+        <!-- Anesthesia Options Box -->
+        <div class="col-12" id="needles_wrapper" style="display: none;">
+            <div class="anesthesia-card-box">
+                <div class="row g-2">
+                    <div class="col-md-7">
+                        <label for="anesthesia_type" class="form-label text-secondary small fw-bold mb-1">
+                            <i class="bi bi-funnel me-1"></i>
+                            {{ 'نوع التخدير والجرعة' if current_lang == 'ar' else 'Anesthesia Type' }}
+                        </label>
+                        <select id="anesthesia_type" name="anesthesia_type" class="form-select form-select-sm rounded-3">
+                            {% for at in (anesthesia_types if anesthesia_types else []) %}
+                            <option value="{{ at.name }}" data-price="{{ at.price }}">
+                                {{ at.name }} — {{ at.price | format_price }} {{ currency_symbol }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label for="anesthesia_needles" class="form-label text-secondary small fw-bold mb-1">
+                            {{ 'عدد التطبيقات / الإبر' if current_lang == 'ar' else 'Needles (Count)' }}
+                        </label>
+                        <input type="number" id="anesthesia_needles" name="anesthesia_needles" class="form-control form-control-sm rounded-3 fw-bold" min="1" value="1">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Procedure Price Preview -->
+        <div class="col-md-12 mt-3">
+            <label class="form-label">{% if current_lang == 'ar' %}تكلفة الإجراء المتوقعة{% else %}Estimated Procedure Price{% endif %}</label>
+            <div id="procedure_price_display" class="form-control readonly-status-field">
+                {% if current_lang == 'ar' %}اختر نوع الإجراء لعرض السعر{% else %}Select a procedure type to show price{% endif %}
+            </div>
+        </div>
+
+        <!-- Submit & Actions -->
+        <div class="col-12 text-center pt-2">
+            <button type="submit" class="save-patient-btn">
+                {% if current_lang == 'ar' %}حفظ المعالجة{% else %}Save Treatment{% endif %}
+            </button>
+
+            <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
+                class="btn-outline-main px-4 ms-2">
+                {% if current_lang == 'ar' %}العودة للجلسة{% else %}Back to Session{% endif %}
+            </a>
+        </div>
+
+    </div>
+
+</form>

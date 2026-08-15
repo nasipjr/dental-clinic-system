@@ -1,0 +1,38 @@
+<!-- ═══════════ Portal Payments Tab Pane ═══════════ -->
+<div class="tab-pane fade" id="payments-pane" role="tabpanel">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>{% if current_lang == 'ar' %}رقم الإيصال{% else %}Receipt #{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}التاريخ{% else %}Date{% endif %}</th>
+                    <th class="text-end">{% if current_lang == 'ar' %}المبلغ{% else %}Amount{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}الملاحظات{% else %}Notes{% endif %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pay in payments %}
+                <tr>
+                    <td class="fw-bold text-success"><bdi dir="ltr">PAY-{{ "%04d"|format(pay.id) }}</bdi></td>
+                    <td>{{ pay.payment_date.strftime('%Y-%m-%d %I:%M %p') }}</td>
+                    <td class="text-end fw-semibold text-success">{{ pay.amount | format_price }} {{ currency_symbol }}</td>
+                    <td>
+                        {% if pay.notes %}
+                            <span class="small">{{ pay.notes }}</span>
+                        {% else %}
+                            <span class="text-muted small italic">{% if current_lang == 'ar' %}لا توجد ملاحظات{% else %}No notes available{% endif %}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center py-5">
+                        <i class="bi bi-credit-card-2-back text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-2 mb-0">{% if current_lang == 'ar' %}لا توجد مدفوعات مسجلة حتى الآن{% else %}No payments yet{% endif %}</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

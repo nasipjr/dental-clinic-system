@@ -1,0 +1,180 @@
+<!-- ═══════════ Tab 5: Patient Clinic Credits & Prepaid Balances ═══════════ -->
+<div class="tab-pane fade" id="tab-patient-credits" role="tabpanel" aria-labelledby="patient-credits-tab">
+    
+    <!-- Header Summary Card -->
+    <div class="card border-0 rounded-4 shadow-sm p-4 mb-4" style="background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.15) !important;">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h4 class="fw-bold mb-1 text-success d-flex align-items-center gap-2">
+                    <i class="bi bi-wallet2"></i>
+                    <span>{% if current_lang == 'ar' %}أرصدة المرضى الدائنة (الرصيد المسبق){% else %}Patient Credits & Prepaid Balances{% endif %}</span>
+                </h4>
+                <p class="text-secondary mb-0 small">
+                    {% if current_lang == 'ar' %}جدول تفصيلي بالمرضى الذين لديهم رصيد دائن أو دفعات مقدمة متوفرة بحساباتهم للخدمات القادمة.{% else %}Detailed log of patients with active prepaid credit balance available for future treatments.{% endif %}
+                </p>
+            </div>
+            
+            <div class="d-flex align-items-center gap-3">
+                <div class="text-center px-3 py-2 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25">
+                    <small class="text-secondary d-block">{% if current_lang == 'ar' %}إجمالي الأرصدة الدائنة{% else %}Total Credit Balance{% endif %}</small>
+                    <strong class="text-success fs-5">+ {{ total_credit | format_price }} {{ currency_symbol }}</strong>
+                </div>
+                <div class="text-center px-3 py-2 rounded-3 bg-secondary bg-opacity-10 border border-secondary border-opacity-25">
+                    <small class="text-secondary d-block">{% if current_lang == 'ar' %}عدد المرضى الدائنين{% else %}Credited Patients{% endif %}</small>
+                    <strong class="text-body fs-5" id="credits-count-badge">{{ all_credited_patients | length }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Bar & Search -->
+    <div class="card border-0 rounded-4 shadow-sm p-3 mb-4">
+        <div class="row g-3 align-items-center">
+            <!-- Live Search -->
+            <div class="col-12 col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0 text-muted">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" id="credits-search-input" class="form-control border-start-0 ps-0 settings-input"
+                           placeholder="{% if current_lang == 'ar' %}بحث باسم المريض أو رقم الهاتف...{% else %}Search patient name or phone...{% endif %}">
+                </div>
+            </div>
+            <!-- Page Size Selector -->
+            <div class="col-12 col-md-4 d-flex align-items-center justify-content-md-end gap-2">
+                <label for="credits-page-size" class="text-secondary small fw-semibold text-nowrap">{% if current_lang == 'ar' %}عرض في الصفحة:{% else %}Per page:{% endif %}</label>
+                <select id="credits-page-size" class="form-select form-select-sm settings-input" style="width: auto;" onchange="if (typeof filterAndSortCredits === 'function') { creditsCurrentPage = 1; filterAndSortCredits(); }">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="all">{% if current_lang == 'ar' %}الكل{% else %}All{% endif %}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Credited Patients Table -->
+    <div class="card table-card border-0 rounded-4 shadow-sm p-4">
+        {% if all_credited_patients %}
+        <div class="table-responsive">
+            <table class="table appointments-table align-middle mb-0" id="credits-table" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+                <thead class="user-select-none">
+                    <tr>
+                        <th class="text-center" style="width: 50px;">#</th>
+                        <th class="text-start">
+                            <a class="reports-sort-link text-decoration-none color-inherit cursor-pointer" data-table="credits" data-sort="name">
+                                {% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}
+                                <span class="sort-icon"></span>
+                            </a>
+                        </th>
+                        <th class="text-start">
+                            <a class="reports-sort-link text-decoration-none color-inherit cursor-pointer" data-table="credits" data-sort="phone">
+                                {% if current_lang == 'ar' %}رقم الهاتف{% else %}Phone{% endif %}
+                                <span class="sort-icon"></span>
+                            </a>
+                        </th>
+                        <th class="text-end">
+                            <a class="reports-sort-link text-decoration-none color-inherit cursor-pointer" data-table="credits" data-sort="billed">
+                                {% if current_lang == 'ar' %}إجمالي المفوتر{% else %}Total Billed{% endif %}
+                                <span class="sort-icon"></span>
+                            </a>
+                        </th>
+                        <th class="text-end">
+                            <a class="reports-sort-link text-decoration-none color-inherit cursor-pointer" data-table="credits" data-sort="paid">
+                                {% if current_lang == 'ar' %}إجمالي المدفوع{% else %}Total Paid{% endif %}
+                                <span class="sort-icon"></span>
+                            </a>
+                        </th>
+                        <th class="text-end">
+                            <a class="reports-sort-link text-decoration-none color-inherit cursor-pointer" data-table="credits" data-sort="credit" data-order="desc">
+                                {% if current_lang == 'ar' %}رصيد المريض المتبقي{% else %}Available Patient Credit{% endif %}
+                                <span class="sort-icon"><i class="bi bi-arrow-down ms-1"></i></span>
+                            </a>
+                        </th>
+                        <th class="text-center">{% if current_lang == 'ar' %}حالة الحساب{% else %}Status{% endif %}</th>
+                        <th class="text-center d-print-none">{% if current_lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
+                    </tr>
+                </thead>
+                <tbody id="credits-table-body">
+                    {% for p in all_credited_patients %}
+                    <tr class="credit-row"
+                        data-name="{{ p.name | lower }}"
+                        data-phone="{{ p.phone }}"
+                        data-credit="{{ p.credit }}"
+                        data-billed="{{ p.total_billed }}"
+                        data-paid="{{ p.total_paid }}">
+                        <td class="text-center text-muted fw-bold small">{{ loop.index }}</td>
+                        <td>
+                            <a href="{{ url_for('patients.patient_detail', patient_id=p.id) }}"
+                               class="fw-bold text-decoration-none text-primary hover-underline d-inline-flex align-items-center gap-1.5">
+                                <i class="bi bi-person text-secondary" style="font-size: 0.85rem;"></i>
+                                <span>{{ p.name }}</span>
+                            </a>
+                        </td>
+                        <td>
+                            <span class="text-secondary small">{{ p.phone }}</span>
+                        </td>
+                        <td class="text-end fw-semibold">
+                            {{ p.total_billed | format_price }} {{ currency_symbol }}
+                        </td>
+                        <td class="text-end text-success fw-semibold">
+                            {{ p.total_paid | format_price }} {{ currency_symbol }}
+                        </td>
+                        <td class="text-end">
+                            <span class="badge rounded-pill px-3 py-1.5 fw-bold shadow-xs"
+                                  style="background: rgba(16, 185, 129, 0.15) !important; border: 1px solid rgba(16, 185, 129, 0.35) !important; color: #34d399 !important; font-size: 0.88rem;">
+                                + {{ p.credit | format_price }} {{ currency_symbol }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-1 fw-semibold">
+                                {% if current_lang == 'ar' %}دفعة مقدمة{% else %}Prepaid Credit{% endif %}
+                            </span>
+                        </td>
+                        <td class="text-center d-print-none">
+                            <div class="appointments-actions d-flex align-items-center justify-content-center gap-2">
+                                {% if current_user.role in ('admin', 'receptionist') %}
+                                <a href="{{ url_for('payments.add_patient_payment', patient_id=p.id) }}"
+                                   class="table-action-btn pay-btn"
+                                   title="{% if current_lang == 'ar' %}إضافة دفعة إضافية{% else %}Add Extra Payment{% endif %}"
+                                   data-tooltip="{% if current_lang == 'ar' %}إضافة دفعة{% else %}Add Payment{% endif %}">
+                                    <i class="bi bi-cash-coin"></i>
+                                </a>
+                                {% endif %}
+
+                                <a href="{{ url_for('invoices.invoices', patient_id=p.id) }}"
+                                   class="table-action-btn edit-btn"
+                                   title="{% if current_lang == 'ar' %}فواتير المريض{% else %}Patient Invoices{% endif %}"
+                                   data-tooltip="{% if current_lang == 'ar' %}فواتير المريض{% else %}Patient Invoices{% endif %}">
+                                    <i class="bi bi-receipt"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Credits Table Pagination Controls -->
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4 pt-3 border-top" id="credits-pagination-container">
+            <div class="text-secondary small">
+                <span id="credits-pagination-info"></span>
+            </div>
+            <nav aria-label="Credits pagination">
+                <ul class="pagination pagination-sm mb-0" id="credits-pagination-controls">
+                    <!-- Generated by JS -->
+                </ul>
+            </nav>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-wallet2 text-muted fs-1 opacity-50 mb-3 d-block"></i>
+            <h5>{% if current_lang == 'ar' %}لا يوجد أي أرصدة دائنة للمرضى حالياً.{% else %}No patient clinic credits recorded at this time.{% endif %}</h5>
+            <p class="text-muted small">{% if current_lang == 'ar' %}جميع الدفعات المقبوضة مطابقة لمبالغ الفواتير.{% else %}All received payments match invoice totals exactly.{% endif %}</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>

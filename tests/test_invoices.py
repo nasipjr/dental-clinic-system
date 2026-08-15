@@ -1,9 +1,20 @@
+import unittest
 from datetime import datetime
 from decimal import Decimal
+from app import app
 from models import db, Patient, Appointment, Treatment, Invoice, Payment, PaymentAllocation
 
-def test_invoice_calculations(app):
-    with app.app_context():
+
+class InvoiceTestCase(unittest.TestCase):
+    def setUp(self):
+        self.app_context = app.app_context()
+        self.app_context.push()
+
+    def tearDown(self):
+        db.session.rollback()
+        self.app_context.pop()
+
+    def test_invoice_calculations(self):
         patient = Patient(
             first_name="Khaled",
             last_name="Nasser",
@@ -17,7 +28,7 @@ def test_invoice_calculations(app):
             patient_id=patient.id,
             appointment_date=datetime.now(),
             reason="Checkup",
-            status="Completed"
+            status="Scheduled"
         )
         db.session.add(appointment)
         db.session.commit()
@@ -47,14 +58,12 @@ def test_invoice_calculations(app):
         db.session.commit()
 
         # Subtotal: 150.00, Discount 10%: 15.00, Total: 135.00
-        assert invoice.subtotal == Decimal("150.00")
-        assert invoice.discount_amount == Decimal("15.00")
-        assert invoice.total_amount == Decimal("135.00")
-        assert invoice.status == "Unpaid"
+        self.assertEqual(invoice.subtotal, Decimal("150.00"))
+        self.assertEqual(invoice.discount_amount, Decimal("15.00"))
+        self.assertEqual(invoice.total_amount, Decimal("135.00"))
+        self.assertEqual(invoice.status, "Unpaid")
 
-
-def test_direct_invoice_payment_allocation(app):
-    with app.app_context():
+    def test_direct_invoice_payment_allocation(self):
         from services.payment_service import allocate_patient_payments_to_invoices
 
         patient = Patient(
@@ -66,7 +75,7 @@ def test_direct_invoice_payment_allocation(app):
         db.session.commit()
 
         # Create Old Appointment & Invoice #1 ($50 total)
-        appt1 = Appointment(patient_id=patient.id, appointment_date=datetime(2025, 1, 1), status="Completed")
+        appt1 = Appointment(patient_id=patient.id, appointment_date=datetime(2025, 1, 1), status="Scheduled")
         db.session.add(appt1)
         db.session.commit()
         t1 = Treatment(appointment_id=appt1.id, treatment_date=datetime.now(), procedure_type="Procedure 1", total_cost=Decimal("50.00"))
@@ -77,7 +86,7 @@ def test_direct_invoice_payment_allocation(app):
         db.session.commit()
 
         # Create New Appointment & Invoice #2 ($100 total)
-        appt2 = Appointment(patient_id=patient.id, appointment_date=datetime(2025, 2, 1), status="Completed")
+        appt2 = Appointment(patient_id=patient.id, appointment_date=datetime(2025, 2, 1), status="Scheduled")
         db.session.add(appt2)
         db.session.commit()
         t2 = Treatment(appointment_id=appt2.id, treatment_date=datetime.now(), procedure_type="Procedure 2", total_cost=Decimal("100.00"))
@@ -96,9 +105,13 @@ def test_direct_invoice_payment_allocation(app):
         db.session.commit()
 
         # Invoice #2 must be FULLY PAID ($100 total, $100 paid)
-        assert inv2.status == "Paid"
-        assert inv2.total_paid == Decimal("100.00")
+        self.assertEqual(inv2.status, "Paid")
+        self.assertEqual(inv2.total_paid, Decimal("100.00"))
 
         # Invoice #1 must remain UNPAID ($50 total, $0 paid)
-        assert inv1.status == "Unpaid"
-        assert inv1.total_paid == Decimal("0.00")
+        self.assertEqual(inv1.status, "Unpaid")
+        self.assertEqual(inv1.total_paid, Decimal("0.00"))
+
+
+if __name__ == "__main__":
+    unittest.main()

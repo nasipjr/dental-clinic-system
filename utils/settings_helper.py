@@ -3,6 +3,7 @@ from models import db, SystemSetting
 
 DEFAULT_TREATMENT_DETAILS = {
     # 1. فحص وتشخيص (Diagnostic)
+    "جلسة فحص و استشارة": {"price": 50000, "duration": 15, "active": True, "category": "فحص وتشخيص"},
     "فحص دوري واستشارة": {"price": 25000, "duration": 20, "active": True, "category": "فحص وتشخيص"},
     "صورة بانورامية للأسنان": {"price": 50000, "duration": 20, "active": True, "category": "فحص وتشخيص"},
     "أشعة سينية (شعاعية)": {"price": 20000, "duration": 15, "active": True, "category": "فحص وتشخيص"},
@@ -63,6 +64,9 @@ DEFAULT_TREATMENT_DETAILS = {
 DEFAULT_TREATMENT_PRICES = {k: v["price"] for k, v in DEFAULT_TREATMENT_DETAILS.items()}
 
 ARABIC_PROCEDURE_NAMES_MAP = {
+    "فحص واستشارة": "جلسة فحص و استشارة",
+    "جلسة فحص واستشارة": "جلسة فحص و استشارة",
+    "فحص و استشارة": "جلسة فحص و استشارة",
     "فحص دوري": "فحص دوري واستشارة",
     "ألم طارئ": "كشف ألم طارئ",
     "متابعة": "متابعة دورية",
@@ -93,7 +97,7 @@ DEFAULT_SETTINGS = {
     "clinic_email": "kh.nasipdragon@gmail.com",
     "clinic_address": "Damascus, Syria",
     "developer_whatsapp": "963958948727",
-    "currency_symbol": "$",
+    "currency_symbol": "ل.س",
     "default_appointment_duration": "30",
     "auto_cancel_expired_minutes": "120",
     "auto_close_open_session_minutes": "120",
@@ -224,7 +228,7 @@ DEFAULT_ANESTHESIA_TYPES = [
 ]
 
 def get_currency_symbol():
-    return get_setting("currency_symbol", "$")
+    return get_setting("currency_symbol", "ل.س")
 
 def get_anesthesia_types():
     val = get_setting("anesthesia_types")

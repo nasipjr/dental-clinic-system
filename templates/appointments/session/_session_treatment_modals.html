@@ -1,0 +1,503 @@
+<!-- Bulk Treatment Modal -->
+<div class="modal fade" id="bulkTreatmentModal" tabindex="-1" aria-labelledby="bulkTreatmentModalLabel" aria-hidden="true" style="z-index: 1056;">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg" style="background: var(--surface-color);">
+            <div class="modal-header border-bottom pb-3">
+                <h5 class="modal-title fw-bold text-primary mb-0" id="bulkTreatmentModalLabel">
+                    <i class="bi bi-ui-checks-grid me-2 text-warning"></i>
+                    {% if current_lang == 'ar' %}إدراج معالجة جماعية لعدة أسنان{% else %}Apply Bulk Treatment to Multiple Teeth{% endif %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="bulk-treatment-form">
+                <div class="modal-body py-3">
+                    <div class="alert alert-warning d-flex align-items-center py-2 px-3 rounded-3 mb-3" style="background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3);">
+                        <i class="bi bi-info-circle-fill me-2 fs-5 text-warning flex-shrink-0"></i>
+                        <div>
+                            <strong>{% if current_lang == 'ar' %}الأسنان المختارة:{% else %}Selected Teeth:{% endif %}</strong>
+                            <span id="bulk-selected-teeth-display" class="fw-bold ms-1 text-dark">--</span>
+                        </div>
+                    </div>
+
+                    <!-- Category Pills Filter Navigation -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1.5 flex-wrap gap-2">
+                            <label class="form-label text-secondary small fw-bold mb-0">
+                                <i class="bi bi-layers-half text-primary me-1"></i>
+                                {% if current_lang == 'ar' %}تصنيف المعالجة الطبية{% else %}Treatment Category{% endif %}
+                            </label>
+                            <button type="button" class="btn btn-outline-info btn-sm rounded-pill px-3 py-1 fw-bold d-flex align-items-center gap-1.5 shadow-xs" style="font-size: 0.78rem; background: rgba(56, 189, 248, 0.08);" onclick="openQuickAddServiceModalForSession('bulk')">
+                                <i class="bi bi-plus-circle-dotted text-info"></i>
+                                <span>{% if current_lang == 'ar' %}إضافة سبب / إجراء نصي مخصص غير مدرج{% else %}Add Custom / Unlisted Procedure{% endif %}</span>
+                            </button>
+                        </div>
+                        <div class="category-pills-wrapper mb-2 d-flex flex-wrap gap-1.5">
+                            <button type="button" class="btn tooth-cat-pill bulk-cat-pill active" data-cat="all" onclick="filterBulkCategory('all', this)">{% if current_lang == 'ar' %}جميع التخصصات{% else %}All Categories{% endif %}</button>
+                            <button type="button" class="btn tooth-cat-pill bulk-cat-pill" data-cat="فحص وتشخيص" onclick="filterBulkCategory('فحص وتشخيص', this)">🩺 {% if current_lang == 'ar' %}فحص وتشخيص{% else %}Diagnostic{% endif %}</button>
+                            <button type="button" class="btn tooth-cat-pill bulk-cat-pill" data-cat="حشوات ومعالجات تجميلية" onclick="filterBulkCategory('حشوات ومعالجات تجميلية', this)">✨ {% if current_lang == 'ar' %}حشوات ومعالجات تجميلية{% else %}Restorative{% endif %}</button>
+                            <button type="button" class="btn tooth-cat-pill bulk-cat-pill" data-cat="علاج عصب وجذور" onclick="filterBulkCategory('علاج عصب وجذور', this)">⚡ {% if current_lang == 'ar' %}علاج عصب وجذور{% else %}Endodontics{% endif %}</button>
+                            <button type="button" class="btn tooth-cat-pill bulk-cat-pill" data-cat="جراحة وقلع" onclick="filterBulkCategory('جراحة وقلع', this)">🔪 {% if current_lang == 'ar' %}جراحة وقلع{% else %}Surgery{% endif %}</button>
+                            <button type="button" class="btn tooth-cat-pill bulk-cat-pill" data-cat="تعويضات وتيجان" onclick="filterBulkCategory('تعويضات وتيجان', this)">👑 {% if current_lang == 'ar' %}تعويضات وتيجان{% else %}Prosthetics{% endif %}</button>
+                            <button type="button" class="btn tooth-cat-pill bulk-cat-pill" data-cat="تقويم أسنان" onclick="filterBulkCategory('تقويم أسنان', this)">🪥 {% if current_lang == 'ar' %}تقويم أسنان{% else %}Ortho{% endif %}</button>
+                            <button type="button" class="btn tooth-cat-pill bulk-cat-pill" data-cat="أسنان أطفال" onclick="filterBulkCategory('أسنان أطفال', this)">👶 {% if current_lang == 'ar' %}أسنان أطفال{% else %}Pediatric{% endif %}</button>
+                            <button type="button" class="btn tooth-cat-pill bulk-cat-pill" data-cat="إجراءات عامة وأخرى" onclick="filterBulkCategory('إجراءات عامة وأخرى', this)">🌐 {% if current_lang == 'ar' %}إجراءات عامة وأخرى{% else %}General & Other{% endif %}</button>
+                        </div>
+
+                        <!-- Sub-procedure Quick Selection Grid -->
+                        <div id="bulk-sub-procedure-cards-container" class="row g-2 mb-3" style="max-height: 250px; overflow-y: auto; padding-right: 4px;">
+                            {% set details_map = treatment_details if treatment_details else {} %}
+                            {% for proc_name, price in (treatment_prices.items() if treatment_prices else []) %}
+                                {% set item_detail = details_map.get(proc_name, {}) %}
+                                {% set item_cat = item_detail.get('category', 'إجراءات عامة وأخرى') %}
+                                {% set dur = item_detail.get('duration', 30) %}
+                                <div class="col-sm-6 col-12 bulk-sub-proc-item-card" data-category="{{ item_cat }}" data-proc-name="{{ proc_name }}" data-price="{{ price }}">
+                                    <div class="procedure-quick-card bulk-procedure-quick-card cursor-pointer h-100 p-2.5" onclick="selectBulkQuickProcedure('{{ proc_name }}', this)" style="background: color-mix(in srgb, var(--surface-color), #ffffff 2%); transition: all 0.2s ease;">
+                                        <div class="d-flex justify-content-between align-items-center w-100">
+                                            <div class="me-2">
+                                                <span class="fw-bold text-main d-block small mb-1 proc-title">{{ proc_name }}</span>
+                                                <span class="badge duration-badge" style="font-size: 0.72rem;">
+                                                    <i class="bi bi-clock me-1"></i>{{ dur }} {% if current_lang == 'ar' %}دقيقة{% else %}min{% endif %}
+                                                </span>
+                                            </div>
+                                            <span class="badge price-badge ms-2" style="font-size: 0.78rem;">
+                                                {{ price | format_price }} {{ currency_symbol }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <label for="bulk-procedure-type" class="form-label text-secondary small fw-bold mb-1">
+                            {% if current_lang == 'ar' %}نوع الإجراء السريري / المعالجة{% else %}Procedure Type{% endif %}
+                        </label>
+                        <select id="bulk-procedure-type" name="procedure_type" class="form-select settings-input rounded-3" required>
+                            <option value="">{% if current_lang == 'ar' %}-- اختر نوع المعالجة من البطاقات أعلاه أو القائمة --{% else %}-- Select Procedure --{% endif %}</option>
+                            {% set details_map = treatment_details if treatment_details else {} %}
+                            {% set defined_cats = ['فحص وتشخيص', 'حشوات ومعالجات تجميلية', 'علاج عصب وجذور', 'جراحة وقلع', 'تعويضات وتيجان', 'تقويم أسنان', 'أسنان أطفال', 'إجراءات عامة وأخرى'] %}
+                            {% for cat in defined_cats %}
+                                {% set ns = namespace(has_items=false) %}
+                                {% for proc_name, price in (treatment_prices.items() if treatment_prices else []) %}
+                                    {% set item_detail = details_map.get(proc_name, {}) %}
+                                    {% set item_cat = item_detail.get('category', 'إجراءات عامة وأخرى') %}
+                                    {% if item_cat == cat %}
+                                        {% set ns.has_items = true %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if ns.has_items %}
+                                <optgroup label="{{ cat }}">
+                                    {% for proc_name, price in (treatment_prices.items() if treatment_prices else []) %}
+                                        {% set item_detail = details_map.get(proc_name, {}) %}
+                                        {% set item_cat = item_detail.get('category', 'إجراءات عامة وأخرى') %}
+                                        {% if item_cat == cat %}
+                                        <option value="{{ proc_name }}" data-category="{{ item_cat }}" data-price="{{ price }}">
+                                            {{ proc_name }} — {{ price | format_price }} {{ currency_symbol }}
+                                        </option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </optgroup>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="bulk-custom-cost-input" class="form-label text-secondary small fw-bold d-flex justify-content-between align-items-center mb-1">
+                            <span>
+                                <i class="bi bi-pencil-square text-warning me-1"></i>
+                                {% if current_lang == 'ar' %}كلفة مخصصة / تعديل السعر الإجمالي يدوياً{% else %}Custom Total Price / Override{% endif %}
+                            </span>
+                            <span class="text-muted fw-normal" style="font-size: 0.75rem;">{% if current_lang == 'ar' %}(اختياري){% else %}(Optional){% endif %}</span>
+                        </label>
+                        <input type="number" step="any" min="0" id="bulk-custom-cost-input" name="custom_cost" class="form-control settings-input fw-bold text-success" placeholder="{% if current_lang == 'ar' %}اتركه فارغاً للاعتماد على السعر التلقائي...{% else %}Leave blank for standard total price...{% endif %}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="bulk-notes" class="form-label text-secondary small fw-bold">
+                            {% if current_lang == 'ar' %}ملاحظات المعالجة{% else %}Treatment Notes{% endif %}
+                        </label>
+                        <textarea id="bulk-notes" name="notes" class="form-control rounded-3" rows="2" placeholder="{% if current_lang == 'ar' %}أضف أي ملاحظات إضافية هنا...{% else %}Add optional notes...{% endif %}"></textarea>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="bulk-use-anesthesia" name="use_anesthesia">
+                                <label class="form-check-label text-secondary small fw-bold ms-1" for="bulk-use-anesthesia">
+                                    <i class="bi bi-shield-plus text-primary me-1"></i>
+                                    {{ 'إضافة واستخدام تخدير للمعالجة' if current_lang == 'ar' else 'Use Anesthesia' }}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-12" id="bulk-anesthesia-details-wrapper" style="display: none;">
+                            <div class="card card-body p-3 border rounded-3 mb-2" style="background: rgba(14, 165, 233, 0.05); border-color: rgba(14, 165, 233, 0.2) !important;">
+                                <div class="row g-2">
+                                    <div class="col-md-7">
+                                        <label for="bulk-anesthesia-type" class="form-label text-secondary small fw-bold mb-1">
+                                            <i class="bi bi-funnel me-1"></i>
+                                            {{ 'نوع التخدير والجرعة' if current_lang == 'ar' else 'Anesthesia Type' }}
+                                        </label>
+                                        <select id="bulk-anesthesia-type" name="anesthesia_type" class="form-select form-select-sm rounded-3">
+                                            {% for at in (anesthesia_types if anesthesia_types else []) %}
+                                            <option value="{{ at.name }}" data-price="{{ at.price }}">
+                                                {{ at.name }} — {{ at.price | format_price }} {{ currency_symbol }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <label for="bulk-needles" class="form-label text-secondary small fw-bold mb-1">
+                                            {{ 'عدد التطبيقات / الإبر' if current_lang == 'ar' else 'Needles (Count)' }}
+                                        </label>
+                                        <input type="number" id="bulk-needles" name="anesthesia_needles" class="form-control form-control-sm rounded-3 fw-bold" min="1" value="1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small fw-bold">{% if current_lang == 'ar' %}إجمالي كلفة المعالجة الجماعية{% else %}Total Bulk Cost{% endif %}</label>
+                        <div id="bulk-price-display" class="form-control readonly-status-field fs-5 fw-bold text-success">
+                            {% if current_lang == 'ar' %}اختر نوع المعالجة لعرض الكلفة الإجمالية{% else %}Select a procedure to calculate total cost{% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top pt-3">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                        {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                    </button>
+                    <button type="submit" id="btn-save-bulk-treatment" class="btn btn-warning rounded-pill px-4 fw-bold text-dark">
+                        <i class="bi bi-check2-circle me-1.5"></i>
+                        {% if current_lang == 'ar' %}إدراج المعالجة للأسنان المختارة{% else %}Save Bulk Treatment{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Tooth Info & Actions Modal -->
+<div class="modal fade" id="toothModal" tabindex="-1" aria-labelledby="toothModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 1180px; width: 95%;">
+        <div class="modal-content rounded-4 border-0 shadow-lg" style="background: var(--surface-color);">
+            <div class="modal-header border-0 pb-0 d-flex justify-content-between align-items-center px-4 pt-4">
+                <h5 class="modal-title fw-bold text-primary mb-0" id="toothModalLabel">
+                    <!-- Populated dynamically -->
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-3 px-4 pb-4">
+                <div class="row g-4">
+                    <!-- Left Column: History & Current Treatments -->
+                    <div class="col-md-6 border-end" id="modal-treatments-column">
+                        <!-- Section: Pre-existing History -->
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                                <h6 class="fw-bold mb-0 d-flex align-items-center gap-2" style="color: #c084fc; font-size: 0.9rem;">
+                                    <i class="bi bi-journal-medical flex-shrink-0"></i>
+                                    <span>{% if current_lang == 'ar' %}السوابق المرضية والتشخيص الأولي{% else %}Pre-existing History{% endif %}</span>
+                                </h6>
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-semibold flex-shrink-0 ms-2" id="s-toggle-add-history-btn" style="font-size: 0.78rem; border-width: 1px; white-space: nowrap;">
+                                    <i class="bi bi-plus-circle me-1"></i>{% if current_lang == 'ar' %}إضافة سابقة{% else %}Add History{% endif %}
+                                </button>
+                            </div>
+
+                            <!-- Collapsible Inline Form to Add Prior History Note -->
+                            <div id="s-add-history-form-container" class="card card-body mb-2 p-2.5 border rounded-3 d-none" style="background: rgba(168, 85, 247, 0.05); border-color: rgba(168, 85, 247, 0.2) !important;">
+                                <form id="s-add-history-form" method="POST" action="">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="appointment_id" value="{{ appointment.id }}">
+                                    <input type="hidden" name="tooth_number" id="s-history-form-tooth-number" value="">
+                                    <div class="row g-2">
+                                        <div class="col-12">
+                                            <label class="form-label text-secondary small fw-bold mb-1">
+                                                {% if current_lang == 'ar' %}نوع الإجراء السريري / السابقة{% else %}Condition / Procedure Type{% endif %}
+                                            </label>
+                                            <select name="procedure_type" class="form-select form-select-sm rounded-3" required>
+                                                {% for proc in treatment_procedure_types %}
+                                                <option value="{{ proc }} (سابق)">{{ proc }} ({% if current_lang == 'ar' %}سابق{% else %}Prior{% endif %})</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label text-secondary small fw-bold mb-1">
+                                                {% if current_lang == 'ar' %}ملاحظات سريرية توثيقية{% else %}Clinical Notes{% endif %}
+                                            </label>
+                                            <input type="text" name="notes" class="form-control form-control-sm rounded-3" placeholder="{% if current_lang == 'ar' %}مثال: تسوس عميق، علاج عصب سابق...{% else %}e.g. Deep caries, prior root canal...{% endif %}">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label text-secondary small fw-bold mb-1">
+                                                {% if current_lang == 'ar' %}تاريخ المعالجة السابقة{% else %}Prior Treatment Date{% endif %}
+                                            </label>
+                                            <input type="date" name="history_date" max="today" class="form-control form-control-sm rounded-3">
+                                            <div class="form-text text-muted small">{% if current_lang == 'ar' %}اتركه فارغاً إذا كان التاريخ غير محدد.{% else %}Leave blank if unspecified.{% endif %}</div>
+                                        </div>
+                                        <div class="col-12 text-end pt-1">
+                                            <button type="submit" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">
+                                                <i class="bi bi-plus-lg me-1"></i>{% if current_lang == 'ar' %}حفظ السابقة{% else %}Save History Note{% endif %}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div id="modal-prior-history-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Section: Current Session Treatments -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold mb-3 d-flex align-items-center text-success" style="font-size: 0.9rem;">
+                                <i class="bi bi-file-earmark-medical me-2"></i>
+                                <span id="lbl-current-treatments"></span>
+                            </h6>
+                            <div id="modal-current-treatments-list" class="list-group mb-2">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Section: Previous Treatments -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold mb-3 d-flex align-items-center text-info" style="font-size: 0.9rem;">
+                                <i class="bi bi-clock-history me-2"></i>
+                                <span id="lbl-history-treatments"></span>
+                            </h6>
+                            <div id="modal-history-treatments-list" class="list-group">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Section: Future Planned Treatments -->
+                        <div class="mt-4 pt-3 border-top border-secondary border-opacity-10">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold mb-0 d-flex align-items-center text-warning" style="font-size: 0.9rem;">
+                                    <i class="bi bi-calendar-plus me-2"></i>
+                                    <span>{% if current_lang == 'ar' %}المعالجات المستقبلية وخطة العلاج المقترحة{% else %}Future Treatment Plan{% endif %}</span>
+                                </h6>
+                                <button type="button" class="btn btn-xs btn-outline-warning rounded-pill px-2.5 py-1 fw-semibold" id="s-toggle-add-plan-btn">
+                                    <i class="bi bi-plus-circle me-1"></i>{% if current_lang == 'ar' %}إضافة للخطة{% else %}Add Plan{% endif %}
+                                </button>
+                            </div>
+
+                            <!-- Inline Form to Add to Treatment Plan -->
+                            <div id="s-add-plan-form-container" class="card card-body p-3 mb-3 border rounded-3 d-none shadow-xs" style="background: rgba(234, 179, 8, 0.05); border-color: rgba(234, 179, 8, 0.25) !important;">
+                                <form method="POST" action="/patients/{{ appointment.patient_id }}/treatment-plans/add">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="appointment_id" value="{{ appointment.id }}">
+                                    <input type="hidden" name="tooth_number" id="s-plan-form-tooth-number">
+
+                                    <div class="row g-2">
+                                        <div class="col-12">
+                                            <label class="form-label text-secondary small fw-bold mb-1">
+                                                <i class="bi bi-tag me-1"></i>{% if current_lang == 'ar' %}الإجراء العلاجي المقترح{% else %}Proposed Procedure{% endif %}
+                                            </label>
+                                            <select name="procedure_type" id="s-plan-proc-select" class="form-select form-select-sm rounded-3" required onchange="updatePlanDefaultCost(this)">
+                                                <option value="">{% if current_lang == 'ar' %}-- اختر الإجراء من القائمة --{% else %}-- Select Procedure --{% endif %}</option>
+                                                {% for cat in ['فحص وتشخيص', 'حشوات ومعالجات تجميلية', 'علاج عصب وجذور', 'جراحة وقلع', 'تعويضات وتيجان', 'تقويم أسنان', 'أسنان أطفال', 'إجراءات عامة وأخرى'] %}
+                                                    <optgroup label="── {{ cat }} ──">
+                                                        {% for proc_name, price in (treatment_prices.items() if treatment_prices else []) %}
+                                                            {% set item_detail = (treatment_details or {}).get(proc_name, {}) %}
+                                                            {% set item_cat = item_detail.get('category', 'إجراءات عامة وأخرى') %}
+                                                            {% if item_cat == cat %}
+                                                            <option value="{{ proc_name }}" data-price="{{ price }}">{{ proc_name }} ({{ price | format_price }} {{ currency_symbol }})</option>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </optgroup>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 col-12">
+                                            <label class="form-label text-secondary small fw-bold mb-1">
+                                                <i class="bi bi-cash me-1"></i>{% if current_lang == 'ar' %}التكلفة التقديرية{% else %}Estimated Cost{% endif %}
+                                            </label>
+                                            <input type="number" step="any" min="0" name="estimated_cost" id="s-plan-estimated-cost" class="form-control form-control-sm rounded-3 fw-bold text-success" placeholder="0">
+                                        </div>
+                                        <div class="col-md-6 col-12">
+                                            <label class="form-label text-secondary small fw-bold mb-1">
+                                                <i class="bi bi-card-text me-1"></i>{% if current_lang == 'ar' %}ملاحظات الخطة{% else %}Plan Notes{% endif %}
+                                            </label>
+                                            <input type="text" name="notes" class="form-control form-control-sm rounded-3" placeholder="{% if current_lang == 'ar' %}مثال: بعد علاج العصب، تلبيسة زيركون...{% else %}Notes...{% endif %}">
+                                        </div>
+                                        <div class="col-12 text-end pt-1">
+                                            <button type="submit" class="btn btn-sm btn-warning rounded-pill px-3 fw-bold text-dark">
+                                                <i class="bi bi-plus-lg me-1"></i>{% if current_lang == 'ar' %}حفظ في الخطة{% else %}Save in Plan{% endif %}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div id="modal-planned-treatments-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Add Treatment Form -->
+                    <div class="col-md-6" id="modal-form-column">
+                        {% if appointment.status == 'Scheduled' %}
+                        <h6 class="fw-bold mb-3 d-flex align-items-center text-primary">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            <span id="lbl-add-treatment"></span>
+                        </h6>
+                        <form id="modal-add-treatment-form" method="POST" action="{{ url_for('treatments.add_treatment_to_appointment', appointment_id=appointment.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="tooth_number" id="modal-tooth-input">
+
+                            <div class="mb-3">
+                                <label for="modal-custom-cost-input" class="form-label text-secondary small fw-bold d-flex justify-content-between align-items-center mb-1">
+                                    <span>
+                                        <i class="bi bi-pencil-square text-warning me-1"></i>
+                                        {% if current_lang == 'ar' %}كلفة مخصصة / تعديل السعر يدوياً{% else %}Custom Price / Override{% endif %}
+                                    </span>
+                                    <span class="text-muted fw-normal" style="font-size: 0.75rem;">{% if current_lang == 'ar' %}(اختياري){% else %}(Optional){% endif %}</span>
+                                </label>
+                                <input type="number" step="any" min="0" id="modal-custom-cost-input" name="custom_cost" class="form-control settings-input fw-bold text-success" placeholder="{% if current_lang == 'ar' %}اتركه فارغاً للاعتماد على السعر التلقائي...{% else %}Leave blank for standard price...{% endif %}">
+                            </div>
+                            
+                            <!-- Category Pills Filter Navigation -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1.5 flex-wrap gap-2">
+                                    <label class="form-label text-secondary small fw-bold mb-0">
+                                        <i class="bi bi-layers-half text-primary me-1"></i>
+                                        {% if current_lang == 'ar' %}تصنيف المعالجة الطبية{% else %}Treatment Category{% endif %}
+                                    </label>
+                                    <button type="button" class="btn btn-outline-info btn-sm rounded-pill px-3 py-1 fw-bold d-flex align-items-center gap-1.5 shadow-xs" style="font-size: 0.78rem; background: rgba(56, 189, 248, 0.08);" onclick="openQuickAddServiceModalForSession('modal')">
+                                        <i class="bi bi-plus-circle-dotted text-info"></i>
+                                        <span>{% if current_lang == 'ar' %}إضافة سبب / إجراء نصي مخصص غير مدرج{% else %}Add Custom / Unlisted Procedure{% endif %}</span>
+                                    </button>
+                                </div>
+                                <div class="category-pills-wrapper mb-2 d-flex flex-wrap gap-1.5">
+                                    <button type="button" class="btn tooth-cat-pill active" data-cat="all" onclick="filterToothModalCategory('all', this)">{% if current_lang == 'ar' %}جميع التخصصات{% else %}All Categories{% endif %}</button>
+                                    <button type="button" class="btn tooth-cat-pill" data-cat="فحص وتشخيص" onclick="filterToothModalCategory('فحص وتشخيص', this)">🩺 {% if current_lang == 'ar' %}فحص وتشخيص{% else %}Diagnostic{% endif %}</button>
+                                    <button type="button" class="btn tooth-cat-pill" data-cat="حشوات ومعالجات تجميلية" onclick="filterToothModalCategory('حشوات ومعالجات تجميلية', this)">✨ {% if current_lang == 'ar' %}حشوات ومعالجات تجميلية{% else %}Restorative{% endif %}</button>
+                                    <button type="button" class="btn tooth-cat-pill" data-cat="علاج عصب وجذور" onclick="filterToothModalCategory('علاج عصب وجذور', this)">⚡ {% if current_lang == 'ar' %}علاج عصب وجذور{% else %}Endodontics{% endif %}</button>
+                                    <button type="button" class="btn tooth-cat-pill" data-cat="جراحة وقلع" onclick="filterToothModalCategory('جراحة وقلع', this)">🔪 {% if current_lang == 'ar' %}جراحة وقلع{% else %}Surgery{% endif %}</button>
+                                    <button type="button" class="btn tooth-cat-pill" data-cat="تعويضات وتيجان" onclick="filterToothModalCategory('تعويضات وتيجان', this)">👑 {% if current_lang == 'ar' %}تعويضات وتيجان{% else %}Prosthetics{% endif %}</button>
+                                    <button type="button" class="btn tooth-cat-pill" data-cat="تقويم أسنان" onclick="filterToothModalCategory('تقويم أسنان', this)">🪥 {% if current_lang == 'ar' %}تقويم أسنان{% else %}Ortho{% endif %}</button>
+                                    <button type="button" class="btn tooth-cat-pill" data-cat="أسنان أطفال" onclick="filterToothModalCategory('أسنان أطفال', this)">👶 {% if current_lang == 'ar' %}أسنان أطفال{% else %}Pediatric{% endif %}</button>
+                                    <button type="button" class="btn tooth-cat-pill" data-cat="إجراءات عامة وأخرى" onclick="filterToothModalCategory('إجراءات عامة وأخرى', this)">🌐 {% if current_lang == 'ar' %}إجراءات عامة وأخرى{% else %}General & Other{% endif %}</button>
+                                </div>
+
+                                <!-- Sub-procedure Quick Selection Grid -->
+                                <div id="modal-sub-procedure-cards-container" class="row g-2 mb-3" style="max-height: 250px; overflow-y: auto; padding-right: 4px;">
+                                    {% set details_map = treatment_details if treatment_details else {} %}
+                                    {% for proc_name, price in (treatment_prices.items() if treatment_prices else []) %}
+                                        {% set item_detail = details_map.get(proc_name, {}) %}
+                                        {% set item_cat = item_detail.get('category', 'إجراءات عامة وأخرى') %}
+                                        {% set dur = item_detail.get('duration', 30) %}
+                                        <div class="col-sm-6 col-12 modal-sub-proc-item-card" data-category="{{ item_cat }}" data-proc-name="{{ proc_name }}" data-price="{{ price }}">
+                                            <div class="procedure-quick-card modal-procedure-quick-card cursor-pointer h-100 p-2.5" onclick="selectModalQuickProcedure('{{ proc_name }}', this)" style="background: color-mix(in srgb, var(--surface-color), #ffffff 2%); transition: all 0.2s ease;">
+                                                <div class="d-flex justify-content-between align-items-center w-100">
+                                                    <div class="me-2">
+                                                        <span class="fw-bold text-main d-block small mb-1 proc-title">{{ proc_name }}</span>
+                                                        <span class="badge duration-badge" style="font-size: 0.72rem;">
+                                                            <i class="bi bi-clock me-1"></i>{{ dur }} {% if current_lang == 'ar' %}دقيقة{% else %}min{% endif %}
+                                                        </span>
+                                                    </div>
+                                                    <span class="badge price-badge ms-2" style="font-size: 0.78rem;">
+                                                        {{ price | format_price }} {{ currency_symbol }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+
+                                <label for="modal-procedure-type" class="form-label text-secondary small fw-bold mb-1" id="lbl-form-procedure"></label>
+                                <select id="modal-procedure-type" name="procedure_type" class="form-select settings-input" required>
+                                    <option value="" id="opt-select-procedure"></option>
+                                    {% set details_map = treatment_details if treatment_details else {} %}
+                                    {% set defined_cats = ['فحص وتشخيص', 'حشوات ومعالجات تجميلية', 'علاج عصب وجذور', 'جراحة وقلع', 'تعويضات وتيجان', 'تقويم أسنان', 'أسنان أطفال', 'إجراءات عامة وأخرى'] %}
+                                    {% for cat in defined_cats %}
+                                        {% set ns = namespace(has_items=false) %}
+                                        {% for proc_name, price in (treatment_prices.items() if treatment_prices else []) %}
+                                            {% set item_detail = details_map.get(proc_name, {}) %}
+                                            {% set item_cat = item_detail.get('category', 'إجراءات عامة وأخرى') %}
+                                            {% if item_cat == cat or (cat == 'إجراءات عامة وأخرى' and item_cat not in defined_cats) %}
+                                                {% set ns.has_items = true %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if ns.has_items %}
+                                        <optgroup label="── {{ cat }} ──" data-group-category="{{ cat }}">
+                                            {% for proc_name, price in (treatment_prices.items() if treatment_prices else []) %}
+                                                {% set item_detail = details_map.get(proc_name, {}) %}
+                                                {% set item_cat = item_detail.get('category', 'إجراءات عامة وأخرى') %}
+                                                {% if item_cat == cat or (cat == 'إجراءات عامة وأخرى' and item_cat not in defined_cats) %}
+                                                    {% set dur = item_detail.get('duration', 30) %}
+                                                    <option value="{{ proc_name }}" data-category="{{ item_cat }}" data-duration="{{ dur }}" data-price="{{ price }}">{{ proc_name }} — {{ price | format_price }} {{ currency_symbol }} ({{ dur }} {% if current_lang == 'ar' %}دقيقة{% else %}min{% endif %})</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </optgroup>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="modal-notes" class="form-label text-secondary small fw-bold" id="lbl-form-notes"></label>
+                                <textarea id="modal-notes" name="notes" class="form-control" rows="3"></textarea>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" id="modal-use-anesthesia" name="use_anesthesia">
+                                        <label class="form-check-label text-secondary small fw-bold ms-1" for="modal-use-anesthesia">
+                                            <i class="bi bi-shield-plus text-primary me-1"></i>
+                                            {{ 'إضافة واستخدام تخدير للمعالجة' if current_lang == 'ar' else 'Use Anesthesia' }}
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-12" id="modal-anesthesia-details-wrapper" style="display: none;">
+                                    <div class="card card-body p-3 border rounded-3 mb-2" style="background: rgba(14, 165, 233, 0.05); border-color: rgba(14, 165, 233, 0.2) !important;">
+                                        <div class="row g-2">
+                                            <div class="col-md-7">
+                                                <label for="modal-anesthesia-type" class="form-label text-secondary small fw-bold mb-1">
+                                                    <i class="bi bi-funnel me-1"></i>
+                                                    {{ 'نوع التخدير والجرعة' if current_lang == 'ar' else 'Anesthesia Type' }}
+                                                </label>
+                                                <select id="modal-anesthesia-type" name="anesthesia_type" class="form-select form-select-sm rounded-3">
+                                                    {% for at in (anesthesia_types if anesthesia_types else []) %}
+                                                    <option value="{{ at.name }}" data-price="{{ at.price }}">
+                                                        {{ at.name }} — {{ at.price | format_price }} {{ currency_symbol }}
+                                                    </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="col-md-5">
+                                                <label for="modal-needles" class="form-label text-secondary small fw-bold mb-1">
+                                                    {{ 'عدد التطبيقات / الإبر' if current_lang == 'ar' else 'Needles (Count)' }}
+                                                </label>
+                                                <input type="number" id="modal-needles" name="anesthesia_needles" class="form-control form-control-sm rounded-3 fw-bold" min="1" value="1">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-secondary small fw-bold" id="lbl-form-price"></label>
+                                <div id="modal-procedure-price-display" class="form-control readonly-status-field">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <button type="submit" id="btn-save-treatment" class="btn btn-primary w-100 rounded-3 py-2.5 fw-bold shadow-xs">
+                                    <i class="bi bi-check2-circle me-1.5"></i>
+                                    {% if current_lang == 'ar' %}حفظ المعالجة{% else %}Save Treatment{% endif %}
+                                </button>
+                            </div>
+                        </form>
+                        {% else %}
+                        <div class="alert alert-warning text-center rounded-3 py-4">
+                            <i class="bi bi-lock-fill fs-3 mb-2 d-block"></i>
+                            {{ 'جلسة العلاج هذه مغلقة. لا يمكن إضافة معالجات جديدة.' if current_lang == 'ar' else 'This treatment session is closed. No new treatments can be added.' }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

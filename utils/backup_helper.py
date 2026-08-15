@@ -60,9 +60,13 @@ def run_database_backup():
                 backup_path = os.path.join(BACKUP_DIR, backup_filename)
                 
                 # Atomic online backup API to prevent database corruption during live writes
-                with sqlite3.connect(db_path) as src_conn:
-                    with sqlite3.connect(backup_path) as dst_conn:
-                        src_conn.backup(dst_conn)
+                src_conn = sqlite3.connect(db_path)
+                dst_conn = sqlite3.connect(backup_path)
+                try:
+                    src_conn.backup(dst_conn)
+                finally:
+                    dst_conn.close()
+                    src_conn.close()
                 
                 rotate_backups()
                 return backup_filename

@@ -1,0 +1,158 @@
+<!-- ═══════════ System Backups Tab ═══════════ -->
+<div class="tab-pane fade" id="tab-backups" role="tabpanel">
+    <div class="settings-tab-header">
+        <div class="settings-tab-icon"><i class="bi bi-database"></i></div>
+        <div>
+            <h4>{% if current_lang == 'ar' %}النسخ الاحتياطية للنظام{% else %}System Backups{% endif %}</h4>
+            <p>{% if current_lang == 'ar' %}إنشاء لقطات وحفظ نسخ قاعدة البيانات وإدارة نقاط الاستعادة التاريخية{% else %}Create database backups and manage historical restore points{% endif %}</p>
+        </div>
+        <div class="ms-auto d-flex gap-2 align-items-center flex-wrap">
+            <a href="{{ url_for('settings.open_backups_folder') }}"
+                class="btn btn-outline-info btn-sm rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1.5 shadow-xs">
+                <i class="bi bi-folder2-open fs-6"></i>
+                <span>{% if current_lang == 'ar' %}فتح مجلد النسخ بالكمبيوتر{% else %}Open Backups Folder{% endif %}</span>
+            </a>
+            <button type="button"
+                class="btn btn-primary btn-sm rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1.5 shadow-xs"
+                onclick="createBackup()">
+                <i class="bi bi-plus-circle fs-6"></i>
+                <span>{% if current_lang == 'ar' %}إنشاء نسخة احتياطية الآن{% else %}Create Backup Now{% endif %}</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="table-responsive mt-3">
+        <table class="table settings-table">
+            <thead>
+                <tr>
+                    <th>Backup File Name</th>
+                    <th>Creation Date</th>
+                    <th>Size</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for backup in backups %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-file-earmark-zip fs-5 text-primary"></i>
+                            <strong>{{ backup.filename }}</strong>
+                        </div>
+                    </td>
+                    <td>{{ backup.mtime }}</td>
+                    <td>{{ backup.size }}</td>
+                    <td class="text-center">
+                        <div class="d-inline-flex align-items-center gap-2">
+                            <!-- Download Button -->
+                            <a href="{{ url_for('settings.download_backup', filename=backup.filename) }}"
+                                class="table-action-btn edit-btn d-flex align-items-center justify-content-center"
+                                data-tooltip="Download Backup"
+                                style="width:34px;height:34px;padding:0 !important;text-decoration:none;">
+                                <i class="bi bi-download"></i>
+                            </a>
+                            <!-- Delete Button -->
+                            <button type="button"
+                                class="table-action-btn delete-table-btn d-flex align-items-center justify-content-center"
+                                data-tooltip="Delete Backup"
+                                style="width:34px;height:34px;padding:0 !important;"
+                                onclick="confirmDeleteBackup('{{ backup.filename }}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center py-5 text-secondary">
+                        <i class="bi bi-database-x fs-1 d-block mb-2"></i>
+                        No backup files found. Click "Create Backup Now" to make a new database snapshot.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Reset Operational Records Section -->
+    <div class="mt-4 pt-4 border-top" style="border-top-color: rgba(220, 53, 69, 0.2) !important;">
+        <div class="card border-danger border-opacity-25 bg-danger bg-opacity-10 rounded-3 p-3">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <h5 class="text-danger fw-bold mb-1">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>
+                        {% if current_lang == 'ar' %}إعادة ضبط سجلات العيادة{% else %}Reset Operational Data{% endif %}
+                    </h5>
+                    <p class="text-muted small mb-0">
+                        {% if current_lang == 'ar' %}
+                        حذف جميع سجلات المرضى والمواعيد والمعالجات والفواتير والمصاريف بشكل دائم، مع الحفاظ على الإعدادات، التوكنز، وحسابات المستخدمين.
+                        {% else %}
+                        Permanently delete all patient records, appointments, treatments, and financial data while maintaining system settings, tokens, and user accounts.
+                        {% endif %}
+                    </p>
+                </div>
+                <button type="button"
+                    class="btn btn-danger text-nowrap rounded-pill px-4 py-2 fw-semibold shadow-sm"
+                    onclick="triggerResetClinicFlow()">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>
+                    {% if current_lang == 'ar' %}تصفير السجلات التشغيلية{% else %}Reset Operational Data{% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Factory Reset Section -->
+    <div class="mt-3">
+        <div class="card border-danger border-opacity-40 bg-dark rounded-3 p-3"
+            style="background: rgba(220, 53, 69, 0.08) !important;">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <h5 class="text-danger fw-bold mb-1">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        {% if current_lang == 'ar' %}إعادة الضبط المصنعي (تصفير شامل){% else %}Full Factory Reset{% endif %}
+                    </h5>
+                    <p class="text-muted small mb-0">
+                        {% if current_lang == 'ar' %}
+                        حذف وتصفير جميع السجلات والمرضى والمواعيد والمعالجات والفواتير وكافة حسابات المستخدمين بالكامل، وإعادة ضبط العيادة للقيم الافتراضية مع إنشاء حساب المدير الافتراضي الوحيد (admin / admin123).
+                        {% else %}
+                        Perform a full factory reset: permanently delete all patients, appointments, treatments, financial records, and user accounts. Restores all clinic settings to default values and creates a single admin account (admin / admin123).
+                        {% endif %}
+                    </p>
+                </div>
+                <button type="button"
+                    class="btn btn-outline-danger text-nowrap rounded-pill px-4 py-2 fw-semibold shadow-sm"
+                    onclick="triggerFactoryResetClinicFlow()">
+                    <i class="bi bi-shield-x me-1"></i>
+                    {% if current_lang == 'ar' %}ضبط مصنعي شامل{% else %}Full Factory Reset{% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Restore Backup Section -->
+    <div class="mt-3">
+        <div class="card border-warning border-opacity-25 bg-warning bg-opacity-10 rounded-3 p-3">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                    <h5 class="text-warning text-dark-emphasis fw-bold mb-1">
+                        <i class="bi bi-box-arrow-in-down me-2"></i>
+                        {% if current_lang == 'ar' %}استعادة نسخة احتياطية{% else %}Restore Database Backup{% endif %}
+                    </h5>
+                    <p class="text-muted small mb-0">
+                        {% if current_lang == 'ar' %}
+                        استعادة وتمرير كافة بيانات العيادة من إحدى النسخ الاحتياطية المحفوظة في النظام.
+                        {% else %}
+                        Restore all clinic database records from one of the saved system backup files.
+                        {% endif %}
+                    </p>
+                </div>
+                <button type="button"
+                    class="btn btn-warning text-dark text-nowrap rounded-pill px-4 py-2 fw-semibold shadow-sm"
+                    onclick="triggerRestoreLatestBackupFlow()">
+                    <i class="bi bi-arrow-down-square-fill me-1"></i>
+                    {% if current_lang == 'ar' %}استعادة نسخة احتياطية{% else %}Restore Database Backup{% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

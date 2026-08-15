@@ -1,0 +1,37 @@
+<!-- ═══════════ Patient Ledger Print Header & Info ═══════════ -->
+<!-- Header Actions (No print) -->
+<div class="d-flex justify-content-between align-items-center mb-4 no-print border-bottom pb-3">
+    <button onclick="window.close()" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
+        {% if current_lang == 'ar' %}إغلاق النافذة{% else %}Close Window{% endif %}
+    </button>
+    <button onclick="window.print()" class="btn btn-success rounded-pill px-4 fw-bold">
+        <i class="bi bi-printer me-1"></i>
+        {% if current_lang == 'ar' %}طباعة كشف الحساب{% else %}Print Ledger{% endif %}
+    </button>
+</div>
+
+<!-- Clinic Info Letterhead -->
+<div class="clinic-header d-flex justify-content-between align-items-center">
+    <div>
+        <h2 class="fw-bold mb-1 text-primary">{{ clinic_name }}</h2>
+        <p class="text-secondary small mb-0">{% if current_lang == 'ar' %}كشف حساب مالي تفصيلي للمريض{% else %}Detailed Financial Statement{% endif %}</p>
+    </div>
+    <div class="{% if current_lang == 'ar' %}text-start{% else %}text-end{% endif %}">
+        <h6 class="mb-1">{% if current_lang == 'ar' %}التاريخ:{% else %}Date:{% endif %} {{ now.strftime('%Y-%m-%d %I:%M %p') }}</h6>
+        <p class="text-secondary small mb-0">{% if current_lang == 'ar' %}مستخرج بواسطة النظام الآلي{% else %}System Generated Statement{% endif %}</p>
+    </div>
+</div>
+
+<!-- Patient Info Card -->
+<div class="patient-card">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <span class="text-muted small">{% if current_lang == 'ar' %}اسم المريض:{% else %}Patient Name:{% endif %}</span>
+            <h5 class="fw-bold mb-0">{{ patient.first_name }} {{ patient.last_name }}</h5>
+        </div>
+        <div class="col-md-6">
+            <span class="text-muted small">{% if current_lang == 'ar' %}رقم الهاتف:{% else %}Phone Number:{% endif %}</span>
+            <h5 class="fw-bold mb-0"><bdi dir="ltr">{{ patient.phone or '-' }}</bdi></h5>
+        </div>
+    </div>
+</div>

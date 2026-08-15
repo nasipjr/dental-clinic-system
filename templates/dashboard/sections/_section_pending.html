@@ -1,0 +1,85 @@
+<!-- ═══════════ Pending Booking Requests Section ═══════════ -->
+{% if pending_appointments %}
+<div class="container section-title" data-aos="fade-up">
+    <h2>{% if current_lang == 'ar' %}طلبات الحجز المعلقة{% else %}Pending Booking Requests{% endif %}</h2>
+    <p>{% if current_lang == 'ar' %}طلبات حجز المواعيد الواردة من بوابة المرضى وبانتظار التثبيت أو الرفض.{% else %}Incoming appointment requests from the patient portal waiting for confirmation.{% endif %}</p>
+</div>
+
+<section id="pending-appointments-section" class="find-a-doctor section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+      <div class="appointments-table-wrapper table-responsive">
+        <table class="table appointments-table align-middle" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+          <thead>
+            <tr>
+              <th>{% if current_lang == 'ar' %}التاريخ والوقت{% else %}Date & Time{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}رقم الهاتف{% else %}Phone{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}السبب{% else %}Reason{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+              {% if current_user.role in ('admin', 'receptionist') %}
+              <th class="text-center">{% if current_lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
+              {% endif %}
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for appointment in pending_appointments %}
+            <tr>
+              <td>
+                {% if appointment.appointment_date %}
+                  <div class="fw-semibold text-nowrap" style="font-size: 0.93rem;">{{ appointment.appointment_date.strftime('%Y-%m-%d') }}</div>
+                  <div class="text-muted text-nowrap" style="font-size: 0.82rem; margin-top: 2px;">
+                    <i class="bi bi-clock me-1" style="font-size: 0.78rem;"></i>{{ appointment.appointment_date.strftime('%I:%M %p') }}
+                  </div>
+                {% else %}
+                  <span class="text-muted">{% if current_lang == 'ar' %}بدون تاريخ{% else %}No date{% endif %}</span>
+                {% endif %}
+              </td>
+
+              <td>
+                <strong>
+                  {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                </strong>
+              </td>
+
+              <td>
+                {{ appointment.patient.phone or ('لا يوجد هاتف' if current_lang == 'ar' else 'No phone number') }}
+              </td>
+
+              <td>
+                {{ appointment.reason or ('لم يحدد' if current_lang == 'ar' else 'No reason provided') }}
+              </td>
+
+              <td>
+                <span class="appointment-status status-pending">
+                  {% if current_lang == 'ar' %}قيد الانتظار{% else %}{{ appointment.status }}{% endif %}
+                </span>
+              </td>
+
+              {% if current_user.role in ('admin', 'receptionist') %}
+              <td class="text-center">
+                <div class="d-flex justify-content-center gap-2">
+                  <button type="button" class="btn btn-sm btn-success quick-action-btn py-1 px-3 fw-bold rounded-pill"
+                    data-action-url="{{ url_for('appointments.confirm_appointment', appointment_id=appointment.id) }}"
+                    data-confirm-msg="{% if current_lang == 'ar' %}هل أنت متأكد من تثبيت طلب الحجز هذا؟{% else %}Are you sure you want to confirm this booking request?{% endif %}"
+                    title="{% if current_lang == 'ar' %}تأكيد الحجز{% else %}Confirm Booking{% endif %}">
+                    <i class="bi bi-check-lg"></i> {% if current_lang == 'ar' %}تأكيد{% else %}Confirm{% endif %}
+                  </button>
+
+                  <button type="button" class="btn btn-sm btn-danger quick-action-btn py-1 px-3 fw-bold rounded-pill"
+                    data-action-url="{{ url_for('appointments.decline_appointment', appointment_id=appointment.id) }}"
+                    data-confirm-msg="{% if current_lang == 'ar' %}هل أنت متأكد من رفض طلب الحجز هذا؟{% else %}Are you sure you want to decline this booking request?{% endif %}"
+                    title="{% if current_lang == 'ar' %}رفض الحجز{% else %}Decline Booking{% endif %}">
+                    <i class="bi bi-x-lg"></i> {% if current_lang == 'ar' %}رفض{% else %}Decline{% endif %}
+                  </button>
+                </div>
+              </td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+</section>
+{% endif %}

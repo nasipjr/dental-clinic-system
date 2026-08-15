@@ -1,0 +1,50 @@
+/**
+ * Dental Clinic Management System - Appointments List Stylesheet
+ * Custom styles for appointments tab cards, count badges, quick session modal, and filter bars.
+ */
+
+.appointment-tab-card {
+    background: var(--surface-color, #1e293b);
+    border: 1.5px solid color-mix(in srgb, var(--heading-color), transparent 88%);
+    border-radius: 18px;
+    padding: 16px 20px;
+    transition: all 0.25s ease-in-out;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.appointment-tab-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-color, #0d6efd);
+    box-shadow: 0 8px 20px rgba(13, 110, 253, 0.12);
+}
+
+.appointment-tab-card.active {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent-color, #0d6efd), transparent 85%), var(--surface-color, #1e293b));
+    border-color: var(--accent-color, #0d6efd) !important;
+    box-shadow: 0 8px 24px rgba(13, 110, 253, 0.18);
+}
+
+.appointment-tab-card h2 {
+    font-size: 1.12rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--heading-color);
+}
+
+.appointment-tab-card.active h2 {
+    color: var(--accent-color, #0d6efd);
+}
+
+.tab-count-badge {
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    background: color-mix(in srgb, var(--accent-color, #0d6efd), transparent 80%);
+    color: var(--accent-color, #0d6efd);
+    border: 1px solid color-mix(in srgb, var(--accent-color, #0d6efd), transparent 60%);
+}
+
+.appointment-tab-card.active .tab-count-badge {
+    background: var(--accent-color, #0d6efd);
+    color: #ffffff;
+    border-color: transparent;
+}

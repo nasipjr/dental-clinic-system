@@ -1,0 +1,113 @@
+<!-- End Session Confirmation Modal -->
+<div class="modal fade" id="endSessionModal" tabindex="-1" aria-labelledby="endSessionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg" style="background: var(--surface-color);">
+            <div class="modal-header border-0 pb-0 justify-content-end"></div>
+            <div class="modal-body text-center px-4 pb-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle mb-3" style="width: 70px; height: 70px;">
+                    <i class="bi bi-exclamation-triangle fs-1"></i>
+                </div>
+                <h4 class="fw-bold mb-2">
+                    {{ 'إنهاء جلسة الموعد' if current_lang == 'ar' else 'End Appointment Session' }}
+                </h4>
+                <p class="text-secondary mb-4">
+                    {{ 'هل أنت متأكد من إنهاء هذه الجلسة؟ ستصبح حالة الموعد "مكتمل" وتصبح المعالجات للقراءة فقط ولا يمكن تعديلها.' if current_lang == 'ar' else 'Are you sure you want to end this session? The appointment status will change to "Done" and treatments will become read-only.' }}
+                </p>
+                <form method="POST" action="{{ url_for('treatments.end_appointment_session', appointment_id=appointment.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="d-flex justify-content-center gap-3">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                            {{ 'إلغاء' if current_lang == 'ar' else 'Cancel' }}
+                        </button>
+                        <button type="submit" class="btn btn-danger rounded-pill px-4 fw-semibold">
+                            {{ 'إنهاء الجلسة' if current_lang == 'ar' else 'End Session' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reopen Session Confirmation Modal -->
+<div class="modal fade" id="reopenSessionModal" tabindex="-1" aria-labelledby="reopenSessionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg" style="background: var(--surface-color);">
+            <div class="modal-header border-0 pb-0 justify-content-end"></div>
+            <div class="modal-body text-center px-4 pb-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle mb-3" style="width: 70px; height: 70px;">
+                    <i class="bi bi-arrow-counterclockwise fs-1"></i>
+                </div>
+                <h4 class="fw-bold mb-2">
+                    {{ 'إعادة فتح الجلسة' if current_lang == 'ar' else 'Reopen Appointment Session' }}
+                </h4>
+                <p class="text-secondary mb-4">
+                    {{ 'هل أنت متأكد من إعادة فتح هذه الجلسة؟ سيتم تفعيل إمكانية إضافة وتعديل المعالجات.' if current_lang == 'ar' else 'Are you sure you want to reopen this session? This will enable adding and editing treatments.' }}
+                </p>
+                <form method="POST" action="{{ url_for('treatments.reopen_appointment_session', appointment_id=appointment.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="d-flex justify-content-center gap-3">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                            {{ 'إلغاء' if current_lang == 'ar' else 'Cancel' }}
+                        </button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-semibold text-white">
+                            {{ 'إعادة فتح' if current_lang == 'ar' else 'Reopen Session' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Tooth History Modal -->
+<div class="modal fade" id="editToothHistoryModal" tabindex="-1" aria-labelledby="editToothHistoryModalLabel" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg" style="background: var(--surface-color);">
+            <div class="modal-header border-bottom pb-3">
+                <h5 class="modal-title fw-bold text-primary mb-0" id="editToothHistoryModalLabel">
+                    <i class="bi bi-pencil-square me-2"></i>
+                    {% if current_lang == 'ar' %}تعديل السابقة المرضية للسن{% else %}Edit Tooth Condition History{% endif %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editToothHistoryForm" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="appointment_id" id="edit-history-appointment-id" value="">
+                <div class="modal-body py-3">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">
+                            {% if current_lang == 'ar' %}نوع الإجراء السريري / السابقة{% else %}Condition / Procedure Type{% endif %}
+                        </label>
+                        <select name="procedure_type" id="edit-history-procedure-type" class="form-select rounded-3" required>
+                            {% for proc in treatment_procedure_types %}
+                            <option value="{{ proc }} (سابق)">{{ proc }} ({% if current_lang == 'ar' %}سابق{% else %}Prior{% endif %})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">
+                            {% if current_lang == 'ar' %}ملاحظات سريرية توثيقية{% else %}Clinical Notes{% endif %}
+                        </label>
+                        <input type="text" name="notes" id="edit-history-notes" class="form-control rounded-3" placeholder="{% if current_lang == 'ar' %}الملاحظات...{% else %}Notes...{% endif %}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">
+                            {% if current_lang == 'ar' %}تاريخ المعالجة السابقة{% else %}Prior Treatment Date{% endif %}
+                        </label>
+                        <input type="date" name="history_date" id="edit-history-date" max="today" class="form-control rounded-3">
+                        <div class="form-text text-muted small">{% if current_lang == 'ar' %}اتركه فارغاً إذا كان التاريخ غير محدد.{% else %}Leave blank if unspecified.{% endif %}</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                        {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                    </button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">
+                        <i class="bi bi-check2-circle me-1"></i>{% if current_lang == 'ar' %}حفظ التغييرات{% else %}Save Changes{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

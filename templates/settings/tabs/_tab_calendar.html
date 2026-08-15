@@ -1,0 +1,165 @@
+<!-- ═══════════ Calendar Settings Tab ═══════════ -->
+<div class="tab-pane fade" id="tab-calendar" role="tabpanel">
+    <div class="settings-tab-header">
+        <div class="settings-tab-icon"><i class="bi bi-calendar-range"></i></div>
+        <div>
+            <h4>{% if current_lang == 'ar' %}إعدادات التقويم والمواعيد{% else %}Calendar & Appointment Settings{% endif %}</h4>
+            <p>{% if current_lang == 'ar' %}تكوين ساعات العمل والمدد الافتراضية{% else %}Configure working hours and default durations{% endif %}</p>
+        </div>
+    </div>
+    <div class="row g-3">
+        {% set time_options = [
+        ('00:00', '12:00 منتصف الليل (00:00)', '12:00 AM (00:00)'),
+        ('00:30', '12:30 بعد منتصف الليل (00:30)', '12:30 AM (00:30)'),
+        ('01:00', '01:00 فجراً (01:00)', '01:00 AM (01:00)'),
+        ('01:30', '01:30 فجراً (01:30)', '01:30 AM (01:30)'),
+        ('02:00', '02:00 فجراً (02:00)', '02:00 AM (02:00)'),
+        ('02:30', '02:30 فجراً (02:30)', '02:30 AM (02:30)'),
+        ('03:00', '03:00 فجراً (03:00)', '03:00 AM (03:00)'),
+        ('03:30', '03:30 فجراً (03:30)', '03:30 AM (03:30)'),
+        ('04:00', '04:00 فجراً (04:00)', '04:00 AM (04:00)'),
+        ('04:30', '04:30 فجراً (04:30)', '04:30 AM (04:30)'),
+        ('05:00', '05:00 فجراً (05:00)', '05:00 AM (05:00)'),
+        ('05:30', '05:30 فجراً (05:30)', '05:30 AM (05:30)'),
+        ('06:00', '06:00 صباحاً (06:00)', '06:00 AM (06:00)'),
+        ('06:30', '06:30 صباحاً (06:30)', '06:30 AM (06:30)'),
+        ('07:00', '07:00 صباحاً (07:00)', '07:00 AM (07:00)'),
+        ('07:30', '07:30 صباحاً (07:30)', '07:30 AM (07:30)'),
+        ('08:00', '08:00 صباحاً (08:00)', '08:00 AM (08:00)'),
+        ('08:30', '08:30 صباحاً (08:30)', '08:30 AM (08:30)'),
+        ('09:00', '09:00 صباحاً (09:00 - الافتراضي)', '09:00 AM (09:00 - Default)'),
+        ('09:30', '09:30 صباحاً (09:30)', '09:30 AM (09:30)'),
+        ('10:00', '10:00 صباحاً (10:00)', '10:00 AM (10:00)'),
+        ('10:30', '10:30 صباحاً (10:30)', '10:30 AM (10:30)'),
+        ('11:00', '11:00 صباحاً (11:00)', '11:00 AM (11:00)'),
+        ('11:30', '11:30 صباحاً (11:30)', '11:30 AM (11:30)'),
+        ('12:00', '12:00 ظهراً (12:00)', '12:00 PM (12:00)'),
+        ('12:30', '12:30 ظهراً (12:30)', '12:30 PM (12:30)'),
+        ('13:00', '01:00 عصراً (13:00)', '01:00 PM (13:00)'),
+        ('13:30', '01:30 عصراً (13:30)', '01:30 PM (13:30)'),
+        ('14:00', '02:00 عصراً (14:00)', '02:00 PM (14:00)'),
+        ('14:30', '02:30 عصراً (14:30)', '02:30 PM (14:30)'),
+        ('15:00', '03:00 عصراً (15:00)', '03:00 PM (15:00)'),
+        ('15:30', '03:30 عصراً (15:30)', '03:30 PM (15:30)'),
+        ('16:00', '04:00 عصراً (16:00)', '04:00 PM (16:00)'),
+        ('16:30', '04:30 عصراً (16:30)', '04:30 PM (16:30)'),
+        ('17:00', '05:00 مساءً (17:00 - الافتراضي)', '05:00 PM (17:00 - Default)'),
+        ('17:30', '05:30 مساءً (17:30)', '05:30 PM (17:30)'),
+        ('18:00', '06:00 مساءً (18:00)', '06:00 PM (18:00)'),
+        ('18:30', '06:30 مساءً (18:30)', '06:30 PM (18:30)'),
+        ('19:00', '07:00 مساءً (19:00)', '07:00 PM (19:00)'),
+        ('19:30', '07:30 مساءً (19:30)', '07:30 PM (19:30)'),
+        ('20:00', '08:00 مساءً (20:00)', '08:00 PM (20:00)'),
+        ('20:30', '08:30 مساءً (20:30)', '08:30 PM (20:30)'),
+        ('21:00', '09:00 مساءً (21:00)', '09:00 PM (21:00)'),
+        ('21:30', '09:30 مساءً (21:30)', '09:30 PM (21:30)'),
+        ('22:00', '10:00 مساءً (22:00)', '10:00 PM (22:00)'),
+        ('22:30', '10:30 مساءً (22:30)', '10:30 PM (22:30)'),
+        ('23:00', '11:00 ليلاً (23:00)', '11:00 PM (23:00)'),
+        ('23:30', '11:30 ليلاً (23:30)', '11:30 PM (23:30)')
+        ] %}
+        {% set cur_start = (settings.working_hours_start[:5] if settings.working_hours_start else '09:00') %}
+        {% set cur_end = (settings.working_hours_end[:5] if settings.working_hours_end else '17:00') %}
+
+        <div class="col-md-6">
+            <label for="working_hours_start" class="settings-label">{% if current_lang == 'ar' %}بداية ساعات العمل اليومية{% else %}Daily Working Hours Start{% endif %}</label>
+            <select class="form-select settings-input fw-semibold" id="working_hours_start" name="working_hours_start" form="main-settings-form">
+                {% for val_code, lbl_ar, lbl_en in time_options %}
+                <option value="{{ val_code }}" {% if cur_start==val_code %}selected{% endif %}>
+                    {% if current_lang == 'ar' %}{{ lbl_ar }}{% else %}{{ lbl_en }}{% endif %}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="working_hours_end" class="settings-label">{% if current_lang == 'ar' %}نهاية ساعات العمل اليومية{% else %}Daily Working Hours End{% endif %}</label>
+            <select class="form-select settings-input fw-semibold" id="working_hours_end" name="working_hours_end" form="main-settings-form">
+                {% for val_code, lbl_ar, lbl_en in time_options %}
+                <option value="{{ val_code }}" {% if cur_end==val_code %}selected{% endif %}>
+                    {% if current_lang == 'ar' %}{{ lbl_ar }}{% else %}{{ lbl_en }}{% endif %}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-12">
+            <label for="default_appointment_duration" class="settings-label">{% if current_lang == 'ar' %}مدة الجلسة الافتراضية{% else %}Default Session Duration{% endif %}</label>
+            <select class="form-select settings-input" id="default_appointment_duration" name="default_appointment_duration">
+                <option value="15" {% if settings.default_appointment_duration=='15' %}selected{% endif %}>{% if current_lang == 'ar' %}15 دقيقة{% else %}15 Minutes{% endif %}</option>
+                <option value="30" {% if settings.default_appointment_duration=='30' %}selected{% endif %}>{% if current_lang == 'ar' %}30 دقيقة{% else %}30 Minutes{% endif %}</option>
+                <option value="45" {% if settings.default_appointment_duration=='45' %}selected{% endif %}>{% if current_lang == 'ar' %}45 دقيقة{% else %}45 Minutes{% endif %}</option>
+                <option value="60" {% if settings.default_appointment_duration=='60' %}selected{% endif %}>{% if current_lang == 'ar' %}60 دقيقة{% else %}60 Minutes{% endif %}</option>
+            </select>
+        </div>
+        <div class="col-md-12 mt-3">
+            <label for="auto_cancel_expired_minutes" class="settings-label">
+                {% if current_lang == 'ar' %}الإلغاء التلقائي للمواعيد غير المحضورة بعد{% else %}Auto-Cancel Unattended Appointments After{% endif %}
+            </label>
+            <select class="form-select settings-input" id="auto_cancel_expired_minutes" name="auto_cancel_expired_minutes">
+                <option value="0" {% if settings.auto_cancel_expired_minutes=='0' %}selected{% endif %}>
+                    {% if current_lang == 'ar' %}عدم الإلغاء تلقائياً نهائياً (مهما مرّ من الوقت){% else %}Never (Disabled - No Auto-Cancel){% endif %}
+                </option>
+                <option value="15" {% if settings.auto_cancel_expired_minutes=='15' %}selected{% endif %}>
+                    {% if current_lang == 'ar' %}15 دقيقة{% else %}15 Minutes{% endif %}
+                </option>
+                <option value="30" {% if settings.auto_cancel_expired_minutes=='30' %}selected{% endif %}>
+                    {% if current_lang == 'ar' %}30 دقيقة{% else %}30 Minutes{% endif %}
+                </option>
+                <option value="60" {% if settings.auto_cancel_expired_minutes=='60' or not settings.auto_cancel_expired_minutes %}selected{% endif %}>
+                    {% if current_lang == 'ar' %}ساعة واحدة (افتراضي){% else %}1 Hour (Default){% endif %}
+                </option>
+                <option value="120" {% if settings.auto_cancel_expired_minutes=='120' %}selected{% endif %}>
+                    {% if current_lang == 'ar' %}ساعتين{% else %}2 Hours{% endif %}
+                </option>
+                <option value="180" {% if settings.auto_cancel_expired_minutes=='180' %}selected{% endif %}>
+                    {% if current_lang == 'ar' %}3 ساعات{% else %}3 Hours{% endif %}
+                </option>
+                <option value="360" {% if settings.auto_cancel_expired_minutes=='360' %}selected{% endif %}>
+                    {% if current_lang == 'ar' %}6 ساعات{% else %}6 Hours{% endif %}
+                </option>
+                <option value="1440" {% if settings.auto_cancel_expired_minutes=='1440' %}selected{% endif %}>
+                    {% if current_lang == 'ar' %}24 ساعة (يوم كامل){% else %}24 Hours (Full Day){% endif %}
+                </option>
+            </select>
+        </div>
+        <div class="col-md-12 mt-3">
+            <label class="settings-label d-block">{% if current_lang == 'ar' %}أيام العمل في الأسبوع{% else %}Working Days of the Week{% endif %}</label>
+            {% set working_days_list = settings.working_days.split(',') if settings.working_days else ['0','1','2','3','4','6'] %}
+            <div class="d-flex flex-wrap gap-3 mt-2">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="working_days" value="0" id="day-sun" {% if '0' in working_days_list %}checked{% endif %}>
+                    <label class="form-check-label" for="day-sun">{% if current_lang == 'ar' %}الأحد{% else %}Sunday{% endif %}</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="working_days" value="1" id="day-mon" {% if '1' in working_days_list %}checked{% endif %}>
+                    <label class="form-check-label" for="day-mon">{% if current_lang == 'ar' %}الإثنين{% else %}Monday{% endif %}</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="working_days" value="2" id="day-tue" {% if '2' in working_days_list %}checked{% endif %}>
+                    <label class="form-check-label" for="day-tue">{% if current_lang == 'ar' %}الثلاثاء{% else %}Tuesday{% endif %}</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="working_days" value="3" id="day-wed" {% if '3' in working_days_list %}checked{% endif %}>
+                    <label class="form-check-label" for="day-wed">{% if current_lang == 'ar' %}الأربعاء{% else %}Wednesday{% endif %}</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="working_days" value="4" id="day-thu" {% if '4' in working_days_list %}checked{% endif %}>
+                    <label class="form-check-label" for="day-thu">{% if current_lang == 'ar' %}الخميس{% else %}Thursday{% endif %}</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="working_days" value="5" id="day-fri" {% if '5' in working_days_list %}checked{% endif %}>
+                    <label class="form-check-label" for="day-fri">{% if current_lang == 'ar' %}الجمعة{% else %}Friday{% endif %}</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="working_days" value="6" id="day-sat" {% if '6' in working_days_list %}checked{% endif %}>
+                    <label class="form-check-label" for="day-sat">{% if current_lang == 'ar' %}السبت{% else %}Saturday{% endif %}</label>
+                </div>
+            </div>
+            <div class="settings-hint mt-2"><i class="bi bi-info-circle me-1"></i>{% if current_lang == 'ar' %}الأيام المحددة تمثل أيام العمل الفعالة. الأيام غير المحددة ستظهر كأيام عطلة/مغلقة في التقويم التفاعلي وتمنع جدولة المواعيد.{% else %}Checked days represent active business days. Unchecked days will be styled as weekends/closed days in the interactive calendar and will prevent scheduling appointments.{% endif %}</div>
+        </div>
+        <div class="col-md-12 mt-3">
+            <label for="booking_window_days" class="settings-label">{% if current_lang == 'ar' %}أيام نافذة الحجز (مسبقاً){% else %}Booking Window Days (in advance){% endif %}</label>
+            <input type="number" class="form-control settings-input" id="booking_window_days" name="booking_window_days" value="{{ settings.booking_window_days }}" min="1" required>
+            <div class="settings-hint mt-2"><i class="bi bi-info-circle me-1"></i>{% if current_lang == 'ar' %}عدد الأيام مسبقاً التي يُسمح فيها للمرضى والموظفين بحجز المواعيد.{% else %}Number of days in advance patients and staff are allowed to book appointments.{% endif %}</div>
+        </div>
+    </div>
+</div>

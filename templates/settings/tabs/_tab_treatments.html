@@ -1,0 +1,250 @@
+<!-- ═══════════ Treatment Pricing Tab ═══════════ -->
+<div class="tab-pane fade" id="tab-treatments" role="tabpanel">
+    <input type="hidden" name="anesthesia_needle_price" form="main-settings-form"
+        value="{{ settings.anesthesia_needle_price or 50000 }}">
+    <div class="settings-tab-header align-items-center mb-3">
+        <div class="settings-tab-icon"><i class="bi bi-journal-medical"></i></div>
+        <div>
+            <h4 class="fw-bold mb-1">{% if current_lang == 'ar' %}خدمات وأسعار المعالجات والتخدير{% else %}Treatment Services, Anesthesia & Prices{% endif %}</h4>
+            <p class="text-muted mb-0 small">{% if current_lang == 'ar' %}إدارة الإجراءات الطبية والتخدير والأسعار والمدة التقديرية لكافة التخصصات{% else %}Manage procedures, anesthesia types, prices, and default duration per service{% endif %}</p>
+        </div>
+        <button type="button"
+            class="btn btn-primary btn-sm rounded-pill px-3.5 ms-auto shadow-sm d-flex align-items-center gap-1.5"
+            id="add-procedure-btn" onclick="addNewProcedureRow()">
+            <i class="bi bi-plus-lg me-1"></i> {% if current_lang == 'ar' %}إضافة إجراء جديد{% else %}Add New Procedure{% endif %}
+        </button>
+    </div>
+
+    <!-- ════════ Anesthesia Types Section ════════ -->
+    <div class="card treatment-card-box border-0 mb-4 shadow-sm overflow-hidden">
+        <div class="card-header treatment-card-header d-flex align-items-center justify-content-between py-3 px-3.5">
+            <div class="d-flex align-items-center gap-2.5">
+                <div class="rounded-3 d-flex align-items-center justify-content-center px-2.5 py-2"
+                    style="background: rgba(99,102,241,0.15); color: #818cf8;">
+                    <i class="bi bi-eyedropper fs-5"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0">{% if current_lang == 'ar' %}أنواع التخدير والجرعات والأسعار{% else %}Anesthesia Types & Dose Prices{% endif %}</h6>
+                    <p class="text-muted small mb-0">{% if current_lang == 'ar' %}إدارة أنواع إبر وجرعات التخدير المتاحة وتكلفة كل تطبيق للجلسة{% else %}Manage dental anesthesia dose types and pricing{% endif %}</p>
+                </div>
+            </div>
+            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3"
+                onclick="addNewAnesthesiaRow()">
+                <i class="bi bi-plus-circle me-1"></i>{% if current_lang == 'ar' %}إضافة نوع تخدير{% else %}Add Anesthesia Type{% endif %}
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table treatment-table align-middle mb-0" style="background: transparent;">
+                    <thead>
+                        <tr>
+                            <th style="width: 55%;" class="ps-3.5 py-2.5">{% if current_lang == 'ar' %}اسم نوع التخدير / الجرعة{% else %}Anesthesia Type Name{% endif %}</th>
+                            <th style="width: 33%;" class="py-2.5">{% if current_lang == 'ar' %}سعر الإبرة / التطبيق{% else %}Price per Application{% endif %}</th>
+                            <th style="width: 12%;" class="text-center pe-3.5 py-2.5">{% if current_lang == 'ar' %}إجراءات{% else %}Actions{% endif %}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="anesthesia-types-list">
+                        {% for item in (anesthesia_types if anesthesia_types else []) %}
+                        {% set clean_aprice = "%.0f"|format(item.price|float) %}
+                        <tr class="anesthesia-row">
+                            <td class="ps-3.5 py-2">
+                                <input type="text" name="anesthesia_names[]"
+                                    form="main-settings-form"
+                                    class="form-control form-control-sm treatment-name-input px-2 py-1"
+                                    value="{{ item.name }}" required
+                                    placeholder="{% if current_lang == 'ar' %}اسم نوع التخدير{% else %}Anesthesia Type Name{% endif %}">
+                            </td>
+                            <td class="py-2">
+                                <div class="input-group input-group-sm treatment-input-pill overflow-hidden" style="max-width: 170px;">
+                                    <input type="text" name="anesthesia_prices[]"
+                                        form="main-settings-form"
+                                        class="form-control form-control-sm border-0 bg-transparent font-monospace text-end fw-bold px-2.5"
+                                        value="{{ clean_aprice }}" required placeholder="0">
+                                    <span class="input-group-text unit-badge border-0 text-primary small fw-bold px-2.5">{{ currency_symbol }}</span>
+                                </div>
+                            </td>
+                            <td class="text-center pe-3.5 py-2">
+                                <button type="button"
+                                    class="btn btn-outline-danger btn-sm rounded-circle d-inline-flex align-items-center justify-content-center p-0"
+                                    style="width:30px;height:30px;border: 1px solid rgba(239, 68, 68, 0.25); background: rgba(239, 68, 68, 0.08); color: #f87171;"
+                                    onclick="deleteAnesthesiaRow(this)"
+                                    data-tooltip="{% if current_lang == 'ar' %}حذف نوع التخدير{% else %}Delete Anesthesia{% endif %}">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════ Treatment Services Header & Search Bar ════════ -->
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
+            <i class="bi bi-list-stars text-primary"></i>
+            {% if current_lang == 'ar' %}قائمة أسباب وإجراءات المعالجة{% else %}Treatment Procedure Library{% endif %}
+        </h6>
+        <div class="position-relative" style="min-width: 270px; max-width: 380px;">
+            <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-primary"></i>
+            <input type="text" id="search-settings-procedures"
+                class="form-control form-control-sm treatment-search-input ps-5 pe-3 py-1.5"
+                placeholder="{% if current_lang == 'ar' %}بحث فوري في قائمة المعالجات...{% else %}Search procedures...{% endif %}"
+                onkeyup="filterSettingsProcedures()">
+        </div>
+    </div>
+
+    <!-- Category Filter Badges -->
+    <div class="d-flex flex-wrap gap-2 mb-4 p-2.5 rounded-4 shadow-sm"
+        style="background: color-mix(in srgb, var(--default-color), transparent 97%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 90%);"
+        id="procedure-cat-pills">
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 cat-pill-btn active"
+            data-cat="all" onclick="filterCategoryPill('all', this)">
+            {% if current_lang == 'ar' %}جميع التخصصات{% else %}All Categories{% endif %}
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 cat-pill-btn"
+            data-cat="فحص وتشخيص" onclick="filterCategoryPill('فحص وتشخيص', this)">
+            🩺 {% if current_lang == 'ar' %}فحص وتشخيص{% else %}Diagnostic{% endif %}
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 cat-pill-btn"
+            data-cat="حشوات ومعالجات تجميلية" onclick="filterCategoryPill('حشوات ومعالجات تجميلية', this)">
+            ✨ {% if current_lang == 'ar' %}حشوات ومعالجات تجميلية{% else %}Restorative{% endif %}
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 cat-pill-btn"
+            data-cat="علاج عصب وجذور" onclick="filterCategoryPill('علاج عصب وجذور', this)">
+            ⚡ {% if current_lang == 'ar' %}علاج عصب وجذور{% else %}Endodontics{% endif %}
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 cat-pill-btn"
+            data-cat="جراحة وقلع" onclick="filterCategoryPill('جراحة وقلع', this)">
+            🔪 {% if current_lang == 'ar' %}جراحة وقلع{% else %}Oral Surgery{% endif %}
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 cat-pill-btn"
+            data-cat="تعويضات وتيجان" onclick="filterCategoryPill('تعويضات وتيجان', this)">
+            👑 {% if current_lang == 'ar' %}تعويضات وتيجان{% else %}Prosthodontics{% endif %}
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 cat-pill-btn"
+            data-cat="تقويم أسنان" onclick="filterCategoryPill('تقويم أسنان', this)">
+            🪥 {% if current_lang == 'ar' %}تقويم أسنان{% else %}Orthodontics{% endif %}
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 cat-pill-btn"
+            data-cat="أسنان أطفال" onclick="filterCategoryPill('أسنان أطفال', this)">
+            👶 {% if current_lang == 'ar' %}أسنان أطفال{% else %}Pediatric{% endif %}
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill px-3 py-1.5 cat-pill-btn"
+            data-cat="إجراءات عامة وأخرى" onclick="filterCategoryPill('إجراءات عامة وأخرى', this)">
+            🌐 {% if current_lang == 'ar' %}إجراءات عامة وأخرى{% else %}General & Other{% endif %}
+        </button>
+    </div>
+
+    {% set details_map = treatment_details if treatment_details else {} %}
+    {% set defined_categories = [
+    ('فحص وتشخيص', 'bi-search-heart', 'فحص وتشخيص', 'Diagnostic'),
+    ('حشوات ومعالجات تجميلية', 'bi-magic', 'حشوات ومعالجات تجميلية', 'Restorative & Cosmetic'),
+    ('علاج عصب وجذور', 'bi-activity', 'علاج عصب وجذور', 'Endodontics'),
+    ('جراحة وقلع', 'bi-scissors', 'جراحة وقلع', 'Oral Surgery'),
+    ('تعويضات وتيجان', 'bi-award', 'تعويضات وتيجان', 'Prosthodontics'),
+    ('تقويم أسنان', 'bi-grid-3x3', 'تقويم أسنان', 'Orthodontics'),
+    ('أسنان أطفال', 'bi-emoji-smile', 'أسنان أطفال', 'Pediatric Dentistry'),
+    ('إجراءات عامة وأخرى', 'bi-folder-plus', 'إجراءات عامة وأخرى', 'General & Other Procedures')
+    ] %}
+
+    <div id="procedures-categories-wrapper">
+        {% for cat_key, cat_icon, cat_title_ar, cat_title_en in defined_categories %}
+        {% set cat_items = [] %}
+        {% for name, price in treatment_prices.items() %}
+        {% set item_detail = details_map.get(name, {}) %}
+        {% set item_cat = item_detail.get('category', 'إجراءات عامة وأخرى') %}
+        {% if item_cat == cat_key or (cat_key == 'إجراءات عامة وأخرى' and item_cat not in ['فحص وتشخيص', 'حشوات ومعالجات تجميلية', 'علاج عصب وجذور', 'جراحة وقلع', 'تعويضات وتيجان', 'تقويم أسنان', 'أسنان أطفال', 'إجراءات عامة وأخرى']) %}
+        {% set _ = cat_items.append((name, price, item_detail)) %}
+        {% endif %}
+        {% endfor %}
+
+        <div class="card treatment-card-box border-0 mb-3 procedure-category-block {% if cat_items|length == 0 %}d-none{% endif %}"
+            data-category="{{ cat_key }}">
+            <div class="card-header treatment-card-header d-flex align-items-center justify-content-between py-2.5 px-3.5">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi {{ cat_icon }} text-primary fs-5"></i>
+                    <h6 class="fw-bold mb-0">{% if current_lang == 'ar' %}{{ cat_title_ar }}{% else %}{{ cat_title_en }}{% endif %}</h6>
+                    <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 small cat-count-badge">{{ cat_items|length }}</span>
+                </div>
+                <button type="button"
+                    class="btn btn-link btn-sm text-decoration-none p-0 text-muted hover-text-light"
+                    onclick="addNewProcedureRow('{{ cat_key }}')">
+                    <i class="bi bi-plus-circle me-1"></i>{% if current_lang == 'ar' %}إضافة خدمة لهذا التصنيف{% else %}Add to Category{% endif %}
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table treatment-table align-middle mb-0" style="table-layout: fixed; width: 100%; background: transparent;">
+                        <thead>
+                            <tr>
+                                <th style="width: 42%;" class="ps-3.5 py-2.5">{% if current_lang == 'ar' %}اسم الإجراء الطبي{% else %}Procedure Name{% endif %}</th>
+                                <th style="width: 22%;" class="py-2.5">{% if current_lang == 'ar' %}المدة (بالدقائق){% else %}Duration{% endif %}</th>
+                                <th style="width: 24%;" class="py-2.5">{% if current_lang == 'ar' %}السعر الافتراضي{% else %}Default Price{% endif %}</th>
+                                <th style="width: 12%;" class="text-center pe-3.5 py-2.5">{% if current_lang == 'ar' %}إجراءات{% else %}Action{% endif %}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="procedures-group-list">
+                            {% for name, price, item_detail in cat_items %}
+                            {% set is_essential = (name in ['قلع سن عادي', 'قلع سن', 'معالجة ما بعد القلع', 'Extraction', 'Tooth Extraction', 'Post-Extraction Treatment', 'جلسة فحص و استشارة', 'جلسة فحص واستشارة', 'فحص دوري واستشارة', 'فحص دوري', 'Check-up', 'Clinical Examination & Consultation']) %}
+                            {% set clean_price = "%.0f"|format(price|float) %}
+                            <tr class="procedure-row {% if is_essential %}table-active-subtle{% endif %}">
+                                <td class="ps-3.5 py-2">
+                                    <input type="text" name="procedure_names[]"
+                                        form="main-settings-form"
+                                        class="form-control form-control-sm treatment-name-input px-2 py-1 text-truncate"
+                                        value="{{ name }}" required
+                                        placeholder="{% if current_lang == 'ar' %}اسم الإجراء{% else %}Procedure Name{% endif %}"
+                                        {% if is_essential %}readonly
+                                        title="{{ 'إجراء أساسي محمي بالنظام' if current_lang == 'ar' else 'Essential procedure locked' }}"
+                                        {% endif %}>
+                                    <input type="hidden" name="procedure_categories[]" form="main-settings-form" value="{{ cat_key }}">
+                                    <input type="hidden" name="procedure_actives[]" form="main-settings-form" value="true">
+                                </td>
+                                <td class="py-2">
+                                    <div class="input-group input-group-sm treatment-input-pill overflow-hidden" style="max-width: 130px;">
+                                        <input type="number" name="procedure_durations[]"
+                                            form="main-settings-form"
+                                            class="form-control form-control-sm border-0 bg-transparent text-center font-monospace fw-bold"
+                                            value="{{ item_detail.get('duration', 30) }}"
+                                            min="5" max="300" step="5" required
+                                            placeholder="30">
+                                        <span class="input-group-text unit-badge border-0 small px-2.5">{% if current_lang == 'ar' %}دقيقة{% else %}min{% endif %}</span>
+                                    </div>
+                                </td>
+                                <td class="py-2">
+                                    <div class="input-group input-group-sm treatment-input-pill overflow-hidden" style="max-width: 160px;">
+                                        <input type="text" name="procedure_prices[]"
+                                            form="main-settings-form"
+                                            class="form-control form-control-sm border-0 bg-transparent font-monospace text-end fw-bold px-2.5"
+                                            value="{{ clean_price }}" required placeholder="0">
+                                        <span class="input-group-text unit-badge border-0 text-primary small fw-bold px-2.5">{{ currency_symbol }}</span>
+                                    </div>
+                                </td>
+                                <td class="text-center pe-3.5 py-2">
+                                    {% if not is_essential %}
+                                    <button type="button"
+                                        class="btn btn-outline-danger btn-sm rounded-circle d-inline-flex align-items-center justify-content-center p-0"
+                                        style="width:30px;height:30px;border: 1px solid rgba(239, 68, 68, 0.25); background: rgba(239, 68, 68, 0.08); color: #f87171;"
+                                        onclick="deleteProcedureRow(this)"
+                                        data-tooltip="{% if current_lang == 'ar' %}حذف الإجراء{% else %}Delete Procedure{% endif %}">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                    {% else %}
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 small"
+                                        title="{% if current_lang == 'ar' %}إجراء محمي لا يمكن حذفه{% else %}Protected procedure{% endif %}">
+                                        <i class="bi bi-shield-lock text-primary"></i>
+                                    </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

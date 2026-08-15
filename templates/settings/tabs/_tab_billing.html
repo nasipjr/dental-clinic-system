@@ -1,0 +1,210 @@
+<!-- ═══════════ Billing & Finance Tab ═══════════ -->
+<div class="tab-pane fade" id="tab-billing" role="tabpanel">
+    <div class="settings-tab-header">
+        <div class="settings-tab-icon"><i class="bi bi-wallet2"></i></div>
+        <div>
+            <h4>{% if current_lang == 'ar' %}إعدادات الفوترة والمالية{% else %}Billing & Finance Settings{% endif %}</h4>
+            <p>{% if current_lang == 'ar' %}تحديد رمز العملة المستخدم في الفواتير والتقارير{% else %}Set the currency symbol used across invoices and reports{% endif %}</p>
+        </div>
+    </div>
+    <div class="row g-3 mb-5">
+        <div class="col-md-12">
+            <label for="currency_symbol" class="settings-label">{% if current_lang == 'ar' %}رمز العملة المخصص{% else %}Custom Currency Symbol{% endif %}</label>
+            <input type="text" class="form-control settings-input" id="currency_symbol"
+                name="currency_symbol" form="main-settings-form"
+                value="{{ settings.currency_symbol }}" required
+                placeholder="e.g., $, USD, EUR, SAR">
+            <div class="settings-hint"><i class="bi bi-info-circle me-1"></i>{% if current_lang == 'ar' %}سيتم تطبيق هذا الرمز ديناميكياً على جميع الفواتير والمدفوعات وصفحات التقارير.{% else %}This symbol will be applied dynamically to all invoices, payments, and report pages.{% endif %}</div>
+        </div>
+    </div>
+
+    <!-- ── Staff Salary Management ── -->
+    <hr class="my-4" style="border-color: rgba(255,255,255,0.08);">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="settings-tab-icon" style="width:42px;height:42px;font-size:1.1rem;"><i class="bi bi-cash-coin"></i></div>
+        <div>
+            <h5 class="mb-0 fw-bold">{% if current_lang == 'ar' %}رواتب الكادر الطبي والإداري{% else %}Staff Salary Management{% endif %}</h5>
+            <p class="text-secondary small mb-0">{% if current_lang == 'ar' %}حدد الراتب ويوم الخصم الشهري لكل موظف. يتم تسجيل الراتب تلقائياً كمصروف في سجل المصاريف.{% else %}Set salary and monthly deduction day per staff member. Deductions are auto-logged as Expenses.{% endif %}</p>
+        </div>
+    </div>
+
+    {% if salary_staff %}
+    <div class="row g-3" id="salary-cards-container">
+        {% for staff in salary_staff %}
+        {% set sc = salary_configs.get(staff.id) %}
+        <div class="col-md-6">
+            <div class="card border-0 rounded-4 p-4 h-100 salary-staff-card position-relative overflow-hidden"
+                style="background: var(--surface-color);
+                        border: 1px solid {% if staff.role=='doctor' %}rgba(99,102,241,0.2){% else %}rgba(14,165,233,0.2){% endif %} !important;
+                        box-shadow: 0 4px 20px {% if staff.role=='doctor' %}rgba(99,102,241,0.06){% else %}rgba(14,165,233,0.06){% endif %};
+                        transition: box-shadow .25s, transform .25s;"
+                onmouseover="this.style.boxShadow='0 8px 32px {% if staff.role=='doctor' %}rgba(99,102,241,0.12){% else %}rgba(14,165,233,0.12){% endif %}'; this.style.transform='translateY(-2px)'"
+                onmouseout="this.style.boxShadow='0 4px 20px {% if staff.role=='doctor' %}rgba(99,102,241,0.06){% else %}rgba(14,165,233,0.06){% endif %}'; this.style.transform='translateY(0)'">
+                <!-- Subtle top accent line -->
+                <div class="position-absolute top-0 start-0 end-0"
+                    style="height:3px;background:linear-gradient(90deg,{% if staff.role=='doctor' %}#6366f1,#8b5cf6{% else %}#0ea5e9,#38bdf8{% endif %});border-radius:16px 16px 0 0;">
+                </div>
+                <!-- Staff header -->
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0"
+                        style="width:44px;height:44px;font-size:1.1rem;background:linear-gradient(135deg,{% if staff.role=='doctor' %}#6366f1,#8b5cf6{% else %}#0ea5e9,#38bdf8{% endif %});">
+                        {{ (staff.first_name or staff.username)[0]|upper }}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold" style="font-size:.97rem;">{{ staff.first_name or '' }} {{ staff.last_name or '' }}</div>
+                        <div class="d-flex flex-wrap align-items-center gap-1 mt-1">
+                            <span class="badge rounded-pill px-2 py-1 {% if staff.role=='doctor' %}bg-primary bg-opacity-10 text-primary{% else %}bg-info bg-opacity-10 text-info{% endif %}"
+                                style="font-size:.75rem;">
+                                {% if staff.role == 'doctor' %}{% if current_lang=='ar' %}طبيب{% else %}Doctor{% endif %}
+                                {% else %}{% if current_lang=='ar' %}موظف استقبال{% else %}Receptionist{% endif %}{% endif %}
+                            </span>
+                            {% if sc %}
+                            <span class="badge rounded-pill px-2 py-1 bg-success bg-opacity-10 text-success border border-success border-opacity-25"
+                                style="font-size:.75rem;">
+                                {% if sc.salary_type == 'percentage' %}
+                                {% if current_lang=='ar' %}محدد: نسبة {{ sc.amount }}%{% else %}Set: {{ sc.amount }}% Percentage{% endif %}
+                                {% else %}
+                                {% if current_lang=='ar' %}محدد: راتب ثابت {{ sc.amount }} {{ currency_symbol }}{% else %}Set: Fixed {{ sc.amount }} {{ currency_symbol }}{% endif %}
+                                {% endif %}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <!-- Active toggle -->
+                    <div class="form-check form-switch ms-auto"
+                        data-tooltip="{% if current_lang=='ar' %}تفعيل/تعطيل الراتب{% else %}Enable/Disable Salary{% endif %}">
+                        <input class="form-check-input salary-active-toggle" type="checkbox"
+                            role="switch" id="salary-active-{{ staff.id }}" {% if sc and sc.is_active %}checked{% elif not sc %}checked{% endif %}
+                            style="cursor:pointer;">
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('settings.save_staff_salary') }}" class="salary-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="user_id" value="{{ staff.id }}">
+                    <input type="hidden" name="is_active" class="salary-is-active-input"
+                        value="{% if sc and sc.is_active %}1{% elif not sc %}1{% else %}0{% endif %}">
+                    <input type="hidden" name="salary_type" class="salary-type-input"
+                        value="{{ sc.salary_type if sc else 'fixed' }}">
+
+                    <!-- Salary type (doctors can choose percentage) -->
+                    {% if staff.role == 'doctor' %}
+                    <div class="mb-3">
+                        <label class="settings-label">{% if current_lang=='ar' %}نوع الراتب{% else %}Salary Type{% endif %}</label>
+                        <div class="d-flex gap-2 p-1 rounded-3"
+                            style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);">
+                            <button type="button"
+                                class="btn salary-type-btn flex-fill py-1.5 px-3 rounded-2 fw-semibold small d-inline-flex align-items-center justify-content-center gap-1"
+                                data-type="fixed"
+                                style="{% if not sc or sc.salary_type == 'fixed' %}background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;box-shadow:0 2px 8px rgba(99,102,241,0.3);{% else %}background:transparent;color:var(--default-color);border:none;opacity:0.6;{% endif %}transition:all .2s;">
+                                <i class="bi bi-cash"></i> {% if current_lang=='ar' %}راتب ثابت{% else %}Fixed{% endif %}
+                            </button>
+                            <button type="button"
+                                class="btn salary-type-btn flex-fill py-1.5 px-3 rounded-2 fw-semibold small d-inline-flex align-items-center justify-content-center gap-1"
+                                data-type="percentage"
+                                style="{% if sc and sc.salary_type == 'percentage' %}background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;box-shadow:0 2px 8px rgba(99,102,241,0.3);{% else %}background:transparent;color:var(--default-color);border:none;opacity:0.6;{% endif %}transition:all .2s;">
+                                <i class="bi bi-percent"></i> {% if current_lang=='ar' %}نسبة مئوية{% else %}Percentage{% endif %}
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Amount -->
+                    <div class="mb-3">
+                        <label class="settings-label salary-amount-label">
+                            {% if staff.role == 'doctor' %}
+                            <span class="label-fixed">{% if current_lang=='ar' %}الراتب الثابت{% else %}Fixed Salary{% endif %}</span>
+                            <span class="label-pct d-none">{% if current_lang=='ar' %}نسبة من إجمالي الفواتير (%){% else %}% of Total Invoiced{% endif %}</span>
+                            {% else %}
+                            {% if current_lang=='ar' %}الراتب الشهري{% else %}Monthly Salary{% endif %}
+                            {% endif %}
+                        </label>
+                        <div class="input-group">
+                            <input type="number" step="0.01" min="0.01" name="amount"
+                                class="form-control settings-input salary-amount-input"
+                                value="{{ sc.amount if sc else '' }}" required
+                                placeholder="{% if current_lang=='ar' %}أدخل المبلغ أو النسبة هنا...{% else %}Enter amount or percentage...{% endif %}">
+                            <span class="input-group-text salary-unit-label" data-currency="{{ currency_symbol }}">
+                                {% if sc and sc.salary_type == 'percentage' %}<i class="bi bi-percent"></i>
+                                {% else %}{{ currency_symbol }}{% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Deduction Day -->
+                    <div class="mb-3">
+                        <label class="settings-label">{% if current_lang=='ar' %}يوم الخصم الشهري{% else %}Monthly Deduction Day{% endif %}</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
+                            <select name="deduction_day" class="form-select settings-input">
+                                {% for d in range(1, 29) %}
+                                <option value="{{ d }}" {% if sc and sc.deduction_day==d %}selected{% elif not sc and d==1 %}selected{% endif %}>
+                                    {% if current_lang=='ar' %}يوم {{ d }}{% else %}Day {{ d }}{% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="settings-hint"><i class="bi bi-info-circle me-1"></i>{% if current_lang=='ar' %}سيتم خصم الراتب تلقائياً في هذا اليوم من كل شهر عند فتح النظام.{% else %}Salary auto-deducts on this day each month when the system starts.{% endif %}</div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-3">
+                        <label class="settings-label">{% if current_lang=='ar' %}ملاحظات{% else %}Notes{% endif %}</label>
+                        <input type="text" name="notes" class="form-control settings-input"
+                            value="{{ sc.notes if sc and sc.notes else '' }}"
+                            placeholder="{% if current_lang=='ar' %}اختياري...{% else %}Optional...{% endif %}">
+                    </div>
+
+                    <!-- Last deducted info -->
+                    {% if sc and sc.last_deducted_month %}
+                    <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-3 mb-3 small fw-semibold"
+                        style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.18);color:#34d399;">
+                        <i class="bi bi-check2-circle flex-shrink-0" style="font-size:1rem;"></i>
+                        <span style="color:var(--default-color);opacity:0.7;">{% if current_lang=='ar' %}آخر خصم:{% else %}Last deduction:{% endif %}</span>
+                        <span class="ms-auto font-monospace" style="color:#34d399;letter-spacing:.5px;">{{ sc.last_deducted_month }}</span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Actions -->
+                    <div class="d-flex align-items-center gap-2 mt-3">
+                        <button type="submit"
+                            class="btn rounded-pill px-3 py-2 fw-bold flex-fill d-inline-flex align-items-center justify-content-center gap-1"
+                            style="min-height:42px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;color:#fff;box-shadow:0 2px 12px rgba(99,102,241,0.3);transition:opacity .2s,transform .15s;"
+                            onmouseover="this.style.opacity='.88'"
+                            onmouseout="this.style.opacity='1'">
+                            <i class="bi bi-floppy"></i>
+                            {% if current_lang=='ar' %}حفظ الإعدادات{% else %}Save Settings{% endif %}
+                        </button>
+
+                        {% if sc and sc.is_active %}
+                        <button type="button"
+                            class="btn rounded-pill px-3 py-2 fw-bold flex-fill d-inline-flex align-items-center justify-content-center gap-1 text-nowrap"
+                            onclick="confirmDeductSalary(document.getElementById('deduct-salary-form-{{ staff.id }}'), event);"
+                            style="min-height:42px;background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);transition:all .2s;"
+                            onmouseover="this.style.background='rgba(251,191,36,0.18)'; this.style.borderColor='rgba(251,191,36,0.5)'"
+                            onmouseout="this.style.background='rgba(251,191,36,0.1)'; this.style.borderColor='rgba(251,191,36,0.3)'">
+                            <i class="bi bi-arrow-down-circle-fill"></i>
+                            {% if current_lang=='ar' %}خصم الآن{% else %}Deduct Now{% endif %}
+                        </button>
+                        {% endif %}
+                    </div>
+                </form>
+
+                {% if sc and sc.is_active %}
+                <form id="deduct-salary-form-{{ staff.id }}" method="POST"
+                    action="{{ url_for('settings.deduct_salary_now', user_id=staff.id) }}"
+                    class="d-none">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+        <i class="bi bi-people fs-1 opacity-50 d-block mb-2"></i>
+        <p>{% if current_lang=='ar' %}لا يوجد موظفون أو أطباء لتعيين رواتبهم.{% else %}No doctors or receptionists found to configure salaries.{% endif %}</p>
+    </div>
+    {% endif %}
+</div>

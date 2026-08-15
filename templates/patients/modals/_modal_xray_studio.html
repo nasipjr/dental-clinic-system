@@ -1,0 +1,219 @@
+<!-- X-Ray Viewer & Compare Modal -->
+<div class="modal fade" id="xrayModal" tabindex="-1" aria-labelledby="xrayModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 overflow-hidden" style="background: var(--surface-color); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);">
+            <div class="modal-header border-bottom-0 pb-2 px-4 pt-4 d-flex justify-content-between align-items-center">
+                <div class="w-100 {% if current_lang == 'ar' %}text-end{% endif %}">
+                    <h5 class="modal-title fw-bold" id="xrayModalLabel" style="font-size: 1.35rem; color: var(--heading-color); font-family: var(--heading-font);">
+                        <i class="bi bi-images text-info {% if current_lang == 'ar' %}ms-2{% else %}me-2{% endif %}"></i>
+                        {% if current_lang == 'ar' %}استوديو الأشعة والمقارنة{% else %}X-Ray Studio & Compare{% endif %}
+                    </h5>
+                    <p class="text-muted small mb-0">
+                        {% if current_lang == 'ar' %}تكبير، تدوير، تعديل السطوع والتباين، أو مقارنة صور أشعة المريض جنباً إلى جنب.{% else %}Zoom, rotate, adjust brightness & contrast, or compare radiography images side-by-side.{% endif %}
+                    </p>
+                </div>
+                <button type="button" class="btn-close {% if current_lang == 'ar' %}ms-0 me-auto{% endif %}" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body p-0" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+                <!-- Tabs Navigation -->
+                <ul class="nav nav-tabs px-4 pt-2 border-bottom" id="xrayStudioTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active fw-semibold px-4 py-2.5" id="xray-viewer-tab" data-bs-toggle="tab" data-bs-target="#xray-viewer-pane" type="button" role="tab" style="font-size: 0.9rem;">
+                            <i class="bi bi-sliders {% if current_lang == 'ar' %}ms-1.5{% else %}me-1.5{% endif %} text-info"></i> 
+                            {% if current_lang == 'ar' %}معدّل الصور التفاعلي{% else %}Interactive Adjuster{% endif %}
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-semibold px-4 py-2.5" id="xray-compare-tab" data-bs-toggle="tab" data-bs-target="#xray-compare-pane" type="button" role="tab" style="font-size: 0.9rem;">
+                            <i class="bi bi-distribute-vertical {% if current_lang == 'ar' %}ms-1.5{% else %}me-1.5{% endif %} text-info"></i> 
+                            {% if current_lang == 'ar' %}مقارنة قبل / بعد{% else %}Before / After Slider{% endif %}
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="xrayStudioContent">
+                    <!-- Tab 1: Interactive Viewer/Adjuster -->
+                    <div class="tab-pane fade show active p-4" id="xray-viewer-pane" role="tabpanel">
+                        <div class="row g-4">
+                            <!-- Sidebar controls -->
+                            <div class="col-lg-4">
+                                <div class="p-3 rounded-4 shadow-xs border h-100" style="background: rgba(0,0,0,0.02);">
+                                    <div class="mb-3">
+                                        <label for="select-xray-image" class="form-label fw-bold text-secondary small">
+                                            {% if current_lang == 'ar' %}اختر صورة الأشعة{% else %}Select X-Ray Image{% endif %}
+                                        </label>
+                                        <select id="select-xray-image" class="form-select rounded-3 border-secondary-subtle">
+                                            <option value="">{% if current_lang == 'ar' %}-- اختر صورة --{% else %}-- Choose an Image --{% endif %}</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <hr class="my-3 opacity-50">
+                                    
+                                    <h6 class="fw-bold mb-3 text-dark small text-uppercase tracking-wider">
+                                        <i class="bi bi-sliders2-vertical {% if current_lang == 'ar' %}ms-1{% else %}me-1{% endif %}"></i> 
+                                        {% if current_lang == 'ar' %}التعديلات والتحسينات{% else %}Adjustments{% endif %}
+                                    </h6>
+                                    
+                                    <!-- Zoom -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="small fw-semibold text-secondary">{% if current_lang == 'ar' %}التكبير{% else %}Zoom{% endif %}</span>
+                                            <span class="small fw-bold text-primary" id="zoom-val">100%</span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <button class="btn btn-sm btn-outline-secondary py-0 px-2" id="btn-zoom-out" type="button"><i class="bi bi-dash"></i></button>
+                                            <input type="range" class="form-range flex-grow-1" id="slider-zoom" min="50" max="300" value="100">
+                                            <button class="btn btn-sm btn-outline-secondary py-0 px-2" id="btn-zoom-in" type="button"><i class="bi bi-plus"></i></button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Rotation -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="small fw-semibold text-secondary">{% if current_lang == 'ar' %}الدوران{% else %}Rotation{% endif %}</span>
+                                            <span class="small fw-bold text-primary" id="rotate-val">0°</span>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <button class="btn btn-sm btn-outline-secondary py-0 px-2" id="btn-rotate-left" type="button"><i class="bi bi-arrow-counterclockwise"></i></button>
+                                            <input type="range" class="form-range flex-grow-1" id="slider-rotate" min="-180" max="180" value="0">
+                                            <button class="btn btn-sm btn-outline-secondary py-0 px-2" id="btn-rotate-right" type="button"><i class="bi bi-arrow-clockwise"></i></button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Brightness -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="small fw-semibold text-secondary">{% if current_lang == 'ar' %}السطوع{% else %}Brightness{% endif %}</span>
+                                            <span class="small fw-bold text-primary" id="brightness-val">100%</span>
+                                        </div>
+                                        <input type="range" class="form-range" id="slider-brightness" min="30" max="200" value="100">
+                                    </div>
+                                    
+                                    <!-- Contrast -->
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="small fw-semibold text-secondary">{% if current_lang == 'ar' %}التباين{% else %}Contrast{% endif %}</span>
+                                            <span class="small fw-bold text-primary" id="contrast-val">100%</span>
+                                        </div>
+                                        <input type="range" class="form-range" id="slider-contrast" min="30" max="200" value="100">
+                                    </div>
+                                    
+                                    <!-- Invert colors -->
+                                    <div class="mb-4 d-flex justify-content-between align-items-center">
+                                        <span class="small fw-semibold text-secondary">{% if current_lang == 'ar' %}عكس الألوان (الوضع السلبي){% else %}Invert Colors (Negative view){% endif %}</span>
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="switch-invert">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Reset and actions -->
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-secondary rounded-pill py-2 text-sm fw-semibold" id="btn-reset-adjuster">
+                                            <i class="bi bi-arrow-clockwise me-1"></i> 
+                                            {% if current_lang == 'ar' %}إعادة تعيين الإعدادات{% else %}Reset Settings{% endif %}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Viewer canvas -->
+                            <div class="col-lg-8">
+                                <div class="viewer-canvas-wrapper d-flex align-items-center justify-content-center border rounded-4 position-relative bg-dark" style="height: 460px; overflow: hidden; box-shadow: inset 0 4px 20px rgba(0,0,0,0.5);">
+                                    <div class="no-image-placeholder text-center text-secondary p-4">
+                                        <i class="bi bi-image fs-1 opacity-50 mb-3 d-block text-white"></i>
+                                        <h6 class="text-white fw-bold">
+                                            {% if current_lang == 'ar' %}لم يتم اختيار صورة{% else %}No Image Selected{% endif %}
+                                        </h6>
+                                        <p class="small opacity-75 mb-0">
+                                            {% if current_lang == 'ar' %}اختر صورة أشعة من القائمة المنسدلة في الجانب للبدء بالتحسين.{% else %}Choose an image from the sidebar dropdown to start adjustments.{% endif %}
+                                        </p>
+                                    </div>
+                                    
+                                    <!-- The actual image wrapper -->
+                                    <div class="image-viewport position-absolute w-100 h-100 d-none d-flex align-items-center justify-content-center" style="cursor: grab;">
+                                        <img id="viewer-img" class="img-fluid object-fit-contain transition-transform-filters" alt="Radiography Image" style="max-height: 94%; max-width: 94%; pointer-events: none; user-select: none;">
+                                    </div>
+                                    
+                                    <!-- Controls Overlay -->
+                                    <div class="position-absolute bottom-0 start-0 w-100 p-3 d-none d-flex justify-content-between align-items-center text-white" id="viewer-overlay" style="background: linear-gradient(transparent, rgba(0,0,0,0.8));">
+                                        <span class="small fw-bold" id="overlay-filename"></span>
+                                        <span class="small bg-dark bg-opacity-70 px-2.5 py-1 rounded-pill" id="overlay-date"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tab 2: Before/After Slider -->
+                    <div class="tab-pane fade p-4" id="xray-compare-pane" role="tabpanel">
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <label for="compare-select-before" class="form-label fw-bold text-secondary small">
+                                    {% if current_lang == 'ar' %}الصورة السابقة - قبل (يسار){% else %}Before Image (Left){% endif %}
+                                </label>
+                                <select id="compare-select-before" class="form-select rounded-3 border-secondary-subtle">
+                                    <option value="">{% if current_lang == 'ar' %}-- اختر صورة --{% else %}-- Choose Image --{% endif %}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="compare-select-after" class="form-label fw-bold text-secondary small">
+                                    {% if current_lang == 'ar' %}الصورة اللاحقة - بعد (يمين){% else %}After Image (Right){% endif %}
+                                </label>
+                                <select id="compare-select-after" class="form-select rounded-3 border-secondary-subtle">
+                                    <option value="">{% if current_lang == 'ar' %}-- اختر صورة --{% else %}-- Choose Image --{% endif %}</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Slider Comparison Display -->
+                        <div class="comparison-display-wrapper border rounded-4 bg-dark overflow-hidden position-relative mx-auto shadow-lg" style="max-width: 800px; height: 460px; box-shadow: inset 0 4px 20px rgba(0,0,0,0.5);">
+                            <div class="compare-placeholder text-center text-secondary position-absolute top-50 start-50 translate-middle">
+                                <i class="bi bi-distribute-vertical fs-1 opacity-50 mb-3 d-block text-white"></i>
+                                <h6 class="text-white fw-bold">
+                                    {% if current_lang == 'ar' %}اختر الصور للمقارنة{% else %}Select Comparison Images{% endif %}
+                                </h6>
+                                <p class="small opacity-75 mb-0">
+                                    {% if current_lang == 'ar' %}اختر كلاً من الصورتين (قبل وبعد العلاج) لبدء المقارنة التفاعلية.{% else %}Choose both "Before" and "After" images to start comparison.{% endif %}
+                                </p>
+                            </div>
+                            
+                            <!-- The Comparison Slider Container -->
+                            <div id="slider-comparison-container" class="w-100 h-100 position-relative d-none" style="user-select: none;">
+                                <!-- After Image (Background) -->
+                                <img id="compare-img-after" alt="After image" />
+                                
+                                <!-- Before Image (Foreground, clipped) -->
+                                <img id="compare-img-before" alt="Before image" />
+                                
+                                <!-- Slider Input overlay -->
+                                <input type="range" min="0" max="100" value="50" class="position-absolute top-50 start-50 translate-middle w-100 h-100 opacity-0 compare-slider-input" id="compare-range-slider" style="z-index: 30; cursor: ew-resize;">
+                                
+                                <!-- Divider Line / Drag Indicator -->
+                                <div id="compare-divider" class="position-absolute top-0 h-100 bg-white" style="left: 50%; width: 2px; transform: translateX(-50%); z-index: 20; pointer-events: none; box-shadow: 0 0 10px rgba(0,0,0,0.5);">
+                                    <div class="position-absolute top-50 start-50 translate-middle bg-white rounded-circle d-flex align-items-center justify-content-center shadow" style="width: 36px; height: 36px; border: 2px solid var(--primary-color);">
+                                        <i class="bi bi-arrows-expand text-primary" style="transform: rotate(90deg); font-size: 0.95rem;"></i>
+                                    </div>
+                                </div>
+                                
+                                <!-- Labels Overlay -->
+                                <span class="position-absolute bottom-3 {% if current_lang == 'ar' %}end-3{% else %}start-3{% endif %} badge bg-dark bg-opacity-70 px-3 py-2 text-uppercase fw-semibold" style="z-index: 25; font-size: 0.75rem; pointer-events: none;">
+                                    {% if current_lang == 'ar' %}قبل{% else %}Before{% endif %}
+                                </span>
+                                <span class="position-absolute bottom-3 {% if current_lang == 'ar' %}start-3{% else %}end-3{% endif %} badge bg-dark bg-opacity-70 px-3 py-2 text-uppercase fw-semibold" style="z-index: 25; font-size: 0.75rem; pointer-events: none;">
+                                    {% if current_lang == 'ar' %}بعد{% else %}After{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer border-top-0 d-flex justify-content-center pb-4">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-5 fw-bold" data-bs-dismiss="modal">
+                    {% if current_lang == 'ar' %}إغلاق الاستوديو{% else %}Close Studio{% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

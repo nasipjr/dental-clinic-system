@@ -1,0 +1,77 @@
+<!-- ═══════════ Payment Detail Print Sheet ═══════════ -->
+<div class="d-none d-print-block container mt-4" id="payment-print-area" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+    <div class="print-header d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h1 class="clinic-name-print mb-1 fw-bold text-main">{{ clinic_name }}</h1>
+            <p class="mb-1"><i class="bi bi-geo-alt"></i> {{ clinic_address }}</p>
+            <p class="mb-1"><i class="bi bi-phone"></i> {{ clinic_phone }}</p>
+            <p class="mb-0"><i class="bi bi-envelope"></i> {{ clinic_email }}</p>
+        </div>
+        <div class="text-end">
+            <h2 class="text-uppercase fw-bold text-success mb-2">{% if current_lang == 'ar' %}سند قبض نقدية{% else %}Payment Receipt{% endif %}</h2>
+            <h5 class="text-muted mb-3">{% if current_lang == 'ar' %}رقم السند{% else %}Receipt Number{% endif %}: <bdi dir="ltr">PAY-{{ "%04d"|format(payment.id) }}</bdi></h5>
+            <p class="mb-1"><strong>{% if current_lang == 'ar' %}التاريخ{% else %}Date{% endif %}:</strong> {{ payment.payment_date.strftime('%Y-%m-%d %I:%M %p') if payment.payment_date else '' }}</p>
+            <p class="mb-0"><strong>{% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}:</strong> {% if current_lang == 'ar' %}مقبول{% else %}Success{% endif %}</p>
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <!-- Received From -->
+    <div class="row mb-4">
+        <div class="col-6">
+            <h5 class="text-uppercase text-secondary fw-semibold mb-2">{% if current_lang == 'ar' %}مستلم من المريض:{% else %}Received From:{% endif %}</h5>
+            <h4 class="mb-1 fw-bold">{{ patient.first_name }} {{ patient.last_name }}</h4>
+            {% if patient.phone %}<p class="mb-1"><strong>{% if current_lang == 'ar' %}الهاتف{% else %}Phone{% endif %}:</strong> {{ patient.phone }}</p>{% endif %}
+        </div>
+        <div class="col-6 text-end">
+            <h5 class="text-uppercase text-secondary fw-semibold mb-2">{% if current_lang == 'ar' %}المبلغ المدفوع:{% else %}Amount Paid:{% endif %}</h5>
+            <h2 class="text-success fw-bold">{{ payment.amount | format_price }} {{ currency_symbol }}</h2>
+        </div>
+    </div>
+
+    <!-- Allocations Print Table -->
+    {% if payment.allocations %}
+    <div class="mb-4">
+        <h5 class="text-uppercase text-secondary fw-semibold mb-2">{% if current_lang == 'ar' %}تسوية الفواتير{% else %}Allocated to Invoices{% endif %}</h5>
+        <table class="table table-bordered print-table">
+            <thead class="table-light">
+                <tr>
+                    <th>{% if current_lang == 'ar' %}رقم الفاتورة{% else %}Invoice Number{% endif %}</th>
+                    <th>{% if current_lang == 'ar' %}تاريخ الفاتورة{% else %}Invoice Date{% endif %}</th>
+                    <th class="text-end">{% if current_lang == 'ar' %}قيمة الفاتورة{% else %}Invoice Amount{% endif %}</th>
+                    <th class="text-end">{% if current_lang == 'ar' %}المبلغ المخصص للمدفوع{% else %}Amount Settled{% endif %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for allocation in payment.allocations %}
+                <tr>
+                    <td><strong><bdi dir="ltr">{{ allocation.invoice.invoice_number }}</bdi></strong></td>
+                    <td>{{ allocation.invoice.issue_date.strftime('%Y-%m-%d') }}</td>
+                    <td class="text-end">{{ allocation.invoice.total_amount | format_price }} {{ currency_symbol }}</td>
+                    <td class="text-end text-success fw-bold">{{ allocation.amount | format_price }} {{ currency_symbol }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Unallocated Credit -->
+    <div class="row justify-content-end mb-4">
+        <div class="col-6 text-end">
+            <p class="mb-1"><strong>{% if current_lang == 'ar' %}إجمالي المخصص{% else %}Total Allocated{% endif %}:</strong> {{ payment.allocated_amount | format_price }} {{ currency_symbol }}</p>
+            <p class="mb-0 fs-5 text-warning"><strong>{% if current_lang == 'ar' %}الرصيد المتبقي (غير مخصص){% else %}Unallocated Credit{% endif %}:</strong> {{ payment.unallocated_amount | format_price }} {{ currency_symbol }}</p>
+        </div>
+    </div>
+
+    <!-- Footer Section -->
+    <div class="d-flex justify-content-between align-items-end mt-5 pt-4 border-top">
+        <div class="text-center" style="width: 150px;">
+        </div>
+        <div class="text-center pe-4">
+            <div class="mb-5 text-muted">{% if current_lang == 'ar' %}توقيع وخاتم المسؤول{% else %}Authorized Signature & Seal{% endif %}</div>
+            <div style="border-bottom: 1px solid #000; width: 200px;"></div>
+        </div>
+    </div>
+</div>

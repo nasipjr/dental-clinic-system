@@ -1,0 +1,67 @@
+<!-- ═══════════════════════════════════════════
+     Edit User Modal
+     ═══════════════════════════════════════════ -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content settings-modal">
+            <div class="modal-header border-0 pb-0 d-flex align-items-center justify-content-between w-100">
+                <h5 class="modal-title fw-bold mb-0" id="editUserModalLabel">
+                    <i class="bi bi-pencil-square me-2" style="color: #ffd666;"></i>Edit User Account
+                </h5>
+                <button type="button" class="btn-close ms-0 me-auto m-0" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <form id="editUserForm" method="POST" action="">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body py-4">
+                    <div class="mb-3">
+                        <label for="edit_username" class="settings-label">Username</label>
+                        <input type="text" class="form-control settings-input" id="edit_username" name="username"
+                            required placeholder="Enter username">
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_password" class="settings-label">New Password <span
+                                class="settings-hint-inline">(leave blank to keep current)</span></label>
+                        <input type="password" class="form-control settings-input" id="edit_password" name="password"
+                            placeholder="Enter new password (optional)">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label for="edit_first_name" class="settings-label">First Name</label>
+                            <input type="text" class="form-control settings-input" id="edit_first_name"
+                                name="first_name" placeholder="First name">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edit_last_name" class="settings-label">Last Name</label>
+                            <input type="text" class="form-control settings-input" id="edit_last_name" name="last_name"
+                                placeholder="Last name">
+                        </div>
+                    </div>
+                    <div class="mb-3" id="edit_role_wrapper">
+                        <label for="edit_role" class="settings-label">{% if current_lang == 'ar' %}دور النظام{% else %}System Role{% endif %}</label>
+                        <select class="form-select settings-input" id="edit_role" name="role">
+                            <option value="receptionist">{% if current_lang == 'ar' %}موظف استقبال{% else %}Receptionist{% endif %}</option>
+                            <option value="doctor">{% if current_lang == 'ar' %}طبيب معالج{% else %}Doctor{% endif %}</option>
+                            <option value="admin">{% if current_lang == 'ar' %}مدير النظام{% else %}Admin{% endif %}</option>
+                            <option value="patient" class="d-none">{% if current_lang == 'ar' %}مريض{% else %}Patient{% endif %}</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="edit_patient_role_info" style="display: none;">
+                        <label class="settings-label">{% if current_lang == 'ar' %}دور النظام{% else %}System Role{% endif %}</label>
+                        <div class="p-2.5 rounded-3 bg-dark border border-secondary text-info d-flex align-items-center gap-2 small">
+                            <i class="bi bi-person-badge fs-5"></i>
+                            <span>{% if current_lang == 'ar' %}حساب مريض (بوابة إلكترونية - دور ثابت){% else %}Patient Account (Fixed Portal Role){% endif %}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-3"
+                        data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">
+                        <i class="bi bi-check-circle me-1"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

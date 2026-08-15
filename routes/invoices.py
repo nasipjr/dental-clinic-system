@@ -30,7 +30,7 @@ def get_invoices_context():
     patient_filter_obj = None
     if patient_id:
         query = query.filter(Invoice.patient_id == patient_id)
-        patient_filter_obj = Patient.query.get(patient_id)
+        patient_filter_obj = db.session.get(Patient, patient_id)
 
     if search_query:
         clean_search = search_query
@@ -343,7 +343,7 @@ def add_invoice():
                     "procedure_type": procedure_type,
                     "tooth_number": tooth_number,
                     "notes": notes,
-                    "total_cost": TREATMENT_PRICES[procedure_type],
+                    "total_cost": get_treatment_prices().get(procedure_type, TREATMENT_PRICES.get(procedure_type, 0.0)),
                 })
 
             if not invoice_items:

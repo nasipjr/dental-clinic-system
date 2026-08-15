@@ -1,0 +1,75 @@
+{# Shared Odontogram Macros & Positions #}
+
+{% macro render_tooth_svg(i, is_lower) %}
+{% set i = i | int %}
+{% if i in [1, 2, 3, 14, 15, 16, 17, 18, 19, 30, 31, 32] %}
+    <!-- Molar -->
+    <svg viewBox="0 0 20 30" width="20" height="28" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
+        <path d="M 2 7 C 2 3, 18 3, 18 7 C 18 13, 16 17, 15 23 C 14 26, 11 28, 10 28 C 9 28, 6 26, 5 23 C 4 13, 2 7, 2 7 Z" fill="none" stroke="currentColor" stroke-width="1.5" />
+        <path d="M 5 7 Q 10 10 15 7" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4" />
+        <path d="M 10 8 L 10 18" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3" />
+    </svg>
+{% elif i in [4, 5, 12, 13, 20, 21, 28, 29] %}
+    <!-- Premolar -->
+    <svg viewBox="0 0 20 30" width="18" height="26" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
+        <path d="M 3 8 C 3 4, 17 4, 17 8 C 17 13, 15 17, 14 23 C 13 26, 11 28, 10 28 C 9 28, 7 26, 6 23 C 5 13, 3 8, 3 8 Z" fill="none" stroke="currentColor" stroke-width="1.5" />
+        <path d="M 6 8 Q 10 11 14 8" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4" />
+    </svg>
+{% elif i in [6, 11, 22, 27] %}
+    <!-- Canine -->
+    <svg viewBox="0 0 20 30" width="16" height="24" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
+        <path d="M 10 2 C 11 2, 16 5, 16 8 C 16 13, 14 17, 13 23 C 12 26, 11 28, 10 28 C 9 28, 8 26, 7 23 C 6 13, 4 8, 4 8 C 4 5, 9 2, 10 2 Z" fill="none" stroke="currentColor" stroke-width="1.5" />
+        <path d="M 6 8 Q 10 11 14 8" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4" />
+    </svg>
+{% else %}
+    <!-- Incisor -->
+    <svg viewBox="0 0 20 30" width="15" height="22" class="tooth-svg {% if is_lower %}rotate-180{% endif %}">
+        <path d="M 4 6 C 4 4, 16 4, 16 6 L 14 22 C 14 25, 12 28, 10 28 C 8 28, 6 25, 6 22 Z" fill="none" stroke="currentColor" stroke-width="1.5" />
+    </svg>
+{% endif %}
+{% endmacro %}
+
+{% set fdi_map = {
+    1: '18', 2: '17', 3: '16', 4: '15', 5: '14', 6: '13', 7: '12', 8: '11',
+    9: '21', 10: '22', 11: '23', 12: '24', 13: '25', 14: '26', 15: '27', 16: '28',
+    17: '38', 18: '37', 19: '36', 20: '35', 21: '34', 22: '33', 23: '32', 24: '31',
+    25: '41', 26: '42', 27: '43', 28: '44', 29: '45', 30: '46', 31: '47', 32: '48'
+} %}
+
+{% set upper_arch_positions = {
+    1:  {'x': '8.2%',  'y': '37.0%', 'r': '-85deg'},
+    2:  {'x': '9.7%',  'y': '30.4%', 'r': '-74deg'},
+    3:  {'x': '12.8%', 'y': '24.2%', 'r': '-62deg'},
+    4:  {'x': '17.4%', 'y': '18.6%', 'r': '-51deg'},
+    5:  {'x': '23.2%', 'y': '13.8%', 'r': '-40deg'},
+    6:  {'x': '30.1%', 'y': '10.1%', 'r': '-28deg'},
+    7:  {'x': '37.7%', 'y': '7.5%',  'r': '-17deg'},
+    8:  {'x': '45.9%', 'y': '6.2%',  'r': '-6deg'},
+    9:  {'x': '54.1%', 'y': '6.2%',  'r': '6deg'},
+    10: {'x': '62.3%', 'y': '7.5%',  'r': '17deg'},
+    11: {'x': '69.9%', 'y': '10.1%', 'r': '28deg'},
+    12: {'x': '76.8%', 'y': '13.8%', 'r': '40deg'},
+    13: {'x': '82.6%', 'y': '18.6%', 'r': '51deg'},
+    14: {'x': '87.2%', 'y': '24.2%', 'r': '62deg'},
+    15: {'x': '90.3%', 'y': '30.4%', 'r': '74deg'},
+    16: {'x': '91.8%', 'y': '37.0%', 'r': '85deg'}
+} %}
+
+{% set lower_arch_positions = {
+    32: {'x': '8.2%',  'y': '63.0%', 'r': '85deg'},
+    31: {'x': '9.7%',  'y': '69.6%', 'r': '74deg'},
+    30: {'x': '12.8%', 'y': '75.8%', 'r': '62deg'},
+    29: {'x': '17.4%', 'y': '81.4%', 'r': '51deg'},
+    28: {'x': '23.2%', 'y': '86.2%', 'r': '40deg'},
+    27: {'x': '30.1%', 'y': '89.9%', 'r': '28deg'},
+    26: {'x': '37.7%', 'y': '92.5%', 'r': '17deg'},
+    25: {'x': '45.9%', 'y': '93.8%', 'r': '6deg'},
+    24: {'x': '54.1%', 'y': '93.8%', 'r': '-6deg'},
+    23: {'x': '62.3%', 'y': '92.5%', 'r': '-17deg'},
+    22: {'x': '69.9%', 'y': '89.9%', 'r': '-28deg'},
+    21: {'x': '76.8%', 'y': '86.2%', 'r': '-40deg'},
+    20: {'x': '82.6%', 'y': '81.4%', 'r': '-51deg'},
+    19: {'x': '87.2%', 'y': '75.8%', 'r': '-62deg'},
+    18: {'x': '90.3%', 'y': '69.6%', 'r': '-74deg'},
+    17: {'x': '91.8%', 'y': '63.0%', 'r': '-85deg'}
+} %}

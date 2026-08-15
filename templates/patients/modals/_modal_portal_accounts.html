@@ -1,0 +1,65 @@
+<!-- Create Portal Account Modal -->
+<div class="modal fade" id="createPortalModal" tabindex="-1" aria-labelledby="createPortalModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--surface-color); border: 1px solid color-mix(in srgb, var(--accent-color), transparent 85%); border-radius: 20px; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title" id="createPortalModalLabel" style="font-weight: 700; color: var(--heading-color); font-family: var(--heading-font);">{% if current_lang == 'ar' %}إنشاء حساب في بوابة المريض{% else %}Create Portal Account{% endif %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('patients.create_portal_account', patient_id=patient.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body py-4">
+                    <p class="text-muted small mb-4">{% if current_lang == 'ar' %}قم بإعداد حساب للمريض ليمكنه تسجيل الدخول واستعراض أو طلب المواعيد.{% else %}Set up a patient portal account so the patient can log in and view or request appointments.{% endif %}</p>
+                    
+                    <div class="mb-3">
+                        <label for="portal-username" class="form-label fw-semibold" style="color: var(--heading-color); margin-bottom: 6px;">{% if current_lang == 'ar' %}اسم المستخدم{% else %}Username{% endif %}</label>
+                        <input type="text" id="portal-username" name="username" class="form-control rounded-3" placeholder="{% if current_lang == 'ar' %}مثال: {{ patient.first_name|lower }}{{ patient.last_name|lower }}{% else %}e.g. {{ patient.first_name|lower }}{{ patient.last_name|lower }}{% endif %}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="portal-password" class="form-label fw-semibold" style="color: var(--heading-color); margin-bottom: 6px;">{% if current_lang == 'ar' %}كلمة المرور{% else %}Password{% endif %}</label>
+                        <input type="password" id="portal-password" name="password" class="form-control rounded-3" placeholder="{% if current_lang == 'ar' %}6 أحرف على الأقل{% else %}At least 6 characters{% endif %}" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 d-flex justify-content-center gap-2 pb-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">{% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">{% if current_lang == 'ar' %}إنشاء الحساب{% else %}Create Account{% endif %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Portal Password Modal -->
+{% if patient.user %}
+<div class="modal fade" id="resetPortalPasswordModal" tabindex="-1" aria-labelledby="resetPortalPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--surface-color); border: 1px solid color-mix(in srgb, var(--accent-color), transparent 85%); border-radius: 20px; box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title" id="resetPortalPasswordModalLabel" style="font-weight: 700; color: var(--heading-color); font-family: var(--heading-font);">{% if current_lang == 'ar' %}تغيير كلمة سر بوابة المريض{% else %}Change Patient Portal Password{% endif %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('patients.reset_portal_account_password', patient_id=patient.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body py-4">
+                    <p class="text-muted small mb-4">{% if current_lang == 'ar' %}أدخل كلمة المرور الجديدة للمريض. سيتم إرسال إشعار للمريض بكلمة المرور الجديدة عبر التلغرام تلقائياً إذا كان حسابه مرتبطاً.{% else %}Enter the new password for this patient. A Telegram alert with the new password will be automatically sent to the patient if linked.{% endif %}</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" style="color: var(--heading-color); margin-bottom: 6px;">{% if current_lang == 'ar' %}اسم المستخدم{% else %}Username{% endif %}</label>
+                        <input type="text" class="form-control rounded-3 bg-light" value="{{ patient.user.username }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="detail-portal-password" class="form-label fw-semibold" style="color: var(--heading-color); margin-bottom: 6px;">{% if current_lang == 'ar' %}كلمة المرور الجديدة{% else %}New Password{% endif %}</label>
+                        <input type="password" id="detail-portal-password" name="password" class="form-control rounded-3" placeholder="{% if current_lang == 'ar' %}6 أحرف على الأقل{% else %}At least 6 characters{% endif %}" required minlength="6">
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 d-flex justify-content-center gap-2 pb-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">{% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">{% if current_lang == 'ar' %}حفظ كلمة المرور{% else %}Save Password{% endif %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}

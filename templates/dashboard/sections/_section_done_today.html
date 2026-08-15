@@ -1,0 +1,134 @@
+<!-- ═══════════ Done Today Section ═══════════ -->
+<div class="container section-title" data-aos="fade-up">
+    <h2>{% if current_lang == 'ar' %}المواعيد المنجزة اليوم{% else %}Done Today{% endif %}</h2>
+    <p>{% if current_lang == 'ar' %}المواعيد التي تم إنجازها اليوم مع ملخص المعالجات والدفعات المالية.{% else %}Appointments completed today with treatment and payment summary.{% endif %}</p>
+</div>
+
+<section id="done-today-section" class="find-a-doctor section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+      {% if today_done_appointments %}
+      <div class="appointments-table-wrapper table-responsive">
+        <table class="table appointments-table align-middle" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
+          <thead>
+            <tr>
+              <th>{% if current_lang == 'ar' %}الوقت{% else %}Time{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}السبب{% else %}Reason{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}المعالجات{% else %}Treatments{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}الطبيب المعالج{% else %}Doctor{% endif %}</th>
+              {% if current_user.role in ('admin', 'receptionist') %}
+              <th>{% if current_lang == 'ar' %}إجمالي الفواتير{% else %}Total Invoices{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}المدفوعات{% else %}Payments{% endif %}</th>
+              <th>{% if current_lang == 'ar' %}المتبقي / رصيد{% else %}Outstanding / Credit{% endif %}</th>
+              {% endif %}
+              <th class="text-center">{% if current_lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for appointment in today_done_appointments %}
+            {% set invoice_total = appointment.invoice_total %}
+            {% set total_paid = appointment.total_paid %}
+            {% set balance = appointment.balance %}
+            {% set credit = appointment.credit %}
+
+            <tr>
+              <td>
+                {{ appointment.appointment_date.strftime('%I:%M %p') if appointment.appointment_date else ('بدون وقت' if current_lang == 'ar' else 'No time') }}
+              </td>
+
+              <td>
+                <strong>
+                  {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                </strong>
+                <br>
+                <small class="text-muted">{{ appointment.patient.phone or ('لا يوجد هاتف' if current_lang == 'ar' else 'No phone number') }}</small>
+              </td>
+
+              <td>
+                {{ appointment.reason or ('لم يحدد' if current_lang == 'ar' else 'No reason provided') }}
+              </td>
+
+              <td>
+                {{ appointment.treatments|length }}
+              </td>
+
+              <td>
+                {% set doc = appointment.attending_doctor or appointment.doctor %}
+                {% if doc %}
+                  <span class="doctor-badge">
+                    <i class="bi bi-person-badge"></i>{{ doc.display_name }}
+                  </span>
+                {% else %}
+                  <span class="text-muted" style="font-size: 0.82rem;">-</span>
+                {% endif %}
+              </td>
+
+              {% if current_user.role in ('admin', 'receptionist') %}
+              <td>
+                {{ invoice_total | format_price }} {{ currency_symbol }}
+              </td>
+
+              <td>
+                {{ total_paid | format_price }} {{ currency_symbol }}
+              </td>
+
+              <td>
+                {% if credit > 0 %}
+                <span class="credit-amount">
+                  {{ credit | format_price }} {{ currency_symbol }}
+                  <span class="credit-badge">{% if current_lang == 'ar' %}دائن{% else %}Credit{% endif %}</span>
+                </span>
+                {% elif balance > 0 %}
+                <span class="remaining-due">
+                  {{ balance | format_price }} {{ currency_symbol }}
+                  <span class="due-badge">{% if current_lang == 'ar' %}متبقي{% else %}Due{% endif %}</span>
+                </span>
+                {% else %}
+                <span class="remaining-clear">
+                  0 {{ currency_symbol }}
+                  <span class="paid-badge">{% if current_lang == 'ar' %}مسدد{% else %}Paid{% endif %}</span>
+                </span>
+                {% endif %}
+              </td>
+              {% endif %}
+
+              <td class="text-center">
+                <div class="appointments-actions">
+                  <a href="{{ url_for('appointments.view_appointment', appointment_id=appointment.id) }}"
+                    class="table-action-btn view-btn" title="{% if current_lang == 'ar' %}عرض الموعد{% else %}View Appointment{% endif %}">
+                    <i class="bi bi-eye"></i>
+                  </a>
+
+                  {% if current_user.role in ('admin', 'receptionist') or (current_user.role == 'doctor' and (not appointment.doctor_id or appointment.doctor_id == current_user.id) and appointment.status != 'Cancelled') %}
+                  <a href="{{ url_for('treatments.appointment_session', appointment_id=appointment.id) }}"
+                    class="table-action-btn session-btn" title="{% if current_lang == 'ar' %}فتح الجلسة{% else %}Open Session{% endif %}">
+                    <i class="bi bi-clipboard2-pulse"></i>
+                  </a>
+                  {% endif %}
+
+                  {% if current_user.role in ('admin', 'receptionist') %}
+                  <a href="{{ url_for('payments.add_patient_payment', patient_id=appointment.patient_id) }}"
+                    class="table-action-btn edit-btn" title="{% if current_lang == 'ar' %}إضافة دفعة للمريض{% else %}Add Payment{% endif %}">
+                    <i class="bi bi-cash-coin"></i>
+                  </a>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% else %}
+      <div class="empty-state-card text-center">
+        <i class="bi bi-check-circle"></i>
+        <h4>{% if current_lang == 'ar' %}لا توجد مواعيد منجزة اليوم{% else %}No completed appointments today{% endif %}</h4>
+        <p>{% if current_lang == 'ar' %}ستظهر المواعيد المنجزة هنا بعد استخدام زر إنهاء الجلسة.{% else %}Completed appointment sessions will appear here after using End Session.{% endif %}</p>
+      </div>
+      {% endif %}
+
+    </div>
+</section>

@@ -234,6 +234,10 @@ def load_logged_in_user():
         g.current_user = None
     else:
         g.current_user = db.session.get(User, user_id)
+        if g.current_user:
+            session["role"] = g.current_user.role
+        else:
+            g.current_user = None
 
 
 @app.before_request

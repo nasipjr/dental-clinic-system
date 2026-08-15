@@ -135,7 +135,9 @@ def settings_page():
                             "category": cat_val
                         }
                 
-                # Guarantee essential system procedures (like 'قلع سن عادي' and 'معالجة ما بعد القلع') are preserved
+                # Guarantee essential system procedures (like 'جلسة فحص و استشارة', 'قلع سن عادي', and 'معالجة ما بعد القلع') are preserved
+                if not any(k in treatment_dict for k in ["جلسة فحص و استشارة", "جلسة فحص واستشارة", "فحص دوري واستشارة", "فحص دوري", "Check-up", "Clinical Examination & Consultation"]):
+                    treatment_dict["جلسة فحص و استشارة"] = {"price": 50000, "duration": 15, "active": True, "category": "فحص وتشخيص"}
                 if "قلع سن" not in treatment_dict and "قلع سن عادي" not in treatment_dict:
                     treatment_dict["قلع سن عادي"] = {"price": 80000, "duration": 30, "active": True, "category": "جراحة وقلع"}
                 if "معالجة ما بعد القلع" not in treatment_dict:
@@ -562,14 +564,25 @@ def delete_backup(filename):
 def test_sms():
     from flask import jsonify
     from utils.notification_helper import send_commpeak_sms
+    is_ar = request.cookies.get('lang', 'ar') != 'en'
+
     phone = request.form.get("phone", "").strip()
     api_key = request.form.get("api_key", "").strip() or None
     stream_id = request.form.get("stream_id", "").strip() or None
 
     if not phone:
-        return jsonify({"success": False, "message": "Please enter a phone number."})
-    body = "Test SMS from Dental Clinic MS. CommPeak is working!"
+        msg = "يرجى إدخال رقم الهاتف للتجربة." if is_ar else "Please enter a phone number."
+        return jsonify({"success": False, "message": msg})
+
+    body = "اختبار رسالة SMS من نظام عيادة الأسنان. البوابة تعمل بنجاح! ✅" if is_ar else "Test SMS from Dental Clinic MS. CommPeak is working!"
     success, msg = send_commpeak_sms(phone, body, api_key=api_key, stream_id=stream_id)
+    if success and "Mock Sent" in msg:
+        msg = "تمت محاكاة الإرسال بنجاح (مفاتيح API غير مضبوطة)." if is_ar else msg
+    elif success:
+        msg = "تم إرسال رسالة SMS التجريبية بنجاح! ✅" if is_ar else msg
+    else:
+        msg = f"فشل الإرسال: {msg}" if is_ar else msg
+
     return jsonify({"success": success, "message": msg})
 
 
@@ -578,6 +591,8 @@ def test_sms():
 def test_email():
     from flask import jsonify
     from utils.notification_helper import send_smtp_email
+    is_ar = request.cookies.get('lang', 'ar') != 'en'
+
     email = request.form.get("email", "").strip()
     smtp_host = request.form.get("smtp_host", "").strip() or None
     smtp_port = request.form.get("smtp_port", "").strip() or None
@@ -586,17 +601,28 @@ def test_email():
     smtp_from_email = request.form.get("smtp_from_email", "").strip() or None
 
     if not email:
-        return jsonify({"success": False, "message": "Please enter an email address."})
+        msg = "يرجى إدخال عنوان البريد الإلكتروني للتجربة." if is_ar else "Please enter an email address."
+        return jsonify({"success": False, "message": msg})
+
+    subject = "تجربة بريد إلكتروني — نظام إدارة عيادة الأسنان" if is_ar else "Test Email — Dental Clinic MS"
+    body = "هذه رسالة اختبار من نظام عيادة الأسنان. خادم البريد SMTP يعمل بنجاح! ✅" if is_ar else "Test email from Dental Clinic MS. SMTP is working!"
     success, msg = send_smtp_email(
         email,
-        "Test Email — Dental Clinic MS",
-        "Test email from Dental Clinic MS. SMTP is working!",
+        subject,
+        body,
         smtp_host=smtp_host,
         smtp_port=smtp_port,
         smtp_user=smtp_user,
         smtp_password=smtp_password,
         from_email=smtp_from_email
     )
+    if success and "Mock Sent" in msg:
+        msg = "تمت محاكاة الإرسال بنجاح (بيانات SMTP غير مضبوطة)." if is_ar else msg
+    elif success:
+        msg = "تم إرسال البريد الإلكتروني التجريبي بنجاح! ✅" if is_ar else msg
+    else:
+        msg = f"فشل الإرسال: {msg}" if is_ar else msg
+
     return jsonify({"success": success, "message": msg})
 
 
@@ -605,13 +631,24 @@ def test_email():
 def test_telegram():
     from flask import jsonify
     from utils.notification_helper import send_telegram_message
+    is_ar = request.cookies.get('lang', 'ar') != 'en'
+
     chat_id = request.form.get("chat_id", "").strip()
     bot_token = request.form.get("bot_token", "").strip() or None
 
     if not chat_id:
-        return jsonify({"success": False, "message": "Please enter a Chat ID."})
-    body = "Test from Dental Clinic MS. Telegram Bot is working!"
+        msg = "يرجى إدخال معرّف المحادثة (Chat ID)." if is_ar else "Please enter a Chat ID."
+        return jsonify({"success": False, "message": msg})
+
+    body = "اختبار رسالة تيليغرام من نظام عيادة الأسنان. البوت يعمل بنجاح! ✅" if is_ar else "Test from Dental Clinic MS. Telegram Bot is working!"
     success, msg = send_telegram_message(chat_id, body, bot_token=bot_token)
+    if success and "Mock Sent" in msg:
+        msg = "تمت محاكاة الإرسال بنجاح (توكن البوت غير مفعّل بعد)." if is_ar else msg
+    elif success:
+        msg = "تم إرسال رسالة الاختبار عبر تيليغرام بنجاح! ✅" if is_ar else msg
+    else:
+        msg = f"فشل الإرسال: {msg}" if is_ar else msg
+
     return jsonify({"success": success, "message": msg})
 
 
@@ -695,6 +732,26 @@ def check_system_update():
         })
 
 
+def reset_db_auto_increments(tables=None):
+    """Resets MySQL/MariaDB AUTO_INCREMENT and SQLite sqlite_sequence counters back to 1."""
+    from models import db
+    if tables is None:
+        tables = [
+            "payment_allocation", "payment", "invoice", "treatment", "appointment",
+            "tooth_history", "treatment_plan_item", "patient_file", "notification_log",
+            "expense", "staff_salary", "patient", "user", "system_setting"
+        ]
+    for tbl in tables:
+        try:
+            db.session.execute(db.text(f"ALTER TABLE `{tbl}` AUTO_INCREMENT = 1;"))
+        except Exception:
+            pass
+        try:
+            db.session.execute(db.text(f"DELETE FROM sqlite_sequence WHERE name = '{tbl}';"))
+        except Exception:
+            pass
+
+
 @settings_bp.route("/settings/reset-clinic", methods=["POST"])
 @role_required("admin")
 def reset_clinic():
@@ -702,7 +759,7 @@ def reset_clinic():
     while preserving system settings, notification configurations/tokens, and user accounts.
     Requires admin username & password verification."""
     from models import (
-        db, User, Patient, Appointment, Treatment, ToothHistory,
+        db, User, Patient, Appointment, Treatment, ToothHistory, TreatmentPlanItem,
         Invoice, Payment, PaymentAllocation, PatientFile, NotificationLog, Expense
     )
     is_ar = request.cookies.get('lang', 'ar') != 'en'
@@ -749,10 +806,18 @@ def reset_clinic():
         db.session.query(Treatment).delete(synchronize_session=False)
         db.session.query(Appointment).delete(synchronize_session=False)
         db.session.query(ToothHistory).delete(synchronize_session=False)
+        db.session.query(TreatmentPlanItem).delete(synchronize_session=False)
         db.session.query(PatientFile).delete(synchronize_session=False)
         db.session.query(NotificationLog).delete(synchronize_session=False)
         db.session.query(Expense).delete(synchronize_session=False)
         db.session.query(Patient).delete(synchronize_session=False)
+
+        # Reset auto-increment counters for clinical & operational tables back to 1
+        reset_db_auto_increments([
+            "payment_allocation", "payment", "invoice", "treatment", "appointment",
+            "tooth_history", "treatment_plan_item", "patient_file", "notification_log",
+            "expense", "patient"
+        ])
 
         # Re-enable foreign key checks
         try:
@@ -765,6 +830,7 @@ def reset_clinic():
             pass
 
         db.session.commit()
+        db.session.expunge_all()
 
         # 4. Remove physical patient upload files if present
         import os
@@ -781,7 +847,7 @@ def reset_clinic():
                 except Exception as fe:
                     current_app.logger.warning(f"Could not delete file {item_path}: {fe}")
 
-        msg = "تمت إعادة ضبط العيادة وتصفير كافة البيانات بنجاح، مع الاحتفاظ بجميع الإعدادات والتوكنز وحسابات المستخدمين." if is_ar else "Clinic database reset successfully. All settings, tokens, and user accounts have been preserved."
+        msg = "تمت إعادة ضبط العيادة وتصفير كافة البيانات بنجاح، وتصفير الترقيم التلقائي للسجلات ليبدأ من 1 مجدداً." if is_ar else "Clinic database reset successfully. Auto-increment IDs reset to start from 1."
         flash(msg, "success")
 
     except Exception as e:
@@ -797,16 +863,18 @@ def reset_clinic():
 @role_required("admin")
 def factory_reset_clinic():
     """Performs a full factory reset of the clinic system:
-    - Wipes all patients, appointments, treatments, tooth histories, invoices, payments, allocations, files, expenses, notification logs.
-    - Wipes ALL user accounts.
+    - Wipes all patients, appointments, treatments, tooth histories, treatment plans, invoices, payments, allocations, files, expenses, notification logs.
+    - Wipes ALL user accounts and staff salary configurations.
     - Wipes SystemSetting table and re-populates default settings.
     - Deletes uploaded files.
+    - Resets all table AUTO_INCREMENT counters to 1.
     - Creates single default admin account (username: 'admin', password: 'admin123', role: 'admin').
     - Clears session and redirects to login page.
     """
     from models import (
-        db, User, Patient, Appointment, Treatment, ToothHistory,
-        Invoice, Payment, PaymentAllocation, PatientFile, NotificationLog, Expense, SystemSetting
+        db, User, Patient, Appointment, Treatment, ToothHistory, TreatmentPlanItem,
+        Invoice, Payment, PaymentAllocation, PatientFile, NotificationLog, Expense,
+        StaffSalary, SystemSetting
     )
     from utils.settings_helper import populate_default_settings
     from flask import session, g
@@ -852,9 +920,11 @@ def factory_reset_clinic():
         db.session.query(Treatment).delete(synchronize_session=False)
         db.session.query(Appointment).delete(synchronize_session=False)
         db.session.query(ToothHistory).delete(synchronize_session=False)
+        db.session.query(TreatmentPlanItem).delete(synchronize_session=False)
         db.session.query(PatientFile).delete(synchronize_session=False)
         db.session.query(NotificationLog).delete(synchronize_session=False)
         db.session.query(Expense).delete(synchronize_session=False)
+        db.session.query(StaffSalary).delete(synchronize_session=False)
         db.session.query(Patient).delete(synchronize_session=False)
 
         # 3. Delete ALL Users
@@ -862,6 +932,13 @@ def factory_reset_clinic():
 
         # 4. Delete SystemSetting rows
         db.session.query(SystemSetting).delete(synchronize_session=False)
+
+        # Reset auto-increment counters for ALL tables back to 1
+        reset_db_auto_increments([
+            "payment_allocation", "payment", "invoice", "treatment", "appointment",
+            "tooth_history", "treatment_plan_item", "patient_file", "notification_log",
+            "expense", "staff_salary", "patient", "user", "system_setting"
+        ])
 
         # Re-enable foreign key checks
         try:
@@ -874,6 +951,7 @@ def factory_reset_clinic():
             pass
 
         db.session.commit()
+        db.session.expunge_all()
 
         # 5. Re-populate default system settings
         populate_default_settings()

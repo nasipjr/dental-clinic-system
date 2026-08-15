@@ -1,0 +1,486 @@
+<!-- ═══════════ Notifications Tab ═══════════ -->
+<div class="tab-pane fade" id="tab-notifications" role="tabpanel">
+    <div class="settings-tab-header">
+        <div class="settings-tab-icon"><i class="bi bi-bell"></i></div>
+        <div>
+            <h4>Notifications & Reminders</h4>
+            <p>Configure automated reminders via Email, SMS, and WhatsApp</p>
+        </div>
+    </div>
+
+    <!-- Tab Sub-navigation (Settings vs. Logs) -->
+    <ul class="nav nav-tabs border-bottom mb-4 mt-3" id="notificationSubTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold text-main" id="notif-config-tab"
+                data-bs-toggle="tab" data-bs-target="#notif-config-pane" type="button"
+                role="tab" style="font-size: 0.9rem;">
+                <i class="bi bi-gear-fill me-1"></i> Setup & API Keys
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold text-main" id="notif-logs-tab" data-bs-toggle="tab"
+                data-bs-target="#notif-logs-pane" type="button" role="tab"
+                style="font-size: 0.9rem;">
+                <i class="bi bi-journal-text me-1"></i> Sent Notification Log
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="notificationSubTabsContent">
+        <!-- Setup & API Keys Pane -->
+        <div class="tab-pane fade show active" id="notif-config-pane" role="tabpanel">
+            <div class="row g-4">
+                <!-- Channels Enabling -->
+                <div class="col-md-12">
+                    <h5 class="fw-bold mb-3" style="color: var(--heading-color);">Enable Channels</h5>
+                    <div class="d-flex flex-column gap-2 bg-light p-3 rounded-3" style="background-color: rgba(var(--accent-color-rgb), 0.05) !important;">
+
+                        <!-- Telegram Switch -->
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox"
+                                id="notification_enable_telegram"
+                                name="notification_enable_telegram" form="main-settings-form"
+                                value="true" {% if settings.notification_enable_telegram=='true' %}checked{% endif %}>
+                            <label class="form-check-label fw-semibold" for="notification_enable_telegram">
+                                <i class="bi bi-telegram me-1" style="color:#2CA5E0;"></i>
+                                Enable Telegram Reminders (Free — Recommended for Syria)
+                            </label>
+                            <div class="text-muted small">Sends appointment reminders via Telegram Bot. Completely free — no per-message cost.</div>
+                        </div>
+                        <hr class="my-2 opacity-25">
+
+                        <!-- SMS Switch -->
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox"
+                                id="notification_enable_sms" name="notification_enable_sms"
+                                form="main-settings-form" value="true" {% if settings.notification_enable_sms=='true' %}checked{% endif %}>
+                            <label class="form-check-label fw-semibold" for="notification_enable_sms">
+                                <i class="bi bi-chat-dots me-1" style="color:#25D366;"></i>
+                                Enable SMS Reminders (CommPeak — Syriatel &amp; MTN Syria)
+                            </label>
+                            <div class="text-muted small">Sends text messages to patient mobile numbers via CommPeak gateway (supports Syrian numbers).</div>
+                        </div>
+                        <hr class="my-2 opacity-25">
+
+                        <!-- Email Switch -->
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox"
+                                id="notification_enable_email" name="notification_enable_email"
+                                form="main-settings-form" value="true" {% if settings.notification_enable_email=='true' %}checked{% endif %}>
+                            <label class="form-check-label fw-semibold" for="notification_enable_email">
+                                <i class="bi bi-envelope me-1" style="color:#EA4335;"></i>
+                                Enable Email Reminders (Gmail SMTP)
+                            </label>
+                            <div class="text-muted small">Sends reminder emails to patient email addresses using Gmail or any SMTP server.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Telegram Bot Credentials -->
+                <div class="col-md-12 pt-3 border-top">
+                    <h5 class="fw-bold mb-2" style="color: var(--heading-color);">
+                        <i class="bi bi-telegram me-2" style="color:#2CA5E0;"></i>Telegram Bot Settings
+                    </h5>
+                    <div class="text-secondary small mb-3">
+                        <span>Create a bot via @BotFather on Telegram and paste the token below.</span>
+                        <span>The patient must send /start to the bot first to get a Chat ID.</span>
+                        <a href="https://core.telegram.org/bots#botfather" target="_blank" class="ms-1">Learn more →</a>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label for="telegram_bot_token" class="settings-label">{% if current_lang == 'ar' %}توكن بوت تيليغرام (Telegram Bot Token){% else %}Telegram Bot Token{% endif %}</label>
+                            <input type="password" class="form-control settings-input"
+                                id="telegram_bot_token" name="telegram_bot_token"
+                                form="main-settings-form"
+                                value="{{ settings.telegram_bot_token or '' }}"
+                                placeholder="e.g. 123456789:ABCdefGHIjklMNOpqrstUVwxyz">
+                        </div>
+                        <div class="col-md-8 mt-2">
+                            <label for="test_telegram_chat_id" class="settings-label">{% if current_lang == 'ar' %}معرّف المحادثة للاختبار (Chat ID الخاص بك على تيليغرام){% else %}Test Chat ID (Your Telegram Chat ID){% endif %}</label>
+                            <input type="text" class="form-control settings-input"
+                                id="test_telegram_chat_id" placeholder="e.g. 123456789">
+                        </div>
+                        <div class="col-md-4 mt-2 d-flex align-items-end">
+                            <button type="button" id="btn-test-telegram" class="btn btn-outline-info w-100 rounded-pill py-2">
+                                <i class="bi bi-send-fill me-1"></i> {% if current_lang == 'ar' %}اختبار تيليغرام{% else %}Test Telegram{% endif %}
+                            </button>
+                        </div>
+                        <div class="col-md-12 mt-1" id="test-telegram-result" style="display:none;"></div>
+
+                        <!-- Telegram Templates and Timings -->
+                        <div class="col-md-12 mt-3 pt-3 border-top">
+                            <h6 class="fw-bold mb-2" style="color: var(--heading-color);">Customize Telegram Messages</h6>
+                            <div class="row g-3">
+                                <!-- 24h Toggle -->
+                                <div class="col-md-12">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox"
+                                            id="telegram_24h_enabled" name="telegram_24h_enabled"
+                                            form="main-settings-form" value="true" {% if settings.telegram_24h_enabled=='true' %}checked{% endif %}>
+                                        <label class="form-check-label fw-semibold" for="telegram_24h_enabled">Enable 24-Hour Reminder</label>
+                                    </div>
+                                    <textarea class="form-control settings-input"
+                                        id="telegram_24h_template" name="telegram_24h_template"
+                                        form="main-settings-form" rows="2"
+                                        placeholder="Enter message template for 24h reminder">{{ settings.telegram_24h_template or '' }}</textarea>
+                                </div>
+                                <!-- 2h Toggle -->
+                                <div class="col-md-12">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox"
+                                            id="telegram_2h_enabled" name="telegram_2h_enabled"
+                                            form="main-settings-form" value="true" {% if settings.telegram_2h_enabled=='true' %}checked{% endif %}>
+                                        <label class="form-check-label fw-semibold" for="telegram_2h_enabled">Enable 2-Hour Reminder</label>
+                                    </div>
+                                    <textarea class="form-control settings-input"
+                                        id="telegram_2h_template" name="telegram_2h_template"
+                                        form="main-settings-form" rows="2"
+                                        placeholder="Enter message template for 2h reminder">{{ settings.telegram_2h_template or '' }}</textarea>
+                                </div>
+                                <!-- Cancel Toggle -->
+                                <div class="col-md-12">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox"
+                                            id="telegram_cancel_enabled" name="telegram_cancel_enabled"
+                                            form="main-settings-form" value="true" {% if settings.telegram_cancel_enabled=='true' %}checked{% endif %}>
+                                        <label class="form-check-label fw-semibold" for="telegram_cancel_enabled">Enable Cancellation Notification</label>
+                                    </div>
+                                    <textarea class="form-control settings-input"
+                                        id="telegram_cancel_template" name="telegram_cancel_template"
+                                        form="main-settings-form" rows="2"
+                                        placeholder="Enter message template for cancellation">{{ settings.telegram_cancel_template or '' }}</textarea>
+                                </div>
+                                <!-- Reschedule Toggle -->
+                                <div class="col-md-12">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox"
+                                            id="telegram_reschedule_enabled" name="telegram_reschedule_enabled"
+                                            form="main-settings-form" value="true" {% if settings.telegram_reschedule_enabled=='true' %}checked{% endif %}>
+                                        <label class="form-check-label fw-semibold" for="telegram_reschedule_enabled">Enable Reschedule Notification</label>
+                                    </div>
+                                    <textarea class="form-control settings-input"
+                                        id="telegram_reschedule_template" name="telegram_reschedule_template"
+                                        form="main-settings-form" rows="2"
+                                        placeholder="Enter message template for reschedule">{{ settings.telegram_reschedule_template or '' }}</textarea>
+                                </div>
+                                <!-- Help text for placeholders -->
+                                <div class="col-md-12 text-secondary small">
+                                    <span>Available dynamic tags:</span>
+                                    <code>{patient_name}</code>, <code>{appointment_time}</code>, <code>{clinic_name}</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CommPeak Credentials -->
+                <div class="col-md-12 pt-3 border-top">
+                    <h5 class="fw-bold mb-2" style="color: var(--heading-color);">
+                        <i class="bi bi-chat-dots me-2" style="color:#25D366;"></i>CommPeak Credentials
+                        <span class="badge bg-success ms-2" style="font-size:0.7rem;">Syria Compatible</span>
+                    </h5>
+                    <div class="text-secondary small mb-3">
+                        <span>Register at commpeak.com — supports Syriatel &amp; MTN Syria.</span>
+                        <span>Enter your TextPeak API Auth Token and Stream ID.</span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="commpeak_api_key" class="settings-label">API Auth Token</label>
+                            <input type="password" class="form-control settings-input"
+                                id="commpeak_api_key" name="commpeak_api_key"
+                                value="{{ settings.commpeak_api_key or '' }}"
+                                placeholder="Your CommPeak API Auth Token (Bearer token)">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="commpeak_stream_id" class="settings-label">Stream ID</label>
+                            <input type="text" class="form-control settings-input"
+                                id="commpeak_stream_id" name="commpeak_stream_id"
+                                value="{{ settings.commpeak_stream_id or '' }}"
+                                placeholder="Your CommPeak Stream ID">
+                        </div>
+                        <div class="col-md-8 mt-2">
+                            <label for="test_sms_phone" class="settings-label">Test Phone Number (e.g., +963958948727)</label>
+                            <input type="text" class="form-control settings-input"
+                                id="test_sms_phone" placeholder="e.g. +963958948727">
+                        </div>
+                        <div class="col-md-4 mt-2 d-flex align-items-end">
+                            <button type="button" id="btn-test-sms" class="btn btn-outline-success w-100 rounded-pill py-2">
+                                <i class="bi bi-send-fill me-1"></i> Send Test SMS
+                            </button>
+                        </div>
+                        <div class="col-md-12 mt-1" id="test-sms-result" style="display:none;"></div>
+
+                        <!-- SMS Templates and Timings -->
+                        <div class="col-md-12 mt-3 pt-3 border-top">
+                            <h6 class="fw-bold mb-2" style="color: var(--heading-color);">Customize SMS Messages</h6>
+                            <div class="row g-3">
+                                <!-- 24h SMS Toggle -->
+                                <div class="col-md-12">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox"
+                                            id="sms_24h_enabled" name="sms_24h_enabled"
+                                            form="main-settings-form" value="true" {% if settings.sms_24h_enabled=='true' %}checked{% endif %}>
+                                        <label class="form-check-label fw-semibold" for="sms_24h_enabled">Enable 24-Hour Reminder</label>
+                                    </div>
+                                    <textarea class="form-control settings-input"
+                                        id="sms_24h_template" name="sms_24h_template"
+                                        form="main-settings-form" rows="2"
+                                        placeholder="Enter message template for 24h reminder">{{ settings.sms_24h_template or '' }}</textarea>
+                                </div>
+                                <!-- 2h SMS Toggle -->
+                                <div class="col-md-12">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox"
+                                            id="sms_2h_enabled" name="sms_2h_enabled"
+                                            form="main-settings-form" value="true" {% if settings.sms_2h_enabled=='true' %}checked{% endif %}>
+                                        <label class="form-check-label fw-semibold" for="sms_2h_enabled">Enable 2-Hour Reminder</label>
+                                    </div>
+                                    <textarea class="form-control settings-input"
+                                        id="sms_2h_template" name="sms_2h_template"
+                                        form="main-settings-form" rows="2"
+                                        placeholder="Enter message template for 2h reminder">{{ settings.sms_2h_template or '' }}</textarea>
+                                </div>
+                                <!-- Cancel SMS Toggle -->
+                                <div class="col-md-12">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox"
+                                            id="sms_cancel_enabled" name="sms_cancel_enabled"
+                                            form="main-settings-form" value="true" {% if settings.sms_cancel_enabled=='true' %}checked{% endif %}>
+                                        <label class="form-check-label fw-semibold" for="sms_cancel_enabled">Enable Cancellation SMS</label>
+                                    </div>
+                                    <textarea class="form-control settings-input"
+                                        id="sms_cancel_template" name="sms_cancel_template"
+                                        form="main-settings-form" rows="2"
+                                        placeholder="Enter message template for cancellation SMS">{{ settings.sms_cancel_template or '' }}</textarea>
+                                </div>
+                                <!-- Reschedule SMS Toggle -->
+                                <div class="col-md-12">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox"
+                                            id="sms_reschedule_enabled" name="sms_reschedule_enabled"
+                                            form="main-settings-form" value="true" {% if settings.sms_reschedule_enabled=='true' %}checked{% endif %}>
+                                        <label class="form-check-label fw-semibold" for="sms_reschedule_enabled">Enable Reschedule SMS</label>
+                                    </div>
+                                    <textarea class="form-control settings-input"
+                                        id="sms_reschedule_template" name="sms_reschedule_template"
+                                        form="main-settings-form" rows="2"
+                                        placeholder="Enter message template for reschedule SMS">{{ settings.sms_reschedule_template or '' }}</textarea>
+                                </div>
+                                <!-- Help text for placeholders -->
+                                <div class="col-md-12 text-secondary small">
+                                    <span>Available dynamic tags:</span>
+                                    <code>{patient_name}</code>, <code>{appointment_time}</code>, <code>{clinic_name}</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SMTP Credentials -->
+                <div class="col-md-12 pt-3 border-top">
+                    <h5 class="fw-bold mb-3" style="color: var(--heading-color);">SMTP Email Server Credentials</h5>
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label for="smtp_host" class="settings-label">SMTP Host</label>
+                            <input type="text" class="form-control settings-input"
+                                id="smtp_host" name="smtp_host"
+                                value="{{ settings.smtp_host or 'smtp.gmail.com' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="smtp_port" class="settings-label">SMTP Port</label>
+                            <input type="text" class="form-control settings-input"
+                                id="smtp_port" name="smtp_port"
+                                value="{{ settings.smtp_port or '587' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="smtp_user" class="settings-label">SMTP Username (Email)</label>
+                            <input type="text" class="form-control settings-input"
+                                id="smtp_user" name="smtp_user"
+                                value="{{ settings.smtp_user or '' }}"
+                                placeholder="e.g. user@gmail.com">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="smtp_password" class="settings-label">SMTP Password / App Password</label>
+                            <input type="password" class="form-control settings-input"
+                                id="smtp_password" name="smtp_password"
+                                value="{{ settings.smtp_password or '' }}">
+                        </div>
+                        <div class="col-md-12">
+                            <label for="smtp_from_email" class="settings-label">From Email Address</label>
+                            <input type="email" class="form-control settings-input"
+                                id="smtp_from_email" name="smtp_from_email"
+                                value="{{ settings.smtp_from_email or '' }}"
+                                placeholder="e.g. no-reply@clinic.com">
+                        </div>
+
+                        <!-- Email Templates and Timings -->
+                        <div class="col-md-12 mt-3 pt-3 border-top">
+                            <h6 class="fw-bold mb-2" style="color: var(--heading-color);">Customize Email Messages</h6>
+                            <div class="row g-3">
+                                <!-- 24h Toggle -->
+                                <div class="col-md-12">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox"
+                                            id="email_24h_enabled" name="email_24h_enabled"
+                                            form="main-settings-form" value="true" {% if settings.email_24h_enabled=='true' %}checked{% endif %}>
+                                        <label class="form-check-label fw-semibold" for="email_24h_enabled">Enable 24-Hour Reminder</label>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="email_24h_subject" class="settings-label small">Email Subject (24h)</label>
+                                        <input type="text" class="form-control settings-input mb-1"
+                                            id="email_24h_subject" name="email_24h_subject"
+                                            form="main-settings-form"
+                                            value="{{ settings.email_24h_subject or '' }}"
+                                            placeholder="Enter subject for 24h email">
+                                    </div>
+                                    <textarea class="form-control settings-input"
+                                        id="email_24h_template" name="email_24h_template"
+                                        form="main-settings-form" rows="3"
+                                        placeholder="Enter email template body for 24h reminder">{{ settings.email_24h_template or '' }}</textarea>
+                                </div>
+                                <!-- 2h Toggle -->
+                                <div class="col-md-12 mt-3">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox"
+                                            id="email_2h_enabled" name="email_2h_enabled"
+                                            form="main-settings-form" value="true" {% if settings.email_2h_enabled=='true' %}checked{% endif %}>
+                                        <label class="form-check-label fw-semibold" for="email_2h_enabled">Enable 2-Hour Reminder</label>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="email_2h_subject" class="settings-label small">Email Subject (2h)</label>
+                                        <input type="text" class="form-control settings-input mb-1"
+                                            id="email_2h_subject" name="email_2h_subject"
+                                            form="main-settings-form"
+                                            value="{{ settings.email_2h_subject or '' }}"
+                                            placeholder="Enter subject for 2h email">
+                                    </div>
+                                    <textarea class="form-control settings-input"
+                                        id="email_2h_template" name="email_2h_template"
+                                        form="main-settings-form" rows="3"
+                                        placeholder="Enter email template body for 2h reminder">{{ settings.email_2h_template or '' }}</textarea>
+                                </div>
+                                <!-- Cancel Toggle -->
+                                <div class="col-md-12 mt-3">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox"
+                                            id="email_cancel_enabled" name="email_cancel_enabled"
+                                            form="main-settings-form" value="true" {% if settings.email_cancel_enabled=='true' %}checked{% endif %}>
+                                        <label class="form-check-label fw-semibold" for="email_cancel_enabled">Enable Cancellation Email</label>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="email_cancel_subject" class="settings-label small">Email Subject (Cancel)</label>
+                                        <input type="text" class="form-control settings-input mb-1"
+                                            id="email_cancel_subject" name="email_cancel_subject"
+                                            form="main-settings-form"
+                                            value="{{ settings.email_cancel_subject or '' }}"
+                                            placeholder="Enter subject for cancellation email">
+                                    </div>
+                                    <textarea class="form-control settings-input"
+                                        id="email_cancel_template" name="email_cancel_template"
+                                        form="main-settings-form" rows="3"
+                                        placeholder="Enter email template body for cancellation">{{ settings.email_cancel_template or '' }}</textarea>
+                                </div>
+                                <!-- Reschedule Toggle -->
+                                <div class="col-md-12 mt-3">
+                                    <div class="form-check form-switch mb-1">
+                                        <input class="form-check-input" type="checkbox"
+                                            id="email_reschedule_enabled" name="email_reschedule_enabled"
+                                            form="main-settings-form" value="true" {% if settings.email_reschedule_enabled=='true' %}checked{% endif %}>
+                                        <label class="form-check-label fw-semibold" for="email_reschedule_enabled">Enable Reschedule Email</label>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="email_reschedule_subject" class="settings-label small">Email Subject (Reschedule)</label>
+                                        <input type="text" class="form-control settings-input mb-1"
+                                            id="email_reschedule_subject" name="email_reschedule_subject"
+                                            form="main-settings-form"
+                                            value="{{ settings.email_reschedule_subject or '' }}"
+                                            placeholder="Enter subject for reschedule email">
+                                    </div>
+                                    <textarea class="form-control settings-input"
+                                        id="email_reschedule_template" name="email_reschedule_template"
+                                        form="main-settings-form" rows="3"
+                                        placeholder="Enter email template body for reschedule">{{ settings.email_reschedule_template or '' }}</textarea>
+                                </div>
+                                <!-- Help text for placeholders -->
+                                <div class="col-md-12 text-secondary small">
+                                    <span>Available dynamic tags:</span>
+                                    <code>{patient_name}</code>, <code>{appointment_time}</code>, <code>{clinic_name}</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-8 mt-2">
+                            <label for="test_email_address" class="settings-label">Test Email Address</label>
+                            <input type="email" class="form-control settings-input"
+                                id="test_email_address" placeholder="e.g. doctor@gmail.com">
+                        </div>
+                        <div class="col-md-4 mt-2 d-flex align-items-end">
+                            <button type="button" id="btn-test-email" class="btn btn-outline-primary w-100 rounded-pill py-2">
+                                <i class="bi bi-send-fill me-1"></i> Send Test Email
+                            </button>
+                        </div>
+                        <div class="col-md-12 mt-1" id="test-email-result" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sent Notification Log Pane -->
+        <div class="tab-pane fade" id="notif-logs-pane" role="tabpanel">
+            <div class="table-responsive">
+                <table class="table settings-table">
+                    <thead>
+                        <tr>
+                            <th>Recipient</th>
+                            <th>Channel</th>
+                            <th>Type</th>
+                            <th>Sent Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for notif in notifications %}
+                        <tr>
+                            <td>
+                                <strong>{{ notif.patient.first_name }} {{ notif.patient.last_name }}</strong>
+                                <div class="text-muted small">{{ notif.recipient }}</div>
+                            </td>
+                            <td>
+                                {% if notif.channel == 'telegram' %}
+                                <span class="badge bg-info text-dark" style="font-size: 0.72rem;"><i class="bi bi-telegram"></i> Telegram</span>
+                                {% elif notif.channel == 'sms' %}
+                                <span class="badge bg-success" style="font-size: 0.72rem;"><i class="bi bi-chat-dots"></i> SMS</span>
+                                {% elif notif.channel == 'email' %}
+                                <span class="badge bg-primary" style="font-size: 0.72rem;"><i class="bi bi-envelope"></i> Email</span>
+                                {% else %}
+                                <span class="badge bg-secondary" style="font-size: 0.72rem;">{{ notif.channel }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary" style="font-size: 0.72rem;">{{ notif.notification_type }}</span>
+                            </td>
+                            <td>{{ notif.sent_at.strftime('%Y-%m-%d %I:%M %p') if notif.sent_at else '' }}</td>
+                            <td>
+                                {% if notif.status == 'sent' %}
+                                <span class="badge bg-success" style="font-size: 0.72rem;"><i class="bi bi-check-circle"></i> Sent</span>
+                                {% else %}
+                                <span class="badge bg-danger" style="font-size: 0.72rem;"
+                                    data-bs-toggle="tooltip"
+                                    title="{{ notif.error_message or 'Unknown error' }}"><i class="bi bi-x-circle"></i> Failed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-secondary">
+                                <i class="bi bi-envelope-slash fs-1 d-block mb-2"></i>
+                                No notification logs recorded yet. Reminders are checked every 5 minutes.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

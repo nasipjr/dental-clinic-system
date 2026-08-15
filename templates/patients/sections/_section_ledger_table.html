@@ -1,0 +1,48 @@
+<!-- ═══════════ Patient Ledger Transactions Table ═══════════ -->
+<table class="table table-bordered table-striped align-middle">
+    <thead>
+        <tr>
+            <th style="width: 120px;">{% if current_lang == 'ar' %}التاريخ{% else %}Date{% endif %}</th>
+            <th style="width: 120px;">{% if current_lang == 'ar' %}الرقم المرجعي{% else %}Ref Number{% endif %}</th>
+            <th>{% if current_lang == 'ar' %}التفاصيل والبيان{% else %}Description{% endif %}</th>
+            <th class="text-end" style="width: 140px;">{% if current_lang == 'ar' %}مترتب (مدين / Charges){% else %}Charges (Debit){% endif %}</th>
+            <th class="text-end" style="width: 140px;">{% if current_lang == 'ar' %}مسدد (دائن / Payments){% else %}Payments (Credit){% endif %}</th>
+            <th class="text-end" style="width: 160px;">{% if current_lang == 'ar' %}الرصيد التراكمي{% else %}Running Balance{% endif %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in entries %}
+        <tr>
+            <td>{{ entry.date.strftime('%Y-%m-%d') if entry.date else '-' }}</td>
+            <td><strong class="text-secondary"><bdi dir="ltr">{{ entry.ref }}</bdi></strong></td>
+            <td>
+                {% if entry.type == 'invoice' %}
+                    <span class="badge bg-secondary-subtle text-secondary-emphasis me-1">{% if current_lang == 'ar' %}فاتورة{% else %}Invoice{% endif %}</span>
+                {% else %}
+                    <span class="badge bg-success-subtle text-success-emphasis me-1">{% if current_lang == 'ar' %}دفعة{% else %}Payment{% endif %}</span>
+                {% endif %}
+                {{ entry.description }}
+            </td>
+            <td class="text-end text-debit">
+                {% if entry.debit > 0 %}
+                    <span dir="ltr">{{ entry.debit | format_price }} {{ currency_symbol }}</span>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td class="text-end text-credit">
+                {% if entry.credit > 0 %}
+                    <span dir="ltr">{{ entry.credit | format_price }} {{ currency_symbol }}</span>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td class="text-end fw-bold">
+                <span dir="ltr" class="{% if entry.balance > 0 %}balance-debit{% elif entry.balance < 0 %}balance-credit{% endif %}">
+                    {{ entry.balance | format_price }} {{ currency_symbol }}
+                </span>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

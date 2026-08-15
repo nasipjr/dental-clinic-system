@@ -1,0 +1,209 @@
+/**
+ * Dental Clinic Management System - Printable Doctor Performance Report Stylesheet
+ * Optimized for A4 portrait printing, detailed treatments log, and signature blocks.
+ */
+
+@page {
+    size: A4 portrait;
+    margin: 12mm 15mm;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+}
+
+body {
+    font-family: 'Cairo', 'Segoe UI', Arial, sans-serif;
+    background-color: #ffffff;
+    color: #0f172a;
+    margin: 0;
+    padding: 0;
+    font-size: 9.5pt;
+    line-height: 1.5;
+}
+
+/* Screen Action Bar */
+.screen-action-bar {
+    background: #0f172a;
+    color: #ffffff;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+
+.screen-action-bar button {
+    background: #0284c7;
+    color: #ffffff;
+    border: none;
+    padding: 8px 20px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 10pt;
+}
+
+.screen-action-bar button:hover {
+    background: #0369a1;
+}
+
+.screen-action-bar .btn-secondary {
+    background: #475569;
+}
+
+@media print {
+    .screen-action-bar {
+        display: none !important;
+    }
+}
+
+/* Report Header */
+.report-header {
+    border-bottom: 3px solid #0284c7;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.report-header-title h1 {
+    font-size: 18pt;
+    font-weight: 800;
+    color: #0369a1;
+    margin: 0 0 4px 0;
+}
+
+.report-header-title p {
+    font-size: 10pt;
+    color: #475569;
+    margin: 0;
+}
+
+.report-header-meta {
+    text-align: left;
+    font-size: 9pt;
+    color: #475569;
+}
+
+html[lang="ar"] .report-header-meta {
+    text-align: right;
+}
+
+/* Section & Cards */
+.report-section {
+    margin-bottom: 20px;
+    page-break-inside: avoid;
+}
+
+.section-title {
+    font-size: 12pt;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 10px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #cbd5e1;
+}
+
+.grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.stat-card .label {
+    font-size: 8pt;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.stat-card .value {
+    font-size: 14pt;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 4px 0;
+}
+
+.stat-card .value.success { color: #059669; }
+.stat-card .value.primary { color: #0284c7; }
+.stat-card .value.info { color: #0284c7; }
+.stat-card .value.warning { color: #d97706; }
+
+.stat-card .sub {
+    font-size: 8pt;
+    color: #475569;
+}
+
+/* Table */
+table.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-size: 9pt;
+}
+
+table.report-table th,
+table.report-table td {
+    border: 1px solid #cbd5e1;
+    padding: 6px 10px;
+    text-align: left;
+}
+
+html[lang="ar"] table.report-table th,
+html[lang="ar"] table.report-table td {
+    text-align: right;
+}
+
+table.report-table th {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+}
+
+table.report-table tr:nth-child(even) {
+    background-color: #f8fafc;
+}
+
+table.report-table tfoot tr {
+    background-color: #e2e8f0 !important;
+    font-weight: 800;
+}
+
+.text-center { text-align: center !important; }
+.text-end { text-align: left !important; }
+html[lang="ar"] .text-end { text-align: right !important; }
+.text-success { color: #059669 !important; font-weight: bold; }
+.font-mono { font-family: 'Courier New', monospace; font-weight: bold; }
+
+/* Signatures Footer */
+.report-signatures {
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    page-break-inside: avoid;
+}
+
+.signature-box {
+    width: 45%;
+    text-align: center;
+    border-top: 1px dashed #94a3b8;
+    padding-top: 8px;
+    font-size: 9pt;
+    color: #475569;
+}

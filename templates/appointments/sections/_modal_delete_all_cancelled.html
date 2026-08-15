@@ -1,0 +1,45 @@
+<!-- ═══════════ Delete All Cancelled Appointments Modal ═══════════ -->
+{% if has_cancelled and current_user.role in ('admin', 'receptionist') %}
+<div class="modal fade" id="deleteAllCancelledModal" tabindex="-1" aria-labelledby="deleteAllCancelledModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg" style="background: var(--surface-color, #1e293b); color: var(--default-color, #f8fafc);">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="deleteAllCancelledModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill fs-4 text-danger"></i>
+                    {% if current_lang == 'ar' %}تأكيد حذف المواعيد الملغاة{% else %}Confirm Permanent Delete{% endif %}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <p class="mb-2 fs-6">
+                    {% if current_lang == 'ar' %}
+                        هل أنت متأكد من رغبتك في حذف <strong>جميع المواعيد الملغاة</strong> نهائياً؟
+                    {% else %}
+                        Are you sure you want to permanently delete <strong>all cancelled appointments</strong>?
+                    {% endif %}
+                </p>
+                <div class="p-3 rounded-3 bg-danger bg-opacity-10 border border-danger border-opacity-25 text-danger-emphasis small mt-3">
+                    <i class="bi bi-info-circle-fill me-1"></i>
+                    {% if current_lang == 'ar' %}
+                        هذا الإجراء نهائي ولا يمكن التراجع عنه وسيقوم بإزالة كافة السجلات والبيانات المرتبطة بالمواعيد الملغاة.
+                    {% else %}
+                        This action cannot be undone and will permanently remove all cancelled appointment records.
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                    {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                </button>
+                <form action="{{ url_for('appointments.delete_all_cancelled') }}" method="POST" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow">
+                        <i class="bi bi-trash-fill me-1"></i>
+                        {% if current_lang == 'ar' %}تأكيد الحذف النهائي{% else %}Confirm Delete All{% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

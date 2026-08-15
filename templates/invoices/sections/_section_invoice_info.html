@@ -1,0 +1,112 @@
+<!-- ═══════════ Invoice Main Info Grid ═══════════ -->
+<div class="patient-info-grid mb-4">
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}رقم الفاتورة{% else %}Invoice Number{% endif %}</span>
+        <p>{{ invoice.invoice_number }}</p>
+    </div>
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</span>
+        <p>
+            <a href="{{ url_for('patients.patient_detail', patient_id=patient.id) }}" class="fw-bold text-decoration-none text-primary">
+                {{ patient.first_name }} {{ patient.last_name }}
+            </a>
+            <br>
+            <small class="text-muted">{{ patient.phone or ('لا يوجد هاتف' if current_lang == 'ar' else 'No phone number') }}</small>
+        </p>
+    </div>
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}تاريخ الموعد{% else %}Appointment Date{% endif %}</span>
+        <p>
+            {{ appointment.appointment_date.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_date else ('بدون تاريخ' if current_lang == 'ar' else 'No date') }}
+        </p>
+    </div>
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}حالة الموعد{% else %}Appointment Status{% endif %}</span>
+        <p>
+            <span class="appointment-status
+                {% if appointment.status == 'Done' %}status-done
+                {% elif appointment.status == 'Cancelled' %}status-cancelled
+                {% elif appointment.status == 'Pending' %}status-pending
+                {% else %}status-scheduled{% endif %}">
+                {% if current_lang == 'ar' %}
+                    {% if appointment.status == 'Done' %}منجز
+                    {% elif appointment.status == 'Cancelled' %}ملغى
+                    {% elif appointment.status == 'Pending' %}معلق
+                    {% else %}مجدول{% endif %}
+                {% else %}
+                    {{ appointment.status }}
+                {% endif %}
+            </span>
+        </p>
+    </div>
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}إجمالي الفاتورة{% else %}Invoice Total{% endif %}</span>
+        <p id="top-invoice-total">{{ invoice.total_amount | format_price }} {{ currency_symbol }}</p>
+    </div>
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}إجمالي السداد{% else %}Total Payments{% endif %}</span>
+        <p id="top-total-paid">{{ invoice.total_paid | format_price }} {{ currency_symbol }}</p>
+    </div>
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}المبلغ المتبقي / الرصيد{% else %}Outstanding / Credit{% endif %}</span>
+        <p id="top-outstanding-container">
+            {% if invoice.credit > 0 %}
+                <span class="credit-amount">
+                    {{ invoice.credit | format_price }} {{ currency_symbol }}
+                    <span class="credit-badge">{% if current_lang == 'ar' %}رصيد{% else %}Credit{% endif %}</span>
+                </span>
+            {% elif invoice.outstanding_amount > 0 %}
+                <span class="remaining-due">
+                    {{ invoice.outstanding_amount | format_price }} {{ currency_symbol }}
+                    <span class="due-badge">{% if current_lang == 'ar' %}مستحق{% else %}Due{% endif %}</span>
+                </span>
+            {% else %}
+                <span class="remaining-clear">
+                    0 {{ currency_symbol }}
+                    <span class="paid-badge">{% if current_lang == 'ar' %}خالص{% else %}Paid{% endif %}</span>
+                </span>
+            {% endif %}
+        </p>
+    </div>
+
+    <div class="patient-info-box">
+        <span class="info-label">{% if current_lang == 'ar' %}حالة الفاتورة{% else %}Invoice Status{% endif %}</span>
+        <p id="top-status-container">
+            {% if invoice.status == 'Credit' %}
+                <span class="badge rounded-pill px-3 py-1.5 fw-semibold" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 0.88rem;">{% if current_lang == 'ar' %}رصيد مالي{% else %}Credit{% endif %}</span>
+            {% elif invoice.status == 'Paid' %}
+                <span class="badge rounded-pill px-3 py-1.5 fw-semibold" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 0.88rem;">{% if current_lang == 'ar' %}مدفوعة بالكامل{% else %}Paid{% endif %}</span>
+            {% elif invoice.status == 'Partially Paid' %}
+                <span class="badge rounded-pill px-3 py-1.5 fw-semibold" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 0.88rem;">{% if current_lang == 'ar' %}دفعة جزئية{% else %}Partial{% endif %}</span>
+            {% else %}
+                <span class="badge rounded-pill px-3 py-1.5 fw-semibold" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; font-size: 0.88rem;">{% if current_lang == 'ar' %}غير مدفوعة{% else %}Unpaid{% endif %}</span>
+            {% endif %}
+        </p>
+    </div>
+
+    <div class="patient-info-box text-center d-flex flex-column align-items-center justify-content-center">
+        <span class="info-label mb-2">{% if current_lang == 'ar' %}ملخص الفاتورة (QR){% else %}Invoice Summary (QR){% endif %}</span>
+        <canvas id="invoice-qrcode" style="width: 90px; height: 90px;"></canvas>
+    </div>
+
+    <div class="patient-info-box d-flex flex-column justify-content-between position-relative">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="info-label mb-0">{% if current_lang == 'ar' %}ملاحظات الفاتورة{% else %}Invoice Notes{% endif %}</span>
+        </div>
+        <p class="mb-0 text-wrap text-break small mt-1" id="top-invoice-notes">
+            {% if invoice.notes %}
+                {{ invoice.notes }}
+            {% else %}
+                <span class="text-muted italic">{% if current_lang == 'ar' %}لا توجد ملاحظات{% else %}No notes available{% endif %}</span>
+            {% endif %}
+        </p>
+    </div>
+
+</div>

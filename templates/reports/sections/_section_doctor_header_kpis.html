@@ -1,0 +1,180 @@
+<!-- ═══════════ Doctor Header Banner, Filters & KPI Cards ═══════════ -->
+<div class="card border-0 rounded-4 shadow-sm mb-4 p-4" style="background: var(--surface-color);">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary shadow-xs" style="width: 58px; height: 58px; font-size: 1.6rem;">
+                <i class="bi bi-person-badge"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <h3 class="mb-0 fw-bold">
+                        {% if current_lang == 'ar' %}تقارير الطبيب: د. {{ doctor.first_name }} {{ doctor.last_name }}{% else %}Doctor Reports: Dr. {{ doctor.first_name }} {{ doctor.last_name }}{% endif %}
+                    </h3>
+                    {% if salary_type == 'percentage' %}
+                    <span class="badge rounded-pill bg-success bg-opacity-15 text-success border border-success border-opacity-25 px-3 py-1.5 fw-bold fs-7">
+                        <i class="bi bi-percent me-1"></i>{% if current_lang == 'ar' %}نظام النسبة ({{ salary_amount }}%){% else %}Percentage Rate ({{ salary_amount }}%){% endif %}
+                    </span>
+                    {% else %}
+                    <span class="badge rounded-pill bg-info bg-opacity-15 text-info border border-info border-opacity-25 px-3 py-1.5 fw-bold fs-7">
+                        <i class="bi bi-cash-stack me-1"></i>{% if current_lang == 'ar' %}راتب ثابت ({{ salary_amount | format_price }} {{ currency_symbol }}){% else %}Fixed Salary ({{ salary_amount | format_price }} {{ currency_symbol }}){% endif %}
+                    </span>
+                    {% endif %}
+                </div>
+                <p class="text-secondary small mb-0 mt-1">
+                    {% if current_lang == 'ar' %}إحصائيات المواعيد، الإجراءات الطبية والمستحقات المباشرة للطبيب{% else %}Comprehensive breakdown of appointments, medical procedures, and earnings{% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Filter & Action Controls -->
+        <div class="d-flex flex-wrap align-items-center gap-2 d-print-none">
+            <a href="{{ url_for('reports.doctor_print_report', doctor_id=doctor.id, year=selected_year, month=selected_month) }}" target="_blank" class="btn btn-sm btn-outline-primary rounded-3 fw-semibold shadow-xs">
+                <i class="bi bi-printer me-1"></i>{% if current_lang == 'ar' %}طباعة التقرير (PDF){% else %}Print Report (PDF){% endif %}
+            </a>
+
+            <form method="GET" action="{{ url_for('reports.my_reports') }}" class="d-flex flex-wrap align-items-center gap-2 mb-0">
+                {% if current_user.role == 'admin' and all_doctors %}
+                <select name="doctor_id" class="form-select form-select-sm rounded-3 fw-semibold border-secondary border-opacity-25" style="min-width: 170px;" onchange="this.form.submit()">
+                    {% for doc in all_doctors %}
+                    <option value="{{ doc.id }}" {% if doc.id == doctor.id %}selected{% endif %}>
+                        د. {{ doc.first_name }} {{ doc.last_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+
+                <select name="year" class="form-select form-select-sm rounded-3 fw-semibold border-secondary border-opacity-25" style="width: 110px;" onchange="this.form.submit()">
+                    <option value="all" {% if selected_year == 'all' %}selected{% endif %}>{% if current_lang == 'ar' %}كل السنين{% else %}All Years{% endif %}</option>
+                    {% for yr in available_years %}
+                    <option value="{{ yr }}" {% if selected_year|string == yr|string %}selected{% endif %}>{{ yr }}</option>
+                    {% endfor %}
+                </select>
+
+                <select name="month" class="form-select form-select-sm rounded-3 fw-semibold border-secondary border-opacity-25" style="width: 120px;" onchange="this.form.submit()">
+                    <option value="all" {% if selected_month == 'all' %}selected{% endif %}>{% if current_lang == 'ar' %}كل الشهور{% else %}All Months{% endif %}</option>
+                    <option value="1" {% if selected_month == '1' %}selected{% endif %}>{% if current_lang == 'ar' %}يناير (1){% else %}Jan (1){% endif %}</option>
+                    <option value="2" {% if selected_month == '2' %}selected{% endif %}>{% if current_lang == 'ar' %}فبراير (2){% else %}Feb (2){% endif %}</option>
+                    <option value="3" {% if selected_month == '3' %}selected{% endif %}>{% if current_lang == 'ar' %}مارس (3){% else %}Mar (3){% endif %}</option>
+                    <option value="4" {% if selected_month == '4' %}selected{% endif %}>{% if current_lang == 'ar' %}أبريل (4){% else %}Apr (4){% endif %}</option>
+                    <option value="5" {% if selected_month == '5' %}selected{% endif %}>{% if current_lang == 'ar' %}مايو (5){% else %}May (5){% endif %}</option>
+                    <option value="6" {% if selected_month == '6' %}selected{% endif %}>{% if current_lang == 'ar' %}يونيو (6){% else %}Jun (6){% endif %}</option>
+                    <option value="7" {% if selected_month == '7' %}selected{% endif %}>{% if current_lang == 'ar' %}يوليو (7){% else %}Jul (7){% endif %}</option>
+                    <option value="8" {% if selected_month == '8' %}selected{% endif %}>{% if current_lang == 'ar' %}أغسطس (8){% else %}Aug (8){% endif %}</option>
+                    <option value="9" {% if selected_month == '9' %}selected{% endif %}>{% if current_lang == 'ar' %}سبتمبر (9){% else %}Sep (9){% endif %}</option>
+                    <option value="10" {% if selected_month == '10' %}selected{% endif %}>{% if current_lang == 'ar' %}أكتوبر (10){% else %}Oct (10){% endif %}</option>
+                    <option value="11" {% if selected_month == '11' %}selected{% endif %}>{% if current_lang == 'ar' %}نوفمبر (11){% else %}Nov (11){% endif %}</option>
+                    <option value="12" {% if selected_month == '12' %}selected{% endif %}>{% if current_lang == 'ar' %}ديسمبر (12){% else %}Dec (12){% endif %}</option>
+                </select>
+
+                {% if selected_year != 'all' or selected_month != 'all' %}
+                <a href="{{ url_for('reports.my_reports', doctor_id=doctor.id) }}" class="btn btn-sm btn-outline-secondary rounded-3">
+                    <i class="bi bi-x-circle me-1"></i>{% if current_lang == 'ar' %}إعادة ضبط{% else %}Reset{% endif %}
+                </a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Doctor KPI Summary Cards -->
+<div class="row g-3 mb-4">
+    <!-- 1. Doctor Earnings -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 rounded-4 shadow-sm h-100 p-3.5 transition-all hover-translate-y" style="background: var(--surface-color);">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-secondary small fw-semibold text-uppercase tracking-wider">
+                        {% if current_lang == 'ar' %}مستحقات وأرباح الطبيب{% else %}Doctor Total Earnings{% endif %}
+                    </span>
+                    <h3 class="fw-extrabold text-success mb-0 mt-1 fs-3">
+                        {{ total_earned | format_price }} <small class="fs-6 text-muted fw-bold">{{ currency_symbol }}</small>
+                    </h3>
+                    <div class="mt-1">
+                        <span class="badge rounded-pill bg-success bg-opacity-10 text-success fw-semibold small">
+                            {% if salary_type == 'percentage' %}
+                            <i class="bi bi-pie-chart-fill me-1"></i>{{ salary_amount }}% {% if current_lang == 'ar' %}من المعالجات{% else %}from treatments{% endif %}
+                            {% else %}
+                            <i class="bi bi-check-circle-fill me-1"></i>{% if current_lang == 'ar' %}راتب شهري ثابت{% else %}Fixed Monthly Salary{% endif %}
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="rounded-3 p-3 bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-cash-coin fs-2"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Total Billed Revenue -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 rounded-4 shadow-sm h-100 p-3.5 transition-all hover-translate-y" style="background: var(--surface-color);">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-secondary small fw-semibold text-uppercase tracking-wider">
+                        {% if current_lang == 'ar' %}إجمالي إيرادات المعالجات{% else %}Total Generated Revenue{% endif %}
+                    </span>
+                    <h3 class="fw-extrabold text-primary mb-0 mt-1 fs-3">
+                        {{ total_revenue | format_price }} <small class="fs-6 text-muted fw-bold">{{ currency_symbol }}</small>
+                    </h3>
+                    <div class="mt-1">
+                        <span class="text-secondary small">
+                            {% if current_lang == 'ar' %}حصة العيادة الصافية:{% else %}Clinic Net Share:{% endif %}
+                            <strong class="text-body">{{ clinic_net | format_price }} {{ currency_symbol }}</strong>
+                        </span>
+                    </div>
+                </div>
+                <div class="rounded-3 p-3 bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-graph-up-arrow fs-2"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Total Treatments Performed -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 rounded-4 shadow-sm h-100 p-3.5 transition-all hover-translate-y" style="background: var(--surface-color);">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-secondary small fw-semibold text-uppercase tracking-wider">
+                        {% if current_lang == 'ar' %}عدد المعالجات المنجزة{% else %}Treatments Performed{% endif %}
+                    </span>
+                    <h3 class="fw-extrabold text-info mb-0 mt-1 fs-3">
+                        {{ total_treatments_count }} <small class="fs-6 text-muted fw-bold">{% if current_lang == 'ar' %}إجراء{% else %}procedures{% endif %}</small>
+                    </h3>
+                    <div class="mt-1">
+                        <span class="badge rounded-pill bg-info bg-opacity-10 text-info fw-semibold small">
+                            <i class="bi bi-activity me-1"></i>{% if current_lang == 'ar' %}إجراءات طبية مستكملة{% else %}Completed Procedures{% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="rounded-3 p-3 bg-info bg-opacity-10 text-info">
+                    <i class="bi bi-clipboard-pulse fs-2"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Total Appointments Handled -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 rounded-4 shadow-sm h-100 p-3.5 transition-all hover-translate-y" style="background: var(--surface-color);">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-secondary small fw-semibold text-uppercase tracking-wider">
+                        {% if current_lang == 'ar' %}إجمالي المواعيد والجلسات{% else %}Appointments Handled{% endif %}
+                    </span>
+                    <h3 class="fw-extrabold text-warning mb-0 mt-1 fs-3">
+                        {{ total_appointments_count }} <small class="fs-6 text-muted fw-bold">{% if current_lang == 'ar' %}موعد{% else %}sessions{% endif %}</small>
+                    </h3>
+                    <div class="mt-1">
+                        <span class="text-success small fw-bold me-2"><i class="bi bi-check-circle me-1"></i>{{ done_count }} {% if current_lang == 'ar' %}منجز{% else %}Done{% endif %}</span>
+                        <span class="text-primary small fw-bold"><i class="bi bi-clock me-1"></i>{{ scheduled_count }} {% if current_lang == 'ar' %}قادم{% else %}Scheduled{% endif %}</span>
+                    </div>
+                </div>
+                <div class="rounded-3 p-3 bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-calendar-event fs-2"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

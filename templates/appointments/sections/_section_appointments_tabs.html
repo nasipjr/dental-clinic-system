@@ -1,0 +1,63 @@
+<!-- ═══════════ Appointments Tabs Navigation ═══════════ -->
+<ul class="nav justify-content-center gap-3 mb-4 patient-detail-tabs border-0 flex-wrap" id="appointmentsTabs" role="tablist">
+    <!-- Today's Appointments Tab -->
+    <li class="nav-item flex-grow-1" role="presentation" style="min-width: 210px; max-width: 280px;">
+        <a href="{{ url_for('appointments.appointments', date_filter='today', search=search_query, status=status_filter, sort=sort_by, order=order, doctor_id=doctor_filter) }}"
+           data-filter="today"
+           class="nav-link appointment-tab-btn date-filter-btn border-0 w-100 p-0 text-center {% if not show_pending and date_filter == 'today' %}active{% endif %}">
+            <div class="appointment-tab-card {% if not show_pending and date_filter == 'today' %}active{% endif %}">
+                <h2 class="d-inline-block text-nowrap">
+                    {% if current_lang == 'ar' %}مواعيد اليوم{% else %}Today's Appointments{% endif %}
+                    <span class="badge rounded-pill tab-count-badge ms-1">{{ today_count }}</span>
+                </h2>
+                <p class="mb-0 text-muted small text-nowrap" style="font-size: 0.82rem;">{% if current_lang == 'ar' %}المواعيد والجلسات المجدولة لليوم{% else %}Today's scheduled sessions{% endif %}</p>
+            </div>
+        </a>
+    </li>
+
+    <!-- Tomorrow's Appointments Tab -->
+    <li class="nav-item flex-grow-1" role="presentation" style="min-width: 210px; max-width: 280px;">
+        <a href="{{ url_for('appointments.appointments', date_filter='tomorrow', search=search_query, status=status_filter, sort=sort_by, order=order, doctor_id=doctor_filter) }}"
+           data-filter="tomorrow"
+           class="nav-link appointment-tab-btn date-filter-btn border-0 w-100 p-0 text-center {% if not show_pending and date_filter == 'tomorrow' %}active{% endif %}">
+            <div class="appointment-tab-card {% if not show_pending and date_filter == 'tomorrow' %}active{% endif %}">
+                <h2 class="d-inline-block text-nowrap">
+                    {% if current_lang == 'ar' %}مواعيد الغد{% else %}Tomorrow's Appointments{% endif %}
+                    <span class="badge rounded-pill tab-count-badge ms-1">{{ tomorrow_count }}</span>
+                </h2>
+                <p class="mb-0 text-muted small text-nowrap" style="font-size: 0.82rem;">{% if current_lang == 'ar' %}المواعيد المقررة ليوم الغد{% else %}Tomorrow's scheduled sessions{% endif %}</p>
+            </div>
+        </a>
+    </li>
+
+    <!-- All Appointments Tab -->
+    <li class="nav-item flex-grow-1" role="presentation" style="min-width: 210px; max-width: 280px;">
+        <a href="{{ url_for('appointments.appointments', date_filter='all', search=search_query, status=status_filter, sort=sort_by, order=order, doctor_id=doctor_filter) }}"
+           data-filter="all"
+           class="nav-link appointment-tab-btn date-filter-btn border-0 w-100 p-0 text-center {% if not show_pending and date_filter == 'all' %}active{% endif %}">
+            <div class="appointment-tab-card {% if not show_pending and date_filter == 'all' %}active{% endif %}">
+                <h2 class="d-inline-block text-nowrap">
+                    {% if current_lang == 'ar' %}جميع المواعيد{% else %}All Appointments{% endif %}
+                    <span class="badge rounded-pill tab-count-badge ms-1">{{ all_count }}</span>
+                </h2>
+                <p class="mb-0 text-muted small text-nowrap" style="font-size: 0.82rem;">{% if current_lang == 'ar' %}سجل كافة المواعيد المجدولة بالنظام{% else %}All scheduled records{% endif %}</p>
+            </div>
+        </a>
+    </li>
+
+    <!-- Pending Requests Tab -->
+    <li class="nav-item flex-grow-1" role="presentation" style="min-width: 210px; max-width: 280px;">
+        <a href="{{ url_for('appointments.appointments', tab='pending') }}"
+           class="nav-link appointment-tab-btn border-0 w-100 p-0 text-center {% if show_pending %}active{% endif %}" data-tab="pending">
+            <div class="appointment-tab-card {% if show_pending %}active{% endif %}">
+                <h2 class="d-inline-block text-nowrap">
+                    {% if current_lang == 'ar' %}الطلبات المعلقة{% else %}Pending Requests{% endif %}
+                    {% if pending_count > 0 %}
+                    <span class="badge rounded-pill tab-count-badge ms-1">{{ pending_count }}</span>
+                    {% endif %}
+                </h2>
+                <p class="mb-0 text-muted small text-nowrap" style="font-size: 0.82rem;">{% if current_lang == 'ar' %}مراجعة وحجوزات المرضى الذاتية{% else %}Patient self-bookings{% endif %}</p>
+            </div>
+        </a>
+    </li>
+</ul>

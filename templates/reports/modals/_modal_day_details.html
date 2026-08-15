@@ -1,0 +1,68 @@
+<!-- ═══════════════════════════════════════════
+     Day Details Modal (Daily Financial Breakdown)
+     ═══════════════════════════════════════════ -->
+<div class="modal fade d-print-none" id="dayDetailsModal" tabindex="-1" aria-labelledby="dayDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold text-main" id="dayDetailsModalLabel">
+                    {% if current_lang == 'ar' %}تفاصيل الحركات المالية ليوم{% else %}Financial Details for{% endif %} 
+                    <span id="modal-day-title" class="text-primary"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-3">
+                <!-- Daily Totals Summary Banner -->
+                <div class="row g-2 mb-4 text-center" id="modal-day-summary-banner">
+                    <!-- Populated dynamically via Javascript -->
+                </div>
+
+                <div class="row g-3">
+                    <!-- Issued Invoices -->
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-4 border h-100" style="background-color: var(--surface-color);">
+                            <h6 class="fw-bold mb-3 text-secondary d-flex align-items-center gap-2">
+                                <i class="bi bi-receipt text-primary"></i>
+                                <span>{% if current_lang == 'ar' %}الفواتير الصادرة{% else %}Issued Invoices{% endif %}</span>
+                            </h6>
+                            <div id="modal-invoices-list" class="modal-data-scroll" style="max-height: 250px; overflow-y: auto;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Received Payments -->
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-4 border h-100" style="background-color: var(--surface-color);">
+                            <h6 class="fw-bold mb-3 text-secondary d-flex align-items-center gap-2">
+                                <i class="bi bi-wallet2 text-success"></i>
+                                <span>{% if current_lang == 'ar' %}المقبوضات (المدفوعات){% else %}Payments Received{% endif %}</span>
+                            </h6>
+                            <div id="modal-payments-list" class="modal-data-scroll" style="max-height: 250px; overflow-y: auto;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Logged Expenses -->
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-4 border h-100" style="background-color: var(--surface-color);">
+                            <h6 class="fw-bold mb-3 text-secondary d-flex align-items-center gap-2">
+                                <i class="bi bi-cash-stack text-danger"></i>
+                                <span>{% if current_lang == 'ar' %}المصاريف المدفوعة{% else %}Expenses Logged{% endif %}</span>
+                            </h6>
+                            <div id="modal-expenses-list" class="modal-data-scroll" style="max-height: 250px; overflow-y: auto;">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                    {% if current_lang == 'ar' %}إغلاق{% else %}Close{% endif %}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

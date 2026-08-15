@@ -1,141 +1,31 @@
 {% extends "base.html" %}
 
-{% block title %}Patients{% endblock %}
+{% block title %}{% if current_lang == 'ar' %}سجل المرضى{% else %}Patients{% endif %}{% endblock %}
 
 {% block content %}
 <!-- Patients Table Section -->
-<section id="patients-table-section" class="find-a-doctor section">
+<section id="patients-table-section" class="find-a-doctor section" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
     <div class="container" data-aos="fade-up" data-aos-delay="100">
 
-        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-            <div>
-                <h3 class="mb-1">Patients List</h3>
-                <p class="mb-0">Manage all patients from one place.</p>
-            </div>
+        <!-- Top Header & New Patient Button -->
+        {% include "patients/sections/_section_patients_header.html" %}
 
-            {% if current_user.role in ('admin', 'receptionist') %}
-            <a href="{{ url_for('patients.add_patient') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i>
-                New Patient
-            </a>
-            {% endif %}
-        </div>
+        <!-- Filter & Search Controls -->
+        {% include "patients/sections/_section_patients_filters.html" %}
 
-        <!-- Filters -->
-        <form id="patients-filter-form" method="GET" action="{{ url_for('patients.patients_table') }}" class="appointments-filter-bar mb-4">
-            <div class="row gy-3 align-items-end">
-
-                <div class="col-md-6">
-                    <label class="form-label">Search Patient</label>
-                    <input type="text" name="search" class="form-control" placeholder="Name, phone, email, or city"
-                        value="{{ search_query }}">
-                </div>
-
-                <input type="hidden" name="sort" value="{{ sort_by }}">
-                <input type="hidden" name="order" value="{{ order }}">
-                <input type="hidden" name="per_page" id="patient-per-page-input" value="{{ per_page or 10 }}">
-
-                <div class="col-md-6 d-flex gap-2 flex-wrap align-items-center">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-funnel me-1"></i>
-                        {% if current_lang == 'ar' %}تطبيق البحث{% else %}Apply Search{% endif %}
-                    </button>
-                    
-                    <a href="{{ url_for('patients.patients') }}" class="btn btn-outline-secondary">
-                        {% if current_lang == 'ar' %}إعادة تعيين{% else %}Reset{% endif %}
-                    </a>
-
-                    <div class="d-flex align-items-center gap-2 ms-auto">
-                        <label for="patients-per-page-select-top" class="small text-muted mb-0 fw-semibold text-nowrap">{% if current_lang == 'ar' %}عرض في الصفحة:{% else %}Items per page:{% endif %}</label>
-                        <select id="patients-per-page-select-top" class="form-select form-select-sm border-secondary-subtle rounded-3 py-1.5 shadow-xs" style="width: auto;" onchange="changeTablePerPage(this.value, 'patients')">
-                            <option value="5" {% if per_page == 5 %}selected{% endif %}>5</option>
-                            <option value="10" {% if per_page == 10 or not per_page %}selected{% endif %}>10</option>
-                            <option value="25" {% if per_page == 25 %}selected{% endif %}>25</option>
-                            <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
-                            <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
-                        </select>
-                    </div>
-                </div>
-
-            </div>
-        </form>
-        <!-- /Filters -->
-
-        <div id="patients-table-container">
-            {% include "partials/_patients_table.html" %}
-        </div>
+        <!-- Patients Data Table Container -->
+        {% include "patients/sections/_section_patients_table.html" %}
 
     </div>
 </section>
-<!-- /Patients Table Section -->
 
+<!-- Patients List Core Controller -->
+<script src="{{ url_for('static', filename='js/patients_list_core.js') }}"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const tableContainer = document.getElementById("patients-table-container");
-    const filterForm = document.getElementById("patients-filter-form");
-
-    function loadPatientsTable(url) {
-        fetch(url, {
-            headers: {
-                "X-Requested-With": "XMLHttpRequest"
-            }
-        })
-        .then(function (response) {
-            if (!response.ok) {
-                throw new Error("Failed to load patients table.");
-            }
-            return response.text();
-        })
-        .then(function (html) {
-            tableContainer.innerHTML = html;
-            if (window.initCustomTooltips) {
-                window.initCustomTooltips();
-            }
-            if (window.scrollToTableTop) {
-                window.scrollToTableTop(tableContainer);
-            }
-        })
-        .catch(function (error) {
-            console.error(error);
-            window.location.href = url;
-        });
+    if (window.initPatientsList) {
+        window.initPatientsList();
     }
-
-    if (filterForm) {
-        filterForm.addEventListener("submit", function (event) {
-            event.preventDefault();
-
-            const formData = new FormData(filterForm);
-            const queryString = new URLSearchParams(formData).toString();
-            const url = filterForm.getAttribute("action") + "?" + queryString;
-
-            loadPatientsTable(url);
-        });
-    }
-
-    document.addEventListener("click", function (event) {
-        const link = event.target.closest(".patients-ajax-link");
-
-        if (!link) {
-            return;
-        }
-
-        event.preventDefault();
-        loadPatientsTable(link.href);
-    });
-
-    window.changeTablePerPage = function(val, module) {
-        if (module === 'patients') {
-            const input = document.getElementById('patient-per-page-input');
-            if (input) input.value = val;
-            if (filterForm) {
-                const formData = new FormData(filterForm);
-                const queryString = new URLSearchParams(formData).toString();
-                loadPatientsTable(filterForm.getAttribute("action") + "?" + queryString);
-            }
-        }
-    };
 });
 </script>
-
 {% endblock %}

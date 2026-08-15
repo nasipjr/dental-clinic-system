@@ -1,9 +1,9 @@
 from flask import Blueprint, current_app, render_template, request, redirect, url_for, flash, session, jsonify
 
-from models import db, Appointment, Treatment, ToothHistory
+from models import db, Appointment, Treatment, ToothHistory, TreatmentPlanItem, Invoice
 from services.invoice_service import sync_invoice_for_appointment
 from services.payment_service import allocate_patient_payments_to_invoices
-from utils.constants import TREATMENT_PRICES, TREATMENT_PROCEDURE_TYPES
+from utils.constants import TREATMENT_PRICES, TREATMENT_PROCEDURE_TYPES, get_equivalent_tooth_numbers
 from utils.auth_helper import role_required, get_safe_redirect_url
 from utils.settings_helper import get_setting, get_treatment_prices, get_treatment_details, get_anesthesia_types
 
@@ -93,6 +93,20 @@ def appointment_session(appointment_id):
                 "created_at": th.created_at.strftime("%Y-%m-%d %I:%M %p") if th.created_at else (th.history_date.strftime("%Y-%m-%d") if th.history_date else "")
             })
 
+        planned_items = TreatmentPlanItem.query.filter_by(patient_id=appointment.patient_id, status="Planned").order_by(TreatmentPlanItem.id.desc()).all()
+        planned_teeth_dict = {}
+        for pi in planned_items:
+            tn = str(pi.tooth_number)
+            if tn not in planned_teeth_dict:
+                planned_teeth_dict[tn] = []
+            planned_teeth_dict[tn].append({
+                "id": pi.id,
+                "procedure": pi.procedure_type,
+                "cost": float(pi.estimated_cost or 0),
+                "notes": pi.notes or "",
+                "created_at": pi.created_at.strftime("%Y-%m-%d") if pi.created_at else ""
+            })
+
         return render_template(
             "appointments/appointment_session.html",
             appointment=appointment,
@@ -108,6 +122,7 @@ def appointment_session(appointment_id):
             anesthesia_types=get_anesthesia_types(),
             treatment_procedure_types=list(TREATMENT_PROCEDURE_TYPES),
             tooth_history_dict=tooth_history_dict,
+            planned_teeth_dict=planned_teeth_dict,
             anesthesia_needle_price=float(get_setting("anesthesia_needle_price", 50000)),
         )
 
@@ -178,20 +193,8 @@ def add_treatment_to_appointment(appointment_id):
             proc_lower = (procedure_type or "").lower()
             is_post_ext = "ما بعد القلع" in proc_lower or "post-extraction" in proc_lower or "post extraction" in proc_lower
             if not is_post_ext:
-                univ_to_fdi = {
-                    '1': '18', '2': '17', '3': '16', '4': '15', '5': '14', '6': '13', '7': '12', '8': '11',
-                    '9': '21', '10': '22', '11': '23', '12': '24', '13': '25', '14': '26', '15': '27', '16': '28',
-                    '17': '38', '18': '37', '19': '36', '20': '35', '21': '34', '22': '33', '23': '32', '24': '31',
-                    '25': '41', '26': '42', '27': '43', '28': '44', '29': '45', '30': '46', '31': '47', '32': '48'
-                }
-                fdi_to_univ = {v: k for k, v in univ_to_fdi.items()}
-
                 for t in teeth_list:
-                    check_teeth = [t]
-                    if t in univ_to_fdi:
-                        check_teeth.append(univ_to_fdi[t])
-                    if t in fdi_to_univ:
-                        check_teeth.append(fdi_to_univ[t])
+                    check_teeth = get_equivalent_tooth_numbers(t)
 
                     has_prior_ext = ToothHistory.query.filter(
                         ToothHistory.patient_id == appointment.patient_id,
@@ -236,16 +239,18 @@ def add_treatment_to_appointment(appointment_id):
             else:
                 anesthesia_cost = 0.0
                 
-            custom_cost_str = request.form.get("custom_cost")
-            if custom_cost_str is not None and custom_cost_str.strip() != "":
+            custom_cost_str = request.form.get("custom_cost") or request.form.get("total_cost")
+            if custom_cost_str is not None and str(custom_cost_str).strip() != "":
                 try:
-                    total_cost = float(custom_cost_str.strip())
+                    total_cost = float(str(custom_cost_str).strip().replace(",", ""))
                     if total_cost < 0:
                         total_cost = 0.0
                 except ValueError:
-                    total_cost = (TREATMENT_PRICES[procedure_type] * num_teeth) + anesthesia_cost
+                    unit_p = float(get_treatment_prices().get(procedure_type, TREATMENT_PRICES.get(procedure_type, 0.0)))
+                    total_cost = (unit_p * num_teeth) + anesthesia_cost
             else:
-                total_cost = (TREATMENT_PRICES[procedure_type] * num_teeth) + anesthesia_cost
+                unit_p = float(get_treatment_prices().get(procedure_type, TREATMENT_PRICES.get(procedure_type, 0.0)))
+                total_cost = (unit_p * num_teeth) + anesthesia_cost
 
             treating_doctor_id = None
             from flask import g
@@ -442,39 +447,78 @@ def bulk_add_treatment(appointment_id):
 @role_required("admin", "doctor")
 def end_appointment_session(appointment_id):
     current_app.logger.info(f"End appointment session request | appointment_id={appointment_id}")
+    is_ar = request.cookies.get("lang") == "ar"
 
     try:
         appointment = Appointment.query.get_or_404(appointment_id)
 
         if appointment.status != "Scheduled":
+            if appointment.status == "Done":
+                flash("تم إنهاء هذه الجلسة مسبقاً." if is_ar else "This session is already ended.", "info")
+                return redirect(url_for("treatments.appointment_session", appointment_id=appointment.id))
             return render_template(
                 "error_message.html",
-                title="Action Not Allowed",
-                message="Only scheduled appointments can be ended.",
+                title="إجراء غير مسموح به" if is_ar else "Action Not Allowed",
+                message="يمكن فقط إنهاء المواعيد المجدولة." if is_ar else "Only scheduled appointments can be ended.",
                 back_url=url_for("treatments.appointment_session", appointment_id=appointment.id),
             ), 400
 
-        if not appointment.treatments and not appointment.invoice and appointment.reason in ("جلسة جديدة سريعة", "Quick Session"):
-            patient_id = appointment.patient_id
-            db.session.delete(appointment)
-            db.session.commit()
-            flash("تم التراجع عن الجلسة السريعة الفارغة وحذفها بنجاح." if request.cookies.get("lang") == "ar" else "Empty quick session discarded.", "info")
-            return redirect(url_for("patients.patient_detail", patient_id=patient_id))
-
-        appointment.status = "Done"
         from datetime import datetime
         now = datetime.now()
+
+        from flask import g
+        doc_id = None
+        if g.get("current_user") and g.current_user.role in ("doctor", "admin"):
+            doc_id = g.current_user.id
+        elif appointment.doctor_id:
+            doc_id = appointment.doctor_id
+
+        # If no active treatments recorded today (e.g. only future plans or consultation),
+        # automatically create a general clinical examination & consultation treatment (without specific tooth)
+        existing_treatments_count = Treatment.query.filter_by(appointment_id=appointment.id).count()
+        if existing_treatments_count == 0:
+            current_prices = get_treatment_prices()
+            consult_name = None
+            for candidate in ["جلسة فحص و استشارة", "جلسة فحص واستشارة", "فحص دوري واستشارة", "فحص دوري", "Check-up", "Clinical Examination & Consultation"]:
+                if candidate in current_prices:
+                    consult_name = candidate
+                    break
+            if not consult_name:
+                consult_name = "جلسة فحص و استشارة"
+
+            exam_price = float(current_prices.get(consult_name, 50000))
+
+            consultation_treatment = Treatment(
+                appointment_id=appointment.id,
+                treatment_date=appointment.appointment_date or now,
+                procedure_type=consult_name,
+                tooth_number=None,
+                notes="جلسة فحص واستشارة سريرية وتحديد خطة العلاج" if is_ar else "Clinical Examination, Consultation & Treatment Planning",
+                total_cost=exam_price,
+                use_anesthesia=False,
+                anesthesia_needles=0,
+                anesthesia_cost=0.0,
+                doctor_id=doc_id
+            )
+            db.session.add(consultation_treatment)
+            db.session.flush()
+
+        # Sync invoice for all treatments in the appointment
+        sync_invoice_for_appointment(appointment)
+
+        appointment.status = "Done"
         if appointment.appointment_date and appointment.appointment_date > now:
             appointment.appointment_date = now
 
-        from flask import g
-        if g.get("current_user") and g.current_user.role in ("doctor", "admin"):
-            appointment.doctor_id = g.current_user.id
+        if doc_id:
+            appointment.doctor_id = doc_id
+
         db.session.commit()
 
         current_app.logger.info(
             f"Appointment session ended successfully | appointment_id={appointment.id}"
         )
+        flash("تم إنهاء الجلسة بنجاح وتوليد فاتورة الجلسة." if is_ar else "Session ended successfully with invoice generated.", "success")
 
         return redirect(
             url_for("treatments.appointment_session", appointment_id=appointment.id)
@@ -487,8 +531,8 @@ def end_appointment_session(appointment_id):
         )
         return render_template(
             "error_message.html",
-            title="Error",
-            message="Failed to end appointment session.",
+            title="خطأ" if is_ar else "Error",
+            message="فشل إنهاء جلسة الموعد." if is_ar else "Failed to end appointment session.",
             back_url=url_for("treatments.appointment_session", appointment_id=appointment_id),
         ), 500
 
@@ -678,16 +722,18 @@ def edit_treatment(treatment_id):
             treatment.anesthesia_cost = anesthesia_cost
             treatment.anesthesia_type = anesthesia_type_val
 
-            custom_cost_str = request.form.get("custom_cost")
-            if custom_cost_str is not None and custom_cost_str.strip() != "":
+            custom_cost_str = request.form.get("custom_cost") or request.form.get("total_cost")
+            if custom_cost_str is not None and str(custom_cost_str).strip() != "":
                 try:
-                    total_cost = float(custom_cost_str.strip())
+                    total_cost = float(str(custom_cost_str).strip().replace(",", ""))
                     if total_cost < 0:
                         total_cost = 0.0
                 except ValueError:
-                    total_cost = (TREATMENT_PRICES[procedure_type] * num_teeth) + anesthesia_cost
+                    unit_p = float(get_treatment_prices().get(procedure_type, TREATMENT_PRICES.get(procedure_type, 0.0)))
+                    total_cost = (unit_p * num_teeth) + anesthesia_cost
             else:
-                total_cost = (TREATMENT_PRICES[procedure_type] * num_teeth) + anesthesia_cost
+                unit_p = float(get_treatment_prices().get(procedure_type, TREATMENT_PRICES.get(procedure_type, 0.0)))
+                total_cost = (unit_p * num_teeth) + anesthesia_cost
 
             treatment.total_cost = total_cost
 
@@ -960,3 +1006,93 @@ def quick_add_treatment_type():
         current_app.logger.exception("Failed to quick add treatment type")
         msg = "حدث خطأ أثناء إضافة الخدمة." if is_ar else "Failed to add service."
         return jsonify({"success": False, "message": msg}), 500
+
+
+@treatments_bp.route("/appointments/<int:appointment_id>/treatment-plans/<int:plan_id>/execute", methods=["POST"])
+@role_required("admin", "doctor")
+def execute_treatment_plan_item(appointment_id, plan_id):
+    current_app.logger.info(f"Execute treatment plan item into session | appt_id={appointment_id}, plan_id={plan_id}")
+    is_ar = request.cookies.get("lang", "ar") != "en"
+
+    try:
+        appointment = Appointment.query.get_or_404(appointment_id)
+        if appointment.status != "Scheduled":
+            flash("لا يمكن تنفيذ إجراء في جلسة مغلقة أو ملغاة." if is_ar else "Cannot execute plan in a closed session.", "danger")
+            return redirect(url_for("treatments.appointment_session", appointment_id=appointment.id))
+
+        plan_item = TreatmentPlanItem.query.filter_by(id=plan_id, patient_id=appointment.patient_id).first_or_404()
+
+        from datetime import datetime
+        now = datetime.now()
+
+        # Check extraction rule
+        proc_lower = (plan_item.procedure_type or "").lower()
+        is_post_ext = "ما بعد القلع" in proc_lower or "post-extraction" in proc_lower or "post extraction" in proc_lower
+        if not is_post_ext:
+            check_teeth = get_equivalent_tooth_numbers(plan_item.tooth_number)
+
+            has_ext = ToothHistory.query.filter(
+                ToothHistory.patient_id == appointment.patient_id,
+                ToothHistory.tooth_number.in_(check_teeth),
+                (ToothHistory.procedure_type.ilike("%قلع%") | ToothHistory.procedure_type.ilike("%extract%"))
+            ).first() or Treatment.query.join(Treatment.appointment).filter(
+                Appointment.patient_id == appointment.patient_id,
+                Appointment.status != "Cancelled",
+                Treatment.tooth_number.in_(check_teeth),
+                (Treatment.procedure_type.ilike("%قلع%") | Treatment.procedure_type.ilike("%extract%"))
+            ).first()
+
+            if has_ext:
+                flash(f"السن {plan_item.tooth_number} مقلوع. لا يمكن تنفيذ أي معالجة عليه سوى (معالجة ما بعد القلع)." if is_ar else f"Tooth {plan_item.tooth_number} is extracted. Only post-extraction care can be added.", "danger")
+                return redirect(url_for("treatments.appointment_session", appointment_id=appointment.id))
+
+        final_cost = float(plan_item.estimated_cost or 0)
+        if final_cost <= 0:
+            prices = get_treatment_prices()
+            final_cost = float(prices.get(plan_item.procedure_type, 0))
+
+        from flask import session as flask_session
+        user_id = flask_session.get("user_id")
+
+        note_prefix = "تم التنفيذ من خطة العلاج المقترحة." if is_ar else "Executed from treatment plan."
+        full_note = f"{note_prefix} {plan_item.notes or ''}".strip()
+
+        new_treatment = Treatment(
+            appointment_id=appointment.id,
+            treatment_date=now,
+            procedure_type=plan_item.procedure_type,
+            tooth_number=plan_item.tooth_number,
+            notes=full_note,
+            total_cost=final_cost,
+            doctor_id=user_id if flask_session.get("role") in ("doctor", "admin") else appointment.doctor_id
+        )
+        db.session.add(new_treatment)
+        db.session.flush()
+
+        # Mark plan item as Completed
+        plan_item.status = "Completed"
+        plan_item.completed_at = now
+        plan_item.completed_treatment_id = new_treatment.id
+
+        # Create/sync invoice
+        if not appointment.invoice:
+            invoice = Invoice(
+                appointment_id=appointment.id,
+                patient_id=appointment.patient_id,
+                issue_date=now,
+                discount=0.00,
+                additional_charges=0.00,
+                notes="Invoice generated from treatment session."
+            )
+            db.session.add(invoice)
+
+        db.session.commit()
+
+        flash("تم تحويل الإجراء المخطط وتنفيذه في جلسة اليوم بنجاح!" if is_ar else "Plan executed into today's session successfully!", "success")
+        return redirect(url_for("treatments.appointment_session", appointment_id=appointment.id))
+
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(f"Failed to execute treatment plan item | id={plan_id}")
+        flash("حدث خطأ أثناء تنفيذ خطة العلاج." if is_ar else "Failed to execute treatment plan.", "danger")
+        return redirect(url_for("treatments.appointment_session", appointment_id=appointment_id))

@@ -1,0 +1,22 @@
+<!-- ═══════════ Appointments Archive Filters & Search ═══════════ -->
+<div class="card border-0 rounded-4 shadow-sm p-3 mb-4 bg-body-tertiary">
+    <form id="archive-filter-form" action="{{ url_for('appointments.archive_table') }}" method="GET" class="row g-3 align-items-center">
+        <div class="col-md-7 col-lg-8">
+            <div class="input-group">
+                <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" name="search" id="archive-search-input" value="{{ search_query }}" class="form-control border-start-0 ps-0" placeholder="{% if current_lang == 'ar' %}ابحث باسم المريض...{% else %}Search by patient name...{% endif %}" autocomplete="off">
+            </div>
+        </div>
+        <div class="col-md-5 col-lg-4 d-flex gap-2">
+            <select name="status" id="archive-status-select" class="form-select rounded-pill">
+                <option value="" {% if not status_filter %}selected{% endif %}>{% if current_lang == 'ar' %}جميع المواعيد المؤرشفة{% else %}All Archived Statuses{% endif %}</option>
+                <option value="Done" {% if status_filter == 'Done' %}selected{% endif %}>{% if current_lang == 'ar' %}المنجزة فقط{% else %}Completed Only{% endif %}</option>
+                <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>{% if current_lang == 'ar' %}الملغاة فقط{% else %}Cancelled Only{% endif %}</option>
+            </select>
+            <a href="{{ url_for('appointments.appointments_archive') }}" class="btn btn-outline-secondary rounded-pill text-nowrap" id="archive-reset-btn" title="{% if current_lang == 'ar' %}إعادة تعيين الفلاتر{% else %}Reset Filters{% endif %}">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </a>
+        </div>
+        <input type="hidden" name="per_page" id="archive-per-page-input" value="{{ per_page or 10 }}">
+    </form>
+</div>

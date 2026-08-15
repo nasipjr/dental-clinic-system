@@ -1,0 +1,114 @@
+/**
+ * Dental Clinic Management System - License Activation Stylesheet
+ * Dark glassmorphism card, radial gradients, monospace license input, and WhatsApp support button.
+ */
+
+:root {
+    --bg-color: #0b1329;
+    --card-bg: rgba(18, 28, 56, 0.85);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --primary-accent: #0d6efd;
+}
+
+body.activation-layout {
+    background-color: var(--bg-color);
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(13, 110, 253, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(111, 66, 193, 0.15) 0%, transparent 40%);
+    font-family: 'Cairo', 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e2e8f0;
+    padding: 1.5rem;
+}
+
+.activation-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-color);
+    border-radius: 28px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 520px;
+    overflow: hidden;
+}
+
+.activation-header {
+    background: linear-gradient(135deg, rgba(13, 110, 253, 0.2) 0%, rgba(111, 66, 193, 0.2) 100%);
+    border-bottom: 1px solid var(--border-color);
+    padding: 2.5rem 2rem 2rem 2rem;
+    text-align: center;
+}
+
+.lock-icon-circle {
+    width: 80px;
+    height: 80px;
+    background: rgba(13, 110, 253, 0.15);
+    border: 2px solid rgba(13, 110, 253, 0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem auto;
+    color: #3d8bfd;
+    font-size: 2.5rem;
+    box-shadow: 0 0 30px rgba(13, 110, 253, 0.3);
+}
+
+.key-input {
+    background: rgba(15, 23, 42, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+    border-radius: 14px;
+    padding: 0.85rem 1.25rem;
+    font-family: monospace, sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.key-input:focus {
+    border-color: #0d6efd !important;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.25) !important;
+}
+
+.btn-activate {
+    background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    border: none;
+    border-radius: 14px;
+    padding: 0.85rem 1.5rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+    box-shadow: 0 8px 20px rgba(13, 110, 253, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-activate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(13, 110, 253, 0.4);
+}
+
+.whatsapp-btn {
+    background: rgba(37, 211, 102, 0.15);
+    border: 1px solid rgba(37, 211, 102, 0.3);
+    color: #25D366;
+    border-radius: 14px;
+    padding: 0.75rem 1.25rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.whatsapp-btn:hover {
+    background: rgba(37, 211, 102, 0.25);
+    color: #25D366;
+    transform: translateY(-1px);
+}

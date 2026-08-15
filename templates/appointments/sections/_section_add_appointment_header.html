@@ -1,0 +1,33 @@
+<!-- ═══════════ Add Appointment Header Banner ═══════════ -->
+<div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
+    <h2>{% if current_lang == 'ar' %}إضافة موعد جديد{% else %}Add New Appointment{% endif %}</h2>
+    <p>{% if current_lang == 'ar' %}قم بتعبئة معلومات الموعد لإدخال موعد جديد بالجدول.{% else %}Fill in the appointment information to create a new record.{% endif %}</p>
+</div>
+
+<div class="add-patient-icon" data-aos="zoom-in" data-aos-delay="200">
+    <i class="bi bi-calendar-event"></i>
+</div>
+
+{% if error_message %}
+<div class="alert alert-danger text-center" role="alert">
+    {{ error_message }}
+</div>
+{% endif %}
+
+{% if not patient and not patients %}
+<div class="text-center py-5" data-aos="fade-up" data-aos-delay="300">
+    <i class="bi bi-people fs-1 text-muted mb-3 d-block"></i>
+    <h4 class="mb-3">{% if current_lang == 'ar' %}لا يوجد مرضى مسجلين{% else %}No Patients Found{% endif %}</h4>
+    <p class="text-muted mb-4">{% if current_lang == 'ar' %}يجب عليك إضافة مريض واحد على الأقل قبل جدولة موعد جديد.{% else %}You need to add at least one patient to the database before you can schedule an appointment.{% endif %}</p>
+    <div class="col-12 text-center">
+        <a href="{{ url_for('patients.add_patient') }}"
+            class="save-patient-btn text-decoration-none px-4 py-2 d-inline-block">
+            <i class="bi bi-person-plus me-1"></i> {% if current_lang == 'ar' %}إضافة مريض جديد{% else %}Add Patient{% endif %}
+        </a>
+        <a href="{{ url_for('appointments.appointments') }}"
+            class="btn-outline-main ms-2 text-decoration-none px-4 py-2 d-inline-block">
+            {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+        </a>
+    </div>
+</div>
+{% endif %}
