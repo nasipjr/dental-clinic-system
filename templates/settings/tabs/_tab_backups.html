@@ -8,14 +8,14 @@
         </div>
         <div class="ms-auto d-flex gap-2 align-items-center flex-wrap">
             <a href="{{ url_for('settings.open_backups_folder') }}"
-                class="btn btn-outline-info btn-sm rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1.5 shadow-xs">
-                <i class="bi bi-folder2-open fs-6"></i>
+                class="btn btn-app-secondary btn-sm">
+                <i class="bi bi-folder2-open"></i>
                 <span>{% if current_lang == 'ar' %}فتح مجلد النسخ بالكمبيوتر{% else %}Open Backups Folder{% endif %}</span>
             </a>
             <button type="button"
-                class="btn btn-primary btn-sm rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1.5 shadow-xs"
+                class="btn btn-app-primary btn-sm"
                 onclick="createBackup()">
-                <i class="bi bi-plus-circle fs-6"></i>
+                <i class="bi bi-plus-circle"></i>
                 <span>{% if current_lang == 'ar' %}إنشاء نسخة احتياطية الآن{% else %}Create Backup Now{% endif %}</span>
             </button>
         </div>
@@ -92,10 +92,10 @@
                     </p>
                 </div>
                 <button type="button"
-                    class="btn btn-danger text-nowrap rounded-pill px-4 py-2 fw-semibold shadow-sm"
+                    class="btn btn-app-danger text-nowrap"
                     onclick="triggerResetClinicFlow()">
-                    <i class="bi bi-arrow-counterclockwise me-1"></i>
-                    {% if current_lang == 'ar' %}تصفير السجلات التشغيلية{% else %}Reset Operational Data{% endif %}
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                    <span>{% if current_lang == 'ar' %}تصفير السجلات التشغيلية{% else %}Reset Operational Data{% endif %}</span>
                 </button>
             </div>
         </div>
@@ -120,10 +120,10 @@
                     </p>
                 </div>
                 <button type="button"
-                    class="btn btn-outline-danger text-nowrap rounded-pill px-4 py-2 fw-semibold shadow-sm"
+                    class="btn btn-app-danger text-nowrap"
                     onclick="triggerFactoryResetClinicFlow()">
-                    <i class="bi bi-shield-x me-1"></i>
-                    {% if current_lang == 'ar' %}ضبط مصنعي شامل{% else %}Full Factory Reset{% endif %}
+                    <i class="bi bi-shield-x"></i>
+                    <span>{% if current_lang == 'ar' %}ضبط مصنعي شامل{% else %}Full Factory Reset{% endif %}</span>
                 </button>
             </div>
         </div>
@@ -147,10 +147,10 @@
                     </p>
                 </div>
                 <button type="button"
-                    class="btn btn-warning text-dark text-nowrap rounded-pill px-4 py-2 fw-semibold shadow-sm"
+                    class="btn btn-app-amber text-nowrap"
                     onclick="triggerRestoreLatestBackupFlow()">
-                    <i class="bi bi-arrow-down-square-fill me-1"></i>
-                    {% if current_lang == 'ar' %}استعادة نسخة احتياطية{% else %}Restore Database Backup{% endif %}
+                    <i class="bi bi-arrow-down-square-fill"></i>
+                    <span>{% if current_lang == 'ar' %}استعادة نسخة احتياطية{% else %}Restore Database Backup{% endif %}</span>
                 </button>
             </div>
         </div>

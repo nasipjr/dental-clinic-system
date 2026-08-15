@@ -1,52 +1,7 @@
 /**
  * Dental Clinic Management System - Appointment Form JavaScript Controller
- * Handles procedure categories, quick procedure selection, custom procedure creation, and form validation.
+ * Handles standard procedure dropdown selection, custom unlisted procedure creation, and form validation.
  */
-
-window.filterAppointmentCategory = function (category, pillBtn) {
-    document.querySelectorAll('.procedure-cat-pill').forEach(btn => btn.classList.remove('active', 'btn-primary'));
-    if (pillBtn) pillBtn.classList.add('active');
-
-    const cards = document.querySelectorAll('.sub-proc-item-card');
-    cards.forEach(card => {
-        const itemCat = card.dataset.category || 'عام';
-        if (category === 'all' || itemCat === category) {
-            card.style.display = 'block';
-        } else {
-            card.style.display = 'none';
-        }
-    });
-
-    const reasonSelect = document.getElementById('reason');
-    if (reasonSelect) {
-        Array.from(reasonSelect.options).forEach(opt => {
-            if (opt.value === '' || opt.value === '__custom__') return;
-            const optCat = opt.dataset.category || 'عام';
-            if (category === 'all' || optCat === category) {
-                opt.style.display = '';
-            } else {
-                opt.style.display = 'none';
-            }
-        });
-    }
-};
-
-window.selectQuickProcedure = function (procName, duration, price, cardEl) {
-    document.querySelectorAll('.procedure-quick-card').forEach(c => {
-        c.classList.remove('selected-card');
-        c.style.background = '';
-        c.style.borderColor = '';
-    });
-    if (cardEl) {
-        cardEl.classList.add('selected-card');
-    }
-
-    const reasonSelect = document.getElementById('reason');
-    if (reasonSelect) {
-        reasonSelect.value = procName;
-        window.handleReasonChange(reasonSelect);
-    }
-};
 
 window.toggleCustomReasonInput = function (forceOpen = false) {
     const container = document.getElementById('custom_reason_container');
@@ -155,76 +110,31 @@ window.confirmCustomProcedureCard = function () {
                         existingOpt = reasonSelect.querySelector(`option[value="${sName}"]`);
                     }
 
+                    const priceFormatted = Number(sPrice).toLocaleString();
+                    const currencyLabel = isAr ? 'ل.س' : 'SP';
+
                     if (!existingOpt) {
                         const newOpt = document.createElement('option');
                         newOpt.value = sName;
                         newOpt.setAttribute('data-category', sCat);
                         newOpt.setAttribute('data-duration', sDur);
                         newOpt.setAttribute('data-price', sPrice);
-                        newOpt.textContent = `${sName} (${sDur} ${isAr ? 'دقيقة' : 'min'})`;
+                        newOpt.textContent = `${sName} (${priceFormatted} ${currencyLabel})`;
 
-                        const customOpt = reasonSelect.querySelector('option[value="__custom__"]');
-                        if (customOpt) {
-                            reasonSelect.insertBefore(newOpt, customOpt);
+                        const matchingOptgroup = reasonSelect.querySelector(`optgroup[data-group-category="${sCat}"]`);
+                        if (matchingOptgroup) {
+                            matchingOptgroup.appendChild(newOpt);
                         } else {
-                            reasonSelect.appendChild(newOpt);
+                            const customOpt = reasonSelect.querySelector('option[value="__custom__"]');
+                            if (customOpt) {
+                                reasonSelect.insertBefore(newOpt, customOpt);
+                            } else {
+                                reasonSelect.appendChild(newOpt);
+                            }
                         }
                     }
                     reasonSelect.value = sName;
                     window.handleReasonChange(reasonSelect);
-                }
-
-                const cardsGrid = document.getElementById('sub-procedure-cards-container');
-                if (cardsGrid) {
-                    let existingCard = null;
-                    try {
-                        existingCard = cardsGrid.querySelector(`.sub-proc-item-card[data-proc-name="${CSS.escape(sName)}"]`);
-                    } catch (e) {
-                        existingCard = cardsGrid.querySelector(`.sub-proc-item-card[data-proc-name="${sName}"]`);
-                    }
-
-                    if (!existingCard) {
-                        const colDiv = document.createElement('div');
-                        colDiv.className = 'col-md-6 sub-proc-item-card';
-                        colDiv.setAttribute('data-category', sCat);
-                        colDiv.setAttribute('data-proc-name', sName);
-                        colDiv.setAttribute('data-duration', sDur);
-                        colDiv.setAttribute('data-price', sPrice);
-
-                        const priceFormatted = Number(sPrice).toLocaleString();
-                        const currencyLabel = isAr ? 'ل.س' : 'SP';
-
-                        colDiv.innerHTML = `
-                        <div class="procedure-quick-card cursor-pointer d-flex justify-content-between align-items-center h-100" onclick="selectQuickProcedure('${sName}', '${sDur}', '${sPrice}', this)">
-                            <div>
-                                <span class="fw-bold d-block proc-title mb-1">${sName}</span>
-                                <span class="badge duration-badge">
-                                    <i class="bi bi-clock me-1"></i>${sDur} ${isAr ? 'دقيقة' : 'min'}
-                                </span>
-                            </div>
-                            <span class="badge price-badge ms-2">
-                                ${priceFormatted} ${currencyLabel}
-                            </span>
-                        </div>
-                    `;
-                        cardsGrid.appendChild(colDiv);
-                        existingCard = colDiv;
-                    }
-
-                    const cardInner = existingCard.querySelector('.procedure-quick-card');
-                    if (cardInner) {
-                        window.selectQuickProcedure(sName, sDur, sPrice, cardInner);
-                    }
-
-                    let matchingPill = null;
-                    try {
-                        matchingPill = document.querySelector(`.procedure-cat-pill[data-cat="${CSS.escape(sCat)}"]`);
-                    } catch (e) {
-                        matchingPill = document.querySelector(`.procedure-cat-pill[data-cat="${sCat}"]`);
-                    }
-                    if (matchingPill) {
-                        window.filterAppointmentCategory(sCat, matchingPill);
-                    }
                 }
 
                 const customContainer = document.getElementById('custom_reason_container');
@@ -250,10 +160,7 @@ window.confirmCustomProcedureCard = function () {
             }
         })
         .catch(err => {
-            console.error(err);
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'error', title: isAr ? 'خطأ' : 'Error', text: isAr ? 'فشل الاتصال بالخادم' : 'Server error' });
-            }
+            console.error('Quick Add Service Error:', err);
         });
 };
 
@@ -263,46 +170,23 @@ window.initAppointmentForm = function (config) {
 
     if (reasonSel && reasonSel.value) {
         const val = reasonSel.value;
-
         if (val === '__custom__') {
             window.toggleCustomReasonInput(true);
         } else {
-            let matchingCardWrapper = null;
+            let existingOpt = null;
             try {
-                matchingCardWrapper = document.querySelector(`.sub-proc-item-card[data-proc-name="${CSS.escape(val)}"]`);
+                existingOpt = reasonSel.querySelector(`option[value="${CSS.escape(val)}"]`);
             } catch (e) {
-                matchingCardWrapper = document.querySelector(`.sub-proc-item-card[data-proc-name="${val}"]`);
+                existingOpt = reasonSel.querySelector(`option[value="${val}"]`);
             }
-
-            if (matchingCardWrapper) {
-                const cardInner = matchingCardWrapper.querySelector('.procedure-quick-card');
-                if (cardInner) {
-                    document.querySelectorAll('.procedure-quick-card').forEach(c => c.classList.remove('selected-card'));
-                    cardInner.classList.add('selected-card');
-                }
-
-                const cat = matchingCardWrapper.dataset.category || 'all';
-
-                let matchingPill = null;
-                try {
-                    matchingPill = document.querySelector(`.procedure-cat-pill[data-cat="${CSS.escape(cat)}"]`);
-                } catch (e) {
-                    matchingPill = document.querySelector(`.procedure-cat-pill[data-cat="${cat}"]`);
-                }
-
-                if (matchingPill) {
-                    window.filterAppointmentCategory(cat, matchingPill);
-                }
-
-                setTimeout(() => {
-                    matchingCardWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 150);
-            } else {
+            if (!existingOpt) {
                 const customReasonInput = document.getElementById('custom_reason');
                 if (customReasonInput && !customReasonInput.value) {
                     customReasonInput.value = val;
                 }
                 window.toggleCustomReasonInput(true);
+            } else {
+                window.handleReasonChange(reasonSel);
             }
         }
     }
@@ -324,7 +208,7 @@ window.initAppointmentForm = function (config) {
                     Swal.fire({
                         icon: 'warning',
                         title: isAr ? 'يرجى اختيار سبب المعالجة الطبية' : 'Please Select Procedure Reason',
-                        text: isAr ? 'يرجى النقر على أحد الإجراءات الطبية المتاحة أو كتابة إجراء نصي مخصص أولاً.' : 'Please click on a procedure card or enter a custom procedure first.',
+                        text: isAr ? 'يرجى اختيار أحد الإجراءات الطبية من القائمة المنسدلة أو كتابة إجراء نصي مخصص أولاً.' : 'Please select a procedure from the list or enter a custom procedure first.',
                         confirmButtonColor: '#0ea5e9',
                         background: '#1e293b',
                         color: '#f8fafc'
@@ -332,8 +216,7 @@ window.initAppointmentForm = function (config) {
                 } else {
                     alert(isAr ? 'يرجى اختيار سبب المعالجة الطبية' : 'Please Select Procedure Reason');
                 }
-                const subProcContainer = document.getElementById('sub-procedure-cards-container');
-                if (subProcContainer) subProcContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (reasonSelect) reasonSelect.focus();
             }
         });
     }

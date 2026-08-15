@@ -34,52 +34,7 @@
                 </p>
 
                 <div class="odontogram-container py-2" dir="ltr">
-                    <div class="unified-mouth-container">
-                        <svg class="jaw-bg-line" viewBox="0 0 100 100" preserveAspectRatio="none">
-                            <path d="M 8.2 37 C 8.2 3, 91.8 3, 91.8 37"
-                                fill="none" stroke="rgba(13,110,253,0.35)"
-                                stroke-width="1.0" stroke-dasharray="2.5 2.5" stroke-linecap="round"/>
-                            <path d="M 91.8 63 C 91.8 97, 8.2 97, 8.2 63"
-                                fill="none" stroke="rgba(13,202,240,0.35)"
-                                stroke-width="1.0" stroke-dasharray="2.5 2.5" stroke-linecap="round"/>
-                        </svg>
-
-                        <!-- Upper jaw label -->
-                        <div style="position:absolute;top:28%;left:50%;transform:translateX(-50%);z-index:3;pointer-events:none;">
-                            <span class="jaw-title-badge jaw-upper-badge">
-                                <i class="bi bi-arrow-up me-1"></i>
-                                {{ 'الفك العلوي' if current_lang == 'ar' else 'Upper Jaw' }}
-                            </span>
-                        </div>
-
-                        <!-- Lower jaw label -->
-                        <div style="position:absolute;top:64%;left:50%;transform:translateX(-50%);z-index:3;pointer-events:none;">
-                            <span class="jaw-title-badge jaw-lower-badge">
-                                <i class="bi bi-arrow-down me-1"></i>
-                                {{ 'الفك السفلي' if current_lang == 'ar' else 'Lower Jaw' }}
-                            </span>
-                        </div>
-
-                        <!-- Upper Teeth (1-16) -->
-                        {% for i in range(1, 17) %}
-                        {% set pos = upper_arch_positions[i] %}
-                        <div class="tooth-wrapper p-tooth-item" data-patient-tooth="{{ i }}"
-                            style="left:{{ pos.x }};top:{{ pos.y }};--rot:{{ pos.r }};transform:translate(-50%,-50%) rotate({{ pos.r }});">
-                            <span class="tooth-label-top small fw-bold">{{ fdi_map[i] }}</span>
-                            <div class="tooth-svg-container">{{ render_tooth_svg(i, false) }}</div>
-                        </div>
-                        {% endfor %}
-
-                        <!-- Lower Teeth (32→17) -->
-                        {% for i in [32,31,30,29,28,27,26,25,24,23,22,21,20,19,18,17] %}
-                        {% set pos = lower_arch_positions[i] %}
-                        <div class="tooth-wrapper p-tooth-item" data-patient-tooth="{{ i }}"
-                            style="left:{{ pos.x }};top:{{ pos.y }};--rot:{{ pos.r }};transform:translate(-50%,-50%) rotate({{ pos.r }});">
-                            <span class="tooth-label-top small fw-bold">{{ fdi_map[i] }}</span>
-                            <div class="tooth-svg-container">{{ render_tooth_svg(i, true) }}</div>
-                        </div>
-                        {% endfor %}
-                    </div>
+                    {% include "partials/_vector_odontogram_svg.html" %}
                 </div>
 
                 <!-- Legend -->
@@ -93,7 +48,7 @@
                         <span class="small text-muted">{{ 'سن مقلوع' if current_lang == 'ar' else 'Extracted Tooth' }}</span>
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                        <span class="legend-dot history-external-bg"></span>
+                        <span class="fs-6" style="color: #c084fc; filter: drop-shadow(0 0 3px #a855f7);"><i class="bi bi-star-fill"></i></span>
                         <span class="small text-muted">{{ 'سوابق مرضية وخارجية' if current_lang == 'ar' else 'Prior / External Record' }}</span>
                     </div>
                     <div class="d-flex align-items-center gap-2">
@@ -205,6 +160,10 @@
                     <div class="d-flex align-items-center gap-2">
                         <span class="legend-dot extracted-treatment-bg"></span>
                         <span class="small text-muted">{{ 'سن مقلوع' if current_lang == 'ar' else 'Extracted Tooth' }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fs-6" style="color: #c084fc; filter: drop-shadow(0 0 3px #a855f7);"><i class="bi bi-star-fill"></i></span>
+                        <span class="small text-muted">{{ 'سوابق مرضية وخارجية' if current_lang == 'ar' else 'Prior / External Record' }}</span>
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         <span class="plan-star-badge fs-6"><i class="bi bi-star-fill"></i></span>

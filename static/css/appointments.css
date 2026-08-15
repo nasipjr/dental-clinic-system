@@ -48,3 +48,186 @@
     color: #ffffff;
     border-color: transparent;
 }
+
+/* ═══════════ Header Action Button Pills ═══════════ */
+.btn-group-toggle-pills {
+    display: inline-flex;
+    background: rgba(15, 23, 42, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 50rem !important;
+    padding: 3px !important;
+    gap: 3px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+[data-bs-theme="light"] .btn-group-toggle-pills {
+    background: rgba(241, 245, 249, 0.95) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.btn-view-toggle-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: inherit;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #94a3b8 !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 50rem !important;
+    padding: 6px 16px !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+[data-bs-theme="light"] .btn-view-toggle-pill {
+    color: #64748b !important;
+}
+
+.btn-view-toggle-pill:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-bs-theme="light"] .btn-view-toggle-pill:hover {
+    color: #0f172a !important;
+    background: rgba(0, 0, 0, 0.05) !important;
+}
+
+.btn-view-toggle-pill.active {
+    color: #ffffff !important;
+    background: #0284c7 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 10px rgba(2, 132, 199, 0.4);
+}
+
+.btn-archive-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #fbbf24 !important;
+    background: rgba(245, 158, 11, 0.08) !important;
+    border: 1px solid rgba(245, 158, 11, 0.35) !important;
+    border-radius: 50rem !important;
+    padding: 7px 20px !important;
+    text-decoration: none !important;
+    line-height: 1.4;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+}
+
+.btn-archive-pill:hover {
+    color: #ffffff !important;
+    background: rgba(245, 158, 11, 0.22) !important;
+    border-color: #fbbf24 !important;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.28);
+    transform: translateY(-1px);
+}
+
+[data-bs-theme="light"] .btn-archive-pill {
+    color: #b45309 !important;
+    background: rgba(245, 158, 11, 0.1) !important;
+    border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
+[data-bs-theme="light"] .btn-archive-pill:hover {
+    color: #ffffff !important;
+    background: #d97706 !important;
+    border-color: #d97706 !important;
+}
+
+.btn-quick-session-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #34d399 !important;
+    background: rgba(16, 185, 129, 0.1) !important;
+    border: 1px solid rgba(16, 185, 129, 0.4) !important;
+    border-radius: 50rem !important;
+    padding: 7px 20px !important;
+    text-decoration: none !important;
+    line-height: 1.4;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+}
+
+.btn-quick-session-pill:hover {
+    color: #ffffff !important;
+    background: rgba(16, 185, 129, 0.25) !important;
+    border-color: #34d399 !important;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+    transform: translateY(-1px);
+}
+
+[data-bs-theme="light"] .btn-quick-session-pill {
+    color: #047857 !important;
+    background: rgba(16, 185, 129, 0.12) !important;
+    border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+[data-bs-theme="light"] .btn-quick-session-pill:hover {
+    color: #ffffff !important;
+    background: #059669 !important;
+    border-color: #059669 !important;
+}
+
+/* ═══════════ Standalone Primary Add Appointment CTA ═══════════ */
+.btn-add-appt-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: inherit;
+    font-size: 0.98rem;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    color: #ffffff !important;
+    background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 60%, #38bdf8 100%) !important;
+    border: 1px solid rgba(56, 189, 248, 0.6) !important;
+    border-radius: 50rem !important;
+    padding: 10px 28px !important;
+    text-decoration: none !important;
+    line-height: 1.4;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 18px rgba(2, 132, 199, 0.45);
+    cursor: pointer;
+}
+
+.btn-add-appt-pill i {
+    font-size: 1.15rem;
+}
+
+.btn-add-appt-pill:hover {
+    color: #ffffff !important;
+    background: linear-gradient(135deg, #0369a1 0%, #0284c7 60%, #0ea5e9 100%) !important;
+    box-shadow: 0 8px 26px rgba(2, 132, 199, 0.6) !important;
+    transform: translateY(-2px) scale(1.02);
+}
+
+/* Light mode — strong vivid blue for crystal-clear readability */
+[data-bs-theme="light"] .btn-add-appt-pill {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+    border: 1px solid rgba(2, 132, 199, 0.5) !important;
+    box-shadow: 0 4px 16px rgba(2, 132, 199, 0.35) !important;
+}
+
+[data-bs-theme="light"] .btn-add-appt-pill:hover {
+    background: linear-gradient(135deg, #0369a1 0%, #075985 100%) !important;
+    box-shadow: 0 8px 24px rgba(3, 105, 161, 0.5) !important;
+}
+
+

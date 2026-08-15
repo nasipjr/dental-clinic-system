@@ -131,8 +131,8 @@
                         </select>
                     </div>
                     <input type="text" id="exp-filter-search" class="form-control form-control-sm rounded-pill border" style="width:auto;min-width:160px;" placeholder="{% if current_lang=='ar' %}بحث في الملاحظات...{% else %}Search notes...{% endif %}">
-                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-3" id="exp-reset-btn">
-                        <i class="bi bi-x-circle me-1"></i>{% if current_lang=='ar' %}إعادة تعيين{% else %}Reset{% endif %}
+                    <button class="btn btn-sm btn-filter-reset" id="exp-reset-btn">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>{% if current_lang=='ar' %}إعادة تعيين{% else %}Reset{% endif %}
                     </button>
                     <div class="d-flex align-items-center gap-2 ms-auto">
                         <label for="exp-per-page" class="small text-secondary fw-semibold mb-0 text-nowrap">{% if current_lang == 'ar' %}عرض في الصفحة:{% else %}Items per page:{% endif %}</label>

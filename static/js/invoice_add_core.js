@@ -1,25 +1,39 @@
 /**
  * Dental Clinic Management System - Invoice Creation Core Controller
- * Real-time row calculations, dynamic item generation, discount handler, and payment status detection.
+ * Real-time row calculations, categorized procedure generation, discount & additional charges, and payment status detection.
  */
 
 window.initInvoiceAdd = function (config) {
     const treatmentPrices = config.treatmentPrices || {};
+    const treatmentDetails = config.treatmentDetails || {};
     const currencySymbol = config.currencySymbol || '';
     const isAr = config.isArabic !== undefined ? config.isArabic : (document.documentElement.lang === 'ar' || document.dir === 'rtl');
 
     const itemsBody = document.getElementById("invoice-items-body");
     const addItemButton = document.getElementById("add-item-btn");
+    const clearChargesBtn = document.getElementById("btn-clear-charges");
     const invoiceTotalElement = document.getElementById("invoice-total");
     const invoiceSubtotalElement = document.getElementById("invoice-subtotal");
     const discountInput = document.getElementById("invoice-discount-input");
     const discountTypeSelect = document.getElementById("invoice-discount-type");
+    const additionalChargesInput = document.getElementById("invoice-additional-charges-input");
 
     const paymentOption = document.getElementById("payment-option");
     const customPaymentBox = document.getElementById("custom-payment-box");
     const customPaymentAmount = document.getElementById("custom-payment-amount");
     const selectedPaymentDisplay = document.getElementById("selected-payment-display");
     const expectedStatusDisplay = document.getElementById("expected-status-display");
+
+    const categories = [
+        'فحص وتشخيص',
+        'حشوات ومعالجات تجميلية',
+        'علاج عصب وجذور',
+        'جراحة وقلع',
+        'تعويضات وتيجان',
+        'تقويم أسنان',
+        'أسنان أطفال',
+        'إجراءات عامة وأخرى'
+    ];
 
     function getProcedurePrice(procedureType) {
         if (!procedureType || !treatmentPrices[procedureType]) {
@@ -80,7 +94,13 @@ window.initInvoiceAdd = function (config) {
             discountAmount = discount;
         }
 
-        const total = Math.max(0, subtotal - discountAmount);
+        let additionalCharges = Number(additionalChargesInput ? additionalChargesInput.value : 0);
+        if (additionalCharges < 0) {
+            additionalCharges = 0;
+            if (additionalChargesInput) additionalChargesInput.value = 0;
+        }
+
+        const total = Math.max(0, subtotal - discountAmount + additionalCharges);
 
         if (invoiceTotalElement) {
             invoiceTotalElement.textContent = total.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
@@ -138,14 +158,47 @@ window.initInvoiceAdd = function (config) {
         }
     }
 
+    function buildProcedureOptionsHtml() {
+        let html = `<option value="">${isAr ? '-- اختر نوع الإجراء من القائمة --' : '-- Select Procedure --'}</option>`;
+
+        categories.forEach(function (cat) {
+            let catOptions = '';
+            Object.keys(treatmentPrices).forEach(function (procName) {
+                const price = Number(treatmentPrices[procName] || 0);
+                const detail = treatmentDetails[procName] || {};
+                const itemCat = detail.category || 'إجراءات عامة وأخرى';
+                if (itemCat === cat) {
+                    const formattedPrice = price.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                    catOptions += `<option value="${procName}" data-price="${price}">${procName} (${formattedPrice} ${currencySymbol})</option>`;
+                }
+            });
+            if (catOptions) {
+                html += `<optgroup label="── ${cat} ──">${catOptions}</optgroup>`;
+            }
+        });
+
+        let otherOptions = '';
+        Object.keys(treatmentPrices).forEach(function (procName) {
+            const detail = treatmentDetails[procName] || {};
+            const itemCat = detail.category || 'إجراءات عامة وأخرى';
+            if (!categories.includes(itemCat)) {
+                const price = Number(treatmentPrices[procName] || 0);
+                const formattedPrice = price.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                otherOptions += `<option value="${procName}" data-price="${price}">${procName} (${formattedPrice} ${currencySymbol})</option>`;
+            }
+        });
+        if (otherOptions) {
+            html += `<optgroup label="── ${isAr ? 'إجراءات أخرى' : 'Other Procedures'} ──">${otherOptions}</optgroup>`;
+        }
+
+        return html;
+    }
+
     function createItemRow() {
         const row = document.createElement("tr");
         row.className = "invoice-item-row";
 
-        let procedureOptions = `<option value="">${isAr ? '-- اختر الإجراء --' : 'Select procedure'}</option>`;
-        Object.keys(treatmentPrices).forEach(function (procedureType) {
-            procedureOptions += `<option value="${procedureType}">${procedureType}</option>`;
-        });
+        const procedureOptions = buildProcedureOptionsHtml();
 
         row.innerHTML = `
             <td>
@@ -157,14 +210,15 @@ window.initInvoiceAdd = function (config) {
                 <input type="text" name="tooth_number" class="form-control" placeholder="${isAr ? 'رقم السن (اختياري)' : 'Tooth number'}">
             </td>
             <td>
-                <input type="text" name="notes" class="form-control" placeholder="${isAr ? 'ملاحظات إضافية' : 'Notes'}">
+                <input type="text" name="notes" class="form-control" placeholder="${isAr ? 'ملاحظات إضافية...' : 'Notes...'}">
             </td>
             <td>
                 <span class="price-badge"><span class="item-price">0</span> ${currencySymbol}</span>
             </td>
             <td class="text-center">
-                <button type="button" class="btn btn-outline-danger btn-sm remove-item-btn">
-                    <i class="bi bi-trash me-1"></i>${isAr ? 'حذف' : 'Remove'}
+                <button type="button" class="btn-delete-row-squircle remove-item-btn">
+                    <i class="bi bi-trash"></i>
+                    <span>${isAr ? 'حذف' : 'Delete'}</span>
                 </button>
             </td>
         `;
@@ -176,6 +230,13 @@ window.initInvoiceAdd = function (config) {
             const newRow = createItemRow();
             itemsBody.appendChild(newRow);
             updateRemoveButtons();
+            calculateTotal();
+        });
+    }
+
+    if (clearChargesBtn && additionalChargesInput) {
+        clearChargesBtn.addEventListener("click", function () {
+            additionalChargesInput.value = 0;
             calculateTotal();
         });
     }
@@ -200,6 +261,7 @@ window.initInvoiceAdd = function (config) {
     if (customPaymentAmount) customPaymentAmount.addEventListener("input", updatePaymentDisplay);
     if (discountInput) discountInput.addEventListener("input", calculateTotal);
     if (discountTypeSelect) discountTypeSelect.addEventListener("change", calculateTotal);
+    if (additionalChargesInput) additionalChargesInput.addEventListener("input", calculateTotal);
 
     updateRemoveButtons();
     calculateTotal();

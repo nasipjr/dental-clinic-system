@@ -35,10 +35,10 @@
             </div>
             
             <div class="d-flex gap-2 align-items-center flex-wrap">
-                <!-- Global Year Filter Dropdown -->
+                <!-- Year Selector Dropdown -->
                 <div class="dropdown">
-                    <button class="btn btn-outline-primary rounded-pill px-3.5 py-2 fw-bold dropdown-toggle d-flex align-items-center gap-2 shadow-xs" type="button" id="yearFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-calendar3 text-primary"></i>
+                    <button class="btn btn-app-secondary rounded-pill px-3.5 py-2 fw-bold dropdown-toggle d-flex align-items-center gap-2 shadow-xs" type="button" id="yearFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-calendar3" style="color: #38bdf8;"></i>
                         <span>
                             {% if current_lang == 'ar' %}السنة: {% else %}Year: {% endif %}
                             {% if selected_year == 'all' or not selected_year %}
@@ -66,15 +66,15 @@
                     </ul>
                 </div>
 
-                <a href="{{ url_for('reports.print_full_report', year=selected_year) }}" target="_blank" class="btn btn-primary rounded-pill px-4 fw-bold">
-                    <i class="bi bi-printer me-1"></i>
-                    {% if current_lang == 'ar' %}طباعة التقرير الشامل (PDF){% else %}Print Full Report (PDF){% endif %}
+                <a href="{{ url_for('reports.print_full_report', year=selected_year) }}" target="_blank" class="btn btn-app-primary">
+                    <i class="bi bi-printer"></i>
+                    <span>{% if current_lang == 'ar' %}طباعة التقرير الشامل (PDF){% else %}Print Full Report (PDF){% endif %}</span>
                 </a>
 
                 <div class="dropdown">
-                    <button class="btn btn-primary rounded-pill px-4 fw-bold dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-download me-1"></i>
-                        {% if current_lang == 'ar' %}تصدير Excel/CSV{% else %}Export Excel/CSV{% endif %}
+                    <button class="btn btn-app-primary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-download"></i>
+                        <span>{% if current_lang == 'ar' %}تصدير Excel/CSV{% else %}Export Excel/CSV{% endif %}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2" aria-labelledby="exportDropdown">
                         <li>

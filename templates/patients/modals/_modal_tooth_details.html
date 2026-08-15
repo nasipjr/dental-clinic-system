@@ -30,9 +30,9 @@
                             <i class="bi bi-journal-medical flex-shrink-0"></i>
                             <span>{% if current_lang == 'ar' %}السوابق المرضية والتشخيص الأولي{% else %}Pre-existing Conditions & Diagnostic History{% endif %}</span>
                         </h6>
-                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-semibold flex-shrink-0 ms-2" id="toggle-add-history-btn" style="font-size: 0.8rem; white-space: nowrap;">
-                            <i class="bi bi-plus-circle me-1"></i>
-                            {% if current_lang == 'ar' %}إضافة سابقة مرضية للسن{% else %}Add Pre-existing Condition{% endif %}
+                        <button type="button" class="btn btn-action-header-purple" id="toggle-add-history-btn">
+                            <i class="bi bi-plus-circle"></i>
+                            <span>{% if current_lang == 'ar' %}إضافة سابقة مرضية للسن{% else %}Add Pre-existing Condition{% endif %}</span>
                         </button>
                     </div>
 
@@ -97,8 +97,9 @@
                             <i class="bi bi-calendar-plus me-2"></i>
                             <span>{% if current_lang == 'ar' %}المعالجات المستقبلية وخطة العلاج المقترحة{% else %}Future Treatment Plan{% endif %}</span>
                         </h6>
-                        <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3 py-1 fw-semibold" id="p-toggle-add-plan-btn" style="font-size: 0.8rem; white-space: nowrap;">
-                            <i class="bi bi-plus-circle me-1"></i>{% if current_lang == 'ar' %}إضافة للخطة{% else %}Add to Plan{% endif %}
+                        <button type="button" class="btn btn-action-header-amber" id="p-toggle-add-plan-btn">
+                            <i class="bi bi-plus-circle"></i>
+                            <span>{% if current_lang == 'ar' %}إضافة للخطة{% else %}Add to Plan{% endif %}</span>
                         </button>
                     </div>
 

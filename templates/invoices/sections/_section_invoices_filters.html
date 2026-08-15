@@ -1,31 +1,31 @@
 <!-- ═══════════ Invoices Status Pills & Search Filter ═══════════ -->
 <!-- Status Tabs Bar -->
-<div class="d-flex align-items-center gap-2 mb-3 overflow-x-auto pb-2 user-select-none">
+<div class="status-filter-pills-bar mb-3 user-select-none">
     <a href="{{ url_for('invoices.invoices', status='', search=search_query, patient_id=patient_id) }}"
-       class="sub-tab-item btn btn-sm rounded-pill px-3.5 py-2 fw-semibold text-nowrap transition-all {% if not status_filter %}btn-primary text-white shadow-sm{% else %}btn-outline-secondary border-0 text-body opacity-75{% endif %}">
-        {% if current_lang == 'ar' %}الكل{% else %}All Invoices{% endif %}
-        <span class="badge rounded-pill {% if not status_filter %}bg-white text-primary fw-bold{% else %}bg-primary-subtle text-primary-emphasis{% endif %} ms-1" style="font-size: 0.78rem;">{{ status_counts.all if status_counts else 0 }}</span>
+       class="status-filter-pill {% if not status_filter %}active-all{% endif %}">
+        <span>{% if current_lang == 'ar' %}الكل{% else %}All Invoices{% endif %}</span>
+        <span class="status-pill-badge">{{ status_counts.all if status_counts else 0 }}</span>
     </a>
 
     <a href="{{ url_for('invoices.invoices', status='Paid', search=search_query, patient_id=patient_id) }}"
-       class="sub-tab-item btn btn-sm rounded-pill px-3.5 py-2 fw-semibold text-nowrap transition-all {% if status_filter == 'Paid' %}btn-success text-white shadow-sm{% else %}btn-outline-secondary border-0 text-body opacity-75{% endif %}">
-        <i class="bi bi-check-circle-fill me-1"></i>
-        {% if current_lang == 'ar' %}مدفوع بالكامل{% else %}Paid{% endif %}
-        <span class="badge rounded-pill {% if status_filter == 'Paid' %}bg-white text-success fw-bold{% else %}bg-success-subtle text-success-emphasis{% endif %} ms-1" style="font-size: 0.78rem;">{{ status_counts.paid if status_counts else 0 }}</span>
+       class="status-filter-pill {% if status_filter == 'Paid' %}active-paid{% endif %}">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>{% if current_lang == 'ar' %}مدفوع بالكامل{% else %}Paid{% endif %}</span>
+        <span class="status-pill-badge">{{ status_counts.paid if status_counts else 0 }}</span>
     </a>
 
     <a href="{{ url_for('invoices.invoices', status='Partially Paid', search=search_query, patient_id=patient_id) }}"
-       class="sub-tab-item btn btn-sm rounded-pill px-3.5 py-2 fw-semibold text-nowrap transition-all {% if status_filter == 'Partially Paid' or status_filter == 'Partial' %}btn-warning text-dark shadow-sm{% else %}btn-outline-secondary border-0 text-body opacity-75{% endif %}">
-        <i class="bi bi-pie-chart-fill me-1"></i>
-        {% if current_lang == 'ar' %}مدفوع جزئياً{% else %}Partially Paid{% endif %}
-        <span class="badge rounded-pill {% if status_filter == 'Partially Paid' or status_filter == 'Partial' %}bg-dark text-warning fw-bold{% else %}bg-warning-subtle text-warning-emphasis{% endif %} ms-1" style="font-size: 0.78rem;">{{ status_counts.partial if status_counts else 0 }}</span>
+       class="status-filter-pill {% if status_filter == 'Partially Paid' or status_filter == 'Partial' %}active-partial{% endif %}">
+        <i class="bi bi-pie-chart-fill"></i>
+        <span>{% if current_lang == 'ar' %}مدفوع جزئياً{% else %}Partially Paid{% endif %}</span>
+        <span class="status-pill-badge">{{ status_counts.partial if status_counts else 0 }}</span>
     </a>
 
     <a href="{{ url_for('invoices.invoices', status='Unpaid', search=search_query, patient_id=patient_id) }}"
-       class="sub-tab-item btn btn-sm rounded-pill px-3.5 py-2 fw-semibold text-nowrap transition-all {% if status_filter == 'Unpaid' %}btn-danger text-white shadow-sm{% else %}btn-outline-secondary border-0 text-body opacity-75{% endif %}">
-        <i class="bi bi-exclamation-circle-fill me-1"></i>
-        {% if current_lang == 'ar' %}غير مدفوع (مستحق){% else %}Unpaid{% endif %}
-        <span class="badge rounded-pill {% if status_filter == 'Unpaid' %}bg-white text-danger fw-bold{% else %}bg-danger-subtle text-danger-emphasis{% endif %} ms-1" style="font-size: 0.78rem;">{{ status_counts.unpaid if status_counts else 0 }}</span>
+       class="status-filter-pill {% if status_filter == 'Unpaid' %}active-unpaid{% endif %}">
+        <i class="bi bi-exclamation-circle-fill"></i>
+        <span>{% if current_lang == 'ar' %}غير مدفوع (مستحق){% else %}Unpaid{% endif %}</span>
+        <span class="status-pill-badge">{{ status_counts.unpaid if status_counts else 0 }}</span>
     </a>
 </div>
 
@@ -56,13 +56,14 @@
         <input type="hidden" name="per_page" id="invoices-per-page-input" value="{{ per_page or 10 }}">
 
         <div class="col-md-4 d-flex gap-2 flex-wrap align-items-center">
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-search me-1"></i>
-                {% if current_lang == 'ar' %}بحث{% else %}Search{% endif %}
+            <button type="submit" class="btn btn-filter-search">
+                <i class="bi bi-search"></i>
+                <span>{% if current_lang == 'ar' %}بحث{% else %}Search{% endif %}</span>
             </button>
 
-            <a href="{{ url_for('invoices.invoices') }}" class="btn btn-outline-secondary">
-                {% if current_lang == 'ar' %}إعادة تعيين{% else %}Reset{% endif %}
+            <a href="{{ url_for('invoices.invoices') }}" class="btn btn-filter-reset">
+                <i class="bi bi-arrow-counterclockwise"></i>
+                <span>{% if current_lang == 'ar' %}إعادة تعيين{% else %}Reset{% endif %}</span>
             </a>
 
             <div class="d-flex align-items-center gap-2 ms-auto">

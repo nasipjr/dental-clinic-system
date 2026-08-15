@@ -32,52 +32,20 @@
         <!-- Reason & Procedure Category Selection -->
         <div class="col-md-12">
             <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="d-flex justify-content-between align-items-center mb-2.5 flex-wrap gap-2">
                     <label for="reason" class="form-label fw-bold fs-6 mb-0 d-flex align-items-center gap-2 text-primary">
                         <i class="bi bi-layers-half fs-5 text-primary"></i>
                         {% if current_lang == 'ar' %}السبب وتصنيف المعالجة الطبية{% else %}Reason & Procedure Category{% endif %}
                     </label>
+                    <button type="button" class="btn btn-custom-procedure-toggle" onclick="toggleCustomReasonInput()">
+                        <i class="bi bi-plus-circle-dotted"></i>
+                        <span>{% if current_lang == 'ar' %}إضافة سبب / إجراء نصي مخصص غير مدرج{% else %}Add Custom / Unlisted Procedure{% endif %}</span>
+                    </button>
                 </div>
 
-                <!-- Category Pills Filter Navigation -->
-                <div class="category-pills-wrapper mb-2">
-                    <button type="button" class="btn procedure-cat-pill active" data-cat="all" onclick="filterAppointmentCategory('all', this)">{% if current_lang == 'ar' %}جميع التخصصات{% else %}All Categories{% endif %}</button>
-                    <button type="button" class="btn procedure-cat-pill" data-cat="فحص وتشخيص" onclick="filterAppointmentCategory('فحص وتشخيص', this)">🩺 {% if current_lang == 'ar' %}فحص وتشخيص{% else %}Diagnostic{% endif %}</button>
-                    <button type="button" class="btn procedure-cat-pill" data-cat="حشوات ومعالجات تجميلية" onclick="filterAppointmentCategory('حشوات ومعالجات تجميلية', this)">✨ {% if current_lang == 'ar' %}حشوات ومعالجات تجميلية{% else %}Restorative{% endif %}</button>
-                    <button type="button" class="btn procedure-cat-pill" data-cat="علاج عصب وجذور" onclick="filterAppointmentCategory('علاج عصب وجذور', this)">⚡ {% if current_lang == 'ar' %}علاج عصب وجذور{% else %}Endodontics{% endif %}</button>
-                    <button type="button" class="btn procedure-cat-pill" data-cat="جراحة وقلع" onclick="filterAppointmentCategory('جراحة وقلع', this)">🔪 {% if current_lang == 'ar' %}جراحة وقلع{% else %}Surgery{% endif %}</button>
-                    <button type="button" class="btn procedure-cat-pill" data-cat="تعويضات وتيجان" onclick="filterAppointmentCategory('تعويضات وتيجان', this)">👑 {% if current_lang == 'ar' %}تعويضات وتيجان{% else %}Prosthetics{% endif %}</button>
-                    <button type="button" class="btn procedure-cat-pill" data-cat="تقويم أسنان" onclick="filterAppointmentCategory('تقويم أسنان', this)">🪥 {% if current_lang == 'ar' %}تقويم أسنان{% else %}Ortho{% endif %}</button>
-                    <button type="button" class="btn procedure-cat-pill" data-cat="أسنان أطفال" onclick="filterAppointmentCategory('أسنان أطفال', this)">👶 {% if current_lang == 'ar' %}أسنان أطفال{% else %}Pediatric{% endif %}</button>
-                    <button type="button" class="btn procedure-cat-pill" data-cat="إجراءات عامة وأخرى" onclick="filterAppointmentCategory('إجراءات عامة وأخرى', this)">🌐 {% if current_lang == 'ar' %}إجراءات عامة وأخرى{% else %}General & Other{% endif %}</button>
-                </div>
-
-                <!-- Sub-procedure Quick Selection Grid -->
-                <div id="sub-procedure-cards-container" class="row g-2.5 mb-3">
-                    {% set details_map = treatment_details if treatment_details else {} %}
-                    {% for proc_name, price in (treatment_prices.items() if treatment_prices else []) %}
-                        {% set item_detail = details_map.get(proc_name, {}) %}
-                        {% set item_cat = item_detail.get('category', 'إجراءات عامة وأخرى') %}
-                        {% set dur = item_detail.get('duration', 30) %}
-                        <div class="col-md-6 sub-proc-item-card" data-category="{{ item_cat }}" data-proc-name="{{ proc_name }}" data-duration="{{ dur }}" data-price="{{ price }}">
-                            <div class="procedure-quick-card cursor-pointer d-flex justify-content-between align-items-center h-100" onclick="selectQuickProcedure('{{ proc_name }}', '{{ dur }}', '{{ price }}', this)">
-                                <div>
-                                    <span class="fw-bold d-block proc-title mb-1">{{ proc_name }}</span>
-                                    <span class="badge duration-badge">
-                                        <i class="bi bi-clock me-1"></i>{{ dur }} {% if current_lang == 'ar' %}دقيقة{% else %}min{% endif %}
-                                    </span>
-                                </div>
-                                <span class="badge price-badge ms-2">
-                                    {{ price | format_price }} {{ currency_symbol }}
-                                </span>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-
-                <!-- Hidden Master Select -->
-                <select id="reason" name="reason" class="form-select custom-reason-select d-none" onchange="handleReasonChange(this)">
-                    <option value="">{% if current_lang == 'ar' %}-- اختر سبب المعالجة --{% else %}-- Select Reason --{% endif %}</option>
+                <!-- Primary Standard Categorized Procedure Select -->
+                <select id="reason" name="reason" class="form-select custom-reason-select mb-1" onchange="handleReasonChange(this)" required>
+                    <option value="">{% if current_lang == 'ar' %}-- اختر نوع الإجراء أو سبب الموعد من القائمة --{% else %}-- Select Procedure or Reason --{% endif %}</option>
                     {% set details_map = treatment_details if treatment_details else {} %}
                     {% set defined_cats = ['فحص وتشخيص', 'حشوات ومعالجات تجميلية', 'علاج عصب وجذور', 'جراحة وقلع', 'تعويضات وتيجان', 'تقويم أسنان', 'أسنان أطفال', 'إجراءات عامة وأخرى'] %}
                     {% for cat in defined_cats %}
@@ -96,46 +64,39 @@
                                 {% set item_cat = item_detail.get('category', 'إجراءات عامة وأخرى') %}
                                 {% if item_cat == cat or (cat == 'إجراءات عامة وأخرى' and item_cat not in defined_cats) %}
                                     {% set dur = item_detail.get('duration', 30) %}
-                                    <option value="{{ proc_name }}" data-category="{{ item_cat }}" data-duration="{{ dur }}" data-price="{{ price }}">{{ proc_name }} ({{ dur }} {% if current_lang == 'ar' %}دقيقة{% else %}min{% endif %})</option>
+                                    <option value="{{ proc_name }}" data-category="{{ item_cat }}" data-duration="{{ dur }}" data-price="{{ price }}" {% if appointment and appointment.reason == proc_name %}selected{% endif %}>{{ proc_name }} ({{ price | format_price }} {{ currency_symbol }})</option>
                                 {% endif %}
                             {% endfor %}
                         </optgroup>
                         {% endif %}
                     {% endfor %}
-                    <option value="__custom__" class="fw-bold text-primary">-- {% if current_lang == 'ar' %}سبب آخر / إجراء مخصص...{% else %}Other / Custom Reason...{% endif %} --</option>
+                    <option value="__custom__" class="fw-bold text-primary" {% if appointment and appointment.reason and appointment.reason not in (treatment_prices.keys() if treatment_prices else []) %}selected{% endif %}>-- {% if current_lang == 'ar' %}سبب آخر / إجراء مخصص غير مدرج...{% else %}Other / Custom Reason...{% endif %} --</option>
                 </select>
-
-                <div class="d-flex justify-content-start align-items-center mt-2 mb-1">
-                    <button type="button" class="btn btn-outline-info btn-sm rounded-3 px-3 py-1.5 fw-bold d-flex align-items-center gap-2 shadow-sm" style="border-width: 1.5px; background: rgba(56, 189, 248, 0.08);" onclick="toggleCustomReasonInput()">
-                        <i class="bi bi-plus-circle-dotted fs-6 text-info"></i>
-                        <span>{% if current_lang == 'ar' %}إضافة سبب / إجراء نصي مخصص غير مدرج{% else %}Add Custom / Unlisted Procedure{% endif %}</span>
-                    </button>
-                </div>
 
                 <!-- Custom Unlisted Procedure Box -->
                 <div class="col-12 mt-3" id="custom_reason_container" style="display: none;">
-                    <div class="card p-4 rounded-4 shadow-sm border border-info border-opacity-40" style="background: #1e293b; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+                    <div class="card p-4 rounded-4 shadow-sm custom-proc-card">
                         <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary border-opacity-25">
                             <h6 class="fw-bold mb-0 text-info d-flex align-items-center gap-2">
                                 <i class="bi bi-pencil-square fs-5"></i>
                                 {% if current_lang == 'ar' %}تفاصيل الإجراء النصي المخصص الجديد{% else %}Custom Procedure Details{% endif %}
                             </h6>
-                            <button type="button" class="btn-close btn-close-white" onclick="toggleCustomReasonInput()" aria-label="Close"></button>
+                            <button type="button" class="btn-close" onclick="toggleCustomReasonInput()" aria-label="Close"></button>
                         </div>
 
                         <div class="row g-3">
                             <div class="col-md-12 mb-2">
-                                <label for="custom_reason" class="form-label small fw-bold text-light mb-1.5">
+                                <label for="custom_reason" class="form-label small fw-bold mb-1.5 text-body-secondary">
                                     <i class="bi bi-input-cursor-text me-1 text-info"></i>{% if current_lang == 'ar' %}اسم الإجراء / الخدمة المخصصة{% else %}Procedure Name{% endif %}
                                 </label>
-                                <input type="text" id="custom_reason" name="custom_reason" class="form-control settings-input border-secondary text-light fw-bold py-2" placeholder="{% if current_lang == 'ar' %}مثال: استشارة قبل زراعة عظام أسنان{% else %}e.g. Pre-implant consultation{% endif %}">
+                                <input type="text" id="custom_reason" name="custom_reason" class="form-control fw-bold py-2" placeholder="{% if current_lang == 'ar' %}مثال: استشارة قبل زراعة عظام أسنان{% else %}e.g. Pre-implant consultation{% endif %}">
                             </div>
 
                             <div class="col-md-4">
-                                <label for="custom_reason_category" class="form-label small fw-bold text-light mb-1.5">
+                                <label for="custom_reason_category" class="form-label small fw-bold mb-1.5 text-body-secondary">
                                     <i class="bi bi-tags me-1 text-info"></i>{% if current_lang == 'ar' %}التخصص / التصنيف{% else %}Category{% endif %}
                                 </label>
-                                <select id="custom_reason_category" name="custom_reason_category" class="form-select settings-input border-secondary text-light py-2">
+                                <select id="custom_reason_category" name="custom_reason_category" class="form-select py-2">
                                     <option value="فحص وتشخيص">فحص وتشخيص</option>
                                     <option value="حشوات ومعالجات تجميلية">حشوات ومعالجات تجميلية</option>
                                     <option value="علاج عصب وجذور">علاج عصب وجذور</option>
@@ -148,17 +109,17 @@
                             </div>
 
                             <div class="col-md-4">
-                                <label for="custom_reason_duration" class="form-label small fw-bold text-light mb-1.5">
+                                <label for="custom_reason_duration" class="form-label small fw-bold mb-1.5 text-body-secondary">
                                     <i class="bi bi-clock me-1 text-info"></i>{% if current_lang == 'ar' %}المدة المتوقعة (بالدقائق){% else %}Duration (min){% endif %}
                                 </label>
-                                <input type="number" id="custom_reason_duration" name="custom_reason_duration" class="form-control settings-input border-secondary text-light fw-bold py-2" value="30" min="5" max="300" step="5" onchange="onCustomDurationChange(this)">
+                                <input type="number" id="custom_reason_duration" name="custom_reason_duration" class="form-control fw-bold py-2" value="30" min="5" max="300" step="5" onchange="onCustomDurationChange(this)">
                             </div>
 
                             <div class="col-md-4">
-                                <label for="custom_reason_price" class="form-label small fw-bold text-light mb-1.5">
+                                <label for="custom_reason_price" class="form-label small fw-bold mb-1.5 text-body-secondary">
                                     <i class="bi bi-cash-stack me-1 text-info"></i>{% if current_lang == 'ar' %}التكلفة / السعر ({{ currency_symbol }}){% else %}Price{% endif %}
                                 </label>
-                                <input type="number" id="custom_reason_price" name="custom_reason_price" class="form-control settings-input border-secondary text-light fw-bold py-2" placeholder="0" value="0">
+                                <input type="number" id="custom_reason_price" name="custom_reason_price" class="form-control fw-bold py-2" placeholder="0" value="0">
                             </div>
 
                             <div class="col-12 mt-3 pt-2.5 border-top border-secondary border-opacity-25 d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
@@ -166,8 +127,8 @@
                                     <i class="bi bi-check-circle-fill fs-5 text-success"></i>
                                     <span id="custom_proc_confirmed_msg"></span>
                                 </div>
-                                <button type="button" class="btn btn-success btn-sm rounded-3 px-4 py-2 fw-bold ms-auto d-flex align-items-center gap-2 shadow-sm" style="background: linear-gradient(135deg, #10b981, #059669); border: none;" onclick="confirmCustomProcedureCard()">
-                                    <i class="bi bi-check-circle-fill fs-6"></i>
+                                <button type="button" class="btn-confirm-custom-proc ms-auto d-flex align-items-center gap-2" onclick="confirmCustomProcedureCard()">
+                                    <i class="bi bi-check-circle-fill"></i>
                                     <span>{% if current_lang == 'ar' %}تأكيد واعتماد الإجراء المخصص{% else %}Confirm Custom Procedure{% endif %}</span>
                                 </button>
                             </div>
@@ -198,10 +159,14 @@
 
         <!-- Submit & Actions -->
         <div class="col-12 text-center pt-2">
-            <button type="submit" class="save-patient-btn">{% if current_lang == 'ar' %}حفظ الموعد{% else %}Save Appointment{% endif %}</button>
+            <button type="submit" class="save-patient-btn">
+                <i class="bi bi-check2-circle"></i>
+                <span>{% if current_lang == 'ar' %}حفظ الموعد{% else %}Save Appointment{% endif %}</span>
+            </button>
             <a href="{{ next_url or request.referrer or (url_for('patients.patient_detail', patient_id=patient.id) if patient else url_for('appointments.appointments')) }}"
                 class="btn-outline-main ms-2">
-                {% if current_lang == 'ar' %}عودة{% else %}Back{% endif %}
+                <i class="bi bi-arrow-right"></i>
+                <span>{% if current_lang == 'ar' %}عودة{% else %}Back{% endif %}</span>
             </a>
         </div>
 

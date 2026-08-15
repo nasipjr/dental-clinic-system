@@ -164,13 +164,13 @@
         </button>
         <form method="POST" action="{{ url_for('treatments.revert_session', appointment_id=appointment.id) }}" class="d-inline" id="revertSessionForm">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="button" class="btn btn-warning text-dark rounded-pill px-4 py-2 fw-bold session-action-btn ms-2 shadow-sm" onclick="confirmRevertSession()">
+            <button type="button" class="btn-reopen-session session-action-btn ms-2" onclick="confirmRevertSession()">
                 <i class="bi bi-arrow-u-turn-left me-1.5"></i>
                 {% if current_lang == 'ar' %}التراجع عن فتح الجلسة{% else %}Undo Session Start{% endif %}
             </button>
         </form>
         {% elif appointment.status in ('Done', 'منجز') and current_user.role == 'admin' %}
-        <button type="button" class="btn btn-warning rounded-pill px-4 py-2 fw-bold text-dark session-action-btn" data-bs-toggle="modal" data-bs-target="#reopenSessionModal">
+        <button type="button" class="btn-reopen-session session-action-btn" data-bs-toggle="modal" data-bs-target="#reopenSessionModal">
             <i class="bi bi-arrow-counterclockwise me-1.5"></i>
             {% if current_lang == 'ar' %}إعادة فتح الجلسة{% else %}Reopen Session{% endif %}
         </button>

@@ -114,8 +114,28 @@
 .tooth-label-top {
     font-size: 0.85rem;
     font-weight: 700;
-    color: #ffffff;
+    color: #cbd5e1;
     text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+[data-bs-theme="light"] .tooth-label-top {
+    color: #1e40af;
+    text-shadow: none;
+}
+
+/* FDI number badge below/above each anatomical tooth */
+.tooth-fdi-badge {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #38bdf8;
+    line-height: 1;
+    font-family: monospace, system-ui, sans-serif;
+    letter-spacing: 0.3px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    transition: color 0.2s ease;
+}
+[data-bs-theme="light"] .tooth-fdi-badge {
+    color: #1e40af;
+    text-shadow: none;
 }
 
 .jaw-title-badge {
@@ -137,6 +157,17 @@
     background-color: rgba(13, 202, 240, 0.15);
     color: #0dcaf0;
     border: 1px solid rgba(13, 202, 240, 0.3);
+}
+/* Light mode jaw badges: stronger contrast */
+[data-bs-theme="light"] .jaw-upper-badge {
+    background-color: rgba(13, 110, 253, 0.12);
+    color: #1d4ed8;
+    border-color: rgba(29, 78, 216, 0.4);
+}
+[data-bs-theme="light"] .jaw-lower-badge {
+    background-color: rgba(6, 182, 212, 0.12);
+    color: #0891b2;
+    border-color: rgba(8, 145, 178, 0.4);
 }
 
 .legend-dot {
@@ -177,50 +208,80 @@
 }
 
 .plan-golden-indicator {
-    position: absolute;
-    bottom: -3px;
-    right: -3px;
-    color: #f59e0b !important;
-    font-size: 0.85rem !important;
+    position: absolute !important;
+    top: 2px !important;
+    right: 2px !important;
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%) !important;
+    border: 1.5px solid #ffffff !important;
+    box-shadow: 0 2px 6px rgba(217, 119, 6, 0.6), 0 0 8px rgba(251, 191, 36, 0.5) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #ffffff !important;
+    font-size: 8.5px !important;
     line-height: 1 !important;
-    z-index: 12 !important;
-    filter: drop-shadow(0 0 4px #fbbf24) drop-shadow(0 0 8px rgba(245, 158, 11, 0.8));
-    animation: pulse-plan-star 1.8s infinite ease-in-out;
-    pointer-events: none;
+    z-index: 15 !important;
+    pointer-events: none !important;
+    animation: pulse-plan-badge 2s infinite ease-in-out !important;
 }
+
+.prior-history-indicator {
+    position: absolute !important;
+    top: 2px !important;
+    left: 2px !important;
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #c084fc 0%, #9333ea 100%) !important;
+    border: 1.5px solid #ffffff !important;
+    box-shadow: 0 2px 6px rgba(147, 51, 234, 0.6), 0 0 8px rgba(192, 132, 252, 0.5) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #ffffff !important;
+    font-size: 8.5px !important;
+    line-height: 1 !important;
+    z-index: 14 !important;
+    pointer-events: none !important;
+}
+
 .plan-star-badge {
     display: inline-flex;
     align-items: center;
     color: #fbbf24;
     filter: drop-shadow(0 0 3px #f59e0b);
 }
-@keyframes pulse-plan-star {
-    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 3px #f59e0b); }
-    50% { transform: scale(1.3); filter: drop-shadow(0 0 8px #fbbf24) drop-shadow(0 0 12px #fde047); }
+@keyframes pulse-plan-badge {
+    0%, 100% { transform: scale(1); box-shadow: 0 2px 6px rgba(217, 119, 6, 0.6), 0 0 8px rgba(251, 191, 36, 0.5); }
+    50% { transform: scale(1.15); box-shadow: 0 2px 10px rgba(217, 119, 6, 0.85), 0 0 14px rgba(251, 191, 36, 0.8); }
 }
 
 .tooth-wrapper.has-plan-treatment,
+.tooth-wrapper.history-external,
 .anatomical-tooth-btn.has-plan-treatment,
-.anatomical-tooth-item.has-plan-treatment {
+.anatomical-tooth-btn.history-external,
+.anatomical-tooth-item.has-plan-treatment,
+.anatomical-tooth-item.history-external {
     position: relative !important;
-}
-.anatomical-tooth-btn.has-plan-treatment:not(.active):not(.history):not(.extracted) {
-    border-color: rgba(245, 158, 11, 0.85) !important;
-    background: rgba(245, 158, 11, 0.15) !important;
-    box-shadow: 0 0 12px rgba(245, 158, 11, 0.5) !important;
-}
-.tooth-wrapper.has-plan-treatment:not(.active):not(.history):not(.extracted) {
-    border-color: rgba(245, 158, 11, 0.85) !important;
-    background: rgba(245, 158, 11, 0.15) !important;
-    box-shadow: 0 0 12px rgba(245, 158, 11, 0.5) !important;
 }
 
 .anatomical-chart-wrapper {
-    background: rgba(15, 23, 42, 0.5) !important;
+    background: color-mix(in srgb, var(--surface-color), transparent 20%) !important;
     border-radius: 16px !important;
-    border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+    border: 1.5px solid color-mix(in srgb, var(--accent-color), transparent 80%) !important;
     overflow-x: auto !important;
     padding: 20px 15px !important;
+}
+/* Light mode override for anatomical chart */
+[data-bs-theme="light"] .anatomical-chart-wrapper {
+    background: rgba(248, 250, 252, 0.85) !important;
+    border-color: rgba(14, 165, 233, 0.25) !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06) !important;
 }
 .anatomical-teeth-container {
     min-width: 820px;
@@ -264,5 +325,360 @@
     background: rgba(239, 68, 68, 0.15) !important;
     border: 1.5px dashed #ef4444 !important;
     opacity: 0.75 !important;
+}
+
+/* ===================================================
+   VECTOR SVG ANATOMICAL ARCH ODONTOGRAM STYLING
+   =================================================== */
+.vector-odontogram-wrapper {
+    background: radial-gradient(circle at center, rgba(14, 165, 233, 0.04) 0%, transparent 75%);
+    border-radius: 20px;
+    padding: 15px 12px;
+    max-width: 620px;
+    width: 100%;
+}
+.vector-svg-container {
+    width: 100%;
+    margin: 0 auto;
+    position: relative;
+}
+.vector-odontogram-svg {
+    filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.25));
+    display: block;
+    margin: 0 auto;
+}
+
+/* Centered Floating Jaw Badges (Compact & Scaled Down) */
+.jaw-badge-floating {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    pointer-events: none;
+}
+.jaw-badge-upper {
+    top: 25%;
+}
+.jaw-badge-lower {
+    bottom: 25%;
+}
+.jaw-badge-floating .jaw-title-badge {
+    font-size: 0.72rem !important;
+    padding: 3px 11px !important;
+    border-radius: 50rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.2px !important;
+}
+
+/* Vector Tooth Item (Fully Clickable, No Shake) */
+.vector-tooth-item {
+    cursor: pointer !important;
+    pointer-events: all !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--default-color, #64748b);
+    outline: none;
+    transform: none !important;
+}
+.vector-tooth-item:hover {
+    transform: none !important;
+}
+.vector-tooth-item path {
+    pointer-events: all !important;
+    cursor: pointer !important;
+}
+.vector-tooth-item .tooth-outline-path {
+    stroke: color-mix(in srgb, var(--default-color, #64748b), transparent 30%);
+    stroke-width: 1.8px;
+    fill: rgba(255, 255, 255, 0.001) !important;
+    pointer-events: all !important;
+    transition: stroke 0.2s ease, stroke-width 0.2s ease, filter 0.2s ease;
+}
+[data-bs-theme="light"] .vector-tooth-item .tooth-outline-path {
+    stroke: #475569;
+}
+.vector-tooth-item .tooth-shadow-path {
+    opacity: 0;
+    fill: #38bdf8;
+    pointer-events: all !important;
+    transition: opacity 0.2s ease, fill 0.2s ease;
+}
+.vector-tooth-item .tooth-line-path {
+    stroke: color-mix(in srgb, var(--default-color, #64748b), transparent 30%);
+    stroke-width: 1.2px;
+    opacity: 0.65;
+    pointer-events: none !important;
+    transition: all 0.2s ease;
+}
+[data-bs-theme="light"] .vector-tooth-item .tooth-line-path {
+    stroke: #64748b;
+}
+
+/* Outer Tooth FDI Number Text — dark mode: sky blue, light mode: dark slate */
+.tooth-fdi-number-text {
+    font-size: 13.5px !important;
+    font-weight: 800 !important;
+    fill: #38bdf8 !important;
+    font-family: monospace, system-ui, -apple-system, sans-serif;
+    pointer-events: none;
+    user-select: none;
+    paint-order: stroke fill;
+    stroke: rgba(0, 0, 0, 0.6);
+    stroke-width: 2.5px;
+    transition: fill 0.2s ease, font-size 0.2s ease;
+}
+[data-bs-theme="light"] .tooth-fdi-number-text {
+    fill: #1e3a5f !important;
+    stroke: rgba(255, 255, 255, 0.75);
+    stroke-width: 2px;
+}
+
+/* Hover Effect */
+.vector-tooth-item:hover .tooth-outline-path {
+    stroke: #38bdf8 !important;
+    stroke-width: 2.6px !important;
+    filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.8)) !important;
+}
+.vector-tooth-item:hover .tooth-shadow-path {
+    opacity: 0.35 !important;
+    fill: #38bdf8 !important;
+}
+.vector-tooth-item:hover .tooth-line-path {
+    stroke: #bae6fd !important;
+    opacity: 1 !important;
+}
+
+/* Active Treatment (Current Session - Emerald Green) */
+.vector-tooth-item.active-treatment .tooth-outline-path,
+.vector-tooth-item.active .tooth-outline-path {
+    stroke: #22c55e !important;
+    stroke-width: 2.6px !important;
+    filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.8)) !important;
+}
+.vector-tooth-item.active-treatment .tooth-shadow-path,
+.vector-tooth-item.active .tooth-shadow-path {
+    opacity: 0.75 !important;
+    fill: #22c55e !important;
+}
+.vector-tooth-item.active-treatment .tooth-line-path,
+.vector-tooth-item.active .tooth-line-path {
+    stroke: #bbf7d0 !important;
+    opacity: 1 !important;
+}
+
+/* History Treatment (Clinic Prior Treatments - Sky Blue) */
+.vector-tooth-item.history-treatment .tooth-outline-path,
+.vector-tooth-item.history .tooth-outline-path {
+    stroke: #0ea5e9 !important;
+    stroke-width: 2.2px !important;
+    filter: drop-shadow(0 0 6px rgba(14, 165, 233, 0.7)) !important;
+}
+.vector-tooth-item.history-treatment .tooth-shadow-path,
+.vector-tooth-item.history .tooth-shadow-path {
+    opacity: 0.65 !important;
+    fill: #0ea5e9 !important;
+}
+.vector-tooth-item.history-treatment .tooth-line-path,
+.vector-tooth-item.history .tooth-line-path {
+    stroke: #e0f2fe !important;
+    opacity: 1 !important;
+}
+
+/* Extracted Tooth (Red) */
+.vector-tooth-item.extracted-treatment .tooth-outline-path,
+.vector-tooth-item.extracted .tooth-outline-path {
+    stroke: #ef4444 !important;
+    stroke-width: 2px !important;
+    stroke-dasharray: 4 3 !important;
+    opacity: 0.85 !important;
+    filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.6)) !important;
+}
+.vector-tooth-item.extracted-treatment .tooth-shadow-path,
+.vector-tooth-item.extracted .tooth-shadow-path {
+    opacity: 0.45 !important;
+    fill: #ef4444 !important;
+}
+.vector-tooth-item.extracted-treatment .tooth-line-path,
+.vector-tooth-item.extracted .tooth-line-path {
+    stroke: #fca5a5 !important;
+    opacity: 0.5 !important;
+}
+
+/* SVG Tooth Star Indicators (Plan = Gold Star, Prior History = Purple Star) */
+.svg-star-gold {
+    fill: #fbbf24 !important;
+    stroke: #d97706 !important;
+    stroke-width: 0.8px !important;
+    filter: drop-shadow(0 0 4px #f59e0b) drop-shadow(0 0 8px rgba(245, 158, 11, 0.9)) !important;
+    animation: pulse-svg-gold-star 2s infinite ease-in-out !important;
+    transform-origin: center center !important;
+    transform-box: fill-box !important;
+    pointer-events: none !important;
+}
+
+.svg-star-purple {
+    fill: #c084fc !important;
+    stroke: #9333ea !important;
+    stroke-width: 0.8px !important;
+    filter: drop-shadow(0 0 4px #a855f7) drop-shadow(0 0 8px rgba(168, 85, 247, 0.9)) !important;
+    transform-origin: center center !important;
+    transform-box: fill-box !important;
+    pointer-events: none !important;
+}
+
+@keyframes pulse-svg-gold-star {
+    0%, 100% {
+        opacity: 0.85;
+        filter: drop-shadow(0 0 3px #f59e0b);
+    }
+    50% {
+        opacity: 1;
+        filter: drop-shadow(0 0 7px #fbbf24) drop-shadow(0 0 12px #fde047);
+    }
+}
+
+/* Multi-Selected State on Circular SVG Teeth */
+.vector-tooth-item.multi-selected .tooth-outline-path {
+    stroke: #fbbf24 !important;
+    stroke-width: 3.5px !important;
+    filter: drop-shadow(0 0 10px #f59e0b) drop-shadow(0 0 20px rgba(245, 158, 11, 0.7)) !important;
+}
+.vector-tooth-item.multi-selected .tooth-shadow-path {
+    opacity: 0.85 !important;
+    fill: #f59e0b !important;
+}
+.vector-tooth-item.multi-selected .tooth-line-path {
+    stroke: #ffffff !important;
+    stroke-width: 1.5px !important;
+}
+
+/* Multi-Selected State on Anatomical Teeth */
+.anatomical-tooth-btn.multi-selected,
+.anatomical-tooth-item.multi-selected,
+.p-tooth-btn.multi-selected,
+.tooth-btn.multi-selected {
+    background: rgba(245, 158, 11, 0.28) !important;
+    border: 2px solid #f59e0b !important;
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.8), inset 0 0 10px rgba(245, 158, 11, 0.35) !important;
+    transform: translateY(-3px) scale(1.08) !important;
+    z-index: 10 !important;
+}
+
+.anatomical-tooth-btn.multi-selected .tooth-fdi-badge,
+.anatomical-tooth-item.multi-selected .tooth-fdi-badge,
+.p-tooth-btn.multi-selected .tooth-fdi-badge {
+    background: #f59e0b !important;
+    color: #000000 !important;
+    font-weight: 900 !important;
+    box-shadow: 0 0 8px #f59e0b !important;
+}
+
+.anatomical-tooth-btn.multi-selected .tooth-svg,
+.anatomical-tooth-item.multi-selected .tooth-svg,
+.p-tooth-btn.multi-selected .tooth-svg {
+    color: #fbbf24 !important;
+    filter: drop-shadow(0 0 6px #f59e0b) !important;
+}
+
+.anatomical-tooth-btn.multi-selected .tooth-svg path,
+.anatomical-tooth-item.multi-selected .tooth-svg path,
+.p-tooth-btn.multi-selected .tooth-svg path {
+    stroke: #fbbf24 !important;
+    fill: rgba(245, 158, 11, 0.45) !important;
+}
+
+/* ===================================================
+   MODAL ACTION HEADER BUTTONS (PURPLE & AMBER)
+   =================================================== */
+.btn-action-header-purple {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    font-family: inherit !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    color: #c084fc !important;
+    background: rgba(168, 85, 247, 0.08) !important;
+    border: 1px solid rgba(192, 132, 252, 0.35) !important;
+    border-radius: 50rem !important;
+    padding: 4px 13px !important;
+    line-height: 1.4 !important;
+    white-space: nowrap !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+}
+.btn-action-header-purple:hover {
+    color: #ffffff !important;
+    background: rgba(168, 85, 247, 0.25) !important;
+    border-color: #c084fc !important;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3) !important;
+    transform: translateY(-1px) !important;
+}
+
+.btn-action-header-amber {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    font-family: inherit !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    color: #fbbf24 !important;
+    background: rgba(245, 158, 11, 0.08) !important;
+    border: 1px solid rgba(251, 191, 36, 0.35) !important;
+    border-radius: 50rem !important;
+    padding: 4px 13px !important;
+    line-height: 1.4 !important;
+    white-space: nowrap !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+}
+.btn-action-header-amber:hover {
+    color: #ffffff !important;
+    background: rgba(245, 158, 11, 0.25) !important;
+    border-color: #fbbf24 !important;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
+    transform: translateY(-1px) !important;
+}
+
+.btn-multi-select-toggle {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    font-family: inherit !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    color: #38bdf8 !important;
+    background: rgba(56, 189, 248, 0.08) !important;
+    border: 1px solid rgba(56, 189, 248, 0.35) !important;
+    border-radius: 50rem !important;
+    padding: 5px 14px !important;
+    line-height: 1.4 !important;
+    white-space: nowrap !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    cursor: pointer !important;
+}
+
+.btn-multi-select-toggle:hover {
+    color: #ffffff !important;
+    background: rgba(56, 189, 248, 0.22) !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25) !important;
+    transform: translateY(-1px) !important;
+}
+
+.btn-multi-select-toggle.active {
+    color: #fbbf24 !important;
+    background: rgba(245, 158, 11, 0.16) !important;
+    border-color: rgba(245, 158, 11, 0.55) !important;
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.25) !important;
+}
+
+.btn-multi-select-toggle.active:hover {
+    color: #ffffff !important;
+    background: rgba(245, 158, 11, 0.28) !important;
+    border-color: #fbbf24 !important;
 }
 </style>

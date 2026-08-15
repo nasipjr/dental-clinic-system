@@ -55,18 +55,20 @@
         <!-- Actions -->
         <div class="col-12">
             <div class="action-buttons justify-content-center gap-3">
-                <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">
-                    <i class="bi bi-check-circle me-1"></i>
-                    {% if current_lang == 'ar' %}حفظ الدفعة وتأكيدها{% else %}Save Payment{% endif %}
+                <button type="submit" class="save-patient-btn">
+                    <i class="bi bi-check-circle"></i>
+                    <span>{% if current_lang == 'ar' %}حفظ الدفعة وتأكيدها{% else %}Save Payment{% endif %}</span>
                 </button>
 
                 {% if invoice_id %}
-                <a href="{{ url_for('invoices.view_invoice', invoice_id=invoice_id) }}" class="btn-outline-main px-4">
-                    {% if current_lang == 'ar' %}عودة للفاتورة{% else %}Back{% endif %}
+                <a href="{{ url_for('invoices.view_invoice', invoice_id=invoice_id) }}" class="btn-outline-main">
+                    <i class="bi bi-arrow-right"></i>
+                    <span>{% if current_lang == 'ar' %}عودة للفاتورة{% else %}Back{% endif %}</span>
                 </a>
                 {% else %}
-                <a href="{{ url_for('payments.payments') }}" class="btn-outline-main px-4">
-                    {% if current_lang == 'ar' %}عودة لسجل المدفوعات{% else %}Back{% endif %}
+                <a href="{{ url_for('payments.payments') }}" class="btn-outline-main">
+                    <i class="bi bi-arrow-right"></i>
+                    <span>{% if current_lang == 'ar' %}عودة لسجل المدفوعات{% else %}Back{% endif %}</span>
                 </a>
                 {% endif %}
             </div>

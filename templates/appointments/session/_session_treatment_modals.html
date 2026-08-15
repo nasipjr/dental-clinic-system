@@ -198,8 +198,9 @@
                                     <i class="bi bi-journal-medical flex-shrink-0"></i>
                                     <span>{% if current_lang == 'ar' %}السوابق المرضية والتشخيص الأولي{% else %}Pre-existing History{% endif %}</span>
                                 </h6>
-                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-semibold flex-shrink-0 ms-2" id="s-toggle-add-history-btn" style="font-size: 0.78rem; border-width: 1px; white-space: nowrap;">
-                                    <i class="bi bi-plus-circle me-1"></i>{% if current_lang == 'ar' %}إضافة سابقة{% else %}Add History{% endif %}
+                                <button type="button" class="btn btn-action-header-purple" id="s-toggle-add-history-btn">
+                                    <i class="bi bi-plus-circle"></i>
+                                    <span>{% if current_lang == 'ar' %}إضافة سابقة{% else %}Add History{% endif %}</span>
                                 </button>
                             </div>
 
@@ -251,7 +252,7 @@
                         <div class="mb-4">
                             <h6 class="fw-bold mb-3 d-flex align-items-center text-success" style="font-size: 0.9rem;">
                                 <i class="bi bi-file-earmark-medical me-2"></i>
-                                <span id="lbl-current-treatments"></span>
+                                <span id="lbl-current-treatments">{% if current_lang == 'ar' %}معالجات الجلسة الحالية{% else %}Current Session Treatments{% endif %}</span>
                             </h6>
                             <div id="modal-current-treatments-list" class="list-group mb-2">
                                 <!-- Populated dynamically -->
@@ -262,7 +263,7 @@
                         <div class="mb-4">
                             <h6 class="fw-bold mb-3 d-flex align-items-center text-info" style="font-size: 0.9rem;">
                                 <i class="bi bi-clock-history me-2"></i>
-                                <span id="lbl-history-treatments"></span>
+                                <span id="lbl-history-treatments">{% if current_lang == 'ar' %}سجل المعالجات السابقة بالعيادة{% else %}Previous Clinic Treatments{% endif %}</span>
                             </h6>
                             <div id="modal-history-treatments-list" class="list-group">
                                 <!-- Populated dynamically -->
@@ -276,8 +277,9 @@
                                     <i class="bi bi-calendar-plus me-2"></i>
                                     <span>{% if current_lang == 'ar' %}المعالجات المستقبلية وخطة العلاج المقترحة{% else %}Future Treatment Plan{% endif %}</span>
                                 </h6>
-                                <button type="button" class="btn btn-xs btn-outline-warning rounded-pill px-2.5 py-1 fw-semibold" id="s-toggle-add-plan-btn">
-                                    <i class="bi bi-plus-circle me-1"></i>{% if current_lang == 'ar' %}إضافة للخطة{% else %}Add Plan{% endif %}
+                                <button type="button" class="btn btn-action-header-amber" id="s-toggle-add-plan-btn">
+                                    <i class="bi bi-plus-circle"></i>
+                                    <span>{% if current_lang == 'ar' %}إضافة للخطة{% else %}Add to Plan{% endif %}</span>
                                 </button>
                             </div>
 
@@ -477,7 +479,7 @@
                                 </div>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label text-secondary small fw-bold" id="lbl-form-price"></label>
+                                <label class="form-label text-secondary small fw-bold" id="lbl-form-price">{% if current_lang == 'ar' %}كلفة المعالجة الافتراضية{% else %}Standard Procedure Price{% endif %}</label>
                                 <div id="modal-procedure-price-display" class="form-control readonly-status-field">
                                     <!-- Populated dynamically -->
                                 </div>
@@ -490,9 +492,11 @@
                             </div>
                         </form>
                         {% else %}
-                        <div class="alert alert-warning text-center rounded-3 py-4">
-                            <i class="bi bi-lock-fill fs-3 mb-2 d-block"></i>
-                            {{ 'جلسة العلاج هذه مغلقة. لا يمكن إضافة معالجات جديدة.' if current_lang == 'ar' else 'This treatment session is closed. No new treatments can be added.' }}
+                        <div class="session-closed-alert d-flex align-items-center justify-content-center p-3 rounded-3 my-3 gap-2.5" style="background: rgba(225, 29, 72, 0.08) !important; background-image: none !important; border: 1px solid rgba(244, 63, 94, 0.32) !important; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;">
+                            <i class="bi bi-lock-fill fs-5 flex-shrink-0" style="color: #fb7185;"></i>
+                            <span class="fw-semibold" style="color: #fca5a5; font-size: 0.92rem; letter-spacing: 0.2px;">
+                                {{ 'جلسة العلاج هذه مغلقة. لا يمكن إضافة معالجات جديدة.' if current_lang == 'ar' else 'This treatment session is closed. No new treatments can be added.' }}
+                            </span>
                         </div>
                         {% endif %}
                     </div>

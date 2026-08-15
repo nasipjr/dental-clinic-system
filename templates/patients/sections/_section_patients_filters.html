@@ -15,14 +15,14 @@
 
         <!-- Filter Actions & Per-Page Controls -->
         <div class="col-md-6 d-flex gap-2 flex-wrap align-items-center">
-            <button type="submit" class="btn btn-primary">
-                <i class="bi bi-funnel me-1"></i>
-                {% if current_lang == 'ar' %}تطبيق البحث{% else %}Apply Search{% endif %}
+            <button type="submit" class="btn btn-filter-search">
+                <i class="bi bi-funnel"></i>
+                <span>{% if current_lang == 'ar' %}تطبيق البحث{% else %}Apply Search{% endif %}</span>
             </button>
             
-            <a href="{{ url_for('patients.patients') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-counterclockwise me-1"></i>
-                {% if current_lang == 'ar' %}إعادة تعيين{% else %}Reset{% endif %}
+            <a href="{{ url_for('patients.patients') }}" class="btn btn-filter-reset">
+                <i class="bi bi-arrow-counterclockwise"></i>
+                <span>{% if current_lang == 'ar' %}إعادة تعيين{% else %}Reset{% endif %}</span>
             </a>
 
             <div class="d-flex align-items-center gap-2 ms-auto">

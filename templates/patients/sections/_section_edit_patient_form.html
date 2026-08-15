@@ -230,20 +230,23 @@
     <div class="col-12 text-center pt-4">
         {% if current_mode == 'edit' %}
         <button type="submit" class="save-patient-btn">
-            {% if current_lang == 'ar' %}حفظ التغييرات{% else %}Save Changes{% endif %}
+            <i class="bi bi-check2-circle"></i>
+            <span>{% if current_lang == 'ar' %}حفظ التغييرات{% else %}Save Changes{% endif %}</span>
         </button>
         {% endif %}
 
         {% if current_mode == 'view' %}
         {% if current_user.role in ('admin', 'receptionist') %}
-        <a href="{{ url_for('patients.edit_patient', patient_id=patient.id) }}" class="btn-primary px-4">
-            <i class="bi bi-pencil-square me-1"></i>{% if current_lang == 'ar' %}تعديل البيانات{% else %}Edit Patient{% endif %}
+        <a href="{{ url_for('patients.edit_patient', patient_id=patient.id) }}" class="btn btn-app-primary ms-2">
+            <i class="bi bi-pencil-square"></i>
+            <span>{% if current_lang == 'ar' %}تعديل البيانات{% else %}Edit Patient{% endif %}</span>
         </a>
         {% endif %}
         {% endif %}
 
-        <a href="{{ next_url or url_for('patients.patient_detail', patient_id=patient.id) }}" class="btn-outline-main px-4 ms-2">
-            <i class="bi bi-arrow-right me-1"></i>{% if current_lang == 'ar' %}رجوع{% else %}Back{% endif %}
+        <a href="{{ next_url or url_for('patients.patient_detail', patient_id=patient.id) }}" class="btn-outline-main ms-2">
+            <i class="bi bi-arrow-right"></i>
+            <span>{% if current_lang == 'ar' %}عودة{% else %}Back{% endif %}</span>
         </a>
     </div>
 </form>

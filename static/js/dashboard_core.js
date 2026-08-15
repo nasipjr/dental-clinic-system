@@ -181,17 +181,19 @@ window.initDashboard = function (config) {
     }
 
     function setActiveTab(activeBtn, inactiveBtn1, inactiveBtn2) {
-        activeBtn.className = 'btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold border-0';
-        activeBtn.style.background = 'var(--accent-color, #0d6efd)';
-        activeBtn.style.color = '#ffffff';
-        activeBtn.style.boxShadow = '0 2px 6px rgba(13, 110, 253, 0.15)';
+        if (activeBtn) {
+            activeBtn.className = 'btn-view-toggle-pill active';
+            activeBtn.style.background = '';
+            activeBtn.style.color = '';
+            activeBtn.style.boxShadow = '';
+        }
 
         [inactiveBtn1, inactiveBtn2].forEach(btn => {
             if (btn) {
-                btn.className = 'btn btn-outline-secondary btn-sm rounded-pill px-3 py-1 fw-bold border-0 text-secondary';
-                btn.style.background = 'transparent';
+                btn.className = 'btn-view-toggle-pill';
+                btn.style.background = '';
                 btn.style.color = '';
-                btn.style.boxShadow = 'none';
+                btn.style.boxShadow = '';
             }
         });
     }

@@ -121,34 +121,40 @@
             </div>
 
             <div class="hero-actions d-flex gap-3 flex-wrap" data-aos="fade-right" data-aos-delay="600">
-              <a href="{{ url_for('patients.patients') }}" class="btn btn-primary">
-                {% if current_lang == 'ar' %}إدارة المرضى{% else %}Manage Patients{% endif %}
+              <a href="{{ url_for('patients.patients') }}" class="btn-hero-primary">
+                <i class="bi bi-people-fill"></i>
+                <span>{% if current_lang == 'ar' %}إدارة المرضى{% else %}Manage Patients{% endif %}</span>
               </a>
 
-              <a href="{{ url_for('appointments.appointments') }}" class="btn btn-outline-primary">
-                {% if current_lang == 'ar' %}عرض المواعيد{% else %}View Appointments{% endif %}
+              <a href="{{ url_for('appointments.appointments') }}" class="btn-hero-outline">
+                <i class="bi bi-calendar3"></i>
+                <span>{% if current_lang == 'ar' %}عرض المواعيد{% else %}View Appointments{% endif %}</span>
               </a>
             </div>
 
             <div class="emergency-contact mt-4" data-aos="fade-right" data-aos-delay="700">
-              <div class="emergency-icon">
-                <i class="bi {% if today_scheduled > 0 %}bi-clock-history text-primary{% elif today_done > 0 %}bi-check2-circle text-success{% else %}bi-calendar-check{% endif %}"></i>
+              <div class="emergency-icon {% if today_done > 0 and today_scheduled == 0 %}completed{% endif %}">
+                <i class="bi {% if today_scheduled > 0 %}bi-clock-history{% elif today_done > 0 %}bi-check2-circle{% else %}bi-calendar-check{% endif %}"></i>
               </div>
 
               <div class="emergency-info">
                 {% if today_scheduled > 0 %}
                   <small>{% if current_lang == 'ar' %}مواعيد اليوم المتبقية{% else %}Remaining Appointments Today{% endif %}</small>
                   <strong>
-                    {{ today_scheduled }} {% if current_lang == 'ar' %}موعد قيد الانتظار{% else %}Appointments Pending{% endif %}
+                    <span>{{ today_scheduled }} {% if current_lang == 'ar' %}موعد قيد الانتظار{% else %}Appointments Pending{% endif %}</span>
                     {% if today_scheduled_appointments %}
-                      <span class="badge bg-primary ms-1" style="font-size: 0.75rem; font-weight: normal;">
-                        {% if current_lang == 'ar' %}أقرب موعد:{% else %}Next:{% endif %} {{ today_scheduled_appointments[0].appointment_date.strftime('%I:%M %p') }}
+                      <span class="emergency-next-badge">
+                        <i class="bi bi-stopwatch"></i>
+                        <span>{% if current_lang == 'ar' %}أقرب موعد:{% else %}Next:{% endif %} {{ today_scheduled_appointments[0].appointment_date.strftime('%I:%M %p') }}</span>
                       </span>
                     {% endif %}
                   </strong>
                 {% elif today_done > 0 %}
                   <small>{% if current_lang == 'ar' %}مواعيد اليوم المنجزة{% else %}Completed Today{% endif %}</small>
-                  <strong>{{ today_done }} {% if current_lang == 'ar' %}مواعيد مكتملة بنجاح اليوم{% else %}Appointments Completed Today{% endif %} <i class="bi bi-check-all text-success ms-1"></i></strong>
+                  <strong>
+                    <span>{{ today_done }} {% if current_lang == 'ar' %}مواعيد مكتملة بنجاح اليوم{% else %}Appointments Completed Today{% endif %}</span>
+                    <i class="bi bi-check-all text-success ms-1 fs-5"></i>
+                  </strong>
                 {% else %}
                   <small>{% if current_lang == 'ar' %}مواعيد اليوم{% else %}Today's Schedule{% endif %}</small>
                   <strong>{% if current_lang == 'ar' %}لا توجد مواعيد متبقية لليوم{% else %}No remaining appointments for today{% endif %}</strong>
@@ -171,25 +177,16 @@
                   </h5>
                   <small class="text-muted" style="font-size: 0.75rem;">{% if current_lang == 'ar' %}المؤشرات التشغيلية الفورية{% else %}Realtime operational metrics{% endif %}</small>
                 </div>
-                <div class="btn-group btn-group-sm rounded-pill p-1 border-0" role="group"
-                  style="padding: 3px !important; background: color-mix(in srgb, var(--default-color), transparent 90%); border: none !important;">
-                  <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold border-0"
-                    id="btn-show-status"
-                    style="font-size: 0.72rem; transition: all 0.25s; background: var(--accent-color, #0d6efd); color: #ffffff; box-shadow: 0 2px 6px rgba(13, 110, 253, 0.15);">
+                <div class="visualizer-toggle-capsule" role="group" aria-label="Visualizer Tabs">
+                  <button type="button" class="btn-view-toggle-pill active" id="btn-show-status">
                     {% if current_lang == 'ar' %}المواعيد{% else %}Appointments{% endif %}
                   </button>
                   {% if current_user.role in ('admin', 'receptionist') %}
-                  <button type="button"
-                    class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1 fw-bold border-0 text-secondary"
-                    id="btn-show-financials"
-                    style="font-size: 0.72rem; transition: all 0.25s; background: transparent; border: none;">
+                  <button type="button" class="btn-view-toggle-pill" id="btn-show-financials">
                     {% if current_lang == 'ar' %}العبء المالي{% else %}Finance Load{% endif %}
                   </button>
                   {% endif %}
-                  <button type="button"
-                    class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1 fw-bold border-0 text-secondary"
-                    id="btn-show-today"
-                    style="font-size: 0.72rem; transition: all 0.25s; background: transparent; border: none;">
+                  <button type="button" class="btn-view-toggle-pill" id="btn-show-today">
                     {% if current_lang == 'ar' %}حالة اليوم{% else %}Today's Status{% endif %}
                   </button>
                 </div>

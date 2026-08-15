@@ -188,26 +188,41 @@ window.initAppointmentSession = function(config) {
 
             if (priorHistories.length > 0) {
                 el.classList.add('history-external');
-                const svgContainer = el.querySelector('.tooth-svg-container') || el;
-                if (!svgContainer.querySelector('.prior-history-indicator')) {
+                if (!el.querySelector('.prior-history-indicator')) {
                     const starDot = document.createElement('span');
                     starDot.className = 'prior-history-indicator';
                     starDot.title = isAr ? 'سوابق مرضية وخارجية' : 'Pre-existing Condition';
                     starDot.innerHTML = '<i class="bi bi-star-fill"></i>';
-                    svgContainer.appendChild(starDot);
+                    el.appendChild(starDot);
                 }
             }
 
             if (plannedItems.length > 0) {
                 el.classList.add('has-plan-treatment');
-                const svgContainer = el.querySelector('.tooth-svg-container') || el;
-                if (!svgContainer.querySelector('.plan-golden-indicator')) {
+                if (!el.querySelector('.plan-golden-indicator')) {
                     const starEl = document.createElement('span');
                     starEl.className = 'plan-golden-indicator';
                     starEl.title = isAr ? 'توجد خطة علاج مستقبلية مقترحة لهذا السن ⭐️' : 'Future Treatment Plan ⭐️';
                     starEl.innerHTML = '<i class="bi bi-star-fill"></i>';
-                    svgContainer.appendChild(starEl);
+                    el.appendChild(starEl);
                 }
+            }
+
+            // Vector SVG Star Indicators (for Anatomical Arch Odontogram)
+            const svgIndElements = document.querySelectorAll('.ind-' + fdiNum);
+            if (svgIndElements && svgIndElements.length > 0) {
+                const starPathD = "M 0.0 -7.0 L 1.6 -2.3 L 6.7 -2.2 L 2.7 0.9 L 4.1 5.7 L 0.0 2.8 L -4.1 5.7 L -2.7 0.9 L -6.7 -2.2 L -1.6 -2.3 Z";
+                let indSvgHtml = '';
+                if (priorHistories.length > 0 && plannedItems.length > 0) {
+                    indSvgHtml = `<g transform="translate(-7, 0)"><path class="svg-star-purple" d="${starPathD}" /></g><g transform="translate(7, 0)"><path class="svg-star-gold" d="${starPathD}" /></g>`;
+                } else if (priorHistories.length > 0) {
+                    indSvgHtml = `<path class="svg-star-purple" d="${starPathD}" />`;
+                } else if (plannedItems.length > 0) {
+                    indSvgHtml = `<path class="svg-star-gold" d="${starPathD}" />`;
+                }
+                svgIndElements.forEach(indEl => {
+                    indEl.innerHTML = indSvgHtml;
+                });
             }
 
             let tooltipHtml = `<strong class="d-block mb-1">${isAr ? 'السن' : 'Tooth'} ${fdiNum}</strong>`;
@@ -283,9 +298,10 @@ window.initAppointmentSession = function(config) {
         if (btnOpenBulkModal) {
             btnOpenBulkModal.disabled = count === 0;
         }
-        document.querySelectorAll('.tooth-wrapper, .anatomical-tooth-item, .anatomical-tooth-btn').forEach(wrapper => {
-            const fdiNum = wrapper.dataset.fdi || fdiMap[wrapper.dataset.tooth] || wrapper.dataset.tooth;
-            if (selectedTeethSet.has(fdiNum)) {
+        document.querySelectorAll('.tooth-wrapper, .anatomical-tooth-item, .anatomical-tooth-btn, .vector-tooth-item, .tooth-btn, .p-tooth-btn').forEach(wrapper => {
+            const toothNum = wrapper.dataset.tooth || wrapper.dataset.patientTooth;
+            const fdiNum = String(wrapper.dataset.fdi || fdiMap[toothNum] || toothNum || '');
+            if (fdiNum && selectedTeethSet.has(fdiNum)) {
                 wrapper.classList.add('multi-selected');
             } else {
                 wrapper.classList.remove('multi-selected');
@@ -302,13 +318,11 @@ window.initAppointmentSession = function(config) {
         btnToggleMultiSelect.addEventListener('click', function () {
             isMultiSelectMode = !isMultiSelectMode;
             if (isMultiSelectMode) {
-                this.classList.remove('btn-outline-warning');
-                this.classList.add('btn-warning', 'text-dark');
-                this.innerHTML = `<i class="bi bi-check-square-fill me-1"></i><span>${isAr ? 'إلغاء وضع الاختيار المتعدد' : 'Exit Multi-Select Mode'}</span>`;
+                this.classList.add('active');
+                this.innerHTML = `<i class="bi bi-check-square-fill me-1"></i><span>${isAr ? 'إلغاء وضع التحديد' : 'Exit Multi-Select'}</span>`;
                 if (multiSelectBar) multiSelectBar.style.setProperty('display', 'flex', 'important');
             } else {
-                this.classList.remove('btn-warning', 'text-dark');
-                this.classList.add('btn-outline-warning');
+                this.classList.remove('active');
                 this.innerHTML = `<i class="bi bi-ui-checks me-1"></i><span>${isAr ? 'تحديد أسنان متعددة' : 'Multi-Select Teeth'}</span>`;
                 if (multiSelectBar) multiSelectBar.style.setProperty('display', 'none', 'important');
                 clearMultiSelect();
@@ -320,13 +334,16 @@ window.initAppointmentSession = function(config) {
         btnClearMultiSelect.addEventListener('click', clearMultiSelect);
     }
 
-    // Tooth Click Handlers
-    document.querySelectorAll('.tooth-wrapper, .anatomical-tooth-item, .anatomical-tooth-btn').forEach(wrapper => {
-        wrapper.addEventListener('click', function () {
-            const toothNum = this.dataset.tooth;
-            const fdiNum = this.dataset.fdi || fdiMap[toothNum] || toothNum;
+    // Tooth Click Handlers (For Anatomical and Circular Charts)
+    document.querySelectorAll('.tooth-wrapper, .anatomical-tooth-item, .anatomical-tooth-btn, .vector-tooth-item, .tooth-btn, .p-tooth-btn').forEach(wrapper => {
+        wrapper.addEventListener('click', function (e) {
+            const toothNum = this.dataset.tooth || this.dataset.patientTooth;
+            const fdiNum = String(this.dataset.fdi || fdiMap[toothNum] || toothNum || '');
+            if (!fdiNum) return;
 
             if (isMultiSelectMode) {
+                e.preventDefault();
+                e.stopPropagation();
                 if (selectedTeethSet.has(fdiNum)) {
                     selectedTeethSet.delete(fdiNum);
                 } else {

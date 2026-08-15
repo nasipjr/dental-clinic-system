@@ -13,7 +13,7 @@
                 <option value="Done" {% if status_filter == 'Done' %}selected{% endif %}>{% if current_lang == 'ar' %}المنجزة فقط{% else %}Completed Only{% endif %}</option>
                 <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>{% if current_lang == 'ar' %}الملغاة فقط{% else %}Cancelled Only{% endif %}</option>
             </select>
-            <a href="{{ url_for('appointments.appointments_archive') }}" class="btn btn-outline-secondary rounded-pill text-nowrap" id="archive-reset-btn" title="{% if current_lang == 'ar' %}إعادة تعيين الفلاتر{% else %}Reset Filters{% endif %}">
+            <a href="{{ url_for('appointments.appointments_archive') }}" class="btn btn-filter-reset text-nowrap" id="archive-reset-btn" title="{% if current_lang == 'ar' %}إعادة تعيين الفلاتر{% else %}Reset Filters{% endif %}">
                 <i class="bi bi-arrow-counterclockwise"></i>
             </a>
         </div>

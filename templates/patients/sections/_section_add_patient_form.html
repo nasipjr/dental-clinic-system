@@ -199,9 +199,13 @@
 
         <!-- Submit Button -->
         <div class="col-12 text-center pt-2">
-            <button type="submit" class="save-patient-btn">{% if current_lang == 'ar' %}حفظ المريض{% else %}Save Patient{% endif %}</button>
-            <a href="{{ url_for('patients.patients') }}" class="btn-outline-main px-4 ms-2">
-                {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+            <button type="submit" class="save-patient-btn">
+                <i class="bi bi-person-check"></i>
+                <span>{% if current_lang == 'ar' %}حفظ المريض{% else %}Save Patient{% endif %}</span>
+            </button>
+            <a href="{{ url_for('patients.patients') }}" class="btn-outline-main ms-2">
+                <i class="bi bi-x-lg"></i>
+                <span>{% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}</span>
             </a>
         </div>
 

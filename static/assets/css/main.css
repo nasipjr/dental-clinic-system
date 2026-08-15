@@ -1030,35 +1030,52 @@ section,
 }
 
 .hero .hero-content .trust-badges {
-  display: flex;
-  gap: 1.5rem;
-  flex-wrap: wrap;
+  display: flex !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
 }
 
 .hero .hero-content .trust-badges .badge-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: color-mix(in srgb, var(--accent-color), transparent 90%);
-  border-radius: 50px;
-  color: var(--accent-color);
-  font-size: 0.875rem;
-  font-weight: 500;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 6px 16px !important;
+  background: rgba(15, 23, 42, 0.7) !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
+  border-radius: 50rem !important;
+  color: #f1f5f9 !important;
+  font-size: 0.86rem !important;
+  font-weight: 600 !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), 0 0 10px rgba(56, 189, 248, 0.08) !important;
+  transition: all 0.25s ease !important;
+  user-select: none !important;
+}
+
+.hero .hero-content .trust-badges .badge-item:hover {
+  background: rgba(15, 23, 42, 0.88) !important;
+  border-color: rgba(56, 189, 248, 0.55) !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), 0 0 16px rgba(56, 189, 248, 0.2) !important;
+  transform: translateY(-1px) !important;
 }
 
 .hero .hero-content .trust-badges .badge-item i {
-  font-size: 1rem;
+  font-size: 1.05rem !important;
+  color: #38bdf8 !important;
+  filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.4)) !important;
 }
 
 @media (max-width: 576px) {
   .hero .hero-content .trust-badges {
-    gap: 0.75rem;
+    gap: 8px !important;
   }
 
   .hero .hero-content .trust-badges .badge-item {
-    font-size: 0.75rem;
-    padding: 0.4rem 0.8rem;
+    font-size: 0.78rem !important;
+    padding: 5px 12px !important;
   }
 }
 
@@ -6446,28 +6463,33 @@ section,
     min-height: 130px;
 }
 
+.save-patient-btn,
 #add-patient-form .save-patient-btn {
-    display: inline-block;
-    min-width: 180px;
-    padding: 12px 28px;
-    background: #2d6cdf;
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.3s ease;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    min-width: 160px !important;
+    padding: 9px 28px !important;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(56, 189, 248, 0.5) !important;
+    border-radius: 50rem !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4) !important;
+    text-decoration: none !important;
 }
 
+.save-patient-btn:hover,
 #add-patient-form .save-patient-btn:hover {
-    background: #1f4fbf;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(45, 108, 223, 0.25);
-}
-
-#add-patient-form .save-patient-btn:active {
-    transform: translateY(0);
+    color: #ffffff !important;
+    background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%) !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.55) !important;
+    transform: translateY(-2px) !important;
 }
 
 /***** Section *****/  /***** End Section *****/
@@ -6629,29 +6651,56 @@ section,
   gap: 12px;
 }
 
-.btn-outline-main,
-.btn-delete-soft {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 150px;
-  padding: 12px 20px;
-  border-radius: 14px;
-  font-size: 14px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.3s ease;
-}
-
 .btn-outline-main {
-  border: 1px solid color-mix(in srgb, var(--accent-color), transparent 45%);
-  color: var(--accent-color);
-  background: transparent;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  min-width: 140px !important;
+  padding: 9px 24px !important;
+  border-radius: 50rem !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  color: #e2e8f0 !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+  text-decoration: none !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  cursor: pointer !important;
 }
 
 .btn-outline-main:hover {
-  background: color-mix(in srgb, var(--accent-color), transparent 88%);
-  color: #7fd3ff;
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+  transform: translateY(-2px) !important;
+}
+
+.btn-custom-procedure-toggle {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 7px 20px !important;
+  border-radius: 50rem !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  color: #38bdf8 !important;
+  background: rgba(56, 189, 248, 0.1) !important;
+  border: 1.5px solid rgba(56, 189, 248, 0.4) !important;
+  text-decoration: none !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer !important;
+}
+
+.btn-custom-procedure-toggle:hover {
+  color: #ffffff !important;
+  background: rgba(56, 189, 248, 0.22) !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3) !important;
+  transform: translateY(-1px) !important;
 }
 
 .btn-delete-soft {
@@ -6883,4 +6932,826 @@ section,
   color: #fff;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 123, 255, 0.25);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GLOBAL DARK GLASSMORPHISM BUTTON PILL DESIGN SYSTEM
+   ═══════════════════════════════════════════════════════════════ */
+
+/* 1. Primary Action Pill (Sky Blue Vibrant Pill) */
+.btn-app-primary,
+.btn-add-pill,
+.btn.btn-add-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  font-family: inherit !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+  border: 1px solid rgba(56, 189, 248, 0.5) !important;
+  border-radius: 50rem !important;
+  padding: 7px 22px !important;
+  text-decoration: none !important;
+  line-height: 1.4 !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35) !important;
+  cursor: pointer !important;
+}
+.btn-app-primary:hover,
+.btn-add-pill:hover,
+.btn.btn-add-pill:hover {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%) !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.5) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* 2. Secondary / Back Action Pill (Translucent Neutral) */
+.btn-app-secondary,
+.btn-back-pill,
+.btn.btn-back-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  font-family: inherit !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  color: #e2e8f0 !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 50rem !important;
+  padding: 7px 20px !important;
+  text-decoration: none !important;
+  line-height: 1.4 !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  cursor: pointer !important;
+}
+.btn-app-secondary:hover,
+.btn-back-pill:hover,
+.btn.btn-back-pill:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* 3. Emerald Quick Action Pill (Green Vibrant Pill) */
+.btn-app-emerald,
+.btn-quick-session-pill,
+.btn.btn-quick-session-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  font-family: inherit !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  border: 1px solid rgba(52, 211, 153, 0.5) !important;
+  border-radius: 50rem !important;
+  padding: 7px 20px !important;
+  text-decoration: none !important;
+  line-height: 1.4 !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35) !important;
+  cursor: pointer !important;
+}
+.btn-app-emerald:hover,
+.btn-quick-session-pill:hover,
+.btn.btn-quick-session-pill:hover {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #047857 0%, #059669 100%) !important;
+  border-color: #34d399 !important;
+  box-shadow: 0 6px 18px rgba(5, 150, 105, 0.5) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* 4. Amber Archive Action Pill (Gold Glassmorphism Pill) */
+.btn-app-amber,
+.btn-archive-pill,
+.btn.btn-archive-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  font-family: inherit !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  color: #fbbf24 !important;
+  background: rgba(245, 158, 11, 0.16) !important;
+  border: 1.5px solid rgba(245, 158, 11, 0.45) !important;
+  border-radius: 50rem !important;
+  padding: 7px 20px !important;
+  text-decoration: none !important;
+  line-height: 1.4 !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  cursor: pointer !important;
+}
+.btn-app-amber:hover,
+.btn-archive-pill:hover,
+.btn.btn-archive-pill:hover {
+  color: #ffffff !important;
+  background: #d97706 !important;
+  border-color: #fbbf24 !important;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* 4.1. Purple Action Pill (Gradient Purple Pill) */
+.btn-app-purple,
+.btn.btn-app-purple {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  font-family: inherit !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%) !important;
+  border: 1px solid rgba(167, 139, 250, 0.5) !important;
+  border-radius: 50rem !important;
+  padding: 7px 20px !important;
+  text-decoration: none !important;
+  line-height: 1.4 !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35) !important;
+  cursor: pointer !important;
+}
+.btn-app-purple:hover,
+.btn.btn-app-purple:hover {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%) !important;
+  border-color: #a78bfa !important;
+  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.5) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* 4.2. Danger Action Pill (Gradient Red Pill) */
+.btn-app-danger,
+.btn.btn-app-danger {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  font-family: inherit !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
+  border: 1px solid rgba(248, 113, 113, 0.5) !important;
+  border-radius: 50rem !important;
+  padding: 7px 20px !important;
+  text-decoration: none !important;
+  line-height: 1.4 !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35) !important;
+  cursor: pointer !important;
+}
+.btn-app-danger:hover,
+.btn.btn-app-danger:hover {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%) !important;
+  border-color: #f87171 !important;
+  box-shadow: 0 6px 18px rgba(220, 38, 38, 0.5) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* 5. View Switch Toggle Pills (Calendar / List) */
+.btn-group-toggle-pills {
+  display: inline-flex !important;
+  align-items: center !important;
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 50rem !important;
+  padding: 4px !important;
+  gap: 4px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+}
+.btn-view-toggle-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  font-family: inherit !important;
+  font-size: 0.86rem !important;
+  font-weight: 600 !important;
+  color: #94a3b8 !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 50rem !important;
+  padding: 5px 16px !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+}
+.btn-view-toggle-pill:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+.btn-view-toggle-pill.active {
+  color: #ffffff !important;
+  background: #0284c7 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 10px rgba(2, 132, 199, 0.45) !important;
+}
+
+/* 6. Dashboard Hero Actions */
+.btn-hero-primary,
+.btn.btn-hero-primary {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  font-family: inherit !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+  border: 1px solid rgba(56, 189, 248, 0.5) !important;
+  border-radius: 50rem !important;
+  padding: 9px 26px !important;
+  text-decoration: none !important;
+  line-height: 1.4 !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4) !important;
+  cursor: pointer !important;
+}
+.btn-hero-primary:hover,
+.btn.btn-hero-primary:hover {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%) !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.55) !important;
+  transform: translateY(-2px) !important;
+}
+
+.btn-hero-outline,
+.btn.btn-hero-outline {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  font-family: inherit !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  color: #e2e8f0 !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.22) !important;
+  border-radius: 50rem !important;
+  padding: 9px 26px !important;
+  text-decoration: none !important;
+  line-height: 1.4 !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  cursor: pointer !important;
+}
+.btn-hero-outline:hover,
+.btn.btn-hero-outline:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(255, 255, 255, 0.45) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* 7. Filter Action Buttons (Search & Reset) */
+.btn-filter-search,
+.btn.btn-filter-search {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  font-family: inherit !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+  border: 1px solid rgba(56, 189, 248, 0.5) !important;
+  border-radius: 50rem !important;
+  padding: 7px 22px !important;
+  text-decoration: none !important;
+  line-height: 1.4 !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 3px 12px rgba(2, 132, 199, 0.35) !important;
+  cursor: pointer !important;
+}
+.btn-filter-search:hover,
+.btn.btn-filter-search:hover {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%) !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 5px 16px rgba(2, 132, 199, 0.5) !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-filter-reset,
+.btn.btn-filter-reset {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  font-family: inherit !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
+  color: #94a3b8 !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+  border-radius: 50rem !important;
+  padding: 7px 18px !important;
+  text-decoration: none !important;
+  line-height: 1.4 !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  cursor: pointer !important;
+}
+.btn-filter-reset:hover,
+.btn.btn-filter-reset:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* 8. Status Filter Pills Bar & Pills */
+.status-filter-pills-bar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  overflow-x: auto !important;
+  padding: 4px 2px !important;
+  scrollbar-width: thin;
+}
+
+.status-filter-pill,
+.sub-tab-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-family: inherit !important;
+  font-size: 0.86rem !important;
+  font-weight: 600 !important;
+  color: #94a3b8 !important;
+  background: rgba(15, 23, 42, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 50rem !important;
+  padding: 6px 16px !important;
+  text-decoration: none !important;
+  line-height: 1.4 !important;
+  white-space: nowrap !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+  cursor: pointer !important;
+}
+.status-filter-pill:hover,
+.sub-tab-item:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(-1px) !important;
+}
+
+.status-filter-pill .status-pill-badge,
+.sub-tab-item .badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: inherit !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  border-radius: 50rem !important;
+  padding: 2px 8px !important;
+  line-height: 1.2 !important;
+}
+
+/* Active State: All (Sky Blue) */
+.status-filter-pill.active-all,
+.status-filter-pill.active:not(.active-paid):not(.active-partial):not(.active-unpaid),
+.sub-tab-item.active-all,
+.sub-tab-item.active:not(.active-paid):not(.active-partial):not(.active-unpaid) {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+  border-color: rgba(56, 189, 248, 0.5) !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4) !important;
+  font-weight: 700 !important;
+}
+.status-filter-pill.active-all .status-pill-badge,
+.status-filter-pill.active:not(.active-paid):not(.active-partial):not(.active-unpaid) .status-pill-badge,
+.sub-tab-item.active-all .badge,
+.sub-tab-item.active:not(.active-paid):not(.active-partial):not(.active-unpaid) .badge {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+/* Active State: Paid (Emerald Green) */
+.status-filter-pill.active-paid,
+.sub-tab-item.active-paid {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  border-color: rgba(52, 211, 153, 0.5) !important;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4) !important;
+  font-weight: 700 !important;
+}
+.status-filter-pill.active-paid .status-pill-badge,
+.sub-tab-item.active-paid .badge {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+/* Active State: Partial (Amber Gold) */
+.status-filter-pill.active-partial,
+.sub-tab-item.active-partial {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important;
+  border-color: rgba(245, 158, 11, 0.5) !important;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4) !important;
+  font-weight: 700 !important;
+}
+.status-filter-pill.active-partial .status-pill-badge,
+.sub-tab-item.active-partial .badge {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+/* Active State: Unpaid (Ruby Red) */
+.status-filter-pill.active-unpaid,
+.sub-tab-item.active-unpaid {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
+  border-color: rgba(248, 113, 113, 0.5) !important;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4) !important;
+  font-weight: 700 !important;
+}
+.status-filter-pill.active-unpaid .status-pill-badge,
+.sub-tab-item.active-unpaid .badge {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   LIGHT MODE DESIGN SYSTEM OVERRIDES (الوضع النهاري)
+   ═════════════════════════════════════════════════════════════════════ */
+
+/* 1. Hero Appointments Status Card in Light Mode */
+[data-bs-theme="light"] .hero .hero-content .emergency-contact,
+[data-bs-theme="light"] .emergency-contact,
+html:not([data-bs-theme="dark"]) .hero .hero-content .emergency-contact,
+html:not([data-bs-theme="dark"]) .emergency-contact {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border: 1px solid rgba(2, 132, 199, 0.25) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 10px 30px rgba(2, 132, 199, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-bs-theme="light"] .hero .hero-content .emergency-contact:hover,
+[data-bs-theme="light"] .emergency-contact:hover,
+html:not([data-bs-theme="dark"]) .hero .hero-content .emergency-contact:hover,
+html:not([data-bs-theme="dark"]) .emergency-contact:hover {
+  background: #ffffff !important;
+  border-color: rgba(2, 132, 199, 0.5) !important;
+  box-shadow: 0 14px 35px rgba(2, 132, 199, 0.16), 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+  transform: translateY(-2px) !important;
+}
+
+[data-bs-theme="light"] .hero .hero-content .emergency-contact .emergency-icon,
+[data-bs-theme="light"] .emergency-icon,
+html:not([data-bs-theme="dark"]) .hero .hero-content .emergency-contact .emergency-icon,
+html:not([data-bs-theme="dark"]) .emergency-icon {
+  background: rgba(2, 132, 199, 0.1) !important;
+  border: 1px solid rgba(2, 132, 199, 0.28) !important;
+  color: #0284c7 !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.15) !important;
+}
+
+[data-bs-theme="light"] .hero .hero-content .emergency-contact .emergency-icon i,
+[data-bs-theme="light"] .emergency-icon i,
+html:not([data-bs-theme="dark"]) .hero .hero-content .emergency-contact .emergency-icon i,
+html:not([data-bs-theme="dark"]) .emergency-icon i {
+  color: #0284c7 !important;
+}
+
+[data-bs-theme="light"] .hero .hero-content .emergency-contact .emergency-icon.completed,
+[data-bs-theme="light"] .emergency-icon.completed,
+html:not([data-bs-theme="dark"]) .hero .hero-content .emergency-contact .emergency-icon.completed,
+html:not([data-bs-theme="dark"]) .emergency-icon.completed {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  color: #059669 !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.18) !important;
+}
+
+[data-bs-theme="light"] .hero .hero-content .emergency-contact .emergency-icon.completed i,
+[data-bs-theme="light"] .emergency-icon.completed i,
+html:not([data-bs-theme="dark"]) .hero .hero-content .emergency-contact .emergency-icon.completed i,
+html:not([data-bs-theme="dark"]) .emergency-icon.completed i {
+  color: #059669 !important;
+}
+
+[data-bs-theme="light"] .hero .hero-content .emergency-contact .emergency-info small,
+[data-bs-theme="light"] .emergency-info small,
+html:not([data-bs-theme="dark"]) .hero .hero-content .emergency-contact .emergency-info small,
+html:not([data-bs-theme="dark"]) .emergency-info small {
+  color: #64748b !important;
+  font-weight: 700 !important;
+}
+
+[data-bs-theme="light"] .hero .hero-content .emergency-contact .emergency-info strong,
+[data-bs-theme="light"] .emergency-info strong,
+html:not([data-bs-theme="dark"]) .hero .hero-content .emergency-contact .emergency-info strong,
+html:not([data-bs-theme="dark"]) .emergency-info strong {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+[data-bs-theme="light"] .emergency-next-badge,
+html:not([data-bs-theme="dark"]) .emergency-next-badge {
+  background: rgba(2, 132, 199, 0.1) !important;
+  color: #0284c7 !important;
+  border: 1px solid rgba(2, 132, 199, 0.3) !important;
+  font-weight: 700 !important;
+}
+
+/* 2. Hero Top Info Badges (Working Hours / Booking Window) in Light Mode */
+[data-bs-theme="light"] .hero .hero-content .trust-badges .badge-item,
+[data-bs-theme="light"] .trust-badges .badge-item,
+html:not([data-bs-theme="dark"]) .hero .hero-content .trust-badges .badge-item,
+html:not([data-bs-theme="dark"]) .trust-badges .badge-item {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(2, 132, 199, 0.22) !important;
+  color: #1e293b !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-bs-theme="light"] .hero .hero-content .trust-badges .badge-item:hover,
+[data-bs-theme="light"] .trust-badges .badge-item:hover,
+html:not([data-bs-theme="dark"]) .hero .hero-content .trust-badges .badge-item:hover,
+html:not([data-bs-theme="dark"]) .trust-badges .badge-item:hover {
+  background: #ffffff !important;
+  border-color: rgba(2, 132, 199, 0.5) !important;
+  color: #0284c7 !important;
+  box-shadow: 0 6px 18px rgba(2, 132, 199, 0.16) !important;
+  transform: translateY(-1px) !important;
+}
+
+[data-bs-theme="light"] .hero .hero-content .trust-badges .badge-item i,
+[data-bs-theme="light"] .trust-badges .badge-item i,
+html:not([data-bs-theme="dark"]) .hero .hero-content .trust-badges .badge-item i,
+html:not([data-bs-theme="dark"]) .trust-badges .badge-item i {
+  color: #0284c7 !important;
+  filter: none !important;
+}
+
+/* 3. Analytics Visualizer Switcher & View Toggle Pills in Light Mode */
+[data-bs-theme="light"] .visualizer-toggle-capsule,
+[data-bs-theme="light"] .btn-group-toggle-pills,
+html:not([data-bs-theme="dark"]) .visualizer-toggle-capsule,
+html:not([data-bs-theme="dark"]) .btn-group-toggle-pills {
+  background: #f1f5f9 !important;
+  border: 1.5px solid #cbd5e1 !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.03) !important;
+}
+
+[data-bs-theme="light"] .visualizer-toggle-capsule button,
+[data-bs-theme="light"] .btn-view-toggle-pill,
+html:not([data-bs-theme="dark"]) .visualizer-toggle-capsule button,
+html:not([data-bs-theme="dark"]) .btn-view-toggle-pill {
+  color: #64748b !important;
+  font-weight: 700 !important;
+  background: transparent !important;
+}
+
+[data-bs-theme="light"] .visualizer-toggle-capsule button:hover,
+[data-bs-theme="light"] .btn-view-toggle-pill:hover,
+html:not([data-bs-theme="dark"]) .visualizer-toggle-capsule button:hover,
+html:not([data-bs-theme="dark"]) .btn-view-toggle-pill:hover {
+  color: #0f172a !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+}
+
+[data-bs-theme="light"] .visualizer-toggle-capsule button.active,
+[data-bs-theme="light"] .btn-view-toggle-pill.active,
+html:not([data-bs-theme="dark"]) .visualizer-toggle-capsule button.active,
+html:not([data-bs-theme="dark"]) .btn-view-toggle-pill.active {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 3px 12px rgba(2, 132, 199, 0.4) !important;
+}
+
+/* 4. Status Filter Pills Bar in Light Mode (Invoices, Payments, etc.) */
+[data-bs-theme="light"] .status-filter-pill,
+[data-bs-theme="light"] .sub-tab-item,
+html:not([data-bs-theme="dark"]) .status-filter-pill,
+html:not([data-bs-theme="dark"]) .sub-tab-item {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #475569 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-bs-theme="light"] .status-filter-pill .status-pill-badge,
+[data-bs-theme="light"] .sub-tab-item .badge,
+html:not([data-bs-theme="dark"]) .status-filter-pill .status-pill-badge,
+html:not([data-bs-theme="dark"]) .sub-tab-item .badge {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0 !important;
+  font-weight: 800 !important;
+}
+
+[data-bs-theme="light"] .status-filter-pill:hover,
+[data-bs-theme="light"] .sub-tab-item:hover,
+html:not([data-bs-theme="dark"]) .status-filter-pill:hover,
+html:not([data-bs-theme="dark"]) .sub-tab-item:hover {
+  background: #ffffff !important;
+  border-color: rgba(2, 132, 199, 0.5) !important;
+  color: #0284c7 !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.15) !important;
+  transform: translateY(-1px) !important;
+}
+
+[data-bs-theme="light"] .status-filter-pill.active-all,
+[data-bs-theme="light"] .sub-tab-item.active-all,
+html:not([data-bs-theme="dark"]) .status-filter-pill.active-all,
+html:not([data-bs-theme="dark"]) .sub-tab-item.active-all {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+  border-color: #0284c7 !important;
+  box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4) !important;
+}
+
+[data-bs-theme="light"] .status-filter-pill.active-all .status-pill-badge,
+[data-bs-theme="light"] .sub-tab-item.active-all .badge,
+html:not([data-bs-theme="dark"]) .status-filter-pill.active-all .status-pill-badge,
+html:not([data-bs-theme="dark"]) .sub-tab-item.active-all .badge {
+  background: rgba(255, 255, 255, 0.28) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+[data-bs-theme="light"] .status-filter-pill.active-paid,
+[data-bs-theme="light"] .sub-tab-item.active-paid,
+html:not([data-bs-theme="dark"]) .status-filter-pill.active-paid,
+html:not([data-bs-theme="dark"]) .sub-tab-item.active-paid {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  border-color: #059669 !important;
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.4) !important;
+}
+
+[data-bs-theme="light"] .status-filter-pill.active-paid .status-pill-badge,
+[data-bs-theme="light"] .sub-tab-item.active-paid .badge,
+html:not([data-bs-theme="dark"]) .status-filter-pill.active-paid .status-pill-badge,
+html:not([data-bs-theme="dark"]) .sub-tab-item.active-paid .badge {
+  background: rgba(255, 255, 255, 0.28) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+[data-bs-theme="light"] .status-filter-pill.active-partial,
+[data-bs-theme="light"] .sub-tab-item.active-partial,
+html:not([data-bs-theme="dark"]) .status-filter-pill.active-partial,
+html:not([data-bs-theme="dark"]) .sub-tab-item.active-partial {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important;
+  border-color: #d97706 !important;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4) !important;
+}
+
+[data-bs-theme="light"] .status-filter-pill.active-partial .status-pill-badge,
+[data-bs-theme="light"] .sub-tab-item.active-partial .badge,
+html:not([data-bs-theme="dark"]) .status-filter-pill.active-partial .status-pill-badge,
+html:not([data-bs-theme="dark"]) .sub-tab-item.active-partial .badge {
+  background: rgba(255, 255, 255, 0.28) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+[data-bs-theme="light"] .status-filter-pill.active-unpaid,
+[data-bs-theme="light"] .sub-tab-item.active-unpaid,
+html:not([data-bs-theme="dark"]) .status-filter-pill.active-unpaid,
+html:not([data-bs-theme="dark"]) .sub-tab-item.active-unpaid {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
+  border-color: #dc2626 !important;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4) !important;
+}
+
+[data-bs-theme="light"] .status-filter-pill.active-unpaid .status-pill-badge,
+[data-bs-theme="light"] .sub-tab-item.active-unpaid .badge,
+html:not([data-bs-theme="dark"]) .status-filter-pill.active-unpaid .status-pill-badge,
+html:not([data-bs-theme="dark"]) .sub-tab-item.active-unpaid .badge {
+  background: rgba(255, 255, 255, 0.28) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+/* 5. Secondary Buttons, Filter Reset, and Back Buttons in Light Mode */
+[data-bs-theme="light"] .btn-app-secondary,
+[data-bs-theme="light"] .btn-hero-outline,
+[data-bs-theme="light"] .btn-outline-main,
+[data-bs-theme="light"] .btn-filter-reset,
+html:not([data-bs-theme="dark"]) .btn-app-secondary,
+html:not([data-bs-theme="dark"]) .btn-hero-outline,
+html:not([data-bs-theme="dark"]) .btn-outline-main,
+html:not([data-bs-theme="dark"]) .btn-filter-reset {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #334155 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-bs-theme="light"] .btn-app-secondary:hover,
+[data-bs-theme="light"] .btn-hero-outline:hover,
+[data-bs-theme="light"] .btn-outline-main:hover,
+[data-bs-theme="light"] .btn-filter-reset:hover,
+html:not([data-bs-theme="dark"]) .btn-app-secondary:hover,
+html:not([data-bs-theme="dark"]) .btn-hero-outline:hover,
+html:not([data-bs-theme="dark"]) .btn-outline-main:hover,
+html:not([data-bs-theme="dark"]) .btn-filter-reset:hover {
+  background: #ffffff !important;
+  border-color: rgba(2, 132, 199, 0.5) !important;
+  color: #0284c7 !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.15) !important;
+  transform: translateY(-2px) !important;
+}
+
+[data-bs-theme="light"] .btn-custom-procedure-toggle,
+html:not([data-bs-theme="dark"]) .btn-custom-procedure-toggle {
+  background: rgba(2, 132, 199, 0.08) !important;
+  border: 1.5px solid rgba(2, 132, 199, 0.35) !important;
+  color: #0284c7 !important;
+}
+
+[data-bs-theme="light"] .btn-custom-procedure-toggle:hover,
+html:not([data-bs-theme="dark"]) .btn-custom-procedure-toggle:hover {
+  background: #0284c7 !important;
+  border-color: #0284c7 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25) !important;
+}
+
+/* 6. Dropdown Toggles and Year Filters in Light Mode */
+[data-bs-theme="light"] #yearFilterDropdown,
+[data-bs-theme="light"] .dropdown-toggle.btn-app-secondary,
+[data-bs-theme="light"] .dropdown-toggle.btn-filter,
+html:not([data-bs-theme="dark"]) #yearFilterDropdown,
+html:not([data-bs-theme="dark"]) .dropdown-toggle.btn-app-secondary,
+html:not([data-bs-theme="dark"]) .dropdown-toggle.btn-filter {
+  background: #ffffff !important;
+  border: 1.5px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-bs-theme="light"] #yearFilterDropdown span,
+[data-bs-theme="light"] .dropdown-toggle.btn-app-secondary span,
+html:not([data-bs-theme="dark"]) #yearFilterDropdown span,
+html:not([data-bs-theme="dark"]) .dropdown-toggle.btn-app-secondary span {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+[data-bs-theme="light"] #yearFilterDropdown i,
+[data-bs-theme="light"] .dropdown-toggle.btn-app-secondary i,
+html:not([data-bs-theme="dark"]) #yearFilterDropdown i,
+html:not([data-bs-theme="dark"]) .dropdown-toggle.btn-app-secondary i {
+  color: #0284c7 !important;
+}
+
+[data-bs-theme="light"] #yearFilterDropdown:hover,
+[data-bs-theme="light"] .dropdown-toggle.btn-app-secondary:hover,
+html:not([data-bs-theme="dark"]) #yearFilterDropdown:hover,
+html:not([data-bs-theme="dark"]) .dropdown-toggle.btn-app-secondary:hover {
+  background: #ffffff !important;
+  border-color: rgba(2, 132, 199, 0.5) !important;
+  color: #0284c7 !important;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.15) !important;
+  transform: translateY(-2px) !important;
+}
+
+[data-bs-theme="light"] #yearFilterDropdown:hover span,
+[data-bs-theme="light"] .dropdown-toggle.btn-app-secondary:hover span,
+html:not([data-bs-theme="dark"]) #yearFilterDropdown:hover span,
+html:not([data-bs-theme="dark"]) .dropdown-toggle.btn-app-secondary:hover span {
+  color: #0284c7 !important;
 }

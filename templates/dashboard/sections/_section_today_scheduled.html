@@ -138,8 +138,9 @@
         <i class="bi bi-calendar-check"></i>
         <h4>{% if current_lang == 'ar' %}لا توجد مواعيد مجدولة اليوم{% else %}No scheduled appointments today{% endif %}</h4>
         <p>{% if current_lang == 'ar' %}لا توجد مواعيد بانتظار المعالجة اليوم.{% else %}There are no scheduled appointments waiting for today.{% endif %}</p>
-        <a href="{{ url_for('appointments.add_appointment_direct') }}" class="btn btn-primary mt-3">
-          {% if current_lang == 'ar' %}إضافة موعد{% else %}Add Appointment{% endif %}
+        <a href="{{ url_for('appointments.add_appointment_direct') }}" class="btn-add-pill mt-3">
+          <i class="bi bi-plus-circle"></i>
+          <span>{% if current_lang == 'ar' %}إضافة موعد{% else %}Add Appointment{% endif %}</span>
         </a>
       </div>
       {% endif %}

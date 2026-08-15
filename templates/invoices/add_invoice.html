@@ -4,7 +4,7 @@
 
 {% block content %}
 <!-- Invoice Form Stylesheet -->
-<link rel="stylesheet" href="{{ url_for('static', filename='css/invoice_form.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/invoice_form.css') }}?v=2.0">
 
 <section id="add-manual-invoice-section" class="section" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
     <div class="container" data-aos="fade-up" data-aos-delay="100">
@@ -30,12 +30,16 @@
     </div>
 </section>
 
+<!-- Flatpickr Integration for Visit Date/Time -->
+<script src="{{ url_for('static', filename='assets/js/invoice_flatpickr.js') }}?v=1.0"></script>
+
 <!-- Invoice Creation Core Controller -->
 <script src="{{ url_for('static', filename='js/invoice_add_core.js') }}"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     window.initInvoiceAdd({
         treatmentPrices: {{ dict(treatment_prices.items()) | tojson }},
+        treatmentDetails: {{ (treatment_details or {}) | tojson }},
         currencySymbol: {{ currency_symbol | tojson }},
         isArabic: {{ (current_lang == 'ar') | tojson }}
     });

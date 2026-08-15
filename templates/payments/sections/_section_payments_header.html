@@ -5,8 +5,8 @@
         <p class="mb-0">{% if current_lang == 'ar' %}إدارة ومتابعة كافة المقبوضات المالية وحسابات المرضى من مكان واحد.{% else %}Manage all clinic payments and patient collections from one place.{% endif %}</p>
     </div>
 
-    <a href="{{ url_for('payments.add_patient_payment') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle me-1"></i>
-        {% if current_lang == 'ar' %}تسجيل دفعة جديدة{% else %}Add New Payment{% endif %}
+    <a href="{{ url_for('payments.add_patient_payment') }}" class="btn-add-pill">
+        <i class="bi bi-plus-circle"></i>
+        <span>{% if current_lang == 'ar' %}تسجيل دفعة جديدة{% else %}Add New Payment{% endif %}</span>
     </a>
 </div>

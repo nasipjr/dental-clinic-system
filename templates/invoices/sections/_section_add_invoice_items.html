@@ -1,95 +1,137 @@
 <!-- ═══════════ Add Invoice Items & Calculations ═══════════ -->
-<div class="container section-title" style="margin-top: 35px;" data-aos="fade-up">
-    <h2>{% if current_lang == 'ar' %}بنود ومعالجات الفاتورة{% else %}Invoice Items{% endif %}</h2>
-    <p>{% if current_lang == 'ar' %}أضف إجراءً أو أكثر إلى هذه الفاتورة مع تحديد السن والملاحظات.{% else %}Add one or more procedures to this invoice.{% endif %}</p>
-</div>
+<div class="invoice-section-card" data-aos="fade-up" data-aos-delay="150">
+    <div class="invoice-section-header">
+        <div>
+            <h3>
+                <i class="bi bi-layers-half text-info"></i>
+                <span>{% if current_lang == 'ar' %}بنود ومعالجات الفاتورة{% else %}Invoice Treatment Items{% endif %}</span>
+            </h3>
+            <p class="section-subtitle mt-1">{% if current_lang == 'ar' %}أضف الإجراءات السنية المنفذة مع تحديد رقم السن والملاحظات الإضافية{% else %}Add executed dental procedures, tooth numbers, and clinical notes{% endif %}</p>
+        </div>
+    </div>
 
-<div class="appointments-table-wrapper table-responsive mb-4">
-    <table class="table appointments-table align-middle" id="invoice-items-table">
-        <thead>
-            <tr>
-                <th>{% if current_lang == 'ar' %}نوع الإجراء / المعالجة{% else %}Procedure Type{% endif %}</th>
-                <th>{% if current_lang == 'ar' %}رقم السن{% else %}Tooth{% endif %}</th>
-                <th>{% if current_lang == 'ar' %}الملاحظات{% else %}Notes{% endif %}</th>
-                <th>{% if current_lang == 'ar' %}السعر{% else %}Price{% endif %}</th>
-                <th class="text-center">{% if current_lang == 'ar' %}الإجراء{% else %}Action{% endif %}</th>
-            </tr>
-        </thead>
+    <div class="invoice-items-table-wrapper table-responsive">
+        <table class="table invoice-items-table align-middle" id="invoice-items-table">
+            <thead>
+                <tr>
+                    <th style="min-width: 260px;">{% if current_lang == 'ar' %}نوع الإجراء / المعالجة{% else %}Procedure Type{% endif %}</th>
+                    <th style="width: 130px;">{% if current_lang == 'ar' %}رقم السن{% else %}Tooth{% endif %}</th>
+                    <th style="min-width: 180px;">{% if current_lang == 'ar' %}الملاحظات السريرية{% else %}Notes{% endif %}</th>
+                    <th style="width: 220px; min-width: 200px;">{% if current_lang == 'ar' %}السعر{% else %}Price{% endif %}</th>
+                    <th class="text-center" style="width: 70px;">{% if current_lang == 'ar' %}الإجراء{% else %}Action{% endif %}</th>
+                </tr>
+            </thead>
 
-        <tbody id="invoice-items-body">
-            <tr class="invoice-item-row">
-                <td>
-                    <select name="procedure_type" class="form-select procedure-select" required>
-                        <option value="">{% if current_lang == 'ar' %}-- اختر الإجراء --{% else %}Select procedure{% endif %}</option>
-                        {% for procedure_type, price in treatment_prices.items() %}
-                        <option value="{{ procedure_type }}">
-                            {{ procedure_type }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </td>
-
-                <td>
-                    <input type="text"
-                        name="tooth_number"
-                        class="form-control"
-                        placeholder="{% if current_lang == 'ar' %}رقم السن (اختياري){% else %}Tooth number{% endif %}">
-                </td>
-
-                <td>
-                    <input type="text"
-                        name="notes"
-                        class="form-control"
-                        placeholder="{% if current_lang == 'ar' %}ملاحظات إضافية{% else %}Notes{% endif %}">
-                </td>
-
-                <td>
-                    <span class="price-badge"><span class="item-price">0</span> {{ currency_symbol }}</span>
-                </td>
-
-                <td class="text-center">
-                    <button type="button" class="btn btn-outline-danger btn-sm remove-item-btn" disabled>
-                        <i class="bi bi-trash me-1"></i>{% if current_lang == 'ar' %}حذف{% else %}Remove{% endif %}
-                    </button>
-                </td>
-            </tr>
-        </tbody>
-
-        <tfoot>
-            <tr>
-                <th colspan="3" class="text-end">{% if current_lang == 'ar' %}المجموع الفرعي:{% else %}Subtotal:{% endif %}</th>
-                <th>
-                    <span class="price-badge"><span id="invoice-subtotal">0.00</span> {{ currency_symbol }}</span>
-                </th>
-                <th></th>
-            </tr>
-            <tr>
-                <th colspan="3" class="text-end">{% if current_lang == 'ar' %}الخصم:{% else %}Discount:{% endif %}</th>
-                <th>
-                    <div class="input-group input-group-sm rounded-3 overflow-hidden" style="width: 220px;">
-                        <input type="number" step="any" min="0" name="discount" id="invoice-discount-input" class="form-control border-end-0" value="0">
-                        <select name="discount_type" id="invoice-discount-type" class="form-select border-start-0 bg-light" style="max-width: 90px;">
-                            <option value="value">{{ currency_symbol }}</option>
-                            <option value="percentage">%</option>
+            <tbody id="invoice-items-body">
+                <tr class="invoice-item-row">
+                    <td>
+                        <select name="procedure_type" class="form-select procedure-select" required>
+                            <option value="">{% if current_lang == 'ar' %}-- اختر نوع الإجراء من القائمة --{% else %}-- Select Procedure --{% endif %}</option>
+                            {% for cat in ['فحص وتشخيص', 'حشوات ومعالجات تجميلية', 'علاج عصب وجذور', 'جراحة وقلع', 'تعويضات وتيجان', 'تقويم أسنان', 'أسنان أطفال', 'إجراءات عامة وأخرى'] %}
+                                <optgroup label="── {{ cat }} ──">
+                                    {% for proc_name, price in (treatment_prices.items() if treatment_prices else []) %}
+                                        {% set item_detail = (treatment_details or {}).get(proc_name, {}) %}
+                                        {% set item_cat = item_detail.get('category', 'إجراءات عامة وأخرى') %}
+                                        {% if item_cat == cat %}
+                                        <option value="{{ proc_name }}" data-price="{{ price }}">{{ proc_name }} ({{ price | format_price }} {{ currency_symbol }})</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </optgroup>
+                            {% endfor %}
                         </select>
-                    </div>
-                </th>
-                <th></th>
-            </tr>
-            <tr>
-                <th colspan="3" class="text-end">{% if current_lang == 'ar' %}إجمالي الفاتورة النهائي:{% else %}Invoice Total:{% endif %}</th>
-                <th>
-                    <span class="price-badge"><span id="invoice-total">0.00</span> {{ currency_symbol }}</span>
-                </th>
-                <th></th>
-            </tr>
-        </tfoot>
-    </table>
-</div>
+                    </td>
 
-<div class="d-flex justify-content-center mb-4">
-    <button type="button" class="btn btn-outline-primary rounded-pill px-4 fw-bold shadow-xs" id="add-item-btn">
-        <i class="bi bi-plus-circle me-1"></i>
-        {% if current_lang == 'ar' %}إضافة بند آخر{% else %}Add Item{% endif %}
-    </button>
+                    <td>
+                        <input type="text"
+                            name="tooth_number"
+                            class="form-control"
+                            placeholder="{% if current_lang == 'ar' %}رقم السن (اختياري){% else %}Tooth number{% endif %}">
+                    </td>
+
+                    <td>
+                        <input type="text"
+                            name="notes"
+                            class="form-control"
+                            placeholder="{% if current_lang == 'ar' %}ملاحظات إضافية...{% else %}Additional notes...{% endif %}">
+                    </td>
+
+                    <td>
+                        <span class="price-badge"><span class="item-price">0</span> {{ currency_symbol }}</span>
+                    </td>
+
+                    <td class="text-center">
+                        <button type="button" class="btn-delete-row-squircle remove-item-btn" disabled>
+                            <i class="bi bi-trash"></i>
+                            <span>{% if current_lang == 'ar' %}حذف{% else %}Delete{% endif %}</span>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+
+            <tfoot>
+                <!-- Subtotal Row -->
+                <tr>
+                    <th colspan="3" class="text-end fw-bold">{% if current_lang == 'ar' %}المجموع الفرعي:{% else %}Subtotal:{% endif %}</th>
+                    <th>
+                        <span class="price-badge"><span id="invoice-subtotal">0</span> {{ currency_symbol }}</span>
+                    </th>
+                    <th></th>
+                </tr>
+
+                <!-- Discount Row -->
+                <tr>
+                    <th colspan="3" class="text-end fw-bold align-middle" style="color: #f87171;">
+                        <i class="bi bi-tag-fill me-1"></i>{% if current_lang == 'ar' %}الخصم الممنوح:{% else %}Discount:{% endif %}
+                    </th>
+                    <th class="align-middle">
+                        <div class="invoice-footer-input-group discount-group">
+                            <input type="number" step="any" min="0" name="discount" id="invoice-discount-input" class="footer-input" value="0">
+                            <select name="discount_type" id="invoice-discount-type" class="footer-select">
+                                <option value="value">{{ currency_symbol }}</option>
+                                <option value="percentage">%</option>
+                            </select>
+                        </div>
+                    </th>
+                    <th></th>
+                </tr>
+
+                <!-- Additional Charges Row -->
+                <tr id="additional-charges-row">
+                    <th colspan="3" class="text-end fw-bold align-middle" style="color: #fbbf24;">
+                        <i class="bi bi-receipt-cutoff me-1"></i>{% if current_lang == 'ar' %}التكاليف الإضافية (مخابر / رسوم):{% else %}Additional Charges:{% endif %}
+                    </th>
+                    <th class="align-middle">
+                        <div class="invoice-footer-input-group charges-group">
+                            <input type="number" step="any" min="0" name="additional_charges" id="invoice-additional-charges-input" class="footer-input" value="0" placeholder="0">
+                            <span class="footer-addon">{{ currency_symbol }}</span>
+                        </div>
+                    </th>
+                    <th class="text-center align-middle">
+                        <button type="button" class="btn-clear-charges-squircle" id="btn-clear-charges" title="{% if current_lang == 'ar' %}تصفير التكاليف الإضافية{% else %}Clear charges{% endif %}">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                    </th>
+                </tr>
+
+                <!-- Final Invoice Total Row -->
+                <tr>
+                    <th colspan="3" class="text-end fw-bold align-middle" style="font-size: 1rem; color: var(--heading-color, #ffffff);">
+                        {% if current_lang == 'ar' %}إجمالي الفاتورة النهائي:{% else %}Final Invoice Total:{% endif %}
+                    </th>
+                    <th class="align-middle">
+                        <span class="price-badge price-badge-total"><span id="invoice-total">0</span> {{ currency_symbol }}</span>
+                    </th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <!-- Action Toolbar (Add Item) -->
+    <div class="d-flex justify-content-center align-items-center flex-wrap gap-3 pt-2">
+        <button type="button" class="btn-add-item-pill" id="add-item-btn">
+            <i class="bi bi-plus-circle"></i>
+            <span>{% if current_lang == 'ar' %}إضافة بند آخر{% else %}Add Another Item{% endif %}</span>
+        </button>
+    </div>
 </div>

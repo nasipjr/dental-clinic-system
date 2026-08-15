@@ -14,10 +14,11 @@
     background: color-mix(in srgb, var(--default-color), transparent 94%);
     color: var(--default-color);
     border: 1px solid color-mix(in srgb, var(--default-color), transparent 85%);
-    border-radius: 50px;
+    border-radius: 50rem;
     padding: 6px 14px;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 600;
+    font-family: inherit;
     transition: all 0.2s ease;
 }
 
@@ -25,20 +26,27 @@
     background: color-mix(in srgb, var(--accent-color), transparent 85%);
     color: var(--accent-color);
     border-color: var(--accent-color);
+    transform: translateY(-1px);
 }
 
 .procedure-cat-pill.active {
-    background: var(--accent-color) !important;
+    background: #0284c7 !important;
     color: #ffffff !important;
-    border-color: var(--accent-color) !important;
-    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+    border-color: #0284c7 !important;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+}
+
+[data-bs-theme="dark"] .procedure-cat-pill.active {
+    background: #0ea5e9 !important;
+    border-color: #0ea5e9 !important;
+    box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
 }
 
 .procedure-quick-card {
     background: var(--surface-color);
     border: 1.5px solid color-mix(in srgb, var(--default-color), transparent 88%);
     border-radius: 12px;
-    padding: 12px 14px;
+    padding: 10px 14px;
     transition: all 0.2s ease;
     cursor: pointer;
 }
@@ -56,27 +64,101 @@
 }
 
 .proc-title {
+    font-family: inherit !important;
     font-size: 0.92rem;
+    font-weight: 700;
     color: var(--heading-color);
+    line-height: 1.35;
 }
 
 .duration-badge {
-    background: rgba(14, 165, 233, 0.12);
+    font-family: inherit !important;
+    background: rgba(14, 165, 233, 0.1);
     color: #0284c7;
     font-weight: 600;
-    font-size: 0.78rem;
-    border-radius: 6px;
-    padding: 4px 8px;
+    font-size: 0.76rem;
+    border-radius: 50rem;
+    padding: 3px 10px;
+    border: 1px solid rgba(2, 132, 199, 0.25);
+}
+
+[data-bs-theme="dark"] .duration-badge {
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+    border-color: rgba(56, 189, 248, 0.25);
 }
 
 .price-badge {
-    background: rgba(16, 185, 129, 0.12);
-    color: #059669;
-    font-weight: 700;
-    font-size: 0.85rem;
-    border-radius: 6px;
-    padding: 4px 8px;
-    font-family: monospace;
+    font-family: inherit !important;
+    background: rgba(14, 165, 233, 0.12) !important;
+    color: #0284c7 !important;
+    border: 1.5px solid rgba(2, 132, 199, 0.35) !important;
+    font-weight: 700 !important;
+    font-size: 0.82rem !important;
+    border-radius: 50rem !important;
+    padding: 4px 12px !important;
+    letter-spacing: 0.2px !important;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+[data-bs-theme="dark"] .price-badge {
+    background: rgba(56, 189, 248, 0.15) !important;
+    color: #38bdf8 !important;
+    border-color: rgba(56, 189, 248, 0.35) !important;
+}
+
+.btn-custom-procedure-toggle {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    font-family: inherit !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    border-radius: 50rem !important;
+    padding: 6px 18px !important;
+    line-height: 1.4 !important;
+    white-space: nowrap !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    cursor: pointer !important;
+    background: rgba(2, 132, 199, 0.08) !important;
+    border: 1.5px solid rgba(2, 132, 199, 0.35) !important;
+    color: #0284c7 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04) !important;
+}
+
+.btn-custom-procedure-toggle:hover {
+    background: #0284c7 !important;
+    border-color: #0284c7 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25) !important;
+    transform: translateY(-2px) !important;
+}
+
+[data-bs-theme="dark"] .btn-custom-procedure-toggle {
+    background: rgba(56, 189, 248, 0.1) !important;
+    border: 1.5px solid rgba(56, 189, 248, 0.35) !important;
+    color: #38bdf8 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+[data-bs-theme="dark"] .btn-custom-procedure-toggle:hover {
+    background: #38bdf8 !important;
+    border-color: #38bdf8 !important;
+    color: #0f172a !important;
+    box-shadow: 0 4px 16px rgba(56, 189, 248, 0.4) !important;
+    transform: translateY(-2px) !important;
+}
+
+.custom-reason-select {
+    font-family: inherit !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+    padding: 10px 16px !important;
 }
 
 .readonly-form input:disabled,
@@ -86,3 +168,67 @@
     cursor: not-allowed;
     opacity: 0.85;
 }
+
+/* ============================================================
+   Custom Procedure Card — theme-aware glassmorphic container
+   ============================================================ */
+.custom-proc-card {
+    background: rgba(14, 165, 233, 0.06) !important;
+    border: 1.5px solid rgba(14, 165, 233, 0.28) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18) !important;
+}
+
+[data-bs-theme="light"] .custom-proc-card {
+    background: rgba(240, 249, 255, 0.92) !important;
+    border: 1.5px solid rgba(2, 132, 199, 0.22) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07) !important;
+}
+
+/* ============================================================
+   Confirm Custom Procedure Button — emerald glassmorphic pill
+   ============================================================ */
+.btn-confirm-custom-proc {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    font-family: inherit !important;
+    font-size: 0.875rem !important;
+    font-weight: 700 !important;
+    border-radius: 50rem !important;
+    padding: 7px 20px !important;
+    line-height: 1.4 !important;
+    white-space: nowrap !important;
+    cursor: pointer !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    /* Dark mode default — emerald neon */
+    background: rgba(16, 185, 129, 0.12) !important;
+    border: 1.5px solid rgba(16, 185, 129, 0.45) !important;
+    color: #10b981 !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15) !important;
+}
+
+.btn-confirm-custom-proc:hover {
+    background: rgba(16, 185, 129, 0.25) !important;
+    border-color: #10b981 !important;
+    color: #10b981 !important;
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Light mode override — deeper emerald for contrast */
+[data-bs-theme="light"] .btn-confirm-custom-proc {
+    background: rgba(5, 150, 105, 0.09) !important;
+    border: 1.5px solid rgba(5, 150, 105, 0.40) !important;
+    color: #065f46 !important;
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.10) !important;
+}
+
+[data-bs-theme="light"] .btn-confirm-custom-proc:hover {
+    background: rgba(5, 150, 105, 0.18) !important;
+    border-color: #059669 !important;
+    color: #064e3b !important;
+    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.28) !important;
+    transform: translateY(-2px) !important;
+}
+

@@ -167,24 +167,17 @@
 
                     <!-- Actions -->
                     <div class="d-flex align-items-center gap-2 mt-3">
-                        <button type="submit"
-                            class="btn rounded-pill px-3 py-2 fw-bold flex-fill d-inline-flex align-items-center justify-content-center gap-1"
-                            style="min-height:42px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;color:#fff;box-shadow:0 2px 12px rgba(99,102,241,0.3);transition:opacity .2s,transform .15s;"
-                            onmouseover="this.style.opacity='.88'"
-                            onmouseout="this.style.opacity='1'">
+                        <button type="submit" class="btn btn-app-purple flex-fill">
                             <i class="bi bi-floppy"></i>
-                            {% if current_lang=='ar' %}حفظ الإعدادات{% else %}Save Settings{% endif %}
+                            <span>{% if current_lang=='ar' %}حفظ الإعدادات{% else %}Save Settings{% endif %}</span>
                         </button>
 
                         {% if sc and sc.is_active %}
                         <button type="button"
-                            class="btn rounded-pill px-3 py-2 fw-bold flex-fill d-inline-flex align-items-center justify-content-center gap-1 text-nowrap"
-                            onclick="confirmDeductSalary(document.getElementById('deduct-salary-form-{{ staff.id }}'), event);"
-                            style="min-height:42px;background:rgba(251,191,36,0.1);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);transition:all .2s;"
-                            onmouseover="this.style.background='rgba(251,191,36,0.18)'; this.style.borderColor='rgba(251,191,36,0.5)'"
-                            onmouseout="this.style.background='rgba(251,191,36,0.1)'; this.style.borderColor='rgba(251,191,36,0.3)'">
+                            class="btn btn-app-amber flex-fill text-nowrap"
+                            onclick="confirmDeductSalary(document.getElementById('deduct-salary-form-{{ staff.id }}'), event);">
                             <i class="bi bi-arrow-down-circle-fill"></i>
-                            {% if current_lang=='ar' %}خصم الآن{% else %}Deduct Now{% endif %}
+                            <span>{% if current_lang=='ar' %}خصم الآن{% else %}Deduct Now{% endif %}</span>
                         </button>
                         {% endif %}
                     </div>

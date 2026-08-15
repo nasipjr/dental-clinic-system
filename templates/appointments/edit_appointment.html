@@ -13,7 +13,7 @@
 {% set is_locked = current_mode == 'view' or (appointment.status != 'Scheduled' and current_user and current_user.role != 'admin') %}
 
 <!-- Appointment Form Stylesheet -->
-<link rel="stylesheet" href="{{ url_for('static', filename='css/appointment_form.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/appointment_form.css') }}?v=2.0">
 
 <section id="add-patient-page" class="section" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
     <div class="container" data-aos="fade-up">
@@ -41,7 +41,7 @@
 {% endif %}
 
 <!-- Appointment Form Core Controller -->
-<script src="{{ url_for('static', filename='js/appointment_form_core.js') }}"></script>
+<script src="{{ url_for('static', filename='js/appointment_form_core.js') }}?v=2.0"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     window.initAppointmentForm({

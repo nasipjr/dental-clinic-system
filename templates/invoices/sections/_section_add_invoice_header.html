@@ -1,16 +1,12 @@
 <!-- ═══════════ Add Invoice Header ═══════════ -->
-<div class="container section-title" data-aos="fade-up">
-    <h2>{% if current_lang == 'ar' %}إضافة فاتورة يدوية مباشرة{% else %}Add Manual Invoice{% endif %}</h2>
-    <p>{% if current_lang == 'ar' %}إنشاء فاتورة جديدة مباشرة دون موعد مسبق مع إضافة الإجراءات السنية.{% else %}Create a walk-in invoice with one or more treatment items.{% endif %}</p>
-</div>
-
-<div class="add-patient-header text-center" data-aos="fade-up" data-aos-delay="100">
-    <h2>{% if current_lang == 'ar' %}فاتورة مباشرة / مريض مباشر{% else %}Manual / Walk-in Invoice{% endif %}</h2>
-    <p>{% if current_lang == 'ar' %}سيقوم هذا الإجراء بإنشاء موعد منجز، معالجات سنية، وفاتورة مالية متكاملة.{% else %}This will create a completed appointment, treatment items, and an invoice.{% endif %}</p>
+<div class="container section-title mb-4" data-aos="fade-up">
+    <h2>{% if current_lang == 'ar' %}إضافة فاتورة يدوية مباشرة{% else %}Add Manual Direct Invoice{% endif %}</h2>
+    <p>{% if current_lang == 'ar' %}إنشاء موعد منجز وفاتورة جديدة مباشرة مع تحديد المعالجات السنية وخيارات الدفع.{% else %}Create a walk-in invoice and completed visit with treatment procedures and payment options.{% endif %}</p>
 </div>
 
 {% if error_message %}
-<div class="alert alert-danger mb-4 text-center" role="alert">
+<div class="alert alert-danger mb-4 text-center rounded-3 shadow-xs" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
     {{ error_message }}
 </div>
 {% endif %}

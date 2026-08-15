@@ -7,6 +7,7 @@ from models import db, Patient, Appointment, Treatment, Invoice, Payment, Paymen
 from services.invoice_service import sync_invoice_for_appointment
 from services.payment_service import allocate_patient_payments_to_invoices
 from utils.constants import TREATMENT_PRICES, TREATMENT_PROCEDURE_TYPES
+from utils.settings_helper import get_treatment_prices, get_treatment_details
 from utils.auth_helper import role_required
 
 
@@ -286,6 +287,7 @@ def add_invoice():
                     "invoices/add_invoice.html",
                     patients=patients,
                     treatment_prices=dict(TREATMENT_PRICES),
+                    treatment_details=get_treatment_details(),
                     default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                     error_message="Please select a valid patient.",
                 ), 400
@@ -295,20 +297,42 @@ def add_invoice():
                     "invoices/add_invoice.html",
                     patients=patients,
                     treatment_prices=dict(TREATMENT_PRICES),
+                    treatment_details=get_treatment_details(),
                     default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                     error_message="Visit date is required.",
                 ), 400
 
-            appointment_date_raw_normalized = appointment_date_raw.replace('ص', 'AM').replace('م', 'PM').strip()
-            try:
-                appointment_date = datetime.strptime(appointment_date_raw_normalized, "%Y-%m-%dT%H:%M")
-            except ValueError:
+            # Normalize Arabic AM/PM → English before parsing
+            appointment_date_raw_normalized = (
+                appointment_date_raw
+                .replace('ص', 'AM').replace('م', 'PM')
+                .strip()
+            )
+            # Try multiple date formats: Flatpickr 12hr, Flatpickr 24hr, ISO datetime-local
+            _date_formats = [
+                "%Y-%m-%d %I:%M %p",  # Flatpickr: Y-m-d h:i K  → e.g. 2026-08-15 07:27 PM
+                "%Y-%m-%d %H:%M",     # Flatpickr 24hr           → e.g. 2026-08-15 19:27
+                "%Y-%m-%dT%H:%M",     # HTML datetime-local ISO  → e.g. 2026-08-15T19:27
+                "%Y-%m-%d %I:%M%p",   # Variant without space before AM/PM
+            ]
+            appointment_date = None
+            for _fmt in _date_formats:
+                try:
+                    appointment_date = datetime.strptime(appointment_date_raw_normalized, _fmt)
+                    break
+                except ValueError:
+                    continue
+            if appointment_date is None:
+                current_app.logger.warning(
+                    f"Invalid visit date received: '{appointment_date_raw}'"
+                )
                 return render_template(
                     "invoices/add_invoice.html",
                     patients=patients,
                     treatment_prices=dict(TREATMENT_PRICES),
+                    treatment_details=get_treatment_details(),
                     default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
-                    error_message="Visit date must be valid.",
+                    error_message="تنسيق تاريخ الزيارة غير صالح. يرجى الاختيار من منتقي التاريخ.",
                 ), 400
 
             invoice_items = []
@@ -324,6 +348,7 @@ def add_invoice():
                         "invoices/add_invoice.html",
                         patients=patients,
                         treatment_prices=dict(TREATMENT_PRICES),
+                        treatment_details=get_treatment_details(),
                         default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                         error_message="Invalid treatment procedure type.",
                     ), 400
@@ -334,6 +359,7 @@ def add_invoice():
                         "invoices/add_invoice.html",
                         patients=patients,
                         treatment_prices=dict(TREATMENT_PRICES),
+                        treatment_details=get_treatment_details(),
                         default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                         error_message="Tooth number cannot exceed 50 characters.",
                     ), 400
@@ -351,6 +377,7 @@ def add_invoice():
                     "invoices/add_invoice.html",
                     patients=patients,
                     treatment_prices=dict(TREATMENT_PRICES),
+                    treatment_details=get_treatment_details(),
                     default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                     error_message="Please add at least one invoice item.",
                 ), 400
@@ -403,6 +430,18 @@ def add_invoice():
             from decimal import Decimal
             invoice.discount = Decimal(str(discount_val))
             invoice.discount_type = discount_type
+
+            additional_charges_val = 0.0
+            additional_charges_raw = request.form.get("additional_charges", "0").strip()
+            if additional_charges_raw:
+                try:
+                    additional_charges_val = float(additional_charges_raw)
+                    if additional_charges_val < 0:
+                        additional_charges_val = 0.0
+                except ValueError:
+                    pass
+            invoice.additional_charges = Decimal(str(additional_charges_val))
+
             db.session.flush()
 
             invoice_total = invoice.total_amount
@@ -412,6 +451,7 @@ def add_invoice():
                     "invoices/add_invoice.html",
                     patients=patients,
                     treatment_prices=dict(TREATMENT_PRICES),
+                    treatment_details=get_treatment_details(),
                     default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                     error_message="Invalid payment option.",
                 ), 400
@@ -427,6 +467,7 @@ def add_invoice():
                         "invoices/add_invoice.html",
                         patients=patients,
                         treatment_prices=dict(TREATMENT_PRICES),
+                        treatment_details=get_treatment_details(),
                         default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                         error_message="Custom payment amount is required.",
                     ), 400
@@ -438,6 +479,7 @@ def add_invoice():
                         "invoices/add_invoice.html",
                         patients=patients,
                         treatment_prices=dict(TREATMENT_PRICES),
+                        treatment_details=get_treatment_details(),
                         default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                         error_message="Custom payment amount must be a valid number.",
                     ), 400
@@ -447,6 +489,7 @@ def add_invoice():
                         "invoices/add_invoice.html",
                         patients=patients,
                         treatment_prices=dict(TREATMENT_PRICES),
+                        treatment_details=get_treatment_details(),
                         default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                         error_message="Custom payment amount must be greater than 0.",
                     ), 400
@@ -456,6 +499,7 @@ def add_invoice():
                         "invoices/add_invoice.html",
                         patients=patients,
                         treatment_prices=dict(TREATMENT_PRICES),
+                        treatment_details=get_treatment_details(),
                         default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
                         error_message="Custom payment amount cannot be greater than invoice total.",
                     ), 400
@@ -485,6 +529,7 @@ def add_invoice():
             "invoices/add_invoice.html",
             patients=patients,
             treatment_prices=dict(TREATMENT_PRICES),
+            treatment_details=get_treatment_details(),
             default_visit_datetime=default_visit_datetime.strftime("%Y-%m-%dT%H:%M"),
         )
 

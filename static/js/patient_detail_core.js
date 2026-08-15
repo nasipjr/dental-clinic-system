@@ -167,26 +167,41 @@ window.initPatientDetail = function(config) {
 
             if (priorHistories.length > 0) {
                 el.classList.add('history-external');
-                const svgContainer = el.querySelector('.tooth-svg-container') || el;
-                if (!svgContainer.querySelector('.prior-history-indicator')) {
+                if (!el.querySelector('.prior-history-indicator')) {
                     const starDot = document.createElement('span');
                     starDot.className = 'prior-history-indicator';
                     starDot.title = isAr ? 'سوابق مرضية وخارجية' : 'Pre-existing Condition';
                     starDot.innerHTML = '<i class="bi bi-star-fill"></i>';
-                    svgContainer.appendChild(starDot);
+                    el.appendChild(starDot);
                 }
             }
 
             if (plannedItems.length > 0) {
                 el.classList.add('has-plan-treatment');
-                const svgContainer = el.querySelector('.tooth-svg-container') || el;
-                if (!svgContainer.querySelector('.plan-golden-indicator')) {
+                if (!el.querySelector('.plan-golden-indicator')) {
                     const starEl = document.createElement('span');
                     starEl.className = 'plan-golden-indicator';
                     starEl.title = isAr ? 'توجد خطة علاج مستقبلية مقترحة لهذا السن ⭐️' : 'Future Treatment Plan ⭐️';
                     starEl.innerHTML = '<i class="bi bi-star-fill"></i>';
-                    svgContainer.appendChild(starEl);
+                    el.appendChild(starEl);
                 }
+            }
+
+            // Vector SVG Star Indicators (for Anatomical Arch Odontogram)
+            const svgIndElements = document.querySelectorAll('.ind-' + fdiNum);
+            if (svgIndElements && svgIndElements.length > 0) {
+                const starPathD = "M 0.0 -7.0 L 1.6 -2.3 L 6.7 -2.2 L 2.7 0.9 L 4.1 5.7 L 0.0 2.8 L -4.1 5.7 L -2.7 0.9 L -6.7 -2.2 L -1.6 -2.3 Z";
+                let indSvgHtml = '';
+                if (priorHistories.length > 0 && plannedItems.length > 0) {
+                    indSvgHtml = `<g transform="translate(-7, 0)"><path class="svg-star-purple" d="${starPathD}" /></g><g transform="translate(7, 0)"><path class="svg-star-gold" d="${starPathD}" /></g>`;
+                } else if (priorHistories.length > 0) {
+                    indSvgHtml = `<path class="svg-star-purple" d="${starPathD}" />`;
+                } else if (plannedItems.length > 0) {
+                    indSvgHtml = `<path class="svg-star-gold" d="${starPathD}" />`;
+                }
+                svgIndElements.forEach(indEl => {
+                    indEl.innerHTML = indSvgHtml;
+                });
             }
 
             // Tooltip builder
@@ -268,15 +283,60 @@ window.initPatientDetail = function(config) {
             const statusBadge = document.getElementById('patient-tooth-status-badge');
             if (statusBadge) {
                 if (isPriorExtracted) {
-                    statusBadge.innerHTML = `<div class="alert alert-danger no-auto-icon py-3 px-3 mb-0 rounded-3 small d-flex align-items-center gap-3 shadow-xs border border-danger-subtle"><i class="bi bi-x-circle-fill fs-4 text-danger flex-shrink-0"></i><div><strong class="d-block mb-0.5 fs-6">${isAr ? 'تم قلع هذا السن سابقاً ❌' : 'Tooth Extracted Previously ❌'}</strong><span class="opacity-85">${isAr ? 'السن مقلوع سابقاً. لا يمكن إضافة معالجات سوى معالجة ما بعد القلع.' : 'Tooth was extracted previously. Only post-extraction care can be added.'}</span></div></div>`;
+                    statusBadge.innerHTML = `
+                        <div class="p-3 mb-0 rounded-3 small d-flex align-items-center gap-3 shadow-xs border" style="background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.28) !important;">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="background: rgba(239, 68, 68, 0.18); width: 36px; height: 36px;">
+                                <i class="bi bi-x-lg text-danger fw-bold"></i>
+                            </div>
+                            <div>
+                                <strong class="d-block mb-0.5 fs-6 text-danger">${isAr ? 'تم قلع هذا السن سابقاً' : 'Tooth Extracted Previously'}</strong>
+                                <span class="text-secondary opacity-90">${isAr ? 'السن مقلوع سابقاً. لا يمكن إضافة معالجات سوى معالجة ما بعد القلع.' : 'Tooth was extracted previously. Only post-extraction care can be added.'}</span>
+                            </div>
+                        </div>`;
                 } else if (isClinicExtracted) {
-                    statusBadge.innerHTML = `<div class="alert alert-danger no-auto-icon py-3 px-3 mb-0 rounded-3 small d-flex align-items-center gap-3 shadow-xs border border-danger-subtle"><i class="bi bi-x-circle-fill fs-4 text-danger flex-shrink-0"></i><div><strong class="d-block mb-0.5 fs-6">${isAr ? 'تم قلع هذا السن في العيادة ❌' : 'Tooth Extracted in Clinic ❌'}</strong><span class="opacity-85">${isAr ? 'تم قلع السن بداخل العيادة. لا يمكن إضافة معالجات سوى معالجة ما بعد القلع.' : 'Tooth was extracted in clinic. Only post-extraction care can be added.'}</span></div></div>`;
+                    statusBadge.innerHTML = `
+                        <div class="p-3 mb-0 rounded-3 small d-flex align-items-center gap-3 shadow-xs border" style="background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.28) !important;">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="background: rgba(239, 68, 68, 0.18); width: 36px; height: 36px;">
+                                <i class="bi bi-x-lg text-danger fw-bold"></i>
+                            </div>
+                            <div>
+                                <strong class="d-block mb-0.5 fs-6 text-danger">${isAr ? 'تم قلع هذا السن في العيادة' : 'Tooth Extracted in Clinic'}</strong>
+                                <span class="text-secondary opacity-90">${isAr ? 'تم قلع السن بداخل العيادة. لا يمكن إضافة معالجات سوى معالجة ما بعد القلع.' : 'Tooth was extracted in clinic. Only post-extraction care can be added.'}</span>
+                            </div>
+                        </div>`;
                 } else if (priorHistories.length > 0) {
-                    statusBadge.innerHTML = `<div class="alert alert-purple no-auto-icon py-3 px-3 mb-0 rounded-3 small d-flex align-items-center gap-3 shadow-xs badge-history-external"><i class="bi bi-journal-medical fs-4 flex-shrink-0" style="color: #c084fc;"></i><div><strong class="d-block mb-0.5 fs-6" style="color: #c084fc;">${isAr ? 'سن يحتوي على سوابق مرضية 🟣' : 'Pre-existing Condition Recorded 🟣'}</strong><span class="opacity-85">${isAr ? 'مسجل عليه إجراءات توثيقية سابقة.' : 'Contains pre-existing recorded conditions.'}</span></div></div>`;
+                    statusBadge.innerHTML = `
+                        <div class="p-3 mb-0 rounded-3 small d-flex align-items-center gap-3 shadow-xs border" style="background: rgba(168, 85, 247, 0.08); border-color: rgba(168, 85, 247, 0.28) !important;">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="background: rgba(168, 85, 247, 0.18); width: 36px; height: 36px;">
+                                <i class="bi bi-journal-medical fs-5" style="color: #c084fc;"></i>
+                            </div>
+                            <div>
+                                <strong class="d-block mb-0.5 fs-6" style="color: #c084fc;">${isAr ? 'سوابق مرضية مسجلة للسن' : 'Pre-existing Conditions Recorded'}</strong>
+                                <span class="text-secondary opacity-90">${isAr ? 'مسجل عليه إجراءات توثيقية سابقة.' : 'Contains pre-existing recorded conditions.'}</span>
+                            </div>
+                        </div>`;
                 } else if (clinicTreatments.length > 0) {
-                    statusBadge.innerHTML = `<div class="alert alert-info no-auto-icon py-3 px-3 mb-0 rounded-3 small d-flex align-items-center gap-3 shadow-xs border border-info-subtle"><i class="bi bi-info-circle-fill fs-4 text-info flex-shrink-0"></i><div><strong class="d-block mb-0.5 fs-6">${isAr ? 'سن مُعالج في العيادة 🩺' : 'Clinic Treated Tooth 🩺'}</strong><span class="opacity-85">${isAr ? 'توجد إجراءات سابقة مسجلة لهذا السن في العيادة.' : 'Previous recorded procedures in clinic.'}</span></div></div>`;
+                    statusBadge.innerHTML = `
+                        <div class="p-3 mb-0 rounded-3 small d-flex align-items-center gap-3 shadow-xs border" style="background: rgba(14, 165, 233, 0.08); border-color: rgba(14, 165, 233, 0.28) !important;">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="background: rgba(14, 165, 233, 0.18); width: 36px; height: 36px;">
+                                <i class="bi bi-clock-history fs-5 text-info"></i>
+                            </div>
+                            <div>
+                                <strong class="d-block mb-0.5 fs-6 text-info">${isAr ? 'سن مُعالج في العيادة' : 'Clinic Treated Tooth'}</strong>
+                                <span class="text-secondary opacity-90">${isAr ? 'توجد إجراءات سابقة مسجلة لهذا السن في العيادة.' : 'Previous recorded procedures in clinic.'}</span>
+                            </div>
+                        </div>`;
                 } else {
-                    statusBadge.innerHTML = `<div class="alert alert-success no-auto-icon py-3 px-3 mb-0 rounded-3 small d-flex align-items-center gap-3 shadow-xs border border-success-subtle"><i class="bi bi-check-circle-fill fs-4 text-success flex-shrink-0"></i><div><strong class="d-block mb-0.5 fs-6">${isAr ? 'سن سليم ✨' : 'Healthy Tooth ✨'}</strong><span class="opacity-85">${isAr ? 'لا يوجد أي إجراءات علاجية سابقة مُسجلة لهذا السن.' : 'No previous treatments recorded for this tooth.'}</span></div></div>`;
+                    statusBadge.innerHTML = `
+                        <div class="p-3 mb-0 rounded-3 small d-flex align-items-center gap-3 shadow-xs border" style="background: rgba(34, 197, 94, 0.08); border-color: rgba(34, 197, 94, 0.28) !important;">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="background: rgba(34, 197, 94, 0.18); width: 36px; height: 36px;">
+                                <i class="bi bi-shield-check fs-5 text-success"></i>
+                            </div>
+                            <div>
+                                <strong class="d-block mb-0.5 fs-6 text-success">${isAr ? 'سن سليم' : 'Healthy Tooth'}</strong>
+                                <span class="text-secondary opacity-90">${isAr ? 'لا يوجد أي إجراءات علاجية سابقة مُسجلة لهذا السن.' : 'No previous treatments recorded for this tooth.'}</span>
+                            </div>
+                        </div>`;
                 }
             }
 

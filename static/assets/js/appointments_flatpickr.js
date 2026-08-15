@@ -61,6 +61,13 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
+        // Use Bootstrap text classes (have !important) for reliable contrast
+        function getDateClass() {
+            return document.documentElement.getAttribute('data-bs-theme') === 'light'
+                ? 'text-dark fw-bold fs-6 ms-1'
+                : 'text-white fw-bold fs-6 ms-1';
+        }
+
         const doctorSelect = document.getElementById("doctor_id");
         const doctorId = doctorSelect ? doctorSelect.value : "";
         const apptId = appointmentInput.dataset.appointmentId || currentAppointmentId || "";
@@ -84,11 +91,12 @@ document.addEventListener("DOMContentLoaded", function () {
         fetch(`/api/check-appointment-conflict?date=${encodeURIComponent(checkDateParam)}&doctor_id=${encodeURIComponent(doctorId)}&appointment_id=${encodeURIComponent(apptId)}`)
             .then(res => res.json())
             .then(data => {
+                const dc = getDateClass();
                 if (data.available) {
                     const textLabel = currentLang === 'ar' ? 'الموعد المحدد متاح:' : 'Selected Time Available:';
                     badge.className = "mt-2 p-2.5 rounded-3 fw-bold small d-flex align-items-center gap-2 text-success bg-success bg-opacity-10 border border-success border-opacity-25";
                     badge.style.boxShadow = "0 2px 10px rgba(16, 185, 129, 0.15)";
-                    badge.innerHTML = `<i class="bi bi-check-circle-fill fs-5 text-success"></i> <span>${textLabel} <strong class="text-light fs-6 ms-1" style="direction: ltr; display: inline-block;">${valStr}</strong></span>`;
+                    badge.innerHTML = `<i class="bi bi-check-circle-fill fs-5 text-success"></i> <span>الموعد: <strong class="${dc}" style="direction: ltr; display: inline-block;">${valStr}</strong></span>`;
                 } else {
                     const errorMsg = data.message || (currentLang === 'ar' ? 'تعارض في الموعد: هذا الوقت محجوز مسبقاً!' : 'Conflict with another appointment!');
                     badge.className = "mt-2 p-2.5 rounded-3 fw-bold small d-flex align-items-center gap-2 text-danger bg-danger bg-opacity-10 border border-danger border-opacity-25";
@@ -97,10 +105,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
             })
             .catch(() => {
-                const textLabel = currentLang === 'ar' ? 'الموعد المحدد:' : 'Selected Date & Time:';
+                const dc = getDateClass();
+                const textLabel = currentLang === 'ar' ? 'تاريخ ووقت الزيارة:' : 'Selected Date & Time:';
                 badge.className = "mt-2 p-2.5 rounded-3 fw-bold small d-flex align-items-center gap-2 text-primary bg-primary bg-opacity-10 border border-primary border-opacity-25";
                 badge.style.boxShadow = "0 2px 10px rgba(37, 99, 235, 0.15)";
-                badge.innerHTML = `<i class="bi bi-calendar-check fs-5 text-primary"></i> <span>${textLabel} <strong class="text-light fs-6 ms-1" style="direction: ltr; display: inline-block;">${valStr}</strong></span>`;
+                badge.innerHTML = `<i class="bi bi-calendar-check fs-5 text-primary"></i> <span>${textLabel} <strong class="${dc}" style="direction: ltr; display: inline-block;">${valStr}</strong></span>`;
             });
     }
 
