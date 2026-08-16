@@ -41,16 +41,18 @@
                 </div>
             </div>
             <!-- Page Size Selector -->
-            <div class="col-12 col-md-4 d-flex align-items-center justify-content-md-end gap-2">
-                <label for="credits-page-size" class="text-secondary small fw-semibold text-nowrap">{% if current_lang == 'ar' %}عرض في الصفحة:{% else %}Per page:{% endif %}</label>
-                <select id="credits-page-size" class="form-select form-select-sm settings-input" style="width: auto;" onchange="if (typeof filterAndSortCredits === 'function') { creditsCurrentPage = 1; filterAndSortCredits(); }">
-                    <option value="5">5</option>
-                    <option value="10" selected>10</option>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                    <option value="all">{% if current_lang == 'ar' %}الكل{% else %}All{% endif %}</option>
-                </select>
+            <div class="col-12 col-md-4 d-flex justify-content-md-end">
+                <div class="table-per-page-wrapper">
+                    <label for="credits-page-size" class="table-per-page-label">{% if current_lang == 'ar' %}عرض في الصفحة:{% else %}Per page:{% endif %}</label>
+                    <select id="credits-page-size" class="table-per-page-select" onchange="if (typeof filterAndSortCredits === 'function') { creditsCurrentPage = 1; filterAndSortCredits(); }">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="all">{% if current_lang == 'ar' %}الكل{% else %}All{% endif %}</option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>

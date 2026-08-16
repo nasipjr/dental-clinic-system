@@ -44,33 +44,33 @@
 
 <div class="financial-details-stack mt-5" dir="{% if current_lang == 'ar' %}rtl{% else %}ltr{% endif %}">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 d-print-none">
-        <h4 class="fw-bold mb-0 text-main" style="color: var(--nav-hover-color, #3fbbc0); font-family: var(--heading-font);">
-            {% if current_lang == 'ar' %}تفاصيل الحسابات والمعاملات{% else %}Financial Transactions & Ledger{% endif %}
+        <h4 class="fw-bold mb-0 text-main" style="font-family: var(--heading-font);">
+            {% if current_lang == 'ar' %}تفاصيل الحسابات والمعاملات{% else %}Financial Transactions & History{% endif %}
         </h4>
-        <a href="{{ url_for('patients.patient_ledger_print', patient_id=patient.id) }}" target="_blank" class="btn btn-outline-primary rounded-pill px-4 fw-bold">
-            <i class="bi bi-printer me-1"></i>
-            {% if current_lang == 'ar' %}طباعة كشف الحساب (Ledger){% else %}Print Statement (Ledger){% endif %}
+        <a href="{{ url_for('patients.patient_ledger_print', patient_id=patient.id) }}" target="_blank" class="btn btn-app-secondary rounded-pill px-4 py-2 fw-bold d-inline-flex align-items-center gap-2 text-decoration-none shadow-xs">
+            <i class="bi bi-printer" style="color: #38bdf8;"></i>
+            <span>{% if current_lang == 'ar' %}طباعة كشف الحساب{% else %}Print Statement{% endif %}</span>
         </a>
     </div>
 
     <!-- Inner sub-navigation for financial detail views -->
-    <ul class="nav nav-tabs border-bottom mb-4 d-print-none" id="financialSubTabs" role="tablist">
+    <ul class="nav nav-pills gap-2 border-0 mb-4 d-print-none p-1.5 rounded-pill" id="financialSubTabs" role="tablist" style="background: rgba(100, 116, 139, 0.08); width: fit-content; max-width: 100%;">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active fw-bold" id="sub-ledger-tab-btn" data-bs-toggle="tab" data-bs-target="#sub-ledger-tab" type="button" role="tab">
-                <i class="bi bi-journal-text me-1.5 text-info"></i>
-                {% if current_lang == 'ar' %}دفتر الأستاذ (الحساب التراكمي){% else %}Chronological Ledger{% endif %}
+            <button class="nav-link active fw-bold rounded-pill px-3.5 py-1.5 d-inline-flex align-items-center gap-1.5" id="sub-ledger-tab-btn" data-bs-toggle="tab" data-bs-target="#sub-ledger-tab" type="button" role="tab" style="font-size: 0.88rem;">
+                <i class="bi bi-journal-text"></i>
+                <span>{% if current_lang == 'ar' %}دفتر الأستاذ (الحساب التراكمي){% else %}Chronological Ledger{% endif %}</span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link fw-bold" id="sub-invoices-tab-btn" data-bs-toggle="tab" data-bs-target="#sub-invoices-tab" type="button" role="tab">
-                <i class="bi bi-receipt me-1.5 text-info"></i>
-                {% if current_lang == 'ar' %}الفواتير الصادرة{% else %}Invoices{% endif %}
+            <button class="nav-link fw-bold rounded-pill px-3.5 py-1.5 d-inline-flex align-items-center gap-1.5" id="sub-invoices-tab-btn" data-bs-toggle="tab" data-bs-target="#sub-invoices-tab" type="button" role="tab" style="font-size: 0.88rem;">
+                <i class="bi bi-receipt"></i>
+                <span>{% if current_lang == 'ar' %}الفواتير الصادرة{% else %}Invoices{% endif %}</span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link fw-bold" id="sub-payments-tab-btn" data-bs-toggle="tab" data-bs-target="#sub-payments-tab" type="button" role="tab">
-                <i class="bi bi-cash me-1.5 text-info"></i>
-                {% if current_lang == 'ar' %}المدفوعات المستلمة{% else %}Payments{% endif %}
+            <button class="nav-link fw-bold rounded-pill px-3.5 py-1.5 d-inline-flex align-items-center gap-1.5" id="sub-payments-tab-btn" data-bs-toggle="tab" data-bs-target="#sub-payments-tab" type="button" role="tab" style="font-size: 0.88rem;">
+                <i class="bi bi-cash"></i>
+                <span>{% if current_lang == 'ar' %}المدفوعات المستلمة{% else %}Payments{% endif %}</span>
             </button>
         </li>
     </ul>
@@ -79,59 +79,85 @@
         <!-- Sub Tab 1: Reconciled Ledger -->
         <div class="tab-pane fade show active" id="sub-ledger-tab" role="tabpanel">
             {% if ledger_entries %}
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped align-middle">
+            <div class="appointments-table-wrapper table-responsive shadow-sm rounded-4 border p-3 mb-4" style="background: var(--surface-color);">
+                <table class="table appointments-table align-middle mb-0" dir="{{ 'rtl' if current_lang == 'ar' else 'ltr' }}">
                     <thead>
                         <tr>
-                            <th style="width: 120px;">{% if current_lang == 'ar' %}التاريخ{% else %}Date{% endif %}</th>
-                            <th style="width: 120px;">{% if current_lang == 'ar' %}الرقم المرجعي{% else %}Ref Number{% endif %}</th>
-                            <th>{% if current_lang == 'ar' %}التفاصيل والبيان{% else %}Description{% endif %}</th>
-                            <th class="text-end" style="width: 140px;">{% if current_lang == 'ar' %}مترتب (مدين / Charges){% else %}Charges (Debit){% endif %}</th>
-                            <th class="text-end" style="width: 140px;">{% if current_lang == 'ar' %}مسدد (دائن / Payments){% else %}Payments (Credit){% endif %}</th>
-                            <th class="text-end" style="width: 160px;">{% if current_lang == 'ar' %}الرصيد التراكمي{% else %}Running Balance{% endif %}</th>
+                            <th style="min-width: 120px;"><i class="bi bi-calendar-event me-1 opacity-75"></i>{% if current_lang == 'ar' %}التاريخ{% else %}Date{% endif %}</th>
+                            <th style="min-width: 130px;"><i class="bi bi-hash me-1 opacity-75"></i>{% if current_lang == 'ar' %}الرقم المرجعي{% else %}Ref Number{% endif %}</th>
+                            <th><i class="bi bi-file-text me-1 opacity-75"></i>{% if current_lang == 'ar' %}التفاصيل والبيان{% else %}Description{% endif %}</th>
+                            <th class="text-end" style="min-width: 140px;"><i class="bi bi-arrow-up-right-circle me-1 opacity-75"></i>{% if current_lang == 'ar' %}مترتب (مدين){% else %}Charges (Debit){% endif %}</th>
+                            <th class="text-end" style="min-width: 140px;"><i class="bi bi-arrow-down-left-circle me-1 opacity-75"></i>{% if current_lang == 'ar' %}مسدد (دائن){% else %}Payments (Credit){% endif %}</th>
+                            <th class="text-end" style="min-width: 160px;"><i class="bi bi-wallet2 me-1 opacity-75"></i>{% if current_lang == 'ar' %}الرصيد التراكمي{% else %}Running Balance{% endif %}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for entry in ledger_entries %}
                         <tr>
-                            <td>{{ entry.date.strftime('%Y-%m-%d') }}</td>
                             <td>
-                                {% if entry.type == 'invoice' %}
-                                    <a href="{{ url_for('invoices.view_invoice', invoice_id=entry.id) }}" class="fw-bold text-primary">{{ entry.ref }}</a>
-                                {% else %}
-                                    <a href="{{ url_for('payments.view_payment', payment_id=entry.id) }}" class="fw-bold text-success">{{ entry.ref }}</a>
-                                {% endif %}
+                                <div class="fw-bold text-nowrap" style="font-size: 0.92rem; color: var(--heading-color);">{{ entry.date.strftime('%Y-%m-%d') }}</div>
                             </td>
                             <td>
                                 {% if entry.type == 'invoice' %}
-                                    <span class="badge bg-secondary bg-opacity-10 text-secondary-emphasis px-2.5 py-1.5 rounded-pill fw-semibold text-sm">
-                                        {% if current_lang == 'ar' %}فاتورة{% else %}Invoice{% endif %}
-                                    </span>
+                                    <a href="{{ url_for('invoices.view_invoice', invoice_id=entry.id) }}"
+                                       class="ledger-ref-pill ledger-ref-invoice"
+                                       data-tooltip="{{ 'فتح تفاصيل الفاتورة' if current_lang == 'ar' else 'View Invoice Details' }}">
+                                        <i class="bi bi-receipt"></i>
+                                        <span>{{ entry.ref }}</span>
+                                        <i class="bi bi-arrow-up-left ref-arrow-icon"></i>
+                                    </a>
                                 {% else %}
-                                    <span class="badge bg-success bg-opacity-10 text-success-emphasis px-2.5 py-1.5 rounded-pill fw-semibold text-sm">
-                                        {% if current_lang == 'ar' %}دفعة{% else %}Payment{% endif %}
-                                    </span>
+                                    <a href="{{ url_for('payments.view_payment', payment_id=entry.id) }}"
+                                       class="ledger-ref-pill ledger-ref-payment"
+                                       data-tooltip="{{ 'فتح تفاصيل الدفعة' if current_lang == 'ar' else 'View Payment Details' }}">
+                                        <i class="bi bi-cash-stack"></i>
+                                        <span>{{ entry.ref }}</span>
+                                        <i class="bi bi-arrow-up-left ref-arrow-icon"></i>
+                                    </a>
                                 {% endif %}
-                                {{ entry.description }}
                             </td>
-                            <td class="text-end text-danger fw-semibold">
+                            <td>
+                                <div class="d-flex align-items-center flex-wrap" style="gap: 10px;">
+                                    {% if entry.type == 'invoice' %}
+                                        <span class="badge rounded-pill px-2.5 py-1 fw-bold text-xs" style="background: rgba(56, 189, 248, 0.12); color: #0284c7; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.75rem; margin-inline-end: 2px;">
+                                            <i class="bi bi-receipt me-1"></i>{% if current_lang == 'ar' %}فاتورة{% else %}Invoice{% endif %}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge rounded-pill px-2.5 py-1 fw-bold text-xs" style="background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.75rem; margin-inline-end: 2px;">
+                                            <i class="bi bi-cash-stack me-1"></i>{% if current_lang == 'ar' %}دفعة{% else %}Payment{% endif %}
+                                        </span>
+                                    {% endif %}
+                                    <span class="fw-semibold" style="font-size: 0.88rem; color: var(--heading-color);">{{ entry.description }}</span>
+                                </div>
+                            </td>
+                            <td class="text-end">
                                 {% if entry.debit > 0 %}
-                                    <span dir="ltr">{{ entry.debit | format_price }} {{ currency_symbol }}</span>
+                                    <span class="fw-bold" style="color: #ef4444; font-size: 0.92rem;" dir="ltr">{{ entry.debit | format_price }} {{ currency_symbol }}</span>
                                 {% else %}
-                                    -
+                                    <span class="text-muted opacity-30">—</span>
                                 {% endif %}
                             </td>
-                            <td class="text-end text-success fw-semibold">
+                            <td class="text-end">
                                 {% if entry.credit > 0 %}
-                                    <span dir="ltr">{{ entry.credit | format_price }} {{ currency_symbol }}</span>
+                                    <span class="fw-bold" style="color: #10b981; font-size: 0.92rem;" dir="ltr">{{ entry.credit | format_price }} {{ currency_symbol }}</span>
                                 {% else %}
-                                    -
+                                    <span class="text-muted opacity-30">—</span>
                                 {% endif %}
                             </td>
-                            <td class="text-end fw-bold">
-                                <span dir="ltr" class="{% if entry.balance > 0 %}text-danger{% elif entry.balance < 0 %}text-success{% endif %}">
-                                    {{ entry.balance | format_price }} {{ currency_symbol }}
-                                </span>
+                            <td class="text-end">
+                                {% if entry.balance > 0 %}
+                                    <span class="badge rounded-pill px-3 py-1.5 fw-bold" style="background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.88rem;" dir="ltr">
+                                        {{ entry.balance | format_price }} {{ currency_symbol }}
+                                    </span>
+                                {% elif entry.balance < 0 %}
+                                    <span class="badge rounded-pill px-3 py-1.5 fw-bold" style="background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.88rem;" dir="ltr">
+                                        {{ (entry.balance | abs) | format_price }} {{ currency_symbol }} ({{ 'رصيد' if current_lang == 'ar' else 'Credit' }})
+                                    </span>
+                                {% else %}
+                                    <span class="badge rounded-pill px-3 py-1.5 fw-bold" style="background: rgba(100, 116, 139, 0.1); color: var(--heading-color); border: 1px solid rgba(100, 116, 139, 0.25); font-size: 0.88rem;" dir="ltr">
+                                        0 {{ currency_symbol }}
+                                    </span>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -139,9 +165,12 @@
                 </table>
             </div>
             {% else %}
-            <div class="text-center py-5">
-                <i class="bi bi-wallet2 text-muted fs-1 opacity-50 mb-3 d-block"></i>
-                <h5>{% if current_lang == 'ar' %}لا يوجد أي معاملات مالية مسجلة بعد.{% else %}No financial transactions recorded yet.{% endif %}</h5>
+            <div class="empty-state-card text-center rounded-4 border p-4 shadow-sm mb-4" style="background: var(--surface-color);">
+                <div class="p-3 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="background: rgba(2, 132, 199, 0.1); color: #0284c7; width: 60px; height: 60px;">
+                    <i class="bi bi-wallet2 fs-2"></i>
+                </div>
+                <h4 class="fw-bold mb-2">{% if current_lang == 'ar' %}لا توجد معاملات مالية مسجلة بعد{% else %}No financial transactions recorded yet{% endif %}</h4>
+                <p class="text-muted small mb-0">{% if current_lang == 'ar' %}لم يتم إصدار فواتير أو تسجيل دفعات لهذا المريض حتى الآن.{% else %}No invoices or payments have been recorded for this patient yet.{% endif %}</p>
             </div>
             {% endif %}
         </div>

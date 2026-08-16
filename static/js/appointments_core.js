@@ -145,11 +145,9 @@ window.initAppointmentsList = function (config) {
 
             if (dropdownBtn) {
                 if (doctorId) {
-                    dropdownBtn.classList.remove("btn-outline-secondary");
-                    dropdownBtn.classList.add("btn-primary");
+                    dropdownBtn.classList.add("is-active");
                 } else {
-                    dropdownBtn.classList.remove("btn-primary");
-                    dropdownBtn.classList.add("btn-outline-secondary");
+                    dropdownBtn.classList.remove("is-active");
                 }
             }
 

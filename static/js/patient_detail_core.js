@@ -369,12 +369,12 @@ window.initPatientDetail = function(config) {
                                     <div class="d-flex align-items-center gap-1.5 ms-auto">
                                         <button type="button" class="btn btn-sm btn-outline-primary rounded-circle p-1.5"
                                                 onclick="openEditToothHistoryModal(${patientId}, ${h.id}, '${safeProc}', '${safeNotes}', '${safeDate}')"
-                                                title="${isAr ? 'تعديل السابقة المرضية' : 'Edit History Record'}">
+                                                data-tooltip="${isAr ? 'تعديل السابقة المرضية' : 'Edit History Record'}">
                                             <i class="bi bi-pencil fs-6"></i>
                                         </button>
                                         <form method="POST" action="/patients/${patientId}/tooth-history/${h.id}/delete" onsubmit="return confirmDelete(event, '${isAr ? 'هل أنت متأكد من حذف هذه السابقة المرضية؟' : 'Delete this history record?'}', '${isAr ? 'حذف السابقة المرضية' : 'Delete History Record'}');">
                                             <input type="hidden" name="csrf_token" value="${config.csrfToken}">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1.5" title="${isAr ? 'حذف السابقة' : 'Delete History'}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1.5" data-tooltip="${isAr ? 'حذف السابقة المرضية' : 'Delete History Record'}">
                                                 <i class="bi bi-trash fs-6"></i>
                                             </button>
                                         </form>
@@ -450,7 +450,7 @@ window.initPatientDetail = function(config) {
                                     </div>
                                     <form method="POST" action="/patients/${patientId}/treatment-plans/${p.id}/delete" onsubmit="return confirmDelete(event, '${isAr ? 'هل أنت متأكد من حذف هذا الإجراء من خطة العلاج؟' : 'Delete this planned item?'}', '${isAr ? 'حذف من الخطة' : 'Delete from Plan'}');" style="display:inline;">
                                         <input type="hidden" name="csrf_token" value="${config.csrfToken}">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1.5" title="${isAr ? 'حذف من الخطة' : 'Delete'}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-1.5" data-tooltip="${isAr ? 'حذف من الخطة' : 'Delete from Plan'}">
                                             <i class="bi bi-trash" style="font-size: 0.8rem;"></i>
                                         </button>
                                     </form>

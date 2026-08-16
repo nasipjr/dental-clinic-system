@@ -124,18 +124,30 @@
 
 /* FDI number badge below/above each anatomical tooth */
 .tooth-fdi-badge {
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: #38bdf8;
-    line-height: 1;
-    font-family: monospace, system-ui, sans-serif;
-    letter-spacing: 0.3px;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-    transition: color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    font-size: 0.8rem;
+    font-weight: 900;
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 6px;
+    padding: 1px 4px;
+    line-height: 1.1;
+    font-family: 'Cairo', monospace, system-ui, sans-serif;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
 }
 [data-bs-theme="light"] .tooth-fdi-badge {
-    color: #1e40af;
-    text-shadow: none;
+    color: #0f172a !important;
+    background: #ffffff !important;
+    border: 1.5px solid #94a3b8 !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12) !important;
+    text-shadow: none !important;
 }
 
 .jaw-title-badge {
@@ -413,23 +425,26 @@
     stroke: #64748b;
 }
 
-/* Outer Tooth FDI Number Text — dark mode: sky blue, light mode: dark slate */
+/* Outer Tooth FDI Number Text — High clarity: White with crisp dark stroke in Dark mode, Deep Slate with white stroke in Light mode */
 .tooth-fdi-number-text {
-    font-size: 13.5px !important;
-    font-weight: 800 !important;
-    fill: #38bdf8 !important;
-    font-family: monospace, system-ui, -apple-system, sans-serif;
+    font-size: 15.5px !important;
+    font-weight: 900 !important;
+    fill: #ffffff !important;
+    font-family: 'Cairo', monospace, system-ui, -apple-system, sans-serif;
     pointer-events: none;
     user-select: none;
     paint-order: stroke fill;
-    stroke: rgba(0, 0, 0, 0.6);
-    stroke-width: 2.5px;
+    stroke: #090d16;
+    stroke-width: 3.5px;
+    letter-spacing: 0.5px;
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.9));
     transition: fill 0.2s ease, font-size 0.2s ease;
 }
 [data-bs-theme="light"] .tooth-fdi-number-text {
-    fill: #1e3a5f !important;
-    stroke: rgba(255, 255, 255, 0.75);
-    stroke-width: 2px;
+    fill: #0f172a !important;
+    stroke: #ffffff;
+    stroke-width: 4.5px;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.2));
 }
 
 /* Hover Effect */

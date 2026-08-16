@@ -22,8 +22,14 @@
                     </div>
                 </div>
                 <div class="modal-footer border-top-0 d-flex justify-content-center gap-2 pb-4">
-                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">{% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">{% if current_lang == 'ar' %}رفع الملف{% else %}Upload File{% endif %}</button>
+                    <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i>
+                        <span>{% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}</span>
+                    </button>
+                    <button type="submit" class="btn-modal-submit-primary">
+                        <i class="bi bi-cloud-arrow-up-fill"></i>
+                        <span>{% if current_lang == 'ar' %}رفع الملف{% else %}Upload File{% endif %}</span>
+                    </button>
                 </div>
             </form>
         </div>

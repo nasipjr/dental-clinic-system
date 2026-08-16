@@ -58,12 +58,11 @@ function confirmDelete(event, customMsg, customTitle) {
             showCancelButton: true,
             confirmButtonText: isAr ? 'نعم، احذف الآن' : 'Yes, Delete Now',
             cancelButtonText: isAr ? 'إلغاء' : 'Cancel',
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#64748b',
-            background: '#1e293b',
-            color: '#f8fafc',
+            buttonsStyling: false,
             customClass: {
-                popup: 'rounded-4 border border-secondary shadow-lg'
+                popup: 'rounded-4 shadow-lg swal2-custom-glass-popup',
+                confirmButton: 'btn-modal-submit-danger px-4 py-2 mx-1',
+                cancelButton: 'btn-modal-cancel px-4 py-2 mx-1'
             }
         }).then((result) => {
             if (result.isConfirmed && target) {

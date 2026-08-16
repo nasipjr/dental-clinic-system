@@ -358,19 +358,122 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  window.initCustomTooltips = function() {
-    const elements = document.querySelectorAll('.table-action-btn[title], a[title], button[title]');
+  // ════════════════════════════════════════════════════════════
+  // لوحة التلميح القياسية — STANDARD GLASSMORPHIC TOOLTIP SYSTEM
+  // ════════════════════════════════════════════════════════════
+  
+  // 1. Floating Glass Tooltip Container (For SVG and Special Elements)
+  let floatingTooltipEl = document.getElementById('app-global-glass-tooltip');
+  if (!floatingTooltipEl) {
+    floatingTooltipEl = document.createElement('div');
+    floatingTooltipEl.id = 'app-global-glass-tooltip';
+    document.body.appendChild(floatingTooltipEl);
+  }
+
+  // 2. Scan and convert HTML title attributes to standard CSS data-tooltip
+  window.initCustomTooltips = function(root) {
+    const scope = root || document;
+    const elements = scope.querySelectorAll('[title]');
     elements.forEach(function (el) {
+      // If inside SVG, we handle via floating tooltip
+      if (el.ownerSVGElement || el.tagName.toLowerCase() === 'svg' || el.closest('svg')) {
+        const title = el.getAttribute('title');
+        if (title && title.trim()) {
+          el.setAttribute('data-glass-tooltip', title.trim());
+          el.removeAttribute('title');
+        }
+        return;
+      }
       const title = el.getAttribute('title');
-      if (title) {
-        el.setAttribute('data-tooltip', title);
+      if (title && title.trim()) {
+        el.setAttribute('data-tooltip', title.trim());
         el.removeAttribute('title');
       }
+    });
+
+    // Strip SVG <title> child tags to eliminate OS native black tooltips
+    scope.querySelectorAll('svg title').forEach(function(titleTag) {
+      const parent = titleTag.parentElement;
+      if (parent) {
+        const txt = titleTag.textContent.trim();
+        if (txt && !parent.getAttribute('data-glass-tooltip')) {
+          parent.setAttribute('data-glass-tooltip', txt);
+        }
+      }
+      titleTag.remove();
     });
   };
 
   // Run initial tooltips parsing
   window.initCustomTooltips();
+
+  const toothTypeMapAr = {
+    'Third Molar': 'ضرس العقل',
+    'Second Molar': 'رحى ثانية',
+    'First Molar': 'رحى أولى',
+    'Second Premolar': 'ضاحك ثاني',
+    'First Premolar': 'ضاحك أول',
+    'Canine': 'ناب',
+    'Lateral Incisor': 'قاطع جانبي',
+    'Central Incisor': 'قاطع مركزي'
+  };
+
+  function getLocalizedToothTitle(rawText) {
+    if (!rawText) return '';
+    let text = rawText.trim();
+    const isArabic = document.documentElement.lang === 'ar' || document.documentElement.dir === 'rtl' || !document.body.classList.contains('lang-en');
+    if (isArabic) {
+      text = text.replace(/^Tooth\s+/i, 'السن ');
+      for (const [en, ar] of Object.entries(toothTypeMapAr)) {
+        text = text.replace(new RegExp(en, 'g'), ar);
+      }
+    }
+    return text;
+  }
+
+  // 3. Universal Dynamic Delegation for both HTML elements and SVG Teeth
+  document.addEventListener('mouseover', function (e) {
+    // A. Check for SVG tooth or element with data-glass-tooltip
+    const svgTarget = e.target.closest('svg .vector-tooth-item, svg .tooth-wrapper, svg .p-tooth-item, svg .tooth-btn, svg [data-tooth], svg [data-fdi], [data-glass-tooltip]');
+    if (svgTarget) {
+      // Check if there's any stray <title> tag
+      const titleTag = svgTarget.querySelector('title');
+      if (titleTag) {
+        svgTarget.setAttribute('data-glass-tooltip', titleTag.textContent.trim());
+        titleTag.remove();
+      }
+      const rawText = svgTarget.getAttribute('data-glass-tooltip') || svgTarget.getAttribute('data-tooltip');
+      if (rawText && floatingTooltipEl) {
+        floatingTooltipEl.textContent = getLocalizedToothTitle(rawText);
+        const rect = svgTarget.getBoundingClientRect();
+        const top = rect.top;
+        const left = rect.left + rect.width / 2;
+        floatingTooltipEl.style.top = `${top}px`;
+        floatingTooltipEl.style.left = `${left}px`;
+        floatingTooltipEl.classList.add('show');
+        return;
+      }
+    }
+
+
+    // B. Check for standard HTML element with title
+    const htmlTarget = e.target.closest('[title]');
+    if (htmlTarget) {
+      const title = htmlTarget.getAttribute('title');
+      if (title && title.trim()) {
+        htmlTarget.setAttribute('data-tooltip', title.trim());
+        htmlTarget.removeAttribute('title');
+      }
+    }
+  }, { passive: true });
+
+  document.addEventListener('mouseout', function (e) {
+    const svgTarget = e.target.closest('svg .vector-tooth-item, svg .tooth-wrapper, svg .p-tooth-item, svg .tooth-btn, svg [data-tooth], svg [data-fdi], [data-glass-tooltip]');
+    if (svgTarget && floatingTooltipEl) {
+      floatingTooltipEl.classList.remove('show');
+    }
+  }, { passive: true });
+
 
   // Universal Smooth Scroll to Top of Table on Pagination Click
   window.scrollToTableTop = function(triggerEl) {

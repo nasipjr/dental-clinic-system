@@ -210,8 +210,9 @@
             </div>
             
             <div class="modal-footer border-top-0 d-flex justify-content-center pb-4">
-                <button type="button" class="btn btn-outline-secondary rounded-pill px-5 fw-bold" data-bs-dismiss="modal">
-                    {% if current_lang == 'ar' %}إغلاق الاستوديو{% else %}Close Studio{% endif %}
+                <button type="button" class="btn-modal-cancel px-5" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i>
+                    <span>{% if current_lang == 'ar' %}إغلاق الاستوديو{% else %}Close Studio{% endif %}</span>
                 </button>
             </div>
         </div>

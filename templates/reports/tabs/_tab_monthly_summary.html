@@ -8,28 +8,29 @@
     </div>
 
     <!-- Interactive Daily Financial Calendar -->
-    <div class="card border-0 rounded-4 shadow-sm p-4 mb-5 d-print-none" id="monthly-calendar-wrapper">
-        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div class="card border rounded-4 shadow-sm p-4 mb-5 d-print-none" id="monthly-calendar-wrapper" style="background: var(--surface-color);">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 border-bottom pb-3">
             <div>
-                <h4 class="fw-bold mb-1">
-                    {% if current_lang == 'ar' %}التقويم المالي اليومي{% else %}Daily Financial Calendar{% endif %}
+                <h4 class="fw-bold mb-1 text-main d-flex align-items-center gap-2">
+                    <i class="bi bi-calendar3-range text-primary fs-4"></i>
+                    <span>{% if current_lang == 'ar' %}التقويم المالي اليومي{% else %}Daily Financial Calendar{% endif %}</span>
                 </h4>
                 <p class="text-secondary mb-0 small">
                     {% if current_lang == 'ar' %}تصفح الأيام للوقوف على المفوتر، المقبوضات، والمصاريف اليومية بالتفصيل.{% else %}Browse days to review daily billing, collections, and expense lists.{% endif %}
                 </p>
             </div>
             
-            <div class="d-flex align-items-center gap-2">
-                <button type="button" class="btn btn-sm btn-outline-primary rounded-circle" id="cal-prev-month-btn" title="{% if current_lang == 'ar' %}الشهر السابق{% else %}Previous Month{% endif %}">
+            <div class="calendar-nav-pill-group">
+                <button type="button" class="calendar-nav-btn" id="cal-prev-month-btn" title="{% if current_lang == 'ar' %}الشهر السابق{% else %}Previous Month{% endif %}">
                     <i class="bi bi-chevron-left"></i>
                 </button>
-                <span class="fw-bold fs-5 text-main px-1" id="calendar-month-display" style="min-width: 90px; text-align: center;"></span>
-                <select id="cal-year-select" class="form-select form-select-sm rounded-pill fw-bold border-primary text-primary px-3 py-1" style="width: auto; cursor: pointer; font-size: 0.95rem;">
+                <span class="calendar-month-badge px-2" id="calendar-month-display"></span>
+                <select id="cal-year-select" class="calendar-year-pill-select">
                     {% for y in available_years %}
                     <option value="{{ y }}" {% if selected_year == y|string or (selected_year == 'all' and loop.first) %}selected{% endif %}>{{ y }}</option>
                     {% endfor %}
                 </select>
-                <button type="button" class="btn btn-sm btn-outline-primary rounded-circle" id="cal-next-month-btn" title="{% if current_lang == 'ar' %}الشهر التالي{% else %}Next Month{% endif %}">
+                <button type="button" class="calendar-nav-btn" id="cal-next-month-btn" title="{% if current_lang == 'ar' %}الشهر التالي{% else %}Next Month{% endif %}">
                     <i class="bi bi-chevron-right"></i>
                 </button>
             </div>
@@ -88,11 +89,12 @@
     </div>
 
     <!-- Year Financial Chart Card -->
-    <div class="card chart-card border-0 rounded-4 shadow-sm p-4 mb-5">
-        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div class="card chart-card border rounded-4 shadow-sm p-4 mb-5" style="background: var(--surface-color);">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 border-bottom pb-3">
             <div>
-                <h4 class="fw-bold mb-1">
-                    {% if current_lang == 'ar' %}التحليلات المالية التفاعلية (أداء السنة {{ selected_year }}){% else %}Interactive Financial Analytics (Year {{ selected_year }} Performance){% endif %}
+                <h4 class="fw-bold mb-1 text-main d-flex align-items-center gap-2">
+                    <i class="bi bi-graph-up-arrow text-primary fs-4"></i>
+                    <span>{% if current_lang == 'ar' %}التحليلات المالية التفاعلية (أداء السنة {{ selected_year }}){% else %}Interactive Financial Analytics (Year {{ selected_year }} Performance){% endif %}</span>
                 </h4>
                 <p class="text-secondary mb-0 small">
                     {% if current_lang == 'ar' %}رسم بياني تفاعلي للمقارنة بين المفوتر، المقبوضات، المصاريف، وصافي الأرباح شهرياً.{% else %}Interactive month-by-month chart comparing billed, paid, expenses, and net profit margins.{% endif %}
@@ -102,24 +104,24 @@
             <!-- Interactive Controls -->
             <div class="d-flex align-items-center gap-3 flex-wrap d-print-none">
                 <!-- View filter buttons -->
-                <div class="btn-group btn-group-sm rounded-pill p-1 bg-light-subtle border" role="group" id="chart-view-filter">
-                    <button type="button" class="btn btn-primary rounded-pill px-3 active" data-view="all">
-                        {% if current_lang == 'ar' %}الكل{% else %}All{% endif %}
+                <div class="segmented-pill-control" id="chart-view-filter">
+                    <button type="button" class="segmented-pill-btn active" data-view="all">
+                        <span>{% if current_lang == 'ar' %}الكل{% else %}All{% endif %}</span>
                     </button>
-                    <button type="button" class="btn rounded-pill px-3 text-secondary" data-view="income-expense">
-                        {% if current_lang == 'ar' %}الدخل والمصاريف{% else %}Income & Expenses{% endif %}
+                    <button type="button" class="segmented-pill-btn" data-view="income-expense">
+                        <span>{% if current_lang == 'ar' %}الدخل والمصاريف{% else %}Income & Expenses{% endif %}</span>
                     </button>
-                    <button type="button" class="btn rounded-pill px-3 text-secondary" data-view="profits">
-                        {% if current_lang == 'ar' %}صافي الأرباح{% else %}Net Profits{% endif %}
+                    <button type="button" class="segmented-pill-btn" data-view="profits">
+                        <span>{% if current_lang == 'ar' %}صافي الأرباح{% else %}Net Profits{% endif %}</span>
                     </button>
                 </div>
 
                 <!-- Chart style selector -->
-                <div class="btn-group btn-group-sm rounded-pill p-1 bg-light-subtle border" role="group" id="chart-style-filter">
-                    <button type="button" class="btn btn-primary rounded-pill px-2.5 active" data-style="bar" title="{% if current_lang == 'ar' %}مخطط أعمدة ومؤشرات{% else %}Bar Combo Chart{% endif %}">
+                <div class="segmented-pill-control" id="chart-style-filter">
+                    <button type="button" class="segmented-pill-btn icon-only active" data-style="bar" title="{% if current_lang == 'ar' %}مخطط أعمدة ومؤشرات{% else %}Bar Combo Chart{% endif %}">
                         <i class="bi bi-bar-chart-line-fill"></i>
                     </button>
-                    <button type="button" class="btn rounded-pill px-2.5 text-secondary" data-style="line" title="{% if current_lang == 'ar' %}مخطط خطي كامل{% else %}Line Chart{% endif %}">
+                    <button type="button" class="segmented-pill-btn icon-only" data-style="line" title="{% if current_lang == 'ar' %}مخطط خطي كامل{% else %}Line Chart{% endif %}">
                         <i class="bi bi-graph-up"></i>
                     </button>
                 </div>

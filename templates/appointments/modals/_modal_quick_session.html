@@ -24,13 +24,14 @@
                         </select>
                     </div>
                 </div>
-                <div class="modal-footer border-top-0 pt-0">
-                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
-                        {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                <div class="modal-footer border-top-0 pt-2 gap-2">
+                    <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i>
+                        <span>{% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}</span>
                     </button>
-                    <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none;">
-                        <i class="bi bi-play-fill me-1"></i>
-                        {% if current_lang == 'ar' %}بدء الجلسة فوراً{% else %}Start Session Now{% endif %}
+                    <button type="submit" class="btn-modal-submit-success">
+                        <i class="bi bi-lightning-charge-fill"></i>
+                        <span>{% if current_lang == 'ar' %}بدء الجلسة فوراً{% else %}Start Session Now{% endif %}</span>
                     </button>
                 </div>
             </form>

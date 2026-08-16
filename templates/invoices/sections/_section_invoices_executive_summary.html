@@ -16,8 +16,8 @@
                     </p>
                 </div>
 
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-semibold">
-                    <i class="bi bi-shield-check me-1"></i>
+                <span class="badge rounded-pill px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-1.5" style="background: rgba(2, 132, 199, 0.12); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.3); font-size: 0.84rem;">
+                    <i class="bi bi-shield-check"></i>
                     {% if current_lang == 'ar' %}تقرير الإدارة المالية{% else %}Manager Financial Overview{% endif %}
                 </span>
             </div>
@@ -27,43 +27,45 @@
 
                 <!-- Card 1: Total Outstanding Debts -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="p-3.5 rounded-4 h-100 d-flex flex-column justify-content-between" style="background: color-mix(in srgb, var(--surface-color), transparent 10%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 85%);">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <span class="text-secondary small fw-semibold">
+                    <div class="kpi-exec-card kpi-theme-danger h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="kpi-title">
                                 {% if current_lang == 'ar' %}إجمالي الديون المستحقة{% else %}Total Outstanding Debt{% endif %}
                             </span>
-                            <div class="p-2 rounded-3" style="background: rgba(220, 53, 69, 0.12); border: 1px solid rgba(220, 53, 69, 0.25); color: #ff7b88;">
-                                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                            <div class="kpi-icon-box">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
                             </div>
                         </div>
                         <div>
-                            <h4 class="fw-bold text-danger mb-1">
+                            <div class="kpi-value" dir="ltr">
                                 {{ invoice_stats.total_outstanding | format_price }} {{ currency_symbol }}
-                            </h4>
-                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1">
-                                {{ invoice_stats.unpaid_count }} {% if current_lang == 'ar' %}فواتير غير مدفوعة{% else %}Unpaid Invoices{% endif %}
-                            </span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="badge rounded-pill px-2.5 py-1 text-xs fw-bold" style="background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.25);">
+                                    {{ invoice_stats.unpaid_count }} {% if current_lang == 'ar' %}فواتير غير مدفوعة{% else %}Unpaid Invoices{% endif %}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Card 2: Collection Rate -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="p-3.5 rounded-4 h-100 d-flex flex-column justify-content-between" style="background: color-mix(in srgb, var(--surface-color), transparent 10%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 85%);">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <span class="text-secondary small fw-semibold">
+                    <div class="kpi-exec-card kpi-theme-success h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="kpi-title">
                                 {% if current_lang == 'ar' %}نسبة التحصيل المالي{% else %}Collection Efficiency{% endif %}
                             </span>
-                            <div class="p-2 rounded-3" style="background: rgba(40, 167, 69, 0.12); border: 1px solid rgba(40, 167, 69, 0.25); color: #4ade80;">
-                                <i class="bi bi-pie-chart-fill fs-5"></i>
+                            <div class="kpi-icon-box">
+                                <i class="bi bi-pie-chart-fill"></i>
                             </div>
                         </div>
                         <div>
-                            <h4 class="fw-bold text-success mb-1">
+                            <div class="kpi-value" dir="ltr">
                                 {{ "%.1f"|format(invoice_stats.collection_rate) }}%
-                            </h4>
-                            <div class="progress mt-2" style="height: 6px; background: rgba(255,255,255,0.08);">
-                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ invoice_stats.collection_rate }}%;" aria-valuenow="{{ invoice_stats.collection_rate }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div class="progress mt-2 rounded-pill" style="height: 7px; background: rgba(100, 116, 139, 0.15);">
+                                <div class="progress-bar rounded-pill" role="progressbar" style="width: {{ invoice_stats.collection_rate }}%; background: #10b981;" aria-valuenow="{{ invoice_stats.collection_rate }}" aria-valuemin="0" aria-valuemax="100"></div>
                             </div>
                         </div>
                     </div>
@@ -71,44 +73,44 @@
 
                 <!-- Card 3: Total Billed Value -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="p-3.5 rounded-4 h-100 d-flex flex-column justify-content-between" style="background: color-mix(in srgb, var(--surface-color), transparent 10%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 85%);">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <span class="text-secondary small fw-semibold">
+                    <div class="kpi-exec-card kpi-theme-primary h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="kpi-title">
                                 {% if current_lang == 'ar' %}إجمالي المفوتر الكلي{% else %}Total Billed Revenue{% endif %}
                             </span>
-                            <div class="p-2 rounded-3" style="background: rgba(13, 110, 253, 0.12); border: 1px solid rgba(13, 110, 253, 0.25); color: #7fd3ff;">
-                                <i class="bi bi-receipt-cutoff fs-5"></i>
+                            <div class="kpi-icon-box">
+                                <i class="bi bi-receipt-cutoff"></i>
                             </div>
                         </div>
                         <div>
-                            <h4 class="fw-bold text-primary mb-1">
+                            <div class="kpi-value" dir="ltr">
                                 {{ invoice_stats.total_billed | format_price }} {{ currency_symbol }}
-                            </h4>
-                            <span class="text-secondary small">
+                            </div>
+                            <div class="kpi-subtext">
                                 {{ invoice_stats.total_invoices_count }} {% if current_lang == 'ar' %}فاتورة صادرة{% else %}Total Invoices{% endif %}
-                            </span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Card 4: Average Invoice Value -->
                 <div class="col-md-6 col-lg-3">
-                    <div class="p-3.5 rounded-4 h-100 d-flex flex-column justify-content-between" style="background: color-mix(in srgb, var(--surface-color), transparent 10%); border: 1px solid color-mix(in srgb, var(--default-color), transparent 85%);">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <span class="text-secondary small fw-semibold">
+                    <div class="kpi-exec-card kpi-theme-warning h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="kpi-title">
                                 {% if current_lang == 'ar' %}متوسط قيمة الفاتورة{% else %}Average Invoice Value{% endif %}
                             </span>
-                            <div class="p-2 rounded-3" style="background: rgba(255, 193, 7, 0.12); border: 1px solid rgba(255, 193, 7, 0.25); color: #ffd666;">
-                                <i class="bi bi-calculator fs-5"></i>
+                            <div class="kpi-icon-box">
+                                <i class="bi bi-calculator"></i>
                             </div>
                         </div>
                         <div>
-                            <h4 class="fw-bold text-warning mb-1">
+                            <div class="kpi-value" dir="ltr">
                                 {{ invoice_stats.avg_invoice | format_price }} {{ currency_symbol }}
-                            </h4>
-                            <span class="text-secondary small">
+                            </div>
+                            <div class="kpi-subtext">
                                 {% if current_lang == 'ar' %}معدل التكلفة لكل فاتورة{% else %}Average Per Invoice{% endif %}
-                            </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -118,82 +120,105 @@
             <!-- Top Unpaid Invoices Subsection -->
             <div class="mt-4">
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                    <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                    <h5 class="fw-bold mb-0 d-flex align-items-center gap-2" style="color: var(--heading-color);">
                         <i class="bi bi-exclamation-octagon text-danger"></i>
                         {% if current_lang == 'ar' %}أكبر الفواتير المستحقة والغير مدفوعة (للمتابعة التحصيلية){% else %}Top Largest Unpaid / Outstanding Invoices{% endif %}
                     </h5>
-                    <span class="text-secondary small">
+                    <span class="badge rounded-pill px-3 py-1 text-xs fw-semibold" style="background: rgba(100, 116, 139, 0.1); color: var(--default-color); border: 1px solid rgba(100, 116, 139, 0.2);">
+                        <i class="bi bi-sort-down me-1"></i>
                         {% if current_lang == 'ar' %}مرتبة بحسب أعلى مبلغ متبقي غير مسدد{% else %}Sorted by highest remaining unpaid balance{% endif %}
                     </span>
                 </div>
 
                 {% if top_unpaid_invoices %}
-                <div class="rounded-3 border overflow-hidden">
-                    <table class="table table-hover align-middle mb-0" style="table-layout: auto; width: 100%;">
-                        <thead style="background: color-mix(in srgb, var(--default-color), transparent 95%);">
-                            <tr style="font-size: 0.84rem; text-transform: uppercase; letter-spacing: 0.03em;">
-                                <th style="padding: 10px 12px;">{% if current_lang == 'ar' %}رقم الفاتورة{% else %}Invoice #{% endif %}</th>
-                                <th style="padding: 10px 12px;">{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</th>
-                                <th style="padding: 10px 12px;">{% if current_lang == 'ar' %}تاريخ الصدور{% else %}Issue Date{% endif %}</th>
-                                <th style="padding: 10px 12px;">{% if current_lang == 'ar' %}إجمالي الفاتورة{% else %}Total Amount{% endif %}</th>
-                                <th style="padding: 10px 12px;">{% if current_lang == 'ar' %}المبلغ المسدد{% else %}Paid Amount{% endif %}</th>
-                                <th style="padding: 10px 12px;">{% if current_lang == 'ar' %}المتبقي المستحق{% else %}Outstanding Balance{% endif %}</th>
-                                <th style="padding: 10px 12px;">{% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}</th>
-                                <th class="text-center" style="padding: 10px 12px;">{% if current_lang == 'ar' %}الإجراء{% else %}Action{% endif %}</th>
+                <div class="appointments-table-wrapper table-responsive shadow-sm rounded-4 border p-3" style="background: var(--surface-color);">
+                    <table class="table appointments-table align-middle mb-0" dir="{{ 'rtl' if current_lang == 'ar' else 'ltr' }}">
+                        <thead>
+                            <tr>
+                                <th><i class="bi bi-hash me-1 opacity-75"></i>{% if current_lang == 'ar' %}رقم الفاتورة{% else %}Invoice #{% endif %}</th>
+                                <th><i class="bi bi-person me-1 opacity-75"></i>{% if current_lang == 'ar' %}المريض{% else %}Patient{% endif %}</th>
+                                <th><i class="bi bi-calendar-event me-1 opacity-75"></i>{% if current_lang == 'ar' %}تاريخ الصدور{% else %}Issue Date{% endif %}</th>
+                                <th class="text-end"><i class="bi bi-receipt me-1 opacity-75"></i>{% if current_lang == 'ar' %}إجمالي الفاتورة{% else %}Total Amount{% endif %}</th>
+                                <th class="text-end"><i class="bi bi-cash me-1 opacity-75"></i>{% if current_lang == 'ar' %}المبلغ المسدد{% else %}Paid Amount{% endif %}</th>
+                                <th class="text-end"><i class="bi bi-wallet2 me-1 opacity-75"></i>{% if current_lang == 'ar' %}المتبقي المستحق{% else %}Outstanding Balance{% endif %}</th>
+                                <th><i class="bi bi-tag me-1 opacity-75"></i>{% if current_lang == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+                                <th class="text-center">{% if current_lang == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for inv in top_unpaid_invoices %}
-                            <tr style="font-size: 0.88rem;">
-                                <td style="padding: 10px 12px;">
-                                    <a href="{{ url_for('invoices.view_invoice', invoice_id=inv.id) }}" class="fw-bold text-primary text-nowrap">
-                                        <bdi dir="ltr">{{ inv.invoice_number }}</bdi>
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('invoices.view_invoice', invoice_id=inv.id) }}"
+                                       class="ledger-ref-pill ledger-ref-invoice"
+                                       data-tooltip="{% if current_lang == 'ar' %}فتح تفاصيل الفاتورة{% else %}View Invoice Details{% endif %}">
+                                        <i class="bi bi-receipt"></i>
+                                        <span>{{ inv.invoice_number }}</span>
+                                        <i class="bi bi-arrow-up-left ref-arrow-icon"></i>
                                     </a>
                                 </td>
-                                <td style="padding: 10px 12px;">
+                                <td>
                                     <a href="{{ url_for('patients.patient_detail', patient_id=inv.patient_id) }}"
-                                       class="fw-bold text-main hover-underline text-nowrap"
-                                       title="{% if current_lang == 'ar' %}فتح ملف المريض{% else %}Open Patient Profile{% endif %}"
+                                       class="fw-bold text-decoration-none d-block"
+                                       style="color: var(--heading-color); font-size: 0.92rem;"
                                        data-tooltip="{% if current_lang == 'ar' %}فتح ملف المريض{% else %}Open Patient Profile{% endif %}">
                                         {{ inv.patient.first_name }} {{ inv.patient.last_name }}
                                     </a>
-                                    <div class="text-secondary small" style="font-size: 0.78rem;"><bdi dir="ltr">{{ inv.patient.phone or '' }}</bdi></div>
+                                    {% if inv.patient.phone %}
+                                    <div class="text-secondary small" style="font-size: 0.78rem;">
+                                        <i class="bi bi-telephone me-1 opacity-60"></i><bdi dir="ltr">{{ inv.patient.phone }}</bdi>
+                                    </div>
+                                    {% endif %}
                                 </td>
-                                <td style="padding: 10px 12px;" class="text-nowrap">
-                                    {{ inv.issue_date.strftime('%Y-%m-%d') if inv.issue_date else '' }}
+                                <td>
+                                    <span class="fw-semibold text-nowrap" style="font-size: 0.88rem; color: var(--heading-color);">
+                                        {{ inv.issue_date.strftime('%Y-%m-%d') if inv.issue_date else '' }}
+                                    </span>
                                 </td>
-                                <td style="padding: 10px 12px;" class="fw-semibold text-nowrap">
-                                    {{ inv.total_amount | format_price }} {{ currency_symbol }}
+                                <td class="text-end">
+                                    <span class="fw-bold text-nowrap" style="font-size: 0.92rem; color: var(--heading-color);" dir="ltr">
+                                        {{ inv.total_amount | format_price }} {{ currency_symbol }}
+                                    </span>
                                 </td>
-                                <td style="padding: 10px 12px;" class="text-success fw-semibold text-nowrap">
-                                    {{ inv.total_paid | format_price }} {{ currency_symbol }}
+                                <td class="text-end">
+                                    {% if inv.total_paid and inv.total_paid > 0 %}
+                                    <span class="fw-bold text-nowrap" style="color: #10b981; font-size: 0.92rem;" dir="ltr">
+                                        {{ inv.total_paid | format_price }} {{ currency_symbol }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted opacity-40 text-nowrap" dir="ltr">0 {{ currency_symbol }}</span>
+                                    {% endif %}
                                 </td>
-                                <td style="padding: 10px 12px;" class="text-nowrap">
-                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1 fw-bold">
+                                <td class="text-end">
+                                    <span class="badge rounded-pill px-3 py-1.5 fw-bold text-nowrap" style="background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.88rem;" dir="ltr">
                                         {{ inv.outstanding_amount | format_price }} {{ currency_symbol }}
                                     </span>
                                 </td>
-                                <td style="padding: 10px 12px;" class="text-nowrap">
+                                <td>
                                     {% if inv.status == 'Unpaid' %}
-                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded-pill px-2.5 py-1">{% if current_lang == 'ar' %}غير مدفوع{% else %}Unpaid{% endif %}</span>
+                                        <span class="badge rounded-pill px-2.5 py-1 text-xs fw-bold text-nowrap" style="background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.25);">
+                                            {% if current_lang == 'ar' %}غير مدفوع{% else %}Unpaid{% endif %}
+                                        </span>
                                     {% elif inv.status == 'Partially Paid' %}
-                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-2.5 py-1">{% if current_lang == 'ar' %}دفع جزئي{% else %}Partially Paid{% endif %}</span>
+                                        <span class="badge rounded-pill px-2.5 py-1 text-xs fw-bold text-nowrap" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25);">
+                                            {% if current_lang == 'ar' %}دفع جزئي{% else %}Partially Paid{% endif %}
+                                        </span>
                                     {% else %}
-                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-opacity-25 rounded-pill px-2.5 py-1">{{ inv.status }}</span>
+                                        <span class="badge rounded-pill px-2.5 py-1 text-xs fw-bold text-nowrap" style="background: rgba(100, 116, 139, 0.12); color: var(--default-color); border: 1px solid rgba(100, 116, 139, 0.25);">
+                                            {{ inv.status }}
+                                        </span>
                                     {% endif %}
                                 </td>
-                                <td style="padding: 10px 12px;" class="text-center text-nowrap">
-                                    <div class="d-flex justify-content-center gap-2">
+                                <td class="text-center text-nowrap">
+                                    <div class="d-flex align-items-center justify-content-center gap-2">
                                          <a href="{{ url_for('invoices.view_invoice', invoice_id=inv.id) }}"
                                             class="table-action-btn edit-btn"
-                                            title="{% if current_lang == 'ar' %}عرض الفاتورة{% else %}View Invoice{% endif %}"
                                             data-tooltip="{% if current_lang == 'ar' %}عرض الفاتورة{% else %}View Invoice{% endif %}">
                                              <i class="bi bi-receipt"></i>
                                          </a>
                                          {% if current_user.role in ('admin', 'receptionist') %}
                                          <a href="{{ url_for('payments.add_patient_payment', patient_id=inv.patient_id) }}"
                                             class="table-action-btn session-btn"
-                                            title="{% if current_lang == 'ar' %}تسجيل دفعة للمريض{% else %}Record Payment{% endif %}"
                                             data-tooltip="{% if current_lang == 'ar' %}تسجيل دفعة للمريض{% else %}Record Payment{% endif %}">
                                              <i class="bi bi-credit-card"></i>
                                          </a>
@@ -206,11 +231,12 @@
                     </table>
                 </div>
                 {% else %}
-                <div class="alert alert-success d-flex align-items-center mb-0 rounded-3">
-                    <i class="bi bi-check-circle-fill me-2 fs-5"></i>
-                    <div>
-                        {% if current_lang == 'ar' %}ممتاز! لا توجد فواتير غير مدفوعة أو مستحقة حالياً في النظام.{% else %}Great! No unpaid or outstanding invoices found.{% endif %}
+                <div class="empty-state-card text-center rounded-4 border p-4 shadow-sm mb-0" style="background: var(--surface-color);">
+                    <div class="p-3 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="background: rgba(16, 185, 129, 0.1); color: #10b981; width: 60px; height: 60px;">
+                        <i class="bi bi-check-circle-fill fs-2"></i>
                     </div>
+                    <h4 class="fw-bold mb-2">{% if current_lang == 'ar' %}ممتاز! لا توجد فواتير مستحقة غير مدفوعة{% else %}No unpaid or outstanding invoices{% endif %}</h4>
+                    <p class="text-muted small mb-0">{% if current_lang == 'ar' %}جميع فواتير المرضى الحالية مسددة بالكامل.{% else %}All patient invoices are fully settled and paid.{% endif %}</p>
                 </div>
                 {% endif %}
             </div>
@@ -219,3 +245,4 @@
 
     </div>
 </section>
+

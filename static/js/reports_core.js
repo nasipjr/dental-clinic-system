@@ -1459,8 +1459,8 @@ window.initReportsDashboard = function (config) {
                 } else {
                     tbody.innerHTML = data.rows.map(d => {
                         const schemeBadge = d.salary_type === 'percentage'
-                            ? `<span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1"><i class="bi bi-percent me-1"></i>${isArabic ? 'نسبة ' + d.salary_amount + '%' : d.salary_amount + '% Percentage'}</span>`
-                            : `<span class="badge rounded-pill bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-3 py-1"><i class="bi bi-cash me-1"></i>${isArabic ? 'راتب ثابت: ' + Number(d.salary_amount).toLocaleString() + ' ' + currencySymbol : 'Fixed: ' + d.salary_amount}</span>`;
+                            ? `<span class="badge rounded-pill px-3 py-1.5 fw-bold" style="background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.28); font-size: 0.84rem;"><i class="bi bi-percent me-1"></i>${isArabic ? 'نسبة ' + d.salary_amount + '%' : d.salary_amount + '% Percentage'}</span>`
+                            : `<span class="badge rounded-pill px-3 py-1.5 fw-bold" style="background: rgba(2, 132, 199, 0.12); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.28); font-size: 0.84rem;"><i class="bi bi-cash me-1"></i>${isArabic ? 'راتب ثابت: ' + Number(d.salary_amount).toLocaleString() + ' ' + currencySymbol : 'Fixed: ' + d.salary_amount}</span>`;
 
                         const pendingDropdown = (d.pending_months && d.pending_months.length > 0) ? `
                             <div class="dropdown d-inline-block position-relative">
@@ -1469,7 +1469,7 @@ window.initReportsDashboard = function (config) {
                                       style="font-size:0.75rem;">
                                     <i class="bi bi-hourglass-split me-1"></i>${d.pending_count} ${isArabic ? 'معلقة' : 'pending'}
                                 </span>
-                                <ul class="dropdown-menu shadow-lg border rounded-3 p-2 text-start" style="font-size:0.82rem; min-width:180px; z-index: 1050;">
+                                <ul class="dropdown-menu shadow-lg border rounded-3 p-2 text-start" style="font-size:0.82rem; min-width:180px; z-index: 1050; background: var(--surface-color); border: 1px solid rgba(255,255,255,0.08) !important;">
                                     <li class="dropdown-header small text-muted px-2 py-1 border-bottom mb-1 fw-bold">
                                         <i class="bi bi-calendar-range me-1 text-warning"></i>${isArabic ? 'الأشهر المعلقة:' : 'Pending Months:'}
                                     </li>
@@ -1491,21 +1491,21 @@ window.initReportsDashboard = function (config) {
                         `;
 
                         return `
-                        <tr style="font-size: 0.88rem;">
-                            <td style="padding: 10px 8px;">
+                        <tr>
+                            <td>
                                 <div class="d-flex align-items-center gap-2">
-                                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center fw-bold" style="width:34px; height:34px; font-size:.9rem;">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white shadow-xs" style="width:36px; height:36px; font-size:.9rem; background: linear-gradient(135deg, #6366f1, #8b5cf6); flex-shrink: 0;">
                                         ${d.first_name ? d.first_name[0] : 'D'}
                                     </div>
                                     <div>
-                                        <div class="fw-bold text-main">${d.first_name} ${d.last_name}</div>
+                                        <div class="fw-bold" style="color: var(--heading-color); font-size: 0.92rem;">${d.first_name} ${d.last_name}</div>
                                         <small class="text-muted" style="font-size:0.75rem;">@${d.username}</small>
                                     </div>
                                 </div>
                             </td>
-                            <td class="text-center" style="padding: 10px 8px;">${schemeBadge}</td>
-                            <td class="text-center" style="padding: 10px 8px;">
-                                <span class="badge bg-secondary bg-opacity-10 text-secondary px-2.5 py-1 rounded-pill mb-1 fw-bold">
+                            <td class="text-center">${schemeBadge}</td>
+                            <td class="text-center">
+                                <span class="badge rounded-pill px-2.5 py-1 text-xs fw-bold mb-1" style="background: rgba(100, 116, 139, 0.12); color: var(--heading-color); border: 1px solid rgba(100, 116, 139, 0.25);">
                                     ${d.appointment_count} ${isArabic ? 'موعد' : 'appts'}
                                 </span>
                                 <div class="small" style="font-size:0.75rem;">
@@ -1518,21 +1518,23 @@ window.initReportsDashboard = function (config) {
                                     ` : ''}
                                 </div>
                             </td>
-                            <td class="text-end fw-bold text-primary" style="padding: 10px 8px;">${formatPrice(d.total_revenue)} ${currencySymbol}</td>
-                            <td class="text-end fw-bold text-success" style="padding: 10px 8px;">${formatPrice(d.doctor_earned)} ${currencySymbol}</td>
-                            <td class="text-end fw-bold text-info" style="padding: 10px 8px;">${formatPrice(d.clinic_net)} ${currencySymbol}</td>
-                            <td class="text-center" style="padding: 10px 8px;">
-                                ${(d.is_deducted || d.deducted_this_month)
-                                ? `<button type="button" class="btn btn-sm btn-link text-danger p-0 doc-undo-btn"
-                                            data-tooltip="${isArabic ? 'تراجع عن الخصم لهذا الشهر' : 'Undo Deduction for this Month'}"
-                                            data-doc-id="${d.id}" data-doc-name="${d.first_name} ${d.last_name}">
-                                        <i class="bi bi-arrow-counterclockwise fs-5"></i>
-                                     </button>`
-                                : `<button type="button" class="btn btn-sm btn-link text-warning p-0 doc-deduct-btn"
-                                            data-tooltip="${isArabic ? 'خصم الراتب الآن' : 'Deduct Salary Now'}"
-                                            data-doc-id="${d.id}" data-doc-name="${d.first_name} ${d.last_name}">
-                                        <i class="bi bi-arrow-down-circle fs-5"></i>
-                                     </button>`}
+                            <td class="text-end fw-bold" style="color: #0284c7; font-size: 0.92rem;" dir="ltr">${formatPrice(d.total_revenue)} ${currencySymbol}</td>
+                            <td class="text-end fw-bold" style="color: #10b981; font-size: 0.92rem;" dir="ltr">${formatPrice(d.doctor_earned)} ${currencySymbol}</td>
+                            <td class="text-end fw-bold" style="color: #38bdf8; font-size: 0.92rem;" dir="ltr">${formatPrice(d.clinic_net)} ${currencySymbol}</td>
+                            <td class="text-center">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    ${(d.is_deducted || d.deducted_this_month)
+                                    ? `<button type="button" class="table-action-btn delete-btn doc-undo-btn"
+                                                data-tooltip="${isArabic ? 'تراجع عن الخصم لهذا الشهر' : 'Undo Deduction for this Month'}"
+                                                data-doc-id="${d.id}" data-doc-name="${d.first_name} ${d.last_name}">
+                                            <i class="bi bi-arrow-counterclockwise"></i>
+                                         </button>`
+                                    : `<button type="button" class="table-action-btn session-btn doc-deduct-btn"
+                                                data-tooltip="${isArabic ? 'خصم الراتب الآن' : 'Deduct Salary Now'}"
+                                                data-doc-id="${d.id}" data-doc-name="${d.first_name} ${d.last_name}">
+                                            <i class="bi bi-arrow-down-circle"></i>
+                                         </button>`}
+                                </div>
                             </td>
                         </tr>`;
                     }).join('');

@@ -25,9 +25,9 @@
                 <span>{% if current_lang == 'ar' %}إعادة تعيين{% else %}Reset{% endif %}</span>
             </a>
 
-            <div class="d-flex align-items-center gap-2 ms-auto">
-                <label for="patients-per-page-select-top" class="small text-muted mb-0 fw-semibold text-nowrap">{% if current_lang == 'ar' %}عرض في الصفحة:{% else %}Items per page:{% endif %}</label>
-                <select id="patients-per-page-select-top" class="form-select form-select-sm border-secondary-subtle rounded-3 py-1.5 shadow-xs" style="width: auto;" onchange="changeTablePerPage(this.value, 'patients')">
+            <div class="table-per-page-wrapper ms-auto">
+                <label for="patients-per-page-select-top" class="table-per-page-label">{% if current_lang == 'ar' %}عرض في الصفحة:{% else %}Items per page:{% endif %}</label>
+                <select id="patients-per-page-select-top" class="table-per-page-select" onchange="changeTablePerPage(this.value, 'patients')">
                     <option value="5" {% if per_page == 5 %}selected{% endif %}>5</option>
                     <option value="10" {% if per_page == 10 or not per_page %}selected{% endif %}>10</option>
                     <option value="25" {% if per_page == 25 %}selected{% endif %}>25</option>

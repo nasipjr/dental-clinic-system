@@ -1,22 +1,22 @@
-<div class="appointments-table-wrapper table-responsive financial-detail-card mb-4">
+<div class="appointments-table-wrapper table-responsive shadow-sm rounded-4 border p-3 mb-4" style="background: var(--surface-color);">
 
-    <div class="financial-table-header">
+    <div class="financial-table-header d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div>
-            <h4>Patient Payments</h4>
-            <p>All payments recorded for this patient.</p>
+            <h4 class="fw-bold mb-1" style="color: var(--heading-color);">{% if current_lang == 'ar' %}مدفوعات المريض{% else %}Patient Payments{% endif %}</h4>
+            <p class="text-muted small mb-0">{% if current_lang == 'ar' %}جميع الدفعات المالية المسجلة لهذا المريض.{% else %}All payments recorded for this patient.{% endif %}</p>
         </div>
 
         {% if current_user.role in ('admin', 'receptionist') %}
         <a href="{{ url_for('payments.add_patient_payment', patient_id=patient.id) }}"
-            class="btn btn-primary btn-sm">
+            class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">
             <i class="bi bi-plus-circle me-1"></i>
-            Add Payment
+            {% if current_lang == 'ar' %}إضافة دفعة{% else %}Add Payment{% endif %}
         </a>
         {% endif %}
     </div>
 
     {% if patient_payments %}
-    <table class="table appointments-table align-middle">
+    <table class="table appointments-table align-middle mb-0">
         <thead>
             <tr>
                 <th>

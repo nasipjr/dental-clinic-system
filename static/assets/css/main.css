@@ -7126,6 +7126,75 @@ section,
   transform: translateY(-2px) !important;
 }
 
+/* 4.3. Universal Vertical Centering & Icon Alignment for Pill Buttons */
+.btn-app-primary i,
+.btn-app-secondary i,
+.btn-app-emerald i,
+.btn-app-amber i,
+.btn-app-purple i,
+.btn-app-danger i,
+.btn-add-pill i,
+.btn.btn-add-pill i,
+.btn-back-pill i,
+.btn.btn-back-pill i,
+.btn-quick-session-pill i,
+.btn.btn-quick-session-pill i,
+.btn-archive-pill i,
+.btn.btn-archive-pill i,
+.btn-add-appt-pill i {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  height: auto !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+  font-size: 1.1em !important;
+  vertical-align: middle !important;
+}
+
+.btn-app-primary i::before,
+.btn-app-secondary i::before,
+.btn-app-emerald i::before,
+.btn-app-amber i::before,
+.btn-app-purple i::before,
+.btn-app-danger i::before,
+.btn-add-pill i::before,
+.btn.btn-add-pill i::before,
+.btn-back-pill i::before,
+.btn.btn-back-pill i::before,
+.btn-quick-session-pill i::before,
+.btn.btn-quick-session-pill i::before,
+.btn-archive-pill i::before,
+.btn.btn-archive-pill i::before,
+.btn-add-appt-pill i::before {
+  display: inline-block !important;
+  line-height: 1 !important;
+  vertical-align: 0 !important;
+}
+
+.btn-app-primary span,
+.btn-app-secondary span,
+.btn-app-emerald span,
+.btn-app-amber span,
+.btn-app-purple span,
+.btn-app-danger span,
+.btn-add-pill span,
+.btn.btn-add-pill span,
+.btn-back-pill span,
+.btn.btn-back-pill span,
+.btn-quick-session-pill span,
+.btn.btn-quick-session-pill span,
+.btn-archive-pill span,
+.btn.btn-archive-pill span,
+.btn-add-appt-pill span {
+  display: inline-flex !important;
+  align-items: center !important;
+  line-height: 1 !important;
+}
+
 /* 5. View Switch Toggle Pills (Calendar / List) */
 .btn-group-toggle-pills {
   display: inline-flex !important;

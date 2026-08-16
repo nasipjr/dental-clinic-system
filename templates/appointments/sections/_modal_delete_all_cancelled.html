@@ -27,15 +27,16 @@
                     {% endif %}
                 </div>
             </div>
-            <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
-                    {% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+            <div class="modal-footer border-0 pt-0 gap-2">
+                <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i>
+                    <span>{% if current_lang == 'ar' %}إلغاء{% else %}Cancel{% endif %}</span>
                 </button>
                 <form action="{{ url_for('appointments.delete_all_cancelled') }}" method="POST" class="d-inline">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold shadow">
-                        <i class="bi bi-trash-fill me-1"></i>
-                        {% if current_lang == 'ar' %}تأكيد الحذف النهائي{% else %}Confirm Delete All{% endif %}
+                    <button type="submit" class="btn-modal-submit-danger">
+                        <i class="bi bi-trash3-fill"></i>
+                        <span>{% if current_lang == 'ar' %}تأكيد الحذف النهائي{% else %}Confirm Delete All{% endif %}</span>
                     </button>
                 </form>
             </div>

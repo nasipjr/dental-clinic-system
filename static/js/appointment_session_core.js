@@ -392,13 +392,13 @@ window.initAppointmentSession = function(config) {
                                     <div class="d-flex align-items-center gap-1 ms-auto">
                                         <button type="button" class="btn btn-xs btn-outline-primary rounded-circle p-1"
                                                 onclick="openEditToothHistoryModal(${patientId}, ${h.id}, '${safeProc}', '${safeNotes}', '${safeDate}', ${appointmentId})"
-                                                title="${isAr ? 'تعديل السابقة' : 'Edit History'}">
+                                                data-tooltip="${isAr ? 'تعديل السابقة المرضية' : 'Edit History Record'}">
                                             <i class="bi bi-pencil" style="font-size: 0.75rem;"></i>
                                         </button>
                                         <form method="POST" action="/patients/${patientId}/tooth-history/${h.id}/delete" onsubmit="return confirmDelete(event, '${isAr ? 'هل أنت متأكد من حذف هذه السابقة المرضية؟' : 'Delete this history record?'}');">
                                             <input type="hidden" name="csrf_token" value="${csrfToken}">
                                             <input type="hidden" name="appointment_id" value="${appointmentId}">
-                                            <button type="submit" class="btn btn-xs btn-outline-danger rounded-circle p-1" title="${isAr ? 'حذف' : 'Delete'}">
+                                            <button type="submit" class="btn btn-xs btn-outline-danger rounded-circle p-1" data-tooltip="${isAr ? 'حذف السابقة المرضية' : 'Delete History Record'}">
                                                 <i class="bi bi-trash" style="font-size: 0.75rem;"></i>
                                             </button>
                                         </form>
